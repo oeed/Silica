@@ -1,7 +1,11 @@
 local class = {}
 
+-- @static
 function class:new( ... )
 	local newRaw = {}
+
+	newRaw.super = self.__extends --:new(...) -- not sure here, do we want super to be a class or instance? i'll do some testing
+	newRaw.class = self
 
 	setmetatable(newRaw, { __index = self })
 
@@ -68,19 +72,61 @@ function class:new( ... )
 	end
 
     -- once the class has been created, pass the arguments to the init function for handling
-    newProxy:init( ... )
+    if newProxy.init and type(newProxy.init) == 'function' then
+    	newProxy:init( ... )
+    end
 
 	return newProxy
 end
 
 -- constructs an actual class (NOT instance)
-function class:construct(name)
-    function(name)
-        -- not sure if _G is the right thing to use here
-        _G[name] = {}
-        return function(superClass)
-            print(textutils.serialize(superClass))
+-- @static
+function class:construct(_, name) -- for some reason self is passed twice, not sure why
+    local _class = {}
+    _class.name = name
+    _class.__extends = nil
+    _class.__metatable = {
+        __call = function(self, ...)
+            return self:new(...)
+        end,
+        __index = self
+    }
+    setmetatable(_class, _class.__metatable)
+
+    -- not sure if _G is the right thing to use here
+    _G[name] = _class
+
+    -- _class can't directly be returned here, but nor can a single function (as :extends and {} are the possible options afterwards)
+    local response = {}
+    setmetatable(response, {
+        __index = _class,
+        __call = function(_response, properties)
+            _class:properties(properties)
         end
+    })
+    return response
+end
+
+-- @instance
+function class:properties(properties)
+    for k, v in pairs(properties) do
+    	self[k] = v
+    end
+end
+
+-- @instance
+function class:extends(superName)
+    local _class = getmetatable(self).__index -- get the actual class from 'response'
+    if not getfenv()[superName] then
+        -- TODO: add an autoloading here to load the class if it's not found
+        error('Super class for `' .. _class.name .. '` was not found: ' .. superName)
+    end
+
+    _class.__extends = getfenv()[superName]
+    _class.__metatable.__index = _class.__extends
+    setmetatable(_class, _class.__metatable)
+    return function(properties)
+        _class:properties(properties)
     end
 end
 
@@ -88,10 +134,31 @@ setmetatable(class, {
     __call = function(...) return class:construct(...) end
 })
 
-local somethingSuper = {
-    y = 2;
+
+--- tests
+
+class "Object" {
+    x = 5;
 }
 
-class "Button" extends somethingSuper {
-    x = 1;
+function Object:init(properties) -- we can decided how to structure the arguments to new later
+	properties = properties or {}
+	for k, v in pairs(properties) do
+		self[k] = v
+	end
+end
+
+class "Button" : extends 'Object' {
+    y = 1;
 }
+
+print(Button.x) -- 5
+print(Button.y) -- 1
+
+local myButton = Button({
+	x = 4;
+	text = 'hi';
+})
+print(myButton.x) -- 4
+print(myButton.y) -- 1
+print(myButton.text) -- hi
