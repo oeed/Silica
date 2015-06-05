@@ -79,7 +79,6 @@ function class:new( ... )
 
 		local super = rawget(raw, 'super')
 		if super and super.class and super.class[k] then
-			print('super: ' .. k)
 			-- otherwise, check super classes for a value
 			return super.class[k]
 		end
