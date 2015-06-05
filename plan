@@ -9,15 +9,23 @@
 	- instance function
 	= static function
 		() lists the arguments
+		! indicates that the function is not allowed to be called/intentionally errors (i.e. a setter on a read-only value)
+
+	Maybe make this a checklist?
+	prepend a # to a line that has been completed?
+
+	Feel more than free to change this, in particuarlly naming convention wise
 
 ]]
 
 class
-	* View -- this will be super big, I think having all the functions that are only used with on-screen objects should be in here, not in another API. just makes it cleaner
+	* View -- this will be super big, I think having all the functions that are only used with on-screen objects should be in here, not in another API (i.e. no drawing API). just makes it cleaner
 		+ x -- relative to parent
 		+ y -- relative to parent
 		+ width
 		+ height
+
+		+ isVisible
 
 		+ children {}
 		+ parent
@@ -34,7 +42,10 @@ class
 		- move ( x, y, time, easingFunction, completion ) -- calls self:animate
 		- resize ( width, height, time, easingFunction, completion ) -- calls self:animate
 
+		- set -- a value was set (maybe have a blacklist?), tell self it needs to be drawn
+
 		-- CrazedProgrammer can decide how the drawing functions work really, although there naturally needs to be a function to invoke when a value changes and draw is needed, and then aso a function to call when the screen is drawn
+		-- IMPORTANT: the function 'draw' will be overridden by subclasses, so no logic can be placed in it by default. HOWEVER, the children will need to be drawn afterwards (without relying on super:draw()), so we'll need to figure out the whole drawing proccess
 		- draw () -- draw the view immediately (not checking if it's in queue or whatever, unless it's hidden or something)
 		- needsDraw () -- tell the view that it needs to be drawn
 		- tryDraw () -- check if the 
@@ -46,6 +57,49 @@ class
 		- drawImage ( x, y, [Image]image, width, height) -- width and height are optional, be default they are taken from the [Image]
 		- drawPath ( [Path]path, fillColour, strokeColour, strokeWidth )
 
+
+		-- we'll need to discuss how we name these things
+		* Label
+			+ text
+				- setText -- if isAutoWidth set the width
+			+ textColour
+			+ backgroundColour
+			+ [Font.alignment]alignment
+			+ isAutoWidth -- not sure about this. I had it in Bedrock, it basically automatically set the width of the label to the size of the text if true
+			+ isWrapped
+			+ isEnabled
+
+			- draw
+
+		* Button
+			+ text
+				- setText -- if isAutoWidth set the width
+			+ textColour
+			+ backgroundColour
+			+ activeTextColour
+			+ activeBackgroundColour
+			+ disabledTextColour
+			+ disabledBackgroundColour
+			+ [Font.alignment]alignment
+			+ isAutoWidth -- see above
+			+ isEnabled
+			+ state -- need to decide how this will work
+
+			- draw
+
+			-- connected to the comment in Application, we need to decide how event handlers will work. do we go 'onClick' or some other way
+
+		* ProgressBar -- I want these to have a looped animation (if it looks okay and isn't too intensive), maybe like the barber wheel effect on OS X, and a indeterminate mode. what do you think, and what's the best way to do this? might need to make an addition to Animation to support this
+			+ backgroundColour
+			+ barColour
+			+ textColour
+			+ isText
+			+ value
+			+ maximum
+
+			- draw
+
+
 	* Animation
 		+ subject
 		+ time
@@ -53,6 +107,7 @@ class
 		+ endValues
 		+ easingFunction
 		+ completion
+		+ isAnimating
 
 		+ easing {}
 			= linear
@@ -62,14 +117,15 @@ class
 														-- not string!
 		= init ( subject, [table]values, time, [function]easingFunction, completion )
 
-		- animate -- run the animation
+		- animate -- run the animation if not isAnimating (i.e. allow it to be reusable)
 		-- all the other internal functions, fairly indifferent to how it operates internally
+
 
 	* Font
 		+ size  -- measured in pixel height of a capital letter
-		+ family -- e.g. 'Helvetica' (although we'll naturally need to make our own)
-		+ isItalic
+		+ family -- e.g. 'Helvetica' (although we'll naturally need to make our own fonts)
 		+ isBold
+		+ isItalic
 		+ isUnderlined
 		+ characterPaths {
 				'a' = { -- might be a better way to do this
@@ -80,5 +136,99 @@ class
 				'A' = ...
 			}
 
+		+ alignment {} -- not part of the font instance (like easing is to Animation), more of an enum really
+			+ left
+			+ centre
+			+ center -- synonym for centre
+			+ right
+			+ justify
+
+
 		= defaultFont ( size ) -- returns the default font in the given size (or default size)
-		= init
+		= init ( family, size, isBold, isItalic, isUnderlined )
+
+		- characterPositions ( text, width, alignment ) -- essentially a helper function for drawing returning a table of the characters and their positions including wrapping and alignment (because they're not monospaced anymore!)
+		- textWidth ( text ) -- the width of the supplied text
+		-- another function to help with selection would probably super useful too. selection was a pain enough in Ink, let alone with non-monospace characters
+
+
+	* Image -- a raster image, we could potentially make a subclass for vector images if the need arises
+		+ data -- this needs to be essentially be the same universal format for all file formats (essentially whatever format we use for the buffer so it can be drawn the fastest)
+		+ width
+		+ height
+
+		= init ( data ) -- by default make images straight from the buffer data (the imageWith... methods will first get the buffer data then call this)
+		= imageWithHandle ( handle ) -- called by the next 3. detects and parses the image format. this naming convention is a rather Objective-C-ish. there might be a better naming system (although I'm not against it)
+		= imageWithPath ( path )
+		= imageWithURL ( url )
+		= imageWithName ( name ) -- loads an image with the given name from the Silica resources folder
+
+		- save ( path ) -- save using the default format (which we'll need to make as it's induvidual pixel based. given the amount of pixels i think two pixels should be combined in to one byte (two will fit) to save space)
+		- saveNFT ( path )
+		- saveNFP ( path )
+		- saveNIM ( path )
+		- saveSketch ( path )
+		-- and any other formats
+
+		- parse ( path ) -- parse the default format
+		- parseNFT ( path )
+		-- and the other formats
+
+		- scale ( width, height ) -- returns a scaled version
+		- resize ( width, height ) -- sets the image to the scaled down version
+
+		- clip ( width, height, anchorPercentageX, anchorPercentageY) -- return cropped relative to a anchor points (i.e. 0.5, 0.5 would crop centrally), defaults to 0, 0 (top left)
+		- crop ( width, height, anchorPercentageX, anchorPercentageY) -- once again, the previous function just returns the value, this sets the image to it
+
+		-- ALL drawing code is to be done in View. this class is concerned about the actual data
+
+
+	* Path -- do we want to use quadratic or cubic? quadratic are faster, although I'm not sure how much faster and how much lower the functionality is
+		-- HTML5 canvas seems to be something reasonable to copy from: http://www.w3schools.com/tags/ref_canvas.asp
+		+ points {
+			{ x, y, c1x, c1y, c2x, c2y } -- to be honest I've got very little idea about how paths & bezier curves work internally. so unless someone else does reasearch will probably required
+		}
+		+ currentX -- set using moveTo, etc
+		+ currentY
+		+ height
+			- getHeight
+			- ! setHeight
+		+ width
+			- getWidth
+			- ! setWidth
+
+		= init ( points ) -- if points is nil it just makes an empty path
+		= circle ( x, y, radius )
+		= ellipse ( x, y, radiusX, radiusY )
+		= triangle ( x1, y1, x2, y2, x3, y3 )
+		= rectangle ( x, y, width, height, radiusTopLeft/radius, radiusTopRight, radiusBottomRight, radiusBottomLeft ) -- defaults to regular rect, then rounded with rectangle with the same radius, then rounded rectangle with all radiuses defined
+		-- and a few more
+
+		- start -- not sure whether the path should be started by default
+		- moveTo ( x, y ) 
+		- lineTo ( x, y )
+		- curveTo ( x, y, c1x, c1y, c2x, c2y )
+		- arc -- something...
+		- arcTo -- something...
+		- close
+
+		- scale ( scaleX, scaleY ) -- as with image, returns a scaled verison
+		- resize ( scaleX, scaleY ) -- sets the path to the scaled version
+
+		-- could possibly have a better name
+		- tilt ( degrees ) -- returns a rotated version. do we use degrees or radians? i'm personally far more comfortable with degrees as I've seldom used radians, but if they'll be beneficial then I'll learn.
+		- rotates ( degrees ) -- sets to the rotated version
+
+	-- startup would essentially just go MyApplicationSubclass():run()
+	* Application -- or Program? or something else? essentially the central control point/kernel for the program. core functionality should be here (like event handling, but other than that it should be as small as possible)
+		+ name -- I'm thinking these would be defined in a subclass, rather than through a constructor
+		+ path
+		+ timers {}
+		+ arguments {}
+		+ isRunning
+
+		- run ( arguments ) -- or do we want it to run on init?
+		- handleEvent ( ... ) -- we need to decide how this will actually run
+
+		-- I'll leave this for now, we need to discuss how it will run. unlike most of the other stuff, most of the architectural decisions are very important
+		-- I also want to discuss view loading. I strongly dispise of having to make the layout with code, IIRC you made an XML based way which might work
