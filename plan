@@ -1,0 +1,84 @@
+--[[
+
+	Tab indent represents a layer of inheritance
+	
+	* is a class
+	+ is a property
+		[] names the object type (mainly for classes or where it's ambiguous)
+		{} is a table
+	- instance function
+	= static function
+		() lists the arguments
+
+]]
+
+class
+	* View -- this will be super big, I think having all the functions that are only used with on-screen objects should be in here, not in another API. just makes it cleaner
+		+ x -- relative to parent
+		+ y -- relative to parent
+		+ width
+		+ height
+
+		+ children {}
+		+ parent
+			- setParent -- move it to another parent, ensuring it's not self or a child view.
+
+		+ absolutePosition -- the position of the object relative to the entire screen
+			- getAbsolutePosition
+			- setAbsolutePosition -- set the position relative to the entire screen by altering the x and y relative to it's parent
+
+		- getRelativePosition ( parent ) -- the position of an object relative to a parent
+		- setRelativePosition ( parent )
+
+		- animate ( [table]values, time, easingFunction, completion ) -- generates a new [Animation], and then does animation:animate()
+		- move ( x, y, time, easingFunction, completion ) -- calls self:animate
+		- resize ( width, height, time, easingFunction, completion ) -- calls self:animate
+
+		-- CrazedProgrammer can decide how the drawing functions work really, although there naturally needs to be a function to invoke when a value changes and draw is needed, and then aso a function to call when the screen is drawn
+		- draw () -- draw the view immediately (not checking if it's in queue or whatever, unless it's hidden or something)
+		- needsDraw () -- tell the view that it needs to be drawn
+		- tryDraw () -- check if the 
+
+		-- and any other drawing functions, maybe a few drawPath helper methods
+		-- these are assuming/praying that Dan actually adds the new higher density pixels (hence the single colour)
+		- drawText ( x, y, text, [Font]font, colour)
+		- drawRectangle ( x, y, width, height, colour)
+		- drawImage ( x, y, [Image]image, width, height) -- width and height are optional, be default they are taken from the [Image]
+		- drawPath ( [Path]path, fillColour, strokeColour, strokeWidth )
+
+	* Animation
+		+ subject
+		+ time
+		+ startingValues
+		+ endValues
+		+ easingFunction
+		+ completion
+
+		+ easing {}
+			= linear
+			= inQuad
+			= outQuad
+			-- etc
+														-- not string!
+		= init ( subject, [table]values, time, [function]easingFunction, completion )
+
+		- animate -- run the animation
+		-- all the other internal functions, fairly indifferent to how it operates internally
+
+	* Font
+		+ size  -- measured in pixel height of a capital letter
+		+ family -- e.g. 'Helvetica' (although we'll naturally need to make our own)
+		+ isItalic
+		+ isBold
+		+ isUnderlined
+		+ characterPaths {
+				'a' = { -- might be a better way to do this
+					'normal' = [Path]...,
+					'bold' = [Path]...,
+					-- etc
+				}
+				'A' = ...
+			}
+
+		= defaultFont ( size ) -- returns the default font in the given size (or default size)
+		= init
