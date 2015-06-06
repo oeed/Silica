@@ -1,0 +1,10 @@
+function loadClass( path )
+
+end
+
+local function load()
+	
+end
+
+
+load()
