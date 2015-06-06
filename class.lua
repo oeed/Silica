@@ -50,7 +50,7 @@ function class:newSuper( sub, ... )
 
 	local rawId = tostring(raw):sub(8) -- remove 'table: ' from the id
 	function raw.mt:__tostring()
-    	return 'instance of `' .. _class.type .. '` as super: ' .. rawId
+    	return 'instance of `' .. _class.className .. '` as super: ' .. rawId
     end
 
 	setmetatable( raw, raw.mt )
@@ -147,7 +147,7 @@ function class:new( ... )
 
 	local proxyId = tostring(proxy):sub(8) -- remove 'table: ' from the id
 	function proxy.mt:__tostring()
-    	return 'instance of `' .. _class.type .. '`: ' .. proxyId
+    	return 'instance of `' .. _class.className .. '`: ' .. proxyId
     end
 
 	setmetatable( proxy, proxy.mt )
@@ -180,9 +180,9 @@ end
 
 -- constructs an actual class ( NOT instance )
 -- @static
-function class:construct( _, type ) -- for some reason self is passed twice, not sure why
+function class:construct( _, className ) -- for some reason self is passed twice, not sure why
     local _class = {}
-    _class.type = type
+    _class.className = className
 
     local mt = { __index = self }
     _class.mt = mt
@@ -193,13 +193,13 @@ function class:construct( _, type ) -- for some reason self is passed twice, not
 
 	local classId = tostring(_class):sub(7) -- remove 'table: ' from the id
  	function mt:__tostring()
-    	return 'class: ' .. self.type
+    	return 'class: ' .. self.className
     end
 
     setmetatable( _class, mt )
 
-    classes[type] = _class
-    getfenv( 2 )[type] = _class
+    classes[className] = _class
+    getfenv( 2 )[className] = _class
     creating = _class
 
     return function( properties )
@@ -253,7 +253,7 @@ setmetatable( class, {
 local function extends( superName )
     if not classes[superName] then
         -- TODO: add an autoloading here to load the class if it's not found
-        error( 'Super class for `' .. creating.type .. '` was not found: ' .. superName )
+        error( 'Super class for `' .. creating.className .. '` was not found: ' .. superName )
     end
 
     creating._extends = classes[superName]
