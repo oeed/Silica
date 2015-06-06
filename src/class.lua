@@ -205,6 +205,9 @@ function class:construct( _, className ) -- for some reason self is passed twice
     return function( properties )
     	creating = nil
 		_class:properties( properties )
+		if _class.constructed then
+			_class:constructed()
+		end
 		return _class
 	end
 end
@@ -252,7 +255,6 @@ setmetatable( class, {
 
 local function extends( superName )
     if not classes[superName] then
-        -- TODO: add an autoloading here to load the class if it's not found
         error( 'Super class for `' .. creating.className .. '` was not found: ' .. superName )
     end
 
@@ -266,8 +268,11 @@ local function extends( superName )
 
     return function( properties )
     	local _class = creating
-        creating:properties( properties )
         creating = nil
+        _class:properties( properties )
+		if _class.constructed then
+			_class:constructed()
+		end
         return _class
     end
 end

@@ -48,3 +48,12 @@ end
 ```
 
 `"` should be used to define strings, not `'`
+
+A blank line should be left at the top and bottom of files, just to make it look a bit 'prettier'.
+
+Static methods should be defined with dot syntax, and use camel case starting with a lower case letter.
+
+```lua
+function Class.static()
+function Class.staticFunction()
+```

@@ -18,9 +18,26 @@
 
 ]]
 
--- Event system concept
+--[[
+-- moved this stuff to their respective files
 
--- I think that using 'Signal' as a name is a bit confusing, it means the same as Event really
+
+
+
+-- Anything that handles events creates an EventManager.
+
+-- In the main event loop:
+while true do
+	local event = Event.create( coroutine.yield() )
+
+	-- trickling system
+	[ContainerEventHandler]Application.container.event:handleEvent( event )
+
+	EventManager.handleGlobals( event )
+end
+]]
+
+-- Event system concept
 
 -- first, anything that wants to recieve events creates an EventManager
 -- in init (of, for example, View):
@@ -52,8 +69,8 @@ Main Event Loop
 		-- once all the global responders have done their thing start sending it down the responder chain
 		-- a container EventManager is actually [ContainerEventManager]event (it's just initialised as ContainerEventManager() not EventManager()) which is a subclass of EventManager
 		-- this is so it can pass the event on to children if they hit test and in the correct order (i.e. top most first)
-		event:makeRelative( application.applicationContainer )
-		application.applicationContainer.event:handleEvent ( [Event]event ) -- send it to the root container
+		event:makeRelative( application.container )
+		application.container.event:handleEvent ( [Event]event ) -- send it to the root container
 			-- this is the definition of ContainerEventManager:handleEvent
 			if self.super:handleEvent( [Event]event ) -- does the same as above except with events registered on itself, if anything wants the event chain stopped it will return true
 				return true
@@ -70,9 +87,7 @@ Main Event Loop
 class
 	+ [Application]application -- a reference to the program's application instance
 
-	* Canvas -- draws on screen. handles the position, size and drawing
-		+ x -- relative to parent
-		+ y -- relative to parent
+	* Canvas -- draws on screen. handles size and drawing
 		+ width
 		+ height
 
@@ -94,7 +109,9 @@ class
 		- drawPath ( [Path]path, fillColour, strokeColour, strokeWidth )
 
 
-		* View -- this basically handles events and reltionships with parents
+		* View -- this basically handles the position, events and reltionships with parents
+			+ x -- relative to parent
+			+ y -- relative to parent
 			+ parent
 				- setParent -- move it to another parent, ensuring it's not self or a child view.
 
@@ -175,7 +192,7 @@ class
 		+ isGlobalDefault
 		+ connections {} -- key based with tables for each event type
 
-		= init( subject, isGlobalDefault)
+		- init( subject, isGlobalDefault)
 
 		- mt._call( [Event.type]eventType, func, isGlobal ) -- see the explaination above, simply shorthand for connection
 		- connect( [Event.type]eventType, func, isGlobal, subject ) -- subject is only sent if it's not the EventManager's subject (mainly connecting global events to [Application]application.event)
@@ -199,12 +216,15 @@ class
 
 		+ eventType -- simply the default CC value for example, mouse_click
 
+
 		+ MOUSE_UP = 'mouse_up' -- constants for public use
 		+ MOUSE_DOWN = 'mouse_down'
 
+		- init( ... ) -- makes an [Event] straight the values return from os.pullEvent, etc.
+		
 		- makeRelative( [View]view ) -- make the event's coordinates realative to this view
 
-		= init( ... ) -- makes an [Event] straight the values return from os.pullEvent, etc.
+
 
 
 	* Animation
@@ -222,7 +242,7 @@ class
 			= OUT_QUAD
 			-- etc
 														-- not string!
-		= init ( subject, [table]values, time, [function]easingFunction, completion )
+		- init ( subject, [table]values, time, [function]easingFunction, completion )
 
 		- animate -- run the animation if not isAnimating (i.e. allow it to be reusable)
 		-- all the other internal functions, fairly indifferent to how it operates internally
@@ -252,10 +272,11 @@ class
 
 
 		= defaultFont ( size ) -- returns the default font in the given size (or default size)
-		= init ( family, size, isBold, isItalic, isUnderlined )
+		- init ( family, size, isBold, isItalic, isUnderlined )
 
 		- characterPositions ( text, width, alignment ) -- essentially a helper function for drawing returning a table of the characters and their positions including wrapping and alignment (because they're not monospaced anymore!)
-		- textWidth ( text ) -- the width of the supplied text
+		- getWidth ( text ) -- the width of the supplied text
+		- getHeight ( text ) -- the width of the supplied text
 		-- another function to help with selection would probably super useful too. selection was a pain enough in Ink, let alone with non-monospace characters
 
 
@@ -264,7 +285,7 @@ class
 		+ width
 		+ height
 
-		= init ( data ) -- by default make images straight from the buffer data (the imageWith... methods will first get the buffer data then call this)
+		- init ( data ) -- by default make images straight from the buffer data (the imageWith... methods will first get the buffer data then call this)
 		= imageWithHandle ( handle ) -- called by the next 3. detects and parses the image format. this naming convention is a rather Objective-C-ish. there might be a better naming system (although I'm not against it)
 		= imageWithPath ( path )
 		= imageWithURL ( url )
@@ -304,7 +325,7 @@ class
 			- getWidth
 			- ! setWidth
 
-		= init ( points ) -- if points is nil it just makes an empty path
+		- init ( points ) -- if points is nil it just makes an empty path
 		= circle ( x, y, radius )
 		= ellipse ( x, y, radiusX, radiusY )
 		= triangle ( x1, y1, x2, y2, x3, y3 )
@@ -333,6 +354,8 @@ class
 		+ timers {}
 		+ arguments {}
 		+ isRunning
+
+		+ [ApplicationContainer]container
 
 		- run ( arguments ) -- or do we want it to run on init?
 		- handleEvent ( ... ) -- we need to decide how this will actually run

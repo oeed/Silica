@@ -1,9 +1,10 @@
-function loadClass( path )
-
+local function loadClass( path )
+	-- to be honest, it doesn't really need to be any more complicated than this
+	dofile( path )
 end
 
 local function load()
-	
+		
 end
 
 
