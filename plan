@@ -29,7 +29,7 @@ self.event = EventManager( self, false ) -- the boolean if whether it should use
 -- then you connect a function to an event
 self:event(Event.MOUSE_UP, self.onClick) -- a boolean an also be added like below. should this also toggle it? (i.e. if it's already connected, then disconnect, or should it just prevent duplicates)
 -- which is actually just shorthand for:
-self.event:connect(Event.MOUSE_UP, self.onClick, true) -- the boolean is whether it takes the event from trickle down or directly (might be cleaner way) . so things like networking would be false as they recieve every event
+self.event:connect(Event.MOUSE_UP, self.onClick, true) -- the boolean is whether it takes the event globally from the application, not trickle down (might be cleaner way) . so things like networking would be true as they recieve every event
 	-- if it's not global, it will add { self, self.onClick } to self.event.handles[Event.MOUSE_UP]
 	-- if it's global it will just do the above on the application's EventManager (instead of self.event, self.application.event)
 
@@ -40,19 +40,20 @@ self.event:disconnect(Event.MOUSE_UP, self.onClick, true)
 Main Event Loop
 	[Event]event = Event( ... ) -- make the constructor take the details straight from os.pullEvent/Raw/yeild
 
+	-- we could make the application EventManager a subclass and for EventManagers that want to always use global events (like networking cases) they still own their event handlers
 	application.[EventManager]event:handleEvent( [Event]event )
 	--  this is the definition of EventManager:handleEvent
 	--	self referring to [EventManager]event
 		for connection in self.connections[event.eventType] -- this needs to be ordered by some priority. it could maybe just be based on when it's inserted, or alternatively an optional third value in the { self, self.onClick } table inserted in to self.events
 			-- connection[2] is the function, connection[1] is the 'self' (from { self, self.onClick } mentioned above)
-			if connection[2](connection[1], event) -- if the handler returns true it indicates that it's 'stealing' the event (i.e. stop trickling it down or let anyone else have it)
+			if connection[2]( connection[1], event ) -- if the handler returns true it indicates that it's 'stealing' the event (i.e. stop trickling it down or let anyone else have it)
 				return true
 	
 		-- once all the global responders have done their thing start sending it down the responder chain
 		-- a container EventManager is actually [ContainerEventManager]event (it's just initialised as ContainerEventManager() not EventManager()) which is a subclass of EventManager
 		-- this is so it can pass the event on to children if they hit test and in the correct order (i.e. top most first)
+		event:makeRelative( application.applicationContainer )
 		application.applicationContainer.event:handleEvent ( [Event]event ) -- send it to the root container
-			event:makeRelative( self.owner )  -- make the event's coordinates relative to the container (self.owner). the event's coordinates should already be relative to parent if we're avoiding absolute coordinates
 			-- this is the definition of ContainerEventManager:handleEvent
 			if self.super:handleEvent( [Event]event ) -- does the same as above except with events registered on itself, if anything wants the event chain stopped it will return true
 				return true
@@ -60,8 +61,10 @@ Main Event Loop
 			for childView in self.owner.children
 				if childView.event:hasConnections( [Events]event ) -- checks whether the view has any connections registered for the event
 					if childView:hitTestEvent( [Event]event, self ) -- whether the event should be sent to the view. if it's a non-mouse event this is always true. if you don't want it to have to hit test you use the global mode when connecting
-						if connection[2](connection[1], [Event]event)
+						event:makeRelative( childView )  -- make the event's coordinates relative to the child. the event's coordinates should already be relative to parent if we're avoiding absolute coordinates
+						if childView:handleEvent( [Event]event )
 							return true
+						event:makeRelative( self.owner )  -- revert the coordinates back realative to the container
 
 
 class
