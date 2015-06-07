@@ -1,14 +1,3 @@
---[[
-
-	Essentially what I'm saying is, at some point a subclass (i.e. View)
-	needs to be able to call a single function which will automatically
-	update the contents if needed and draw it to the screen. The
-	coordinates can be passed to said function (which I've named
-	"drawToScreen", but there's probably a better name)
-
-]]
-
-
 class 'Canvas' {
     width = 1;
     height = 1;

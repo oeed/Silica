@@ -22,5 +22,6 @@ class "MouseEvent" extends "Event" {
 	@param [View] view -- the view who's coordinate system will be used
 ]]
 function MouseEvent:makeRelative( view )
+	self.super:makeRelative( view )
 	-- TODO: still need to figure this out
 end

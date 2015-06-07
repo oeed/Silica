@@ -87,6 +87,7 @@ Main Event Loop
 class
 	+ [Application]application -- a reference to the program's application instance
 
+
 	* Canvas -- draws on screen. handles size and drawing
 		+ width
 		+ height
@@ -138,8 +139,8 @@ class
 				+ children {} -- this needs to be ordered based on the z-order of the children
 				+ [ContainerEventManager]event -- used for subscribing functions to events
 
-				- addView -- adds a subview. by default it is the top-most
-				- removeView
+				- addChild -- adds a subview. by default it is the top-most
+				- removeChild
 
 				* ApplicationContainer -- the container holding everything in the program. maybe call it root container instead?
 					-- helper methods here, we'll figure out what they are once we decide how the programs will be structured
@@ -190,7 +191,7 @@ class
 	* EventManager
 		+ [class]owner -- the class who's event property is this event manager
 		+ isGlobalDefault
-		+ connections {} -- key based with tables for each event type
+		+ handles {} -- key based with tables for each event type
 
 		- init( subject, isGlobalDefault)
 

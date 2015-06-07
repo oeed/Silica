@@ -1,8 +1,12 @@
 class "Event" {
 
 	MOUSE_UP = "mouse_up";
-	MOUSE_DOWN = "mouse_down";
+	MOUSE_DOWN = "mouse_click";
 	MOUSE_DRAG = "mouse_drag";
+	MOUSE_SCROLL = "mouse_scroll";
+	KEY = "key";
+	CHAR = "char";
+	TERMINATE = "terminate";
 
 }
 
@@ -54,8 +58,14 @@ end
 	@return [type] returnedValue -- description
 ]]
 function Event:init( arguments )
-	local arguments = { ... }
 	if #arguments >= 1 then
 		self.eventType = arguments[1]
 	end
 end
+
+--[[
+	@instance
+	@desc Make the event relative to the supplied view
+	@param [View] view -- the view to be relative to
+]]
+function Event:makeRelative( view ) end

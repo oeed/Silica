@@ -1,10 +1,51 @@
+-- this simply for testing, 99% of this won't be in the final thing
+
+local loaded = {}
+
 local function loadClass( path )
-	-- to be honest, it doesn't really need to be any more complicated than this
-	dofile( path )
+	if not loaded[path] then
+		dofile( path )
+		loaded[path] = true
+	end
+end
+
+function loadName( name )
+	local function checkDir( path )
+		if fs.exists( path .. "/" .. name .. ".lua" ) then
+			loadClass( path .. "/" .. name .. ".lua" )
+			return true
+		end
+
+		local list = fs.list( path )
+
+		for i, v in ipairs(list) do
+			if fs.isDir( path .. '/' .. v ) then
+				if checkDir( path .. '/' .. v) then
+					return true
+				end
+			end
+		end
+	end
+	checkDir( "src/classes" )
+end
+
+local function loadDir( path )
+	local list = fs.list( path )
+	for i, v in ipairs( list ) do
+		if v ~= '.DS_Store' then
+			local fpath = path .. '/' .. v
+			if fs.isDir( fpath ) then
+				loadDir( fpath )
+			else
+				loadClass( fpath )
+			end
+		end
+	end
 end
 
 local function load()
-		
+	loadClass( "src/class.lua" )
+	loadDir( "src/classes" )
 end
 
 

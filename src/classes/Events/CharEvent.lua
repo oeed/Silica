@@ -1,5 +1,5 @@
 class "CharEvent" extends "Event" {
-	eventType = Event.MOUSE_DOWN;
+	eventType = Event.CHAR;
 	char = nil;
 }
 

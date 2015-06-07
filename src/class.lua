@@ -1,3 +1,4 @@
+
 local classes = {}
 local creating
 local USE_GLOBALS = true
@@ -6,6 +7,24 @@ local class = {}
 
 function class.get( type )
 	return classes[type]
+end
+
+-- ensures that all tables that should be unique to an instance are (designated by assigning the table to {} as class a property)
+local function uniqueTable( tbl, raw )
+	for k, v in pairs(tbl) do
+		-- if the properties contain any blank tables generate a new table so it's not shared between instances
+		if type( v ) == 'table' and #v == 0 then
+			local keyFound = false
+			for k2, v2 in pairs(v) do
+				keyFound = true
+				break
+			end
+
+			if not keyFound then
+				raw[k] = {}
+			end
+		end
+	end
 end
 
 -- Not sure if 'sub' is the right word here, basically it's the opposite of super
@@ -18,6 +37,8 @@ function class:newSuper( sub, ... )
 		-- super needs it's super too
 		raw.super = _class._extends:newSuper( sub, ... )
 	end
+
+	uniqueTable( _class, sub )
 
 	raw.class = _class
 	raw.mt = {}
@@ -66,6 +87,8 @@ function class:new( ... )
 	if _class._extends then
 		raw.super = _class._extends:newSuper( proxy, ... ) -- super needs to be an instance, not class
 	end
+
+	uniqueTable( _class, raw )
 
 	raw.class = _class
 	raw.mt = {}
@@ -199,7 +222,8 @@ function class:construct( _, className ) -- for some reason self is passed twice
     setmetatable( _class, mt )
 
     classes[className] = _class
-    getfenv( 2 )[className] = _class
+    _G[className] = _class -- TODO: this is just temporary due to the temporary loading system in Silica
+    -- getfenv( 2 )[className] = _class
     creating = _class
 
     return function( properties )
@@ -255,7 +279,14 @@ setmetatable( class, {
 
 local function extends( superName )
     if not classes[superName] then
-        error( 'Super class for `' .. creating.className .. '` was not found: ' .. superName )
+    	-- try to load the class
+    	-- TODO: set this system up correctly
+    	local ourCreating = creating
+    	loadName( superName )
+    	creating = ourCreating
+    	if not classes[superName] then
+        	error( 'Super class for `' .. creating.className .. '` was not found: ' .. superName )
+        end
     end
 
     creating._extends = classes[superName]
@@ -284,51 +315,3 @@ else
 	class.extends = extends
 	return class
 end
-
-
---- tests
-
-class 'Object' {
-    x = 1;
-    fruit = 'pear';
-}
-
-function Object:init()
-	self.fruit = 'apple'
-end
-
-function Object:setFruit( fruit )
-	self.fruit = fruit 
-	print("It's " .. fruit .. ' time!')
-end
-
-function Object:eat()
-	print(self.fruit)
-end
-
-class 'Button' extends 'Object' {
-    y = 2;
-}
-
-function Button:init( fruit ) -- again, we need to figure out the best way of doing arguments that works with super classes
-	self.super:init()
-	if fruit then
-		self.fruit = fruit
-	end
-end
-
-local button1 = Button( 'orange' )
-button1:eat() -- orange
-
-local button2 = Button()
-button2:eat() -- apple, if self.super:init isn't called this is pear
-
-class 'Something' extends 'Button' {
-	z = 3;
-}
-
-local something = Something()
-print(something.x) -- 1
-print(something.y) -- 2
-print(something.z) -- 3
-something:eat() -- apple (because self.super:init was called as Button's init was used)

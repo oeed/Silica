@@ -17,54 +17,17 @@ local function copyTables(destination, keysTable, valuesTable)
     return destination
 end
 
-local function checkSubjectAndTargetRecursively(subject, targetValues, path)
-    path = path or {}
-    local targetType, newPath
-    for k,targetValue in pairs(targetValues) do
-        targetType, newPath = type(targetValue), copyTables({}, path)
-        table.insert(newPath, tostring(k))
-        if targetType == 'number' then
-            assert(type(subject[k]) == 'number', "Parameter '" .. table.concat(newPath,'/') .. "' is missing from subject or isn't a number")
-        elseif targetType == 'table' then
-            checkSubjectAndTargetRecursively(subject[k], targetValue, newPath)
-        else
-            assert(targetType == 'number', "Parameter '" .. table.concat(newPath,'/') .. "' must be a number or table of numbers")
-        end
-    end
-end
-
-local function checkNewParams(duration, subject, targetValues, easing)
-    assert(type(duration) == 'number' and duration > 0, "duration must be a positive number. Was " .. tostring(duration))
-    local tsubject = type(subject)
-    assert(tsubject == 'table' or tsubject == 'userdata', "subject must be a table or userdata. Was " .. tostring(subject))
-    assert(type(targetValues)== 'table', "targetValues must be a table. Was " .. tostring(targetValues))
-    assert(type(easing)=='function', "easing must be a function. Was " .. tostring(easing))
-    checkSubjectAndTargetRecursively(subject, targetValues)
-end
-
-local function getEasingFunction(easing)
-    easing = easing or "linear"
-    if type(easing) == 'string' then
-        local name = easing
-        easing = tween.easing[name]
-        if type(easing) ~= 'function' then
-            error("The easing function name '" .. name .. "' is invalid")
-        end
-    end
-    return easing
-end
-
-local function performEasingOnSubject(subject, targetValues, initialValues, clock, duration, easing, round)
+local function performEasingOnSubject(subject, targetValues, initialValues, clock, duration, easingFunc, round)
     local t,b,c,d
     for k,v in pairs(targetValues) do
         if type(v) == 'table' then
-            performEasingOnSubject(subject[k], v, initialValues[k], clock, duration, easing)
+            performEasingOnSubject(subject[k], v, initialValues[k], clock, duration, easingFunc)
         else
             t,b,c,d = clock, initialValues[k], v - initialValues[k], duration
             if round then
-                subject[k] = math.floor( easing(t,b,c,d) + 0.5 )
+                subject[k] = math.floor( easingFunc(t,b,c,d) + 0.5 )
             else
-                subject[k] = easing(t,b,c,d)
+                subject[k] = easingFunc(t,b,c,d)
             end
         end
     end
@@ -75,7 +38,7 @@ class "Animation" {
 	duration = nil;
 	subject = nil;
 	targetValues = nil;
-	easing = nil;
+	easingFunc = nil;
 	initialValues = nil;
 	clock = nil;
 }
@@ -86,13 +49,13 @@ class "Animation" {
     @param [number] duration -- the duration of the animation
     @param [class] subject -- the subject of the animation
     @param [class] targetValues -- the targetValues of the animation
-    @param [Animation.easing] easing -- the easing function of the animation
+    @param [Animation.easing] easingFunc -- the easing function of the animation
 ]]
-function Animation:init( duration, subject, targetValues, easing )
+function Animation:init( duration, subject, targetValues, easingFunc )
     self.duration = duration
     self.subject = subject
     self.targetValues = targetValues
-    self.easing = easing
+    self.easingFunc = easingFunc
     self.initialValues = copyTables( {}, targetValues, subject )
     self.clock = 0
 end
@@ -115,7 +78,7 @@ function Animation:set( time )
 		self.clock = self.duration
 		copyTables(self.subject, self.targetValues)
 	else
-		performEasingOnSubject(self.subject, self.targetValues, self.initialValues, self.clock, self.duration, self.easing, self.round)
+		performEasingOnSubject(self.subject, self.targetValues, self.initialValues, self.clock, self.duration, self.easingFunc, self.round)
 	end
 
 	return self.clock >= self.duration
