@@ -38,6 +38,29 @@ function Class:hello( name, age )
 end
 ```
 
+All public functions (and private if you feel like it or it's not obvious) must have comments above them in the structure below. If no return value or arguments are specificed simply ommit the line.
+```lua
+--[[
+	@instance
+	@desc A reasonable description of what the function does
+	@param [number] arg1 -- a description of what the variable is
+	@param [View] arg2 -- a description of what the variable is
+	@param [class] arg3 -- a description of what the variable is
+	@return [type] returnedValue -- a description of what the variable is
+]]
+function Class:functionName( arg1, arg2, arg3 )
+	return returnedValue
+end
+```
+
+Enum values in doc comments should be specified by the name of the table that holds it. Using ... should simply be writte as such.
+```lua
+--[[
+	@param [Animation.easing] easing -- the easing function of the animation
+	@param ... -- the arguments
+]]
+```
+
 In source files, locals should be defined at the top, followed by classes, then the class' methods. Class methods should be defined using colon syntax. For example,
 
 ```lua
