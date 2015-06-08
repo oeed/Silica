@@ -1,3 +1,4 @@
+
 class "DragMouseEvent" extends "MouseEvent" {
 	eventType = Event.MOUSE_DRAG;
 	mouseButton = nil;

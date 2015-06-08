@@ -1,3 +1,4 @@
+
 class "TestApplication" extends "Application" {
 	name = "A test application";
 }
@@ -11,14 +12,44 @@ function TestApplication:init()
 
 	self:event( Event.CHAR, self.onChar )
 
-	self.container:addChild( TestContainer(
+	local one = CordView(
 		{
-			x = 5;
-			y = 9;
+			x = 8;
+			y = 3;
 			width = 10;
 			height = 14;
+			backgroundColour = colours.green;
 		}
-	) )
+	)
+
+	local two = CordView(
+		{
+			x = 3;
+			y = 2;
+			width = 10;
+			height = 14;
+			backgroundColour = colours.blue;
+		}
+	)
+
+	local three = CordView(
+		{
+			x = 3;
+			y = 3;
+			width = 10;
+			height = 14;
+			backgroundColour = colours.red;
+		}
+	)
+
+	print( one )
+	print( two )
+	print( three )
+
+	two:addChild( three )
+	one:addChild( two )
+
+	self.container:addChild( one )
 end
 
 --[[

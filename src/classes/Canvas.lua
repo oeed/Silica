@@ -1,9 +1,12 @@
+
 -- just remeber that the public functions need to follow the specificaion in plan
 
 class 'Canvas' {
     width = 1;
     height = 1;
-    x1 = 1;
+    scaleX = 1; -- this only becomes active at render time (it would be good if we could render to a term object and a table/buffer)
+    scaleY = 1;
+    x1 = 1; -- what do these do? i thought they didn't have a position
     y1 = 1;
     x2 = 1;
     y2 = 1;
@@ -64,7 +67,7 @@ function Canvas:drawLine( x1, y1, x2, y2, colour )
 end
 
 -- Do this later
-function Canvas:drawText( x, y, text, [Font]font, colour)
+function Canvas:drawText( x, y, text, font, colour)
 end
 
 function Canvas:drawRect( x1, y1, x2, y2, colour )
@@ -116,25 +119,6 @@ function Canvas:drawCanvas( x, y, canvas )
             self:drawPixel(x + i - 1, y + j - 1, canvas.buffer[(j - 1) * canvas.width + i])
         end
     end
-end
-
-
--- Just a placeholder so I can setup the structural side of drawing. feel free to rename it, change all the arguments or do whatever with it
--- I just copied it from the surface code
---[[
-    @instance
-    @desc Render the canvas to the screen
-    @param [term] display -- the term object to write the canvas to
-    @param [number] x -- not really sure what these do
-    @param [number] y -- not really sure what these do
-    @param [number] x1 -- not really sure what these do
-    @param [number] y1 -- not really sure what these do
-    @param [number] x2 -- not really sure what these do
-    @param [number] y2 -- not really sure what these do
-    @return [number] renderCalls
-]]
-function Canvas:render( display, x, arg3 )
-    return renderCalls
 end
 
 function Canvas:drawText( x, y, width, height, text, font, colour ) -- width and height are for wordwrapping

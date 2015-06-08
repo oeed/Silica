@@ -1,3 +1,4 @@
+
 class "KeyEvent" extends "Event" {
 	eventType = Event.KEY;
 	keyCode = nil;

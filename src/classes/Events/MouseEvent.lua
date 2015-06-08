@@ -1,3 +1,4 @@
+
 class "MouseEvent" extends "Event" {
 	x = 0;
 	y = 0;

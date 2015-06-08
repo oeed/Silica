@@ -1,3 +1,4 @@
+
 class "ScrollMouseEvent" extends "MouseEvent" {
 	eventType = Event.MOUSE_SCROLL;
 	direction = nil;

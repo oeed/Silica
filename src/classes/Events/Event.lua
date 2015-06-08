@@ -1,3 +1,4 @@
+
 class "Event" {
 
 	MOUSE_UP = "mouse_up";
@@ -6,6 +7,7 @@ class "Event" {
 	MOUSE_SCROLL = "mouse_scroll";
 	KEY = "key";
 	CHAR = "char";
+	TIMER = "timer";
 	TERMINATE = "terminate";
 
 }

@@ -1,3 +1,4 @@
+
 class "CharEvent" extends "Event" {
 	eventType = Event.CHAR;
 	char = nil;

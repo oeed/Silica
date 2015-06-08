@@ -12,7 +12,7 @@ local function newAnimation( self, label, time, values, easing, onFinish )
 	self.animations[#self.animations + 1] = { label = label, animation = animation, onFinish = onFinish }
 end
 
-class "View" {
+class "View" extends "Canvas" {
 	x = 0;
 	y = 0;
 	parent = nil;
@@ -53,6 +53,56 @@ function View:draw( x, y )
 	
 end
 
+--[[
+	@instance
+	@desc Converts the local coordinates to local coordinates of a parent (or global if nil) to.
+	@param [number] x -- the local x coordinate
+	@param [number] y -- the local y coordinate
+	@param [View] parent -- the parent to convert to
+	@return [number] x -- the x coordinate in the parent's coordinate system
+	@return [number] y -- the x coordinate in the parent's coordinate system
+]]
+function View:coordinatesTo( x, y, parent )
+	parent = parent or self.application.container
+
+	local currentParrent = { parent = self }
+	repeat
+		currentParrent = currentParrent.parent
+		x = x + currentParrent.x - 1
+		y = y + currentParrent.y - 1
+	until not currentParrent.parent or currentParrent.parent == parent
+
+	return x, y
+end
+
+--[[
+	@instance
+	@desc Converts the position of the view to the coordinates in a parent (or global if nil)
+	@param [View] parent -- the parent to convert to
+	@return [number] x -- the x coordinate in the parent's coordinate system
+	@return [number] y -- the x coordinate in the parent's coordinate system
+]]
+function View:position( parent )
+	if not self.parent or parent == self.parent then
+		return self.x, self.y
+	else
+		return self:coordinatesTo( 1, 1, parent )
+	end
+end
+
+--[[
+	@instance
+	@desc Converts the coordinates of a parent (or global if nil) to local coordinates.
+	@param [number] x -- the x coordinate
+	@param [number] y -- the y coordinate
+	@param [View] parent -- the parent to convert from
+	@return [number] x -- the local x coordinate
+	@return [number] y -- the local x coordinate
+]]
+function View:coordinates( x, y, parent )
+	-- TODO
+	-- local coordinate to parent/global coordinates
+end
 
 --[[
 	@instance
@@ -92,7 +142,7 @@ end
 --[[
 	@instance
 	@desc Update the animation
-	@param [table] properties -- the properties for the view
+	@param [number] deltaTime -- time since last update
 ]]
 function View:update( dt )
 	for i = #self.animations, 1, -1 do

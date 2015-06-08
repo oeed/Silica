@@ -1,3 +1,4 @@
+
 class "DownMouseEvent" extends "MouseEvent" {
 	eventType = Event.MOUSE_DOWN;
 	mouseButton = nil;

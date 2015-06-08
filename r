@@ -1,2 +1,2 @@
-os.reboot()
 
+os.reboot()

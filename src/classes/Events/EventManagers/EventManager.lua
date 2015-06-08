@@ -1,3 +1,4 @@
+
 class "EventManager" {
 	owner = nil;
 	handles = {};
@@ -133,7 +134,7 @@ end
 	@instance
 	@desc Perfoms the appropriate handles for the given event
 	@param [Event] event -- the event to handle
-	@return [boolean] cancelPropagation -- whether no further handles should recieve this event
+	@return [boolean] stopPropagation -- whether no further handles should recieve this event
 ]]
 function EventManager:handleEvent( event )
 	if self:handleEventPhase( event, self.phase.BEFORE ) then
@@ -151,7 +152,7 @@ end
 	@param [Event] event -- the event to handle
 	@param [EventManager.phase] phase -- the phase desired
 	@param [type] arg3 -- description
-	@return [boolean] cancelPropagation -- whether no further handles should recieve this event
+	@return [boolean] stopPropagation -- whether no further handles should recieve this event
 ]]
 function EventManager:handleEventPhase( event, phase )
 	if self.handles[event.eventType] then

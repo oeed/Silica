@@ -1,3 +1,4 @@
+
 class "UpMouseEvent" extends "MouseEvent" {
 	eventType = Event.MOUSE_UP;
 	mouseButton = nil;
