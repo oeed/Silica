@@ -28,6 +28,32 @@ end
 
 --[[
 	@instance
+	@desc Draws the contents of the container and it's children. When overriding this self.super:draw must be called AFTER the custom drawing code.
+	@param [number] x -- the x cordinate to draw from
+	@param [number] y -- the y cordinate to draw from
+]]
+function Container:draw( x, y )
+	for i, childView in ipairs( self.children ) do
+		childView:draw( childView.x, childView.y )
+
+		-- draw the child's buffer on to the container
+		-- TODO: not sure whether these coordinates are correct
+		self:drawCanvas( childView.x, childView.y, childView)
+	end
+end
+
+
+--[[
+    @instance
+    @desc Draws a canvas on to another
+    @param [number] x -- the x cordinate of the self canvas
+    @param [number] x -- the x cordinate of the self canvas
+    @param [Canvas] canvas -- the canvas to draw to
+]]
+function Canvas:drawCanvas( x, y, canvas ) -- Draws a canvas
+
+--[[
+	@instance
 	@desc Removes the first instance of the child view from the container
 	@param [View] childView -- the view to add to the container
 	@return [boolean] didRemove -- whether a child was removed

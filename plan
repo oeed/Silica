@@ -105,6 +105,7 @@ class
 		-- and any other drawing functions, maybe a few drawPath helper methods
 		-- these are assuming/praying that Dan actually adds the new higher density pixels (hence the single colour)
 		- drawText ( x, y, text, [Font]font, colour)
+		- drawLine ( x, y, width, height, thickness)
 		- drawRectangle ( x, y, width, height, colour)
 		- drawImage ( x, y, [Image]image, width, height) -- width and height are optional, be default they are taken from the [Image]
 		- drawPath ( [Path]path, fillColour, strokeColour, strokeWidth )

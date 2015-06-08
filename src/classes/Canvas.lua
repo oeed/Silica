@@ -1,3 +1,5 @@
+-- just remeber that the public functions need to follow the specificaion in plan
+
 class 'Canvas' {
     width = 1;
     height = 1;
@@ -10,7 +12,7 @@ class 'Canvas' {
     buffer = { };
 }
 
-function Canvas:init(width, height, colour)
+function Canvas:init( width, height, colour )
     self.width = width
     self.height = height
     self.x2 = width
@@ -20,7 +22,7 @@ function Canvas:init(width, height, colour)
     end
 end
 
-function Canvas:drawPixel(x, y, colour)
+function Canvas:drawPixel( x, y, colour )
     if x < self.x1 or x > self.x2 or y < self.y1 or y > self.y2 then return end
     if colour or self.overwrite then
         self.buffer[(j - 1) * width + i] = colour
@@ -28,7 +30,7 @@ function Canvas:drawPixel(x, y, colour)
     end
 end
 
-function Canvas:drawLine(x1, y1, x2, y2, colour)
+function Canvas:drawLine( x1, y1, x2, y2, colour )
     local delta_x = x2 - x1
 	local ix = delta_x > 0 and 1 or -1
 	delta_x = 2 * math.abs(delta_x)
@@ -62,16 +64,18 @@ function Canvas:drawLine(x1, y1, x2, y2, colour)
 end
 
 -- Do this later
--- function Canvas:drawText( x, y, text, [Font]font, colour)
+function Canvas:drawText( x, y, text, [Font]font, colour)
+end
 
-function Canvas:drawRect(x1, y1, x2, y2, colour)
+function Canvas:drawRect( x1, y1, x2, y2, colour )
+    -- Couldn't this be speed up slightly by not drawing the corners twice?
     Canvas:drawLine(x1, y1, x2, y1, colour)
     Canvas:drawLine(x1, y1, x1, y2, colour)
     Canvas:drawLine(x1, y2, x2, y2, colour)
     Canvas:drawLine(x2, y1, x2, y2, colour)
 end
 
-function Canvas:fillRect(x1, y1, x2, y2, colour)
+function Canvas:fillRect( x1, y1, x2, y2, colour )
 	if colour or self.overwrite then
     	if x1 > x2 then
 	    	local temp = x1
@@ -99,8 +103,14 @@ function Canvas:drawPath( path, fillColour, strokeColour, strokeWidth )
 	-- for now just make a test bezier path, we'll make the Path class based on it
 end
 
-
-function Canvas:drawCanvas(x, y, canvas) -- Draws a canvas
+--[[
+    @instance
+    @desc Draws a canvas on to another
+    @param [number] x -- the x cordinate of ??? (this is why we need comments :P)
+    @param [number] x -- the x cordinate of ???
+    @param [Canvas] canvas -- the canvas to draw to
+]]
+function Canvas:drawCanvas( x, y, canvas )
     for j=1,canvas.height do
         for i=1,canvas.width do
             self:drawPixel(x + i - 1, y + j - 1, canvas.buffer[(j - 1) * canvas.width + i])
@@ -108,10 +118,29 @@ function Canvas:drawCanvas(x, y, canvas) -- Draws a canvas
     end
 end
 
+
+-- Just a placeholder so I can setup the structural side of drawing. feel free to rename it, change all the arguments or do whatever with it
+-- I just copied it from the surface code
+--[[
+    @instance
+    @desc Render the canvas to the screen
+    @param [term] display -- the term object to write the canvas to
+    @param [number] x -- not really sure what these do
+    @param [number] y -- not really sure what these do
+    @param [number] x1 -- not really sure what these do
+    @param [number] y1 -- not really sure what these do
+    @param [number] x2 -- not really sure what these do
+    @param [number] y2 -- not really sure what these do
+    @return [number] renderCalls
+]]
+function Canvas:render( display, x, arg3 )
+    return renderCalls
+end
+
 function Canvas:drawText( x, y, width, height, text, font, colour ) -- width and height are for wordwrapping
 
 end
 
-function Canvas:drawFormattedText( x, y, width, height, text )
+function Canvas:drawFormattedText( x, y, width, height, formattedText )
 
 end

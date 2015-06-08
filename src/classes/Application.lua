@@ -1,7 +1,7 @@
 class "Application" {
 	name = nil;
 	path = nil;
-	timer = {};
+	timers = {};
 	arguments = {};
 	isRunning = false;
 	container = nil;
@@ -23,6 +23,15 @@ function Application:init()
 	self.event = ApplicationEventManager( self )
 	self.container = ApplicationContainer( { x = 1; y = 1; width = 52; height = 19 } ) -- we'll make this auto-stretch later
 	class.application = self
+end
+
+--[[
+	@instance
+	@desc Draws the all application's views
+]]
+function Application:draw()
+	self.container:draw()
+	self.container:render( term )
 end
 
 --[[

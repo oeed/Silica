@@ -45,13 +45,14 @@ end
 
 --[[
 	@instance
-	@desc Set the parent container of the view
-	@param [View] parent -- the new parent view
+	@desc Draws the contents of the view
+	@param [number] x -- the x cordinate to draw from
+	@param [number] y -- the y cordinate to draw from
 ]]
--- this mightn't actually be needed
--- function View:setParent( parent )
-	-- TODO: set view parent
--- end
+function View:draw( x, y )
+	
+end
+
 
 --[[
 	@instance

@@ -47,7 +47,6 @@ end
 function TestContainer:onClick( event )
 	if not self.isOpen then
 		self.isOpen = true
-		print( "Clicked! " .. tostring( event ) )
 	else
 		term.setBackgroundColour( colours.yellow )
 		for i = 16, 19 do
@@ -58,22 +57,17 @@ function TestContainer:onClick( event )
 end
 
 function TestContainer:onGlobalClick( event )
-	print( "global " .. tostring(self.isOpen) )
 	if self.isOpen then
-		print(self)
-
 		if self:hitTestEvent( event ) then
 			self.event:handleEvent( event )
 		else
-			-- self.isOpen = false
+			self.isOpen = false
 		end
 		return true
 	end
 end
 
 function TestContainer:hitTest( x, y, parent )
-	print('hit test')
 	-- just for testing
-	print( y )
 	return y > 15
 end
