@@ -19,25 +19,61 @@ function TestContainer:setIsOpen( isOpen )
 	if isOpen then
 		term.setBackgroundColour( colours.lime )
 		for i = 1, 15 do
+			term.setCursorPos( 1, i )
 			term.clearLine()
 		end
 
 		term.setBackgroundColour( colours.red )
 		for i = 16, 19 do
+			term.setCursorPos( 1, i )
 			term.clearLine()
 		end
-	else
-		term.setBackgroundColour( colours.blue )
-		term.clear()
 		term.setCursorPos(1, 1)
+	else
+		term.setBackgroundColour( colours.lightBlue )
+		for i = 1, 15 do
+			term.setCursorPos( 1, i )
+			term.clearLine()
+		end
+
+		term.setBackgroundColour( colours.orange )
+		for i = 16, 19 do
+			term.setCursorPos( 1, i )
+			term.clearLine()
+		end
 	end
 end
 
 function TestContainer:onClick( event )
-	print( "Clicked! " .. tostring( event ) )
+	if not self.isOpen then
+		self.isOpen = true
+		print( "Clicked! " .. tostring( event ) )
+	else
+		term.setBackgroundColour( colours.yellow )
+		for i = 16, 19 do
+			term.setCursorPos( 1, i )
+			term.clearLine()
+		end
+	end
+end
+
+function TestContainer:onGlobalClick( event )
+	print( "global " .. tostring(self.isOpen) )
+	if self.isOpen then
+		print(self)
+
+		if self:hitTestEvent( event ) then
+			self.event:handleEvent( event )
+		else
+			-- self.isOpen = false
+		end
+		return true
+	end
 end
 
 function TestContainer:hitTest( x, y, parent )
+	print('hit test')
 	-- just for testing
-	return x > 26
+	print( y )
+	return y > 15
 end

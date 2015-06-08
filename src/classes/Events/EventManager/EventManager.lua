@@ -18,6 +18,7 @@ class "EventManager" {
 ]]
 function EventManager:init( owner )
 	self.owner = owner or self
+	self.owner = self.owner.instance or self.owner
 
 	-- allow the class to be called as a shorthand for :connect
 	self.mt.__call = function(self, _, ...) return self:connect( ... ) end
@@ -32,15 +33,19 @@ end
 	@param [function] func -- the function called when the event occurs
 ]]
 function EventManager:connect( eventType, func, phase, eventManager )
-	phase = phase or EventManager.phase.BEFORE
-	eventManager = eventManager or self
-	self:disconnect( eventType, func ) -- ensure duplicates won't be made
+	if func and type( func ) == "function" then
+		phase = phase or EventManager.phase.BEFORE
+		eventManager = eventManager or self
+		self:disconnect( eventType, func ) -- ensure duplicates won't be made
 
-	if not self.handles[eventType] then
-		self.handles[eventType] = {}
+		if not self.handles[eventType] then
+			self.handles[eventType] = {}
+		end
+
+		table.insert( self.handles[eventType], { func, phase, eventManager } )
+	else
+		error( "Attempted to connect non-function to event: " .. eventType )
 	end
-
-	table.insert( self.handles[eventType], { func, phase, eventManager } )
 end
 
 --[[
@@ -69,16 +74,20 @@ end
 	@param [function] func -- the function called when the event occurs
 ]]
 function EventManager:connectGlobal( eventType, func, phase )
-	phase = phase or EventManager.phase.BEFORE
-	self:disconnectGlobal( eventType, func ) -- ensure duplicates won't be made
+	if func and type( func ) == "function" then
+		phase = phase or EventManager.phase.BEFORE
+		self:disconnectGlobal( eventType, func ) -- ensure duplicates won't be made
 
-	if not self.handlesGlobal[eventType] then
-		self.handlesGlobal[eventType] = {}
+		if not self.handlesGlobal[eventType] then
+			self.handlesGlobal[eventType] = {}
+		end
+
+		table.insert( self.handlesGlobal[eventType], { func, phase } )
+
+		self.application.event:connect( eventType, func, phase, self )
+	else
+		error( "Attempted to connect non-function to global event: " .. eventType )
 	end
-
-	table.insert( self.handlesGlobal[eventType], { func, phase } )
-
-	self.application.event:connect( eventType, func, phase, self )
 end
 
 --[[
@@ -91,7 +100,7 @@ function EventManager:disconnectGlobal( eventType, func, phase )
 	phase = phase or EventManager.phase.AFTER
 	self.application.event:disconnect( eventType, func, phase, self )
 
-	if not self.handlesGlobal[eventType] then
+	if self.handlesGlobal[eventType] then
 		for i, handle in ipairs( self.handlesGlobal[eventType] ) do
 			if handle[1] == func and phase[2] == phase then
 				self.handlesGlobal[eventType][i] = nil

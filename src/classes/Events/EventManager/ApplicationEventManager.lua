@@ -25,10 +25,10 @@ function ApplicationEventManager:handleEvent( event )
 	return self:handleEventPhase( event, self.phase.AFTER )
 end
 
-function EventManager:connectGlobal()
+function ApplicationEventManager:connectGlobal()
 	error( "Cannot connect global handle on ApplicationEventManager as it is the global handler. Use the handler's own manager.")
 end
 
-function EventManager:disconnectGlobal()
+function ApplicationEventManager:disconnectGlobal()
 	error( "Cannot disconnect global handle on ApplicationEventManager as it is the global handler. Use the handler's own manager.")
 end

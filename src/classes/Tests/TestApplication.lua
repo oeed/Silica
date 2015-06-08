@@ -11,7 +11,7 @@ function TestApplication:init()
 
 	self:event( Event.CHAR, self.onChar )
 
-	self.container:addChild( TestView(
+	self.container:addChild( TestContainer(
 		{
 			x = 5;
 			y = 9;

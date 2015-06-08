@@ -22,6 +22,7 @@ class "Application" {
 function Application:init()
 	self.event = ApplicationEventManager( self )
 	self.container = ApplicationContainer( { x = 1; y = 1; width = 52; height = 19 } ) -- we'll make this auto-stretch later
+	class.application = self
 end
 
 --[[

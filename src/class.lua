@@ -27,20 +27,20 @@ local function uniqueTable( tbl, raw )
 	end
 end
 
--- Not sure if 'sub' is the right word here, basically it's the opposite of super
 -- @static
-function class:newSuper( sub, ... )
+function class:newSuper( instance, ... )
 	local _class = self
 	local raw = {}
 
 	if _class._extends then
 		-- super needs it's super too
-		raw.super = _class._extends:newSuper( sub, ... )
+		raw.super = _class._extends:newSuper( instance, ... )
 	end
 
-	uniqueTable( _class, sub )
+	uniqueTable( _class, instance )
 
 	raw.class = _class
+	raw.instance = instance
 	raw.mt = {}
 
 	-- Super needs to be able to act like it's own instance in that it has all of it's own methods and properties, yet the subclass needs to be able to use super as if it were itself
@@ -55,9 +55,9 @@ function class:newSuper( sub, ... )
 		elseif _class[k] and type( _class[k] ) == 'function' then
 			-- we want super functions to be callable and not overwritten when accessed directly (e.g. self.super:init())
 			return _class[k]
-		elseif sub[k] then
-			-- however, we don't want any properties (i.e. mutable values) to come from super if they exist in the subclass
-			return sub[k]
+		elseif instance[k] then
+			-- however, we don't want any properties (i.e. mutable values) to come from super if they exist in the instanceclass
+			return instance[k]
 		else
 			-- otherwise use the super's class values
 			return _class[k]
@@ -66,7 +66,7 @@ function class:newSuper( sub, ... )
 
 	function raw.mt:__newindex( k, v )
 		-- we don't want to save values in super, save them in the subclass
-		sub[k] = v
+		instance[k] = v
 	end
 
 	local rawId = tostring(raw):sub(8) -- remove 'table: ' from the id
@@ -203,7 +203,7 @@ end
 
 -- constructs an actual class ( NOT instance )
 -- @static
-function class:construct( _, className ) -- for some reason self is passed twice, not sure why
+function class:construct( _, className )
     local _class = {}
     _class.className = className
 
@@ -214,7 +214,10 @@ function class:construct( _, className ) -- for some reason self is passed twice
         return self:new( ... )
     end
 
-	local classId = tostring(_class):sub(7) -- remove 'table: ' from the id
+    -- function mt:__newindex( k, v )
+    -- 	rawset(_class, k, v)
+    -- end
+
  	function mt:__tostring()
     	return 'class: ' .. self.className
     end
@@ -291,7 +294,9 @@ local function extends( superName )
 
     creating._extends = classes[superName]
 	for k, v in pairs( classes[superName].mt ) do
-		creating.mt[k] = v
+		if not creating.mt[k] then
+			creating.mt[k] = v
+		end
 	end
     creating.mt.__index = classes[superName]
 

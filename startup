@@ -1,3 +1,21 @@
+
+local h = fs.open('log', 'w')
+h.write('')
+h.close()
+
+local _print = print
+function _G.print(text)
+	_print(text)
+	log(tostring(text))
+end
+
+function _G.log( text )
+	local h = fs.open('log', 'a')
+	h.write(text .. '\n')
+	h.close()	
+end
+
 os.loadAPI('src/Silica')
+
 
 TestApplication():run( ... )
