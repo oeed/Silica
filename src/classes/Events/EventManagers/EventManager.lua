@@ -19,11 +19,12 @@ class "EventManager" {
 ]]
 function EventManager:init( owner )
 	self.owner = owner or self
-	self.owner = self.owner.instance or self.owner
+	self.owner = self.owner.instance
 
 	-- allow the class to be called as a shorthand for :connect
-	self.mt.__call = function(self, _, ...) return self:connect( ... ) end
-	setmetatable( self, self.mt )
+	-- this must be instance as it needs to wrap the instance directly
+	self.instance.mt.__call = function(self, _, ...) return self:connect( ... ) end
+	setmetatable( self.instance, self.instance.mt )
 end
 
 --[[

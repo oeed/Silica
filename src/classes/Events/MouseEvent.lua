@@ -23,6 +23,25 @@ class "MouseEvent" extends "Event" {
 	@param [View] view -- the view who's coordinate system will be used
 ]]
 function MouseEvent:makeRelative( view )
+	local oldRelativeView = self.relativeView
 	self.super:makeRelative( view )
-	-- TODO: still need to figure this out
+	
+	local x, y = self.x, self.y
+
+	if oldRelativeView and oldRelativeView == view then
+		-- return
+	elseif oldRelativeView and oldRelativeView == view.parent then
+		-- we are going 1 downward in to the stack
+		x = x - view.x + 1
+		y = y - view.y + 1
+	elseif oldRelativeView and oldRelativeView.parent == view then
+		-- we are going 1 upward in to the stack
+		x = x + oldRelativeView.x - 1
+		y = y + oldRelativeView.y - 1
+	else
+		-- we don't known exactly where the previous view was
+		x, y = view:coordinates( self.globalX, self.globalY, self.application.container )
+	end
+	self.x = x
+	self.y = y
 end

@@ -1,5 +1,7 @@
 
 class "Event" {
+	
+	relativeView = nil; -- the view that the event is relative of
 
 	MOUSE_UP = "mouse_up";
 	MOUSE_DOWN = "mouse_click";
@@ -70,4 +72,6 @@ end
 	@desc Make the event relative to the supplied view
 	@param [View] view -- the view to be relative to
 ]]
-function Event:makeRelative( view ) end
+function Event:makeRelative( view )
+	self.relativeView = view
+end

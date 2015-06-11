@@ -38,13 +38,9 @@ function TestApplication:init()
 			y = 3;
 			width = 10;
 			height = 14;
-			backgroundColour = colours.red;
+			backgroundColour = colours.orange;
 		}
 	)
-
-	print( one )
-	print( two )
-	print( three )
 
 	two:addChild( three )
 	one:addChild( two )

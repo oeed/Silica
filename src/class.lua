@@ -28,7 +28,7 @@ local function uniqueTable( tbl, raw )
 end
 
 -- @static
-function class:newSuper( instance, ... )
+function class:newSuper( instance, eq, ... )
 	local _class = self
 	local raw = {}
 
@@ -46,11 +46,14 @@ function class:newSuper( instance, ... )
 	-- Super needs to be able to act like it's own instance in that it has all of it's own methods and properties, yet the subclass needs to be able to use super as if it were itself
 	-- So, for example, setting a value in a super method would actually set the value in the subclass
 	-- Likewise, indexing a value that's present 
-	-- super:init is not automatically called, that's up to the subclass (although, one init will be called, which might reach in to super)
+	-- super:init is not automatically called, that's up to the subclass (although, one init will always be called, which might reach in to super)
+
+	raw.mt.__eq = eq
 
 	function raw.mt:__index( k )
+
 		if k == 'super' then
-			-- this class doesn't have a super, to prevent super refering back to itself return nil
+			-- only ever called if this class doesn't have a super, to prevent super refering back to itself return nil
 			return nil
 		elseif _class[k] and type( _class[k] ) == 'function' then
 			-- we want super functions to be callable and not overwritten when accessed directly (e.g. self.super:init())
@@ -83,31 +86,47 @@ function class:new( ... )
 	local _class = self
 	local raw = {}
 	local proxy = {} -- the proxy. 'self' always needs to be this, NOT raw
+	local super
+	proxy.mt = {}
+
+	raw.class = _class
+	raw.mt = {}
+	function proxy.mt.__eq( l, r )
+		return rawequal( l, r ) or ( rawequal( l.instance, r ) ) or ( rawequal( l, r.instance ) ) or ( rawequal( l.instance, r.instance ) )
+	end
 
 	if _class._extends then
-		raw.super = _class._extends:newSuper( proxy, ... ) -- super needs to be an instance, not class
+		super = _class._extends:newSuper( proxy, proxy.mt.__eq, ... ) -- super needs to be an instance, not class
+		raw.super = super
 	end
 
 	uniqueTable( _class, raw )
 
-	raw.class = _class
-	raw.mt = {}
-
 	function raw.mt:__index( k )
-		if _class[k] then
-			-- try to take it from the class
-			-- TODO: this might have issues regarding super overriding a 'class' method and it being ignored. it's unlikely though I guess
-			return _class[k]
+		local rawClass = rawget( _class, k )
+		if rawClass then
+			-- try to take it from the self class (only, not super)
+			return rawClass
 		end
 
-		local super = rawget(raw, 'super')
 		if super and super.class and super.class[k] then
 			-- otherwise, check super classes for a value
-			return super.class[k]
+			if type( super.class[k] ) == 'function' then
+				-- TODO: if the value is a function we need to call it on super, not self.
+				local f = super.class[k]
+				return function(_self, ...)
+					if _self == proxy then
+						return f(super, ...)
+					else
+						return f(_self, ...)
+					end
+				end
+			else
+				return super.class[k]
+			end
 		end
 	end
 
-	-- I think that given how we need to make super work, we can't really do this anymore
 	setmetatable( raw, raw.mt )
 
 	-- these are to prevent infinite loops in getters and setters ( so, for example, doing self.speed = 10 in setSpeed doesn't cause setSpeed to be called a million times )
@@ -115,29 +134,31 @@ function class:new( ... )
 	local lockedGetters = {}
 
 	proxy.raw = raw -- not sure about this, although i guess it can't hurt
-	proxy.mt = {}
 
 	function proxy.mt:__index( k )
+		-- TODO: if we find a use for this we'll turn it on. but otherwise it probably needs to be made more efficient
 		-- this basically allows a global filter or notification on all get
-		if not lockedGetters[k] and raw.get and type( raw.get ) == 'function' then
-			lockedGetters[k] = true
-			local use, value = raw.get( proxy, k )
-			lockedGetters[k] = nil
-			if use then
-				return value
-			end	
-		end
+		-- if not lockedGetters[k] and raw.get and type( raw.get ) == 'function' then
+		-- 	lockedGetters[k] = true
+		-- 	local use, value = raw.get( proxy, k )
+		-- 	lockedGetters[k] = nil
+		-- 	if use then
+		-- 		return value
+		-- 	end	
+		-- end
 
 		-- basically, if the get'Key' function is set, return it's value
 		-- non-function properties can't use it, because, well, it's just futile really
 		local getFunc = 'get' .. k:sub( 1, 1 ):upper() .. k:sub( 2, -1 )
-		if not lockedGetters[k] and type( raw[k] ) ~= 'function' and raw[getFunc] and type( raw[getFunc] ) == 'function' then
+		local rawV = raw[k]
+		local rawFunc = raw[getFunc]
+		if not lockedGetters[k] and type( rawV ) ~= 'function' and rawFunc and type( rawFunc ) == 'function' then
 			lockedGetters[k] = true
-			local value = raw[getFunc]( proxy )
+			local value = rawFunc( proxy )
 			lockedGetters[k] = nil
 			return value
 		else
-			return raw[k]
+			return rawV
 		end
 	end
 
@@ -159,9 +180,10 @@ function class:new( ... )
 
 		-- if the filter wasn't applied, if the set'Key' function is set, call it
 		local setFunc = 'set' .. k:sub( 1, 1 ):upper() .. k:sub( 2, -1 )
-		if not lockedSetters[k] and type( raw[k] ) ~= 'function' and raw[setFunc] and type( raw[setFunc] ) == 'function' then
+		local rawFunc = raw[setFunc]
+		if not lockedSetters[k] and type( raw[k] ) ~= 'function' and rawFunc and type( rawFunc ) == 'function' then
 			lockedSetters[k] = true
-			raw[setFunc]( proxy, v )
+			rawFunc( proxy, v )
 			lockedSetters[k] = nil
 		else
 			raw[k] = v -- use the passed value if not using the setter
@@ -182,7 +204,7 @@ function class:new( ... )
 			local setFunc = 'set' .. k:sub( 1, 1 ):upper() .. k:sub( 2, -1 )
 			if not prepared[k] and k ~= 'class' and k ~= 'mt' and  k ~= 'super' and type( raw[setFunc] ) == 'function' and type( raw[k] ) ~= 'function' then
 				prepared[k] = true
-				proxy[k] = v
+				obj[k] = v
 			end
 		end
 
@@ -192,6 +214,7 @@ function class:new( ... )
 	end
 
 	prepare( raw )
+
 
     -- once the class has been created, pass the arguments to the init function for handling
     if proxy.init and type( proxy.init ) == 'function' then
@@ -298,7 +321,22 @@ local function extends( superName )
 			creating.mt[k] = v
 		end
 	end
-    creating.mt.__index = classes[superName]
+	creating.mt.__index = --classes[superName]
+	function(self, k)
+		return classes[superName][k]
+	end
+	-- local super = classes[superName]
+ --    function creating.mt:__index( k )
+ --    	local v = super[k]
+
+ --    	if type( rawget( super, k ) ) == 'function' then -- rawget is used just to prevent calls compounding
+ --    		return function(_, ...)
+ --    			return 
+ --    		end
+ --    	else
+ --    		return v
+ --    	end
+ --    end
 
     setmetatable( creating, creating.mt )
 

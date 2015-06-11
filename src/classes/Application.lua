@@ -56,8 +56,9 @@ end
 	@param tag -- any unique value you want to be associated with the tag. will be passed as the only parameter (other than self)
 	@return [number] scheduleId -- the ID of the scheduled task
 ]]
-function Application:schedule( time, func, _class )
-	table.insert( self.schedules, { os.clock() + time, func, _class } )
+function Application:schedule( func, time, ... )
+	time = time or 0.05
+	table.insert( self.schedules, { func, os.clock() + time,  ... } )
 end
 
 --[[
@@ -81,12 +82,11 @@ end
 function Application:checkScheduled( lastUpdate )
 	local now = os.clock()
 	for scheduleId, task in ipairs( self.schedules ) do
-		if lastUpdate < task[1] and task[1] <= now then
-			if task[3] then
-				task[2](task[3], task[4])
-			else
-				task[2](task[4])
-			end
+		if task[2] <= now then
+			local func = task[1]
+			table.remove( task, 2 )
+			table.remove( task, 1 )
+			func( unpack(task) )
 			self.schedules[scheduleId] = nil
 		end
 	end
@@ -120,6 +120,7 @@ function Application:run( ... )
 	while self.isRunning do
 		local args = { coroutine.yield() }
 		local event = Event.create( args )
+		event.relativeView = self.container
 		self.event:handleEvent( event )
 	end
 end

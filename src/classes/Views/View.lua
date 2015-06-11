@@ -71,7 +71,6 @@ function View:coordinatesTo( x, y, parent )
 		x = x + currentParrent.x - 1
 		y = y + currentParrent.y - 1
 	until not currentParrent.parent or currentParrent.parent == parent
-
 	return x, y
 end
 
@@ -86,7 +85,8 @@ function View:position( parent )
 	if not self.parent or parent == self.parent then
 		return self.x, self.y
 	else
-		return self:coordinatesTo( 1, 1, parent )
+		local x, y = self:coordinatesTo( 1, 1, parent )
+		return x, y
 	end
 end
 
@@ -100,8 +100,16 @@ end
 	@return [number] y -- the local x coordinate
 ]]
 function View:coordinates( x, y, parent )
-	-- TODO
-	-- local coordinate to parent/global coordinates
+	parent = parent or self.application.container
+	
+	local currentParrent = self
+	repeat
+		x = x - currentParrent.x + 1
+		y = y - currentParrent.y + 1
+		currentParrent = currentParrent.parent
+	until not currentParrent or currentParrent == parent
+
+	return x, y
 end
 
 --[[
@@ -113,14 +121,8 @@ end
 	@return [boolean] isHit -- whether the hit test hit
 ]]
 function View:hitTest( x, y, parent )
-	-- TODO: view hit test
-	-- this should simply check if it's between x, y, width and height. subclasses with non-rectangle shapes will do the following:
-	-- 		if super:hitTest( x, y, parent ) then
-	-- 			if isHittingSelf then
-	-- 				...
-	-- 			end
-	-- 		end
-	return isHit
+	return self.x <= x and x <= self.x + self.width - 1
+	   and self.y <= y and y <= self.y + self.height - 1
 end
 
 --[[
@@ -132,6 +134,7 @@ end
 ]]
 function View:hitTestEvent( event, parent )
 	if event:typeOf( MouseEvent ) then
+		event:makeRelative( parent )
 		local x, y = event.x, event.y
 		return self:hitTest( x, y, parent )
 	else

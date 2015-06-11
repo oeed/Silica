@@ -16,5 +16,7 @@ function DownMouseEvent:init( arguments )
 		self.mouseButton = arguments[2]
 		self.x = arguments[3]
 		self.y = arguments[4]
+		self.globalX = arguments[3]
+		self.globalY = arguments[4]
 	end
 end

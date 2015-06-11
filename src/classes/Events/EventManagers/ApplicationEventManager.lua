@@ -15,9 +15,7 @@ function ApplicationEventManager:handleEvent( event )
 		return true
 	end
 
-	-- TODO: figure out this relative coordinates buisness
 	-- start trickling the event down
-	event:makeRelative( childView )
 	if self.owner.container.event:handleEvent( event ) then
 		return true
 	end
@@ -27,7 +25,7 @@ function ApplicationEventManager:handleEvent( event )
 end
 
 function ApplicationEventManager:connectGlobal()
-	error( "Cannot connect global handle on ApplicationEventManager as it is the global handler. Use the handler's own manager.")
+	error( "Cannot connect global handle on ApplicationEventManager as it is the global handler. Use the class' own manager.")
 end
 
 function ApplicationEventManager:disconnectGlobal()
