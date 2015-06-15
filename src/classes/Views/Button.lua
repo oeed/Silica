@@ -1,6 +1,9 @@
 
 class "Button" extends "View" {
 
+    height = 12; -- the default height
+    width = 30;
+
     isPressed = false;
     isEnabled = true;
     cornerRadius = 6;
@@ -18,6 +21,9 @@ class "Button" extends "View" {
     disabledOutlineColour = colours.lightGrey;
 
     shadowColour = colours.grey;
+
+    shadowObject = nil;
+    backgroundObject = nil;
 }
 
 --[[
@@ -26,10 +32,35 @@ class "Button" extends "View" {
 ]]
 function Button:init( ... )
 	self.super:init( ... )
+    
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self.event:connectGlobal( Event.MOUSE_UP, self.onMouseUp, EventManager.phase.BEFORE )
-    
-    self.canvas:insert( Rectangle( 100, 100, 100, 100, colours.green ) ) -- and where is Button being called?
+
+    self:initCanvas()
+end
+
+--[[
+    @instance
+    @desc Sets up the canvas and it's graphics objects
+]]
+function Button:initCanvas()
+    -- self.canvas.colour = colours.blue
+    -- self.canvas:insert( Rectangle( 2, 2, 10, 10, colours.green ) )
+    self.shahdowObject = self.canvas:insert( Rectangle( 2, 2, self.width - 1, self.height - 1, self.shadowColour ) )
+    self.backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width - 1, self.height - 1, self.backgroundColour ) )
+end
+
+--[[
+    @instance
+    @desc Sets whether the button is pressed, changing the drawing state
+]]
+function Button:setIsPressed( isPressed )
+    self.backgroundObject.colour = self.isEnabled and ( isPressed and self.pressedBackgroundColour or self.backgroundColour ) or self.disabledBackgroundColour
+    self.backgroundObject.x = isPressed and 2 or 1
+    self.backgroundObject.y = isPressed and 2 or 1
+    self.backgroundObject.hasChanged = true
+
+    self.isPressed = isPressed
 end
 
 --[[
@@ -38,12 +69,13 @@ end
     @param [Event] event -- the mouse up event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
-function Button:onMouseUp( event, arg2, arg3 )
+function Button:onMouseUp( event )
+    print('up')
     if self.isPressed then
         self.isPressed = false
-        if self:hitTestEvent( event ) then
-            return self.event:handleEvent( event )
-        end
+        -- if self:hitTestEvent( event ) then
+        --     return self.event:handleEvent( event )
+        -- end
     end
 end
 
@@ -53,20 +85,11 @@ end
     @param [Event] event -- the mouse up event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
-function Button:onMouseDown( event, arg2, arg3 )
+function Button:onMouseDown( event )
     if self.isEnabled then
         self.isPressed = true
     end
     return true
-end
-
---[[
-    @instance
-    @desc Gets the corner radius, shrinking it if necesary
-    @return [number] cornerRadius -- the corner radius
-]]
-function Button:getCornerRadius()
-    return math.min( self.cornerRadius, math.floor( self.height / 2 ) )
 end
 
 --[[

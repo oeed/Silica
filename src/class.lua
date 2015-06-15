@@ -218,6 +218,11 @@ function class:new( ... )
 
 	setmetatable( proxy, proxy.mt )
 
+    -- once the class has been created, pass the arguments to the init function for handling
+    if proxy.init and type( proxy.init ) == 'function' then
+    	proxy:init( ... )
+    end
+
 	-- use the setters with all the starting values. this will be useful, trust me
 	local prepared = {}
 	local function prepare( obj )
@@ -238,12 +243,6 @@ function class:new( ... )
 	end
 
 	prepare( raw )
-
-
-    -- once the class has been created, pass the arguments to the init function for handling
-    if proxy.init and type( proxy.init ) == 'function' then
-    	proxy:init( ... )
-    end
 
 	return proxy
 end

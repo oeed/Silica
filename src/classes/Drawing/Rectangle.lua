@@ -4,14 +4,20 @@ class "Rectangle" extends "GraphicsObject" {
 }
 
 function Rectangle:init( x, y, width, height, colour ) -- @constructor( number x, number y, number width, number height, graphics.colour colour )
-	self.super.init( self, x, y, width, height )
+	self.super:init( x, y, width, height )
 	self.colour = colour
 end
 
-function Rectangle:drawTo( object )
+--[[
+    @instance
+    @desc Draws the rectangle to the canvas
+    @param [Canvas] canvas -- the canvas to draw to
+]]
+function Rectangle:drawTo( canvas )
+	local colour = self.colour
 	for x = self.x, self.x + self.width - 1 do
-		for y = self.y, self.y + self.width - 1 do
-			object:setPixel( x, y, self.colour )
+		for y = self.y, self.y + self.height - 1 do
+			canvas:setPixel( x, y, colour )
 		end
 	end
 end

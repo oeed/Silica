@@ -34,7 +34,6 @@ function Application:init()
 	if self.interfaceName then
 		self.container = Interface( self.interfaceName ).container
 	else
-		print "Making an ApplicationContainer"
 		self.container = ApplicationContainer()
 	end
 
@@ -50,7 +49,7 @@ function Application:update()
 	-- not exactally sure how to handle deltaTime for the first one. for now it's zero
 	local lastUpdate = self.lastUpdate or 0
 	local deltaTime = os.clock() - lastUpdate
-	-- self.updateTimer = os.startTimer( 0.05 )
+	self.updateTimer = os.startTimer( 0.05 )
 	self.lastUpdate = os.clock()
 
 	self:checkScheduled( lastUpdate )

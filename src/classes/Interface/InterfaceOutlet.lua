@@ -96,7 +96,6 @@ end
 	@param [View] childView -- the view that was just added
 ]]
 function InterfaceOutlet:childRemoved( childView )
-	print('child removed')
 	if childView.identifier == self.viewIdentifier then
 		if self.trackAll then
 			for i, trackedView in ipairs( self.views ) do

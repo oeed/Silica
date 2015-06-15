@@ -72,7 +72,7 @@ end
 	@desc Sets the changed state of the graphics object, applying it to the parent too
 	@param [boolean] hasChanged -- the changed state
 ]]
-function GraphicsObject:setChanged( hasChanged )
+function GraphicsObject:setHasChanged( hasChanged )
 	if hasChanged and self.parent then
 		self.parent.hasChanged = true
 	end

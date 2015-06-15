@@ -1,6 +1,8 @@
 
 class "Canvas" extends "GraphicsObject" {
-    colour = colours.white; -- The colour of the Canvas when it clears
+    colour = 0; -- The colour of the Canvas when it clears
+    buffer = {};
+    children = {};
 }
 
 --[[
@@ -9,12 +11,12 @@ class "Canvas" extends "GraphicsObject" {
     @param [number] width -- the width of the canvas
     @param [number] height -- the height of the canvas
 ]]
-function Canvas:init( width, height )
-    self.buffer = {}
-    self.children = {}
-    self.width = width
-    self.height = height
-end
+-- function Canvas:init( width, height )
+--     self.buffer = {}
+--     self.children = {}
+--     self.width = width
+--     self.height = height
+-- end
 
 --[[
     @instance
@@ -121,9 +123,7 @@ end
 function Canvas:draw()
     self.buffer = {}
     for i = 1, #self.children do
-        print "Drawing child"
         self.children[i]:drawTo( self )
-        print "Drawn child"
     end
     self.hasChanged = false
     return self

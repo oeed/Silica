@@ -37,7 +37,7 @@ function View:init( properties )
 		self:properties( properties )
 	end
 
-	self.canvas = Canvas( self.width, self.height )
+	self.canvas = Canvas( self.x, self.y, self.width, self.height )
 	self:initEventManager()
 end
 
@@ -86,7 +86,6 @@ function View:siblingsOfType( _class )
 	return siblings
 end
 
--- do these really need doc comments?
 function View:setX( x )
 	if self.canvas then
 		self.canvas.x = x
@@ -99,6 +98,20 @@ function View:setY( y )
 		self.canvas.y = y
 	end
 	self.y = y
+end
+
+function View:setWidth( width )
+	if self.canvas then
+		self.canvas.width = width
+	end
+	self.width = width
+end
+
+function View:setHeight( height )
+	if self.canvas then
+		self.canvas.height = height
+	end
+	self.height = height
 end
 
 --[[

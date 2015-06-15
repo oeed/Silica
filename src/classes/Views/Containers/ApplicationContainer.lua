@@ -14,9 +14,10 @@ class "ApplicationContainer" extends "Container" {
 ]]
 function ApplicationContainer:init( ... )
 	self.super:init( ... )
-	self.canvas = ScreenCanvas( self.width or 1, self.height or 1 )
-	local rectangle = self.canvas:insert( Rectangle( 6, 6, 40, 40, colours.red ) )
-	-- self.canvas:draw()
+	self.canvas = ScreenCanvas( self.x, self.y, self.width, self.height )
+	self.canvas.colour = colours.lightBlue
+
+	self:insert( Button( { x = 20; y = 20; } ) )
 end
 
 function ApplicationContainer:draw()
