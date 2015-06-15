@@ -10,19 +10,24 @@ function class.get( type )
 end
 
 -- ensures that all tables that should be unique to an instance are (designated by assigning the table to {} as class a property)
-local function uniqueTable( tbl, raw )
-	for k, v in pairs(tbl) do
+local function uniqueTable( _class, raw )
+	for k, v in pairs( _class ) do
 		-- if the properties contain any blank tables generate a new table so it's not shared between instances
-		if type( v ) == 'table' and #v == 0 then
-			local keyFound = false
-			for k2, v2 in pairs(v) do
-				keyFound = true
-				break
-			end
+		if type( v ) == 'table' then
+			if v.typeOf and v:typeOf( InterfaceOutlet ) then
+	    		-- InterfaceOutlets kinda cheat, they set the class property to a share instance, so we need to generate a unique one
+	    		raw[k] = InterfaceOutlet( v.viewIdentifier, v.trackAll )
+	    	elseif #v == 0 then
+				local keyFound = false
+				for k2, v2 in pairs(v) do
+					keyFound = true
+					break
+				end
 
-			if not keyFound then
-				raw[k] = {}
-			end
+				if not keyFound then
+					raw[k] = {}
+				end
+	    	end
 		end
 	end
 end
@@ -31,10 +36,11 @@ end
 function class:newSuper( instance, eq, ... )
 	local _class = self
 	local raw = {}
-
+	local super
 	if _class._extends then
 		-- super needs it's super too
-		raw.super = _class._extends:newSuper( instance, ... )
+		super = _class._extends:newSuper( instance, ... )
+		raw.super = super
 	end
 
 	uniqueTable( _class, instance )
@@ -51,7 +57,6 @@ function class:newSuper( instance, eq, ... )
 	raw.mt.__eq = eq
 
 	function raw.mt:__index( k )
-
 		if k == 'super' then
 			-- only ever called if this class doesn't have a super, to prevent super refering back to itself return nil
 			return nil
@@ -61,9 +66,23 @@ function class:newSuper( instance, eq, ... )
 		elseif instance[k] then
 			-- however, we don't want any properties (i.e. mutable values) to come from super if they exist in the instanceclass
 			return instance[k]
-		else
-			-- otherwise use the super's class values
+		elseif _class[k] then
+			-- try to use the super's class values
 			return _class[k]
+		-- elseif super and super.class and super.class[k] then
+		-- 	-- otherwise, check super's super classes for a value
+		-- 	if type( super.class[k] ) == 'function' then
+		-- 		local f = super.class[k]
+		-- 		return function(_self, ...)
+		-- 			if _self == instance then
+		-- 				return f(super, ...)
+		-- 			else
+		-- 				return f(_self, ...)
+		-- 			end
+		-- 		end
+		-- 	else
+		-- 		return super.class[k]
+		-- 	end
 		end
 	end
 
@@ -125,8 +144,10 @@ function class:new( ... )
 				return super.class[k]
 			end
 		end
-	end
 
+		return class[k]
+	end
+	
 	setmetatable( raw, raw.mt )
 
 	-- these are to prevent infinite loops in getters and setters ( so, for example, doing self.speed = 10 in setSpeed doesn't cause setSpeed to be called a million times )
@@ -168,7 +189,7 @@ function class:new( ... )
 		end
 
 		-- this basically allows a global filter or notification on all sets
-		if not lockedSetters[k] and type( raw.set ) and type( raw.set ) == 'function' then
+		if not lockedSetters[k] and type( raw.set ) == 'function' then
 			lockedSetters[k] = true
 			local use, value = raw.set( proxy, k, v )
 			lockedSetters[k] = nil
@@ -200,11 +221,14 @@ function class:new( ... )
 	-- use the setters with all the starting values. this will be useful, trust me
 	local prepared = {}
 	local function prepare( obj )
-		for k, v in pairs( obj.class ) do
+		local hasSet = type( obj.set ) == 'function'
+		for k, _ in pairs( obj.class ) do
 			local setFunc = 'set' .. k:sub( 1, 1 ):upper() .. k:sub( 2, -1 )
-			if not prepared[k] and k ~= 'class' and k ~= 'mt' and  k ~= 'super' and type( raw[setFunc] ) == 'function' and type( raw[k] ) ~= 'function' then
+			local v = obj[k]
+
+			if not prepared[k] and k ~= 'class' and k ~= 'mt' and  k ~= 'super' and type( v ) ~= 'function' and (hasSet or type( raw[setFunc] ) == 'function') then
 				prepared[k] = true
-				obj[k] = v
+				proxy[k] = v
 			end
 		end
 
@@ -271,14 +295,16 @@ end
 
 -- @instance
 function class:typeOf( _class )
-	if type( self ) ~= "table" then
+	_self = self.instance or self -- gets the class at the bottom of the chain (i.e. the one who has the most supers above)
+
+	if type( _self ) ~= "table" then -- will this ever be true?? class.typeOf( "", MyClass )
 		return false
-	elseif self.class then
-		return self.class:typeOf( _class )
-	elseif self == _class then
+	elseif _self.class then
+		return _self.class:typeOf( _class )
+	elseif _self == _class then
 		return true
-	elseif self._extends then
-		return self._extends:typeOf( _class )
+	elseif _self._extends then
+		return _self._extends:typeOf( _class )
 	end
 	return false
 end

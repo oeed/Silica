@@ -1,6 +1,7 @@
 
 class "TestApplication" extends "Application" {
 	name = "A test application";
+	-- interfaceName = "main";
 }
 
 --[[
@@ -9,43 +10,7 @@ class "TestApplication" extends "Application" {
 ]]
 function TestApplication:init()
 	self.super:init()
-
 	self:event( Event.CHAR, self.onChar )
-
-	local one = CordView(
-		{
-			x = 8;
-			y = 3;
-			width = 10;
-			height = 14;
-			backgroundColour = colours.green;
-		}
-	)
-
-	local two = CordView(
-		{
-			x = 3;
-			y = 2;
-			width = 10;
-			height = 14;
-			backgroundColour = colours.blue;
-		}
-	)
-
-	local three = CordView(
-		{
-			x = 3;
-			y = 3;
-			width = 10;
-			height = 14;
-			backgroundColour = colours.orange;
-		}
-	)
-
-	two:addChild( three )
-	one:addChild( two )
-
-	self.container:addChild( one )
 end
 
 --[[

@@ -1,13 +1,42 @@
 
 class "Container" extends "View" {
 	children = {};
+	interfaceOutlets = {};
+
+	offsetX = 0;
+	offsetY = 0;
 }
+
+--[[
+	@instance
+	@desc Initialises the container, linking up any InterfaceOutlets
+	@param ...
+]]
+-- function Container:init( ... )
+-- 	self.super:init( ... )
+-- end
+
+--[[
+	@instance
+	@desc Called when a value is set. Connects InterfaceOutlets to the Container.
+	@param [string] key -- the key of the set value
+    @param value -- the value
+]]
+function Container:set( key, value )
+	-- TODO: probably not needed
+	-- self.super:set( key, value )
+	if value and type( value ) == 'table' and value.typeOf and value:typeOf( InterfaceOutlet ) then
+		value:connect( key, self.instance )
+	elseif self.interfaceOutlets[key] and not value then
+		self.interfaceOutlets[key]:disconnect()
+	end
+end
 
 --[[
 	@instance
 	@desc Initialises the custom container event manger
 ]]
-function Container:initEventManager( arg1, arg2, arg3 )
+function Container:initEventManager()
 	self.event = ContainerEventManager( self )
 end
 
@@ -17,14 +46,19 @@ end
 	@param [View] childView -- the view to add to the container
 	@param [number] position -- the z-position of the child (top by default). higher number means further back
 ]]
-function Container:addChild( childView, position )
+function Container:insert( childView, position )
 	if position then
 		table.insert( self.children, position, childView )
 	else
-		table.insert( self.children, childView )
+		self.children[#self.children + 1] = childView
 	end
 
 	childView.parent = self
+	self.canvas:insert( childView.canvas )
+
+	for key, interfaceOutlet in pairs( self.interfaceOutlets ) do
+		interfaceOutlet:childAdded( childView )
+	end
 end
 
 --[[
@@ -44,15 +78,16 @@ end
 	@param [number] x -- the x cordinate to draw from
 	@param [number] y -- the y cordinate to draw from
 ]]
-function Container:draw( x, y )
-	for i, childView in ipairs( self.children ) do
-		childView:draw( childView.x, childView.y )
-
-		-- draw the child's buffer on to the container
-		-- TODO: not sure whether these coordinates are correct
-		-- self:drawCanvas( childView.x, childView.y, childView)
-	end
-end
+-- function Container:draw( canvas, x, y )
+-- 	for i, childView in ipairs( self.children ) do
+-- 		childView:draw( self.canvas, childView.x + self.offsetX, childView.y + self.offsetY )
+-- 	end
+-- 	if x ~= self.canvas.x or y ~= self.canvas.y then
+-- 		self.canvas.x = x
+-- 		self.canvas.y = y
+-- 	end
+-- 	self.canvas:drawTo( target )
+-- end
 
 --[[
 	@instance
@@ -60,9 +95,76 @@ end
 	@param [View] childView -- the view to add to the container
 	@return [boolean] didRemove -- whether a child was removed
 ]]
-function Container:removeChild( childView, position )
-	-- TODO: remove child
-	-- only remove one, return if one was removed
-	-- this means that you can repeatedly all instances easily if you want to
+function Container:removeChild( removingView, position )
+	local didRemove = false
+
+	for i, childView in ipairs( self.children ) do
+		if childView == removingView then
+			self.canvas:remove( removingView.canvas )
+			table.remove( self.children, i )
+			didRemove = true
+			break
+		end
+	end
+
+	removingView.parent = nil
+
+	if didRemove then
+		for key, interfaceOutlet in pairs( self.interfaceOutlets ) do
+			interfaceOutlet:childRemoved( removingView )
+		end
+	end
+
 	return didRemove
+end
+
+--[[
+	@instance
+	@desc Returns the (first) child with the given identifier
+	@param [string] identifier -- the identifier of the child view
+	@param [boolean] descendTree -- true by default. whether child Containers should be looked through
+	@return [View] childView -- the found child view
+]]
+function Container:findChild( identifier, descendTree )
+	descendTree = (descendTree == nil and true or descendTree)
+	for i, childView in ipairs( self.children ) do
+		if childView.identifier == identifier then
+			return childView
+		end
+
+		-- look in child Containers 
+		if descendTree and childView:typeOf( Container ) then
+			local child = childView:findChild( identifier )
+			if child then
+				return child
+			end
+		end
+	end
+end
+
+--[[
+	@instance
+	@desc Returns all children with the given identifier
+	@param [string] identifier -- the identifier of the child view
+	@param [boolean] descendTree -- true by default. whether child Containers should be looked through
+	@return [table] childrenViews -- the table of the found found children views
+]]
+function Container:findChildren( identifier, descendTree )
+	descendTree = (descendTree == nil and true or descendTree)
+	
+	local children = {}
+	for i, childView in ipairs( self.children ) do
+		if childView.identifier == identifier then
+			table.insert( children, childView )
+		end
+
+		-- look in child Containers 
+		if descendTree and childView:typeOf( Container ) then
+			local childChildren = childView:findChildren( identifier )
+			for i2, childChild in ipairs( childChildren ) do
+				table.insert( children, childChild )
+			end
+		end
+	end
+	return children
 end

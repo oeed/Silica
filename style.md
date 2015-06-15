@@ -10,6 +10,8 @@ Object.variable
 Object.variableTwo
 ```
 
+All names of self functions, values and APIs must use British spelling. (i.e. colour not color, centre not center)
+
 Methods should follow the same pattern, and use colon syntax.
 
 ```lua
@@ -21,7 +23,7 @@ Enums should be capitalised and words should be separated using underscores.
 
 ```lua
 Enum.VARIABLE
-Enum.VARIABLE_TWO
+Enum.VARIABLE_TWO'
 ```
 
 Classes should be camel case and start with a capital letter.
@@ -31,12 +33,23 @@ class "Class"
 class "ClassTwo"
 ```
 
+### Function call/definition syntax
+
 All function calls and definitions must have spaces on either side of the arguments.
 ```lua
 function Class:hello( name, age )
 	print( "Hello, " .. name .. "! You're " .. age .. " years old." )
 end
 ```
+
+Static methods should be defined with dot syntax, and use camel case starting with a lower case letter.
+
+```lua
+function Class.static()
+function Class.staticFunction()
+```
+
+### Doc comments
 
 All public functions (and private if you feel like it or it's not obvious) must have comments above them in the structure below. If no return value or arguments are specificed simply ommit the line.
 ```lua
@@ -61,6 +74,8 @@ Enum values in doc comments should be specified by the name of the table that ho
 ]]
 ```
 
+### File structure
+
 In source files, locals should be defined at the top, followed by classes, then the class' methods. Class methods should be defined using colon syntax. For example,
 
 ```lua
@@ -77,13 +92,10 @@ function MyClass:printInfo()
 end
 ```
 
+### Miscellaneous things
+
 `"` should be used to define strings, not `'`
 
 A blank line should be left at the top and bottom of files, just to make it look a bit 'prettier'.
 
-Static methods should be defined with dot syntax, and use camel case starting with a lower case letter.
-
-```lua
-function Class.static()
-function Class.staticFunction()
-```
+English spelling should be used (not American-English), so "colour" instead of "color", "grey" instead of "gray".

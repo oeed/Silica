@@ -1,130 +1,148 @@
 
--- just remeber that the public functions need to follow the specificaion in plan
-
-class 'Canvas' {
-    width = 1;
-    height = 1;
-    scaleX = 1; -- this only becomes active at render time (it would be good if we could render to a term object and a table/buffer)
-    scaleY = 1;
-    x1 = 1; -- what do these do? i thought they didn't have a position
-    y1 = 1;
-    x2 = 1;
-    y2 = 1;
-    overwrite = false;
-    changed = false;
-    buffer = { };
+class "Canvas" extends "GraphicsObject" {
+    colour = colours.white; -- The colour of the Canvas when it clears
 }
 
-function Canvas:init( width, height, colour )
+--[[
+    @constructor
+    @desc Creates a canvas
+    @param [number] width -- the width of the canvas
+    @param [number] height -- the height of the canvas
+]]
+function Canvas:init( width, height )
+    self.buffer = {}
+    self.children = {}
     self.width = width
     self.height = height
-    self.x2 = width
-    self.y2 = height
-    for i=1,width*height do
-        buffer[i] = colour
-    end
-end
-
-function Canvas:drawPixel( x, y, colour )
-    if x < self.x1 or x > self.x2 or y < self.y1 or y > self.y2 then return end
-    if colour or self.overwrite then
-        self.buffer[(j - 1) * width + i] = colour
-        self.changed = true
-    end
-end
-
-function Canvas:drawLine( x1, y1, x2, y2, colour )
-    local delta_x = x2 - x1
-	local ix = delta_x > 0 and 1 or -1
-	delta_x = 2 * math.abs(delta_x)
-	local delta_y = y2 - y1
-	local iy = delta_y > 0 and 1 or -1
-	delta_y = 2 * math.abs(delta_y)
-	self:drawPixel(x1, y1, char, backcolor, textcolor)
-	if delta_x >= delta_y then
-		local error = delta_y - delta_x / 2
-		while x1 ~= x2 do
-			if (error >= 0) and ((error ~= 0) or (ix > 0)) then
-				error = error - delta_x
-				y1 = y1 + iy
-			end
-			error = error + delta_y
-			x1 = x1 + ix
-			self:drawPixel(x1, y1, char, backcolor, textcolor)
-		end
-	else
-		local error = delta_x - delta_y / 2
-		while y1 ~= y2 do
-			if (error >= 0) and ((error ~= 0) or (iy > 0)) then
-				error = error - delta_y
-				x1 = x1 + ix
-			end
-			error = error + delta_x
-			y1 = y1 + iy
-			self:drawPixel(x1, y1, char, backcolor, textcolor)
-		end
-	end
-end
-
--- Do this later
-function Canvas:drawText( x, y, text, font, colour)
-end
-
-function Canvas:drawRect( x1, y1, x2, y2, colour )
-    -- Couldn't this be speed up slightly by not drawing the corners twice?
-    Canvas:drawLine(x1, y1, x2, y1, colour)
-    Canvas:drawLine(x1, y1, x1, y2, colour)
-    Canvas:drawLine(x1, y2, x2, y2, colour)
-    Canvas:drawLine(x2, y1, x2, y2, colour)
-end
-
-function Canvas:fillRect( x1, y1, x2, y2, colour )
-	if colour or self.overwrite then
-    	if x1 > x2 then
-	    	local temp = x1
-    		x1, x2 = x2, temp
-    	end
-    	if y1 > y2 then
-    		local temp = y1
-    		y1, y2 = y2, temp
-    	end
-	    if x2 < self.x1 or x1 > self.x2 or y2 < self.y1 or y1 > self.y2 then return end
-    	if x1 < self.x1 then x1 = self.x1 end
-    	if x2 > self.x2 then x2 = self.x2 end
-    	if y1 < self.y1 then y1 = self.y1 end
-       	if y2 > self.y2 then y2 = self.y2 end
-    	for j=y1,y2 do
-    	    for i=x1,x2 do
-    	        self.buffer[(j - 1) * self.width + i] = colour
-    	    end
-        end
-        self.changed = true
-	end
-end
-
-function Canvas:drawPath( path, fillColour, strokeColour, strokeWidth )
-	-- for now just make a test bezier path, we'll make the Path class based on it
 end
 
 --[[
     @instance
-    @desc Draws a canvas on to another
-    @param [number] x -- the x cordinate of ??? (this is why we need comments :P)
-    @param [number] x -- the x cordinate of ???
-    @param [Canvas] canvas -- the canvas to draw to
+    @desc Sets the pixel colour and the given coordinates
+    @param [number] x -- the x coordinate of the pixel
+    @param [number] y -- the y coordinate of the pixel
+    @param [colour] colour -- the colour coordinate of the pixel
 ]]
-function Canvas:drawCanvas( x, y, canvas )
-    for j=1,canvas.height do
-        for i=1,canvas.width do
-            self:drawPixel(x + i - 1, y + j - 1, canvas.buffer[(j - 1) * canvas.width + i])
+function Canvas:setPixel( x, y, colour )
+    if colour == 0 then return self end
+    self.buffer[ ( y - 1 ) * self.width + x ] = colour
+    return self
+end
+
+--[[
+    @instance
+    @desc Gets the pixel colour and the given coordinates
+    @param [number] x -- the x coordinate of the pixel
+    @param [number] y -- the y coordinate of the pixel
+    @return [colour] colour -- the colour of the pixel
+]]
+function Canvas:getPixel( x, y )
+    return self.buffer[ ( y - 1 ) * self.width + x ] or self.colour
+end
+
+--[[
+    @instance
+    @desc Clears the buffer
+    @return self
+]]
+function Canvas:clear()
+    self.buffer = {}
+    return self
+end
+
+--[[
+    @instance
+    @desc Adds a shader to screen area
+    @param [Canvas.shader] shader -- the shader to use
+    @param [number] x -- default 1, the x coordinate of the area
+    @param [number] y -- default 1, the y coordinate of the area
+    @param [number] width -- default canvas width, the width of the area
+    @param [number] height -- default canvas height, the height of the area
+    @return self
+]]
+function Canvas:map( shader, x, y, width, height )
+    local changes = {}
+    for _x = x or 1, ( x or 1 ) + ( width or self.width ) - 1 do
+        for _y = y or 1, ( x or 1 ) + ( height or self.height ) - 1 do
+            local colour = shader( _x, _y, self:getPixel( x, y ) )
+            if colour and colour ~= 0 then
+                changes[#changes + 1] = { _x, _y, colour }
+            end
         end
     end
+    for i = 1, #changes do
+        self:setPixel( unpack( changes[i] ) )
+    end
+    return self
 end
 
-function Canvas:drawText( x, y, width, height, text, font, colour ) -- width and height are for wordwrapping
-
+--[[
+    @instance
+    @desc Adds a graphics object to the canvas
+    @param [GraphicsObject] graphicsObject -- the graphics object to add
+    @return self
+]]
+function Canvas:insert( graphicsObject )
+    self.hasChanged = true
+    if graphicsObject.parent then
+        graphicsObject.parent:remove( graphicsObject )
+    end
+    graphicsObject.parent = self
+    self.children[#self.children + 1] = graphicsObject
+    return graphicsObject
 end
 
-function Canvas:drawFormattedText( x, y, width, height, formattedText )
+--[[
+    @instance
+    @desc Removes a graphics object from the canvas
+    @param [GraphicsObject] graphicsObject -- the graphics object to remove
+    @return self
+]]
+function Canvas:remove( graphicsObject )
+    local c = false
+    for i = #self.children, 1, -1 do
+        if self.children[i] == graphicsObject then
+            graphicsObject.parent = nil
+            table.remove( self.children, i )
+            c = true
+        end
+    end
+    if c then
+        self.hasChanged = true
+    end
+    return graphicsObject
+end
 
+--[[
+    @instance
+    @desc Clears the buffer then draws the objects of the canvas
+    @return self
+]]
+function Canvas:draw()
+    self.buffer = {}
+    for i = 1, #self.children do
+        print "Drawing child"
+        self.children[i]:drawTo( self )
+        print "Drawn child"
+    end
+    self.hasChanged = false
+    return self
+end
+
+--[[
+    @instance
+    @desc Draws the canvas to another canvas
+    @param [Canvas] canvas -- the canvas to draw to
+    @return self
+]]
+function Canvas:drawTo( canvas )
+    if self.hasChanged then
+        self:draw()
+    end
+    for x = 1, self.width do
+        for y = 1, self.height do
+            canvas:setPixel( self.x + x - 1, self.y + y - 1, self:getPixel( x, y ) )
+        end
+    end
+    return self
 end

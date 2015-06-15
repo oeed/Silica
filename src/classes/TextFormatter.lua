@@ -1,20 +1,25 @@
 
+-- written in love2d so I'll port it over at some point
+
 class "TextFormatter" {
 	width = 0;
 	height = 0;
 
 	text = "";
 
--- this stuff is actually controlled by the Font class
--- might be better to make it a table of fonts and the range of the string
--- but up to you, i'm not really sure how it works
---[[
+	-- this stuff is actually controlled by the Font class
+	-- might be better to make it a table of fonts and the range of the string
+	-- but up to you, i'm not really sure how it works
+
+	-- these are defaults, since they can change
 	colour = colours.grey;
-	italic = false;
-	bold = false;
 	underline = false;
 	strikethrough = false;
-]]
+
+	font_name = "default";
+	font_size = 5;
+	font_mode = "default"; -- italic, bold, bolditalic
+
 	xAlignment = "left"; -- alignment.LEFT ?
 	yAlignment = "top"; -- alignment.TOP?
 

@@ -1,4 +1,7 @@
 
+-- need to fix scheduling ... cancelling them won't work right now
+-- each one needs to have its own ID and return that ID
+
 class "Application" {
 	name = nil;
 	path = nil;
@@ -9,6 +12,8 @@ class "Application" {
 	container = nil;
 	event = nil;
 	schedules = {};
+
+	interfaceName = nil;
 
 	-- TODO: exit codes
 	exitCode = {
@@ -24,9 +29,17 @@ class "Application" {
 ]]
 function Application:init()
 	self.event = ApplicationEventManager( self )
-	self.container = ApplicationContainer( { x = 1; y = 1; width = 52; height = 19 } ) -- we'll make this auto-stretch later
-	class.application = self
-	self:event( Event.TIMER, self.onTimer )
+	class.application = self.instance
+	
+	if self.interfaceName then
+		self.container = Interface( self.interfaceName ).container
+	else
+		print "Making an ApplicationContainer"
+		self.container = ApplicationContainer()
+	end
+
+	self.event:connect( Event.TIMER, self.onTimer )
+
 end
 
 --[[
@@ -44,7 +57,7 @@ function Application:update()
 
 	self.container:update( deltaTime )
 	self.container:draw()
-	-- self.container:render( term )
+	
 end
 
 --[[
@@ -58,7 +71,7 @@ end
 ]]
 function Application:schedule( func, time, ... )
 	time = time or 0.05
-	table.insert( self.schedules, { func, os.clock() + time,  ... } )
+	table.insert( self.schedules, { func, os.clock() + time, ... } )
 end
 
 --[[

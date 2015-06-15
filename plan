@@ -105,11 +105,11 @@ class
 
 		-- and any other drawing functions, maybe a few drawPath helper methods
 		-- these are assuming/praying that Dan actually adds the new higher density pixels (hence the single colour)
-		- drawText ( x, y, text, [Font]font, colour)
+		- drawText ( x, y, width, height, text, [Font]font, colour) -- the width and height are for the font's alignment settings
 		- drawLine ( x, y, width, height, thickness)
 		- drawRectangle ( x, y, width, height, colour)
 		- drawImage ( x, y, [Image]image, width, height) -- width and height are optional, be default they are taken from the [Image]
-		- drawPath ( [Path]path, fillColour, strokeColour, strokeWidth )
+		- drawPath ( x, y, [Path]path, fillColour, outlineColour, outlineWidth )
 
 
 		* View -- this basically handles the position, events and reltionships with parents
@@ -117,6 +117,10 @@ class
 			+ y -- relative to parent
 			+ parent
 				- setParent -- move it to another parent, ensuring it's not self or a child view.
+
+			+ siblings -- gets the siblings from parent
+
+			- siblingsOfType( class ) -- gets the siblings that are of or inherit from the given class
 
 			+ [EventManager]event -- used for subscribing functions to events
 
@@ -141,7 +145,7 @@ class
 				+ children {} -- this needs to be ordered based on the z-order of the children
 				+ [ContainerEventManager]event -- used for subscribing functions to events
 
-				- addChild -- adds a subview. by default it is the top-most
+				- insert -- adds a subview. by default it is the top-most
 				- removeChild
 
 				* ApplicationContainer -- the container holding everything in the program. maybe call it root container instead?
@@ -170,7 +174,7 @@ class
 				+ activeBackgroundColour
 				+ disabledTextColour
 				+ disabledBackgroundColour
-				+ [Font.alignment]alignment
+				+ [Font]font
 				+ isAutoWidth -- see above
 				+ isEnabled
 				+ state -- need to decide how this will work
@@ -180,10 +184,9 @@ class
 				-- connected to the comment in Application, we need to decide how event handlers will work. do we go 'onClick' or some other way
 
 			* ProgressBar -- I want these to have a looped animation (if it looks okay and isn't too intensive), maybe like the barber wheel effect on OS X, and a indeterminate mode. what do you think, and what's the best way to do this? might need to make an addition to Animation to support this
+				+ isEnabled
 				+ backgroundColour
 				+ barColour
-				+ textColour
-				+ isText
 				+ value
 				+ maximum
 
@@ -329,8 +332,8 @@ class
 			- ! setWidth
 
 		- init ( points ) -- if points is nil it just makes an empty path
-		= circle ( x, y, radius )
-		= ellipse ( x, y, radiusX, radiusY )
+		= circle ( x, y, diameter )
+		= ellipse ( x, y, diameterX, diameterY )
 		= triangle ( x1, y1, x2, y2, x3, y3 )
 		= rectangle ( x, y, width, height, radiusTopLeft/radius, radiusTopRight, radiusBottomRight, radiusBottomLeft ) -- defaults to regular rect, then rounded with rectangle with the same radius, then rounded rectangle with all radiuses defined
 		-- and a few more

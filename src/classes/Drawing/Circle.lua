@@ -1,0 +1,4 @@
+
+class "Circle" extends "GraphicsObject" {
+	
+}

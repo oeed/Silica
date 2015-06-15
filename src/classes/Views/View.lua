@@ -12,12 +12,17 @@ local function newAnimation( self, label, time, values, easing, onFinish )
 	self.animations[#self.animations + 1] = { label = label, animation = animation, onFinish = onFinish }
 end
 
-class "View" extends "Canvas" {
-	x = 0;
-	y = 0;
+class "View" {
+	x = 1;
+	y = 1;
+	width = 1;
+	height = 1;
 	parent = nil;
 	animations = nil;
 	event = nil;
+	siblings = nil;
+	identifier = nil;
+	canvas = nil;
 }
 
 --[[
@@ -32,6 +37,7 @@ function View:init( properties )
 		self:properties( properties )
 	end
 
+	self.canvas = Canvas( self.width, self.height )
 	self:initEventManager()
 end
 
@@ -39,8 +45,60 @@ end
 	@instance
 	@desc Initialises the view's event manager (used for overriding)
 ]]
-function View:initEventManager( arg1, arg2, arg3 )
+function View:initEventManager()
 	self.event = EventManager( self )
+end
+
+--[[
+	@instance
+	@desc Returns the view's siblings in it's container
+	@return [table] siblings -- an array of the siblings
+]]
+function View:getSiblings()
+	local siblings = {}
+
+	if self.parent then
+		for i, child in ipairs( self.parent.children ) do
+			if child ~= self then
+				table.insert( siblings, child )
+			end
+		end
+	end
+
+	return siblings
+end
+
+--[[
+	@instance
+	@desc Returns the view's siblings in it's container that are of or inherit from the given class
+	@param [class] _class -- the class type
+	@return [table] siblings -- an array of the siblings
+]]
+function View:siblingsOfType( _class )
+	local siblings = {}
+
+	for i, sibling in ipairs( self.siblings ) do
+		if sibling:typeOf( _class ) then
+			table.insert( siblings, sibling )
+		end
+	end
+
+	return siblings
+end
+
+-- do these really need doc comments?
+function View:setX( x )
+	if self.canvas then
+		self.canvas.x = x
+	end
+	self.x = x
+end
+
+function View:setY( y )
+	if self.canvas then
+		self.canvas.y = y
+	end
+	self.y = y
 end
 
 --[[
@@ -49,9 +107,6 @@ end
 	@param [number] x -- the x cordinate to draw from
 	@param [number] y -- the y cordinate to draw from
 ]]
-function View:draw( x, y )
-	
-end
 
 --[[
 	@instance
@@ -66,11 +121,11 @@ function View:coordinatesTo( x, y, parent )
 	parent = parent or self.application.container
 
 	local currentParrent = { parent = self }
-	repeat
+	while currentParrent.parent and currentParrent.parent ~= parent do
 		currentParrent = currentParrent.parent
 		x = x + currentParrent.x - 1
 		y = y + currentParrent.y - 1
-	until not currentParrent.parent or currentParrent.parent == parent
+	end
 	return x, y
 end
 
@@ -103,11 +158,11 @@ function View:coordinates( x, y, parent )
 	parent = parent or self.application.container
 	
 	local currentParrent = self
-	repeat
+	while currentParrent and currentParrent ~= parent do
 		x = x - currentParrent.x + 1
 		y = y - currentParrent.y + 1
 		currentParrent = currentParrent.parent
-	until not currentParrent or currentParrent == parent
+	end
 
 	return x, y
 end
@@ -234,7 +289,6 @@ end
 	@param [function] onFinish -- the function called on completion of the animation
 	@param [Animation.easing] easing -- the easing function of the animation
 ]]
-
 function View:resize( width, height, time, onFinish, easing )
 	local d = false
 	local function f()
