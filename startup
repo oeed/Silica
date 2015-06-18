@@ -1,4 +1,5 @@
-
+os.loadAPI('src/debug')
+_G.debug = debug
 
 local h = fs.open('log', 'w')
 h.write('')

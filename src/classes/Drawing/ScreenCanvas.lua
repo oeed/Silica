@@ -1,6 +1,7 @@
 
 class "ScreenCanvas" extends "Canvas" {
-	colour = colours.white;
+	colour = Graphics.colours.WHITE;
+	drawn = {};
 }
 
 --[[
@@ -12,14 +13,47 @@ class "ScreenCanvas" extends "Canvas" {
 function ScreenCanvas:drawToTerminal( terminal )
 	if self.hasChanged then
 		self:draw()
-		-- TODO: buffering
+
 		terminal = terminal or term
+
+		local currentLength, currentX, currentY, currentColour
+		local function draw()
+			if currentLength == 0 then return end
+			term.setBackgroundColour( currentColour )
+			term.setCursorPos( currentX, currentY )
+			term.write( (" "):rep( currentLength ) )
+		end
+
+		local buffer = self.buffer
+		local colour = self.colour or 1
+		local width = self.width
+		local drawn = self.drawn
 		for y = 1, self.height do
-			terminal.setCursorPos( self.x, self.y + y - 1 )
+			currentY = y
+			currentLength = 0
+			currentColour = nil
 			for x = 1, self.width do
-				terminal.setBackgroundColour( self:getPixel( x, y ) )
-				terminal.write " "
+				local p = ( y - 1 ) * width + x
+				local c = buffer[p] or colour
+				if c ~= drawn[p] then
+					drawn[p] = c
+					if currentColour == c then
+						currentLength = currentLength + 1
+					else
+						draw()
+						currentLength = 1
+						currentX = x
+						currentColour = c
+					end
+				elseif currentLength ~= 0 then
+					draw()
+					currentLength = 0
+					currentColour = nil
+				else
+					currentColour = nil
+				end
 			end
+			draw()
 		end
 	end
 	return self

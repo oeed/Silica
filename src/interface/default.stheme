@@ -1,0 +1,9 @@
+<theme>
+	<Button>
+		<!-- No attribute means it takes default -->
+		<backgroundColour default="white" pressed="blue" disabled="white"/>
+		<textColour default="black" pressed="white" disabled="lightGrey"/>
+		<outlineColour default="lightGrey" disabled="lightGrey"/>
+		<shadowColour default="grey" disabled="transparent"/>
+	</Button>
+</theme>

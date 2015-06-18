@@ -33,7 +33,7 @@ function PathView:init()
 end
 
 -- function PathView:update()
--- 	term.setBackgroundColour(colours.black)
+-- 	term.setBackgroundColour(Graphics.colours.BLACK)
 -- 	term.clear()
 -- 	self.angle = self.angle + 0.1
 -- 	local path = Path:new( 150, 50 )
@@ -41,13 +41,13 @@ end
 -- end
 
 -- function PathView:draw()
--- 	term.setBackgroundColour(colours.black)
+-- 	term.setBackgroundColour(Graphics.colours.BLACK)
 -- 	term.clear()
 
 -- 	local outline = self.path.outline
 --         for x, col in pairs( outline ) do
 --             for y, pixel in pairs( col ) do
---                 paintutils.drawPixel( x, y, colours.blue )
+--                 paintutils.drawPixel( x, y, Graphics.colours.BLUE )
 --             end
 --         end
 
@@ -55,7 +55,7 @@ end
 --     local fill = self.path.fill
 --     for x, col in pairs( fill ) do
 --         for y, pixel in pairs( col ) do
---             paintutils.drawPixel( x, y, colours.green )
+--             paintutils.drawPixel( x, y, Graphics.colours.GREEN )
 --         end
 --     end
 

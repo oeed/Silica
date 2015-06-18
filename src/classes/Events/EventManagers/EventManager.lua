@@ -13,7 +13,7 @@ class "EventManager" {
 
 
 --[[
-	@instance
+	@constructor
 	@desc Creates an EventManager for the provided owner, with owner reverting to the EventManager instance
 	@param [class] owner -- the owner of the EventManger (i.e. what self will be on function calls)
 ]]

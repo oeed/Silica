@@ -44,8 +44,21 @@ local function loadDir( path )
 	end
 end
 
+local function loadFirst()
+	local h = fs.open( "src/loadfirst.scfg", "r" )
+	local line
+	repeat
+		line = h.readLine()
+		if line and #line > 0 then
+			loadName( line )
+		end
+	until not line
+	h.close()
+end
+
 local function load()
 	loadClass( "src/class.lua" )
+	loadFirst()
 	loadDir( "src/classes" )
 end
 

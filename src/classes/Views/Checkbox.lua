@@ -1,43 +1,75 @@
 
 class "Checkbox" extends "View" {
 
+    width = 7;
+    height = 7;
+
     isPressed = false;
     isEnabled = true;
     isChecked = false;
-    cornerRadius = 1;
+    cornerRadius = 2;
 
-    textColour = colours.black;
-    backgroundColour = colours.white;
-    outlineColour = colours.lightGrey;
+    textColour = Graphics.colours.BLACK;
+    backgroundColour = Graphics.colours.WHITE;
+    outlineColour = Graphics.colours.LIGHT_GREY;
 
-    pressedTextColour = colours.black;
-    pressedBackgroundColour = colours.lightBlue;
-    pressedOutlineColour = colours.blue;
+    pressedTextColour = Graphics.colours.BLACK;
+    pressedBackgroundColour = Graphics.colours.LIGHT_BLUE;
+    pressedOutlineColour = Graphics.colours.BLUE;
 
-    checkedTextColour = colours.black;
-    checkedBackgroundColour = colours.blue;
-    checkedTickColour = colours.white;
-    checkedOutlineColour = nil;
+    checkedTextColour = Graphics.colours.BLACK;
+    checkedBackgroundColour = Graphics.colours.BLUE;
+    checkedTickColour = Graphics.colours.WHITE;
+    checkedOutlineColour = Graphics.colours.BLUE;
 
-    disabledTextColour = colours.lightGrey;
-    disabledBackgroundColour = colours.white;
-    disabledOutlineColour = colours.lightGrey;
+    disabledTextColour = Graphics.colours.LIGHT_GREY;
+    disabledBackgroundColour = Graphics.colours.WHITE;
+    disabledOutlineColour = Graphics.colours.LIGHT_GREY;
 
-    disabledCheckedTextColour = colours.lightGrey;
-    disabledCheckedBackgroundColour = colours.grey;
-    disabledCheckedTickColour = colours.lightGrey;
-    disabledCheckedOutlineColour = nil;
+    disabledCheckedTextColour = Graphics.colours.LIGHT_GREY;
+    disabledCheckedBackgroundColour = Graphics.colours.GREY;
+    disabledCheckedTickColour = Graphics.colours.LIGHT_GREY;
+    disabledCheckedOutlineColour = Graphics.colours.GREY;
 
 }
 
 --[[
-    @instance
+    @constructor
     @desc Creates a button object and connects the event handlers
 ]]
 function Checkbox:init( ... )
 	self.super:init( ... )
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self.event:connectGlobal( Event.MOUSE_UP, self.onMouseUp, EventManager.phase.BEFORE )
+    self:initCanvas()
+end
+
+--[[
+    @instance
+    @desc Sets up the canvas and it's graphics objects
+]]
+function Checkbox:initCanvas()
+    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.backgroundColour, self.outlineColour, self.cornerRadius ) )
+end
+
+--[[
+    @instance
+    @desc Sets whether the button is pressed, changing the drawing state
+]]
+function Checkbox:setIsPressed( isPressed )
+    self.backgroundObject.fillColour = self.isEnabled and ( isPressed and self.pressedBackgroundColour or (self.isChecked and self.checkedBackgroundColour or self.backgroundColour ) ) or self.disabledBackgroundColour
+    self.backgroundObject.outlineColour = self.isEnabled and ( isPressed and self.pressedOutlineColour or (self.isChecked and self.checkedOutlineColour or self.outlineColour ) ) or self.disabledOutlineColour
+    self.isPressed = isPressed
+end
+
+--[[
+    @instance
+    @desc Sets whether the button is pressed, changing the drawing state
+]]
+function Checkbox:setIsChecked( isChecked )
+    self.backgroundObject.fillColour = self.isEnabled and ( self.isPressed and self.pressedBackgroundColour or (isChecked and self.checkedBackgroundColour or self.backgroundColour ) ) or self.disabledBackgroundColour
+    self.backgroundObject.outlineColour = self.isEnabled and ( self.isPressed and self.pressedOutlineColour or (isChecked and self.checkedOutlineColour or self.outlineColour ) ) or self.disabledOutlineColour
+    self.isChecked = isChecked
 end
 
 --[[
@@ -49,9 +81,11 @@ end
 function Checkbox:onMouseUp( event )	
     if self.isPressed then
         self.isPressed = false
-        self.isChecked = not self.isChecked
-		if self:hitTestEvent( event ) then
-			return self.event:handleEvent( event )
+        if self.isEnabled then
+            self.isChecked = not self.isChecked
+    		if self:hitTestEvent( event ) then
+    			return self.event:handleEvent( event )
+            end
 		end
     end
 end
@@ -77,31 +111,3 @@ end
 function Checkbox:getCornerRadius()
     return math.min( self.cornerRadius, math.floor( self.height / 2 ) )
 end
-
---[[
-    @instance
-    @desc Draws the checkbox to the canvas
-]]
--- function Checkbox:draw()
---     local radius = self.cornerRadius
---     local isPressed = self.isPressed
---     local isEnabled = self.isEnabled
---     local isChecked = self.isChecked
-
---     local path = Path.rectangle( self.height, self.height, radius )
-
---     local backgroundColour = isEnabled and ( isPressed and self.pressedBackgroundColour or ( isChecked and self.checkedBackgroundColour or self.backgroundColour ) ) or ( isChecked and self.disabledCheckedBackgroundColour or self.disabledBackgroundColour )
---     local outlineColour = isEnabled and ( isPressed and self.pressedOutlineColour or self.outlineColour ) or self.disabledOutlineColour
---     self:drawPath( 1, 1, path, backgroundColour, outlineColour )
-
---     if isChecked then
--- 	    local tick = Path:new( 1, self.height - 3 )
--- 	    tick:lineTo( (self.width - 2) / 5, self.height - 3 )
--- 	    tick:lineTo( 4 * (self.height - 2) / 5, (self.height - 2) / 5 )
--- 	    tick:lineTo( (self.width - 2) / 5, self.height - 3 )
--- 	    tick:close()
-
--- 	    local tickColour = isEnabled and self.checkedTickColour or self.disabledCheckedTickColour
--- 	    self:drawPath( 2, 2, tick, nil, tickColour )
--- 	end
--- end

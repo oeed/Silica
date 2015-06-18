@@ -18,7 +18,7 @@ function TestView:update( deltaTime )
 end
 
 function TestView:draw()
-	term.setBackgroundColour(colours.black)
+	term.setBackgroundColour(Graphics.colours.BLACK)
 	term.clear()
 
 	local function xy( position )
@@ -26,15 +26,15 @@ function TestView:draw()
 		return position % 52, math.ceil( position / 52 )
 	end
 
-	term.setBackgroundColour( colours.grey )
+	term.setBackgroundColour( Graphics.colours.GREY )
 	term.setCursorPos( xy( self.position - 2 ) )
 	term.write( " " )
 
-	term.setBackgroundColour( colours.lightGrey )
+	term.setBackgroundColour( Graphics.colours.LIGHT_GREY )
 	term.setCursorPos( xy( self.position - 1 ) )
 	term.write( " " )
 
-	term.setBackgroundColour( colours.white )
+	term.setBackgroundColour( Graphics.colours.WHITE )
 	term.setCursorPos( xy( self.position ) )
 	term.write( " " )
 end

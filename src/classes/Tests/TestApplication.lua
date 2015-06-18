@@ -5,7 +5,7 @@ class "TestApplication" extends "Application" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Initialise the custom application
 ]]
 function TestApplication:init()

@@ -1,6 +1,6 @@
 
 class "Canvas" extends "GraphicsObject" {
-    colour = 0; -- The colour of the Canvas when it clears
+    fillColour = Graphics.colours.TRANSPARENT; -- The colour of the Canvas when it clears
     buffer = {};
     children = {};
 }
@@ -26,7 +26,7 @@ class "Canvas" extends "GraphicsObject" {
     @param [colour] colour -- the colour coordinate of the pixel
 ]]
 function Canvas:setPixel( x, y, colour )
-    if colour == 0 then return self end
+    if colour == Graphics.colours.TRANSPARENT then return self end
     self.buffer[ ( y - 1 ) * self.width + x ] = colour
     return self
 end
@@ -39,7 +39,7 @@ end
     @return [colour] colour -- the colour of the pixel
 ]]
 function Canvas:getPixel( x, y )
-    return self.buffer[ ( y - 1 ) * self.width + x ] or self.colour
+    return self.buffer[ ( y - 1 ) * self.width + x ] or self.fillColour
 end
 
 --[[
@@ -85,6 +85,7 @@ end
     @return self
 ]]
 function Canvas:insert( graphicsObject )
+    graphicsObject = graphicsObject.instance or graphicsObject
     self.hasChanged = true
     if graphicsObject.parent then
         graphicsObject.parent:remove( graphicsObject )
@@ -101,6 +102,7 @@ end
     @return self
 ]]
 function Canvas:remove( graphicsObject )
+    graphicsObject = graphicsObject.instance or graphicsObject
     local c = false
     for i = #self.children, 1, -1 do
         if self.children[i] == graphicsObject then
@@ -145,4 +147,15 @@ function Canvas:drawTo( canvas )
         end
     end
     return self
+end
+
+--[[
+    @instance
+    @desc Hit tests the canvas' buffer to see if the colour is set (return false if transparent)
+    @param [number] x -- the x coordinate to hit test
+    @param [number] y -- the y coordinate to hit test
+    @return [boolean] didHit -- whether the colour was set/not transparent
+]]
+function Canvas:hitTest( x, y )
+    return self:getPixel( x, y ) ~= 0
 end

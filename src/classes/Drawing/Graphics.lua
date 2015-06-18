@@ -1,7 +1,8 @@
 
 class "Graphics" {
 	
-	colours = {
+	colours = { -- @enum [Graphics.colours]
+		TRANSPARENT = 0;
 		WHITE = colours.white;
 		ORANGE = colours.orange;
 		MAGENTA = colours.magenta;
@@ -18,6 +19,10 @@ class "Graphics" {
 		GREEN = colours.green;
 		RED = colours.red;
 		BLACK = colours.black;
+
+		-- For those who can't spell.
+		GRAY = colours.grey;
+		LIGHT_GRAY = colours.lightGrey;
 	};
 
 }

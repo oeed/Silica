@@ -1,11 +1,9 @@
 
 class "RoundedRectangle" extends "GraphicsObject" {
-	colour = colours.red;
+	fillColour = Graphics.colours.RED;
 
-	topLeftRadius = 1;
-	topRightRadius = 1;
-	bottomLeftRadius = 1;
-	bottomRightRadius = 1;
+	topRadius = 1;
+	bottomRadius = 1;
 }
 
 --[[
@@ -20,13 +18,12 @@ class "RoundedRectangle" extends "GraphicsObject" {
 	@param [number] bottomLeftRadius -- the radius of the bottom left corner
 	@param [number] bottomRightRadius -- the radius of the bottom right corner
 ]]
-function RoundedRectangle:init( x, y, width, height, colour, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius )
+function RoundedRectangle:init( x, y, width, height, fillColour, outlineColour, topRadius, bottomRadius )
 	self.super:init( x, y, width, height )
-	self.colour = colour
-	self.topLeftRadius = topLeftRadius or self.topLeftRadius
-	self.topRightradius = topRightRadius or topLeftRadius
-	self.bottomLeftRadius = bottomLeftRadius or (topRightRadius or topLeftRadius)
-	self.bottomRightRadius = bottomRightRadius or (topRightRadius or topRightRadius)
+	self.fillColour = fillColour or Graphics.colours.TRANSPARENT
+	self.outlineColour = outlineColour or Graphics.colours.TRANSPARENT
+	self.topRadius = topRadius
+	self.bottomRadius = bottomRadius or topRadius
 end
 
 --[[
@@ -34,27 +31,56 @@ end
     @desc Draws the rectangle to the canvas
     @param [Canvas] canvas -- the canvas to draw to
 ]]
-function RoundedRectangle:drawTo( canvas )
-	local function cornerY( x, radius )
-		local centreX = radius
-		local centreY = radius
-		return 2 * radius - math.floor( math.sqrt( radius^2 - centreX^2 + 2 * centreX * x - x^2 ) + centreY + 0.5 )
-	end
+function RoundedRectangle:getFill()
+	local fill = {}
+	local fillColour = self.fillColour
+	local tr = self.topRadius
+	local tradius = ( self.topRadius * 2 + 1 ) / 2
+	local br = self.bottomRadius
+	local bradius = ( self.bottomRadius * 2 + 1 ) / 2
+	-- local _y = self.y - 1
+	-- local _x = self.x - 1
 
-	local colour = self.colour
-	for x = self.x, self.x + self.width - 1 do
-		local minY = cornerY( x, 6 )
-		minY = minY ~= minY and 1 or minY
-		for y = self.y + minY - 1, self.y + self.height - 1 do
-			canvas:setPixel( x, y, self.colour )
+	for y = 1, self.height do
+		-- TODO: tidy this up
+		fill[y] = {}
+		if y <= tr then
+			local ySqrd = ( y - tradius )^2
+			for x = -tradius, tradius do
+	     		local distance = ( ySqrd + ( x )^2 )^0.5
+				if distance <= tr then
+					if x < 0 then
+						fill[y][x + tradius] = true
+					else
+						fill[y][x + self.width - tradius + 1] = true
+					end
+				end
+	     	end
 
+	     	for x = tr + 1, self.width - tr do
+				fill[y][x] = true
+	     	end
+		elseif y > self.height - br then
+			local ySqrd = ( y - self.height + 2 * br - bradius )^2
+			for x = -bradius, bradius do
+	     		local distance = ( ySqrd + ( x )^2 )^0.5
+				if distance <= br then
+					if x < 0 then
+						fill[y][x + bradius] = true
+					else
+						fill[y][x + self.width - bradius + 1] = true
+					end
+				end
+	     	end
 
+	     	for x = tr + 1, self.width - tr do
+				fill[y][x] = true
+	     	end
+	    else
+	    	for x = 1, self.width do
+				fill[y][x] = true
+	     	end
 		end
 	end
-
-	-- for x = self.x, self.x + self.width - 1 do
-	-- 	for y = self.y, self.y + self.width - 1 do
-	-- 		canvas:setPixel( x, y, self.colour )
-	-- 	end
-	-- end
+	return fill
 end

@@ -10,15 +10,15 @@ class "ProgressBar" extends "View" {
     value = 0;
     maximum = 1;
 
-    backgroundColour = colours.white;
-    barColour = colours.white;
-    stripeColour = colours.white;
-    outlineColour = colours.lightGrey;
+    backgroundColour = Graphics.colours.WHITE;
+    barColour = Graphics.colours.WHITE;
+    stripeColour = Graphics.colours.WHITE;
+    outlineColour = Graphics.colours.LIGHT_GREY;
 
-    disabledBackgroundColour = colours.white;
-    disabledBarColour = colours.white;
-    disabledStripeColour = colours.white;
-    disabledOutlineColour = colours.lightGrey;
+    disabledBackgroundColour = Graphics.colours.WHITE;
+    disabledBarColour = Graphics.colours.WHITE;
+    disabledStripeColour = Graphics.colours.WHITE;
+    disabledOutlineColour = Graphics.colours.LIGHT_GREY;
 
 }
 

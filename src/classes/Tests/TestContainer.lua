@@ -18,26 +18,26 @@ function TestContainer:setIsOpen( isOpen )
 	-- Don't worry, this is only temporary for testing until Canvas is ready
 	term.setTextColor(colors.white)
 	if isOpen then
-		term.setBackgroundColour( colours.lime )
+		term.setBackgroundColour( Graphics.colours.LIME )
 		for i = 1, 15 do
 			term.setCursorPos( 1, i )
 			term.clearLine()
 		end
 
-		term.setBackgroundColour( colours.red )
+		term.setBackgroundColour( Graphics.colours.RED )
 		for i = 16, 19 do
 			term.setCursorPos( 1, i )
 			term.clearLine()
 		end
 		term.setCursorPos(1, 1)
 	else
-		term.setBackgroundColour( colours.lightBlue )
+		term.setBackgroundColour( Graphics.colours.LIGHT_BLUE )
 		for i = 1, 15 do
 			term.setCursorPos( 1, i )
 			term.clearLine()
 		end
 
-		term.setBackgroundColour( colours.orange )
+		term.setBackgroundColour( Graphics.colours.ORANGE )
 		for i = 16, 19 do
 			term.setCursorPos( 1, i )
 			term.clearLine()
@@ -49,7 +49,7 @@ function TestContainer:onClick( event )
 	if not self.isOpen then
 		self.isOpen = true
 	else
-		term.setBackgroundColour( colours.yellow )
+		term.setBackgroundColour( Graphics.colours.YELLOW )
 		for i = 16, 19 do
 			term.setCursorPos( 1, i )
 			term.clearLine()

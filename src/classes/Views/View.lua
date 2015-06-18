@@ -23,6 +23,7 @@ class "View" {
 	siblings = nil;
 	identifier = nil;
 	canvas = nil;
+	isCanvasHitTested = true;
 }
 
 --[[
@@ -182,7 +183,7 @@ end
 
 --[[
 	@instance
-	@desc Hit test the view realative to the parents coordinates (or globally if not specified)
+	@desc Hit test the view realative to the parent's coordinates (or globally if not specified)
 	@param [number] x -- the x coordinate to hit test
 	@param [number] y -- the y coorindate to hit test
 	@param [View] parent -- the parent
@@ -191,6 +192,7 @@ end
 function View:hitTest( x, y, parent )
 	return self.x <= x and x <= self.x + self.width - 1
 	   and self.y <= y and y <= self.y + self.height - 1
+	   and ( not self.isCanvasHitTested or self.canvas:hitTest( x - self.x + 1, y - self.y + 1 ))
 end
 
 --[[
@@ -201,6 +203,7 @@ end
 	@return [boolean] isHit -- whether the hit test hit
 ]]
 function View:hitTestEvent( event, parent )
+	parent = parent or self.parent
 	if event:typeOf( MouseEvent ) then
 		event:makeRelative( parent )
 		local x, y = event.x, event.y

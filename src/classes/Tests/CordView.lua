@@ -1,6 +1,6 @@
 
 class "CordView" extends "Container" {
-	backgroundColour = colours.white;
+	backgroundColour = Graphics.colours.WHITE;
 }
 
 function CordView:init( ... )

@@ -56,7 +56,7 @@ function Event.create( arguments )
 end
 
 --[[
-	@instance
+	@constructor
 	@desc Create an event using a table of the values returned from os.pullEvent. Generally called by Event.create.
 	@param [table] arguments -- the event arguments
 	@return [type] returnedValue -- description

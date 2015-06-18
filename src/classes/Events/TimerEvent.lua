@@ -5,7 +5,7 @@ class "TimerEvent" extends "Event" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Creates a timer event from the arguments
 	@param [table] arguments -- the event arguments
 ]]

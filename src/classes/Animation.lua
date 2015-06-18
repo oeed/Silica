@@ -45,7 +45,7 @@ class "Animation" {
 }
 
 --[[
-    @instance
+    @constructor
     @desc Creates an animation instance for internal use
     @param [number] duration -- the duration of the animation
     @param [class] subject -- the subject of the animation

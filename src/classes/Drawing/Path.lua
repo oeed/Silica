@@ -107,7 +107,7 @@ local function getHorizontalLinearIntersectionPoints( y, line, minX, maxX )
 	end
 	if line.x1 == line.x2 then
 		if y >= math.min( line.y1, line.y2 ) and y <= math.max( line.y1, line.y2 ) then
-			return line.x1
+			return { line.x1 }
 		else
 			return {}
 		end
@@ -197,7 +197,7 @@ local function getVerticalCurvedIntersectionPoints( x, line )
     return intersections
 end
 
-class "Path" {
+class "Path" extends "GraphicsObject" {
 	lines = {};
 	defined = false; -- when true the path becomes immutable. set to true after :close is called
 	width = 0;
@@ -212,14 +212,29 @@ class "Path" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Creates the start of a path
 	@param [number] x -- the starting x coordinate
 	@param [number] y -- the starting y coordinate
 ]]
-function Path:init( x, y )
-	self.currentX = x
-	self.currentY = y
+function Path:init( x, y, width, height )
+	self.super:init( x, y, width, height )
+	self.currentX = currentX
+	self.currentY = currentY
+end
+
+--[[
+    @instance
+    @desc Draws the rectangle to the canvas
+    @param [Canvas] canvas -- the canvas to draw to
+]]
+function Path:drawTo( canvas )
+	local colour = self.fillColour
+	for x = self.x, self.x + self.width - 1 do
+		for y = self.y, self.y + self.height - 1 do
+			canvas:setPixel( x, y, colour )
+		end
+	end
 end
 
 --[[
@@ -268,72 +283,6 @@ function Path.rectangle( width, height, topLeftRadius, topRightRadius, bottomLef
 	bottomRightRadius = bottomRightRadius or (topRightRadius or topRightRadius)
 
 	return rectangle
-end
-
---[[
-	@instance
-	@desc Calculates the minimum y coordinate of the path based on the lines
-	@return [number] y
-]]
-function Path:getY()
-	local lines = self.lines
-	local min = math.huge
-
-	for i = 2, #lines, 2 do
-		min = math.min( min, lines[i] )
-	end
-
-	return min
-end
-
---[[
-	@instance
-	@desc Calculates the minimum x coordinate of the path based on the lines
-	@return [number] x
-]]
-function Path:getX()
-	local lines = self.lines
-	local min = math.huge
-
-	for i = 1, #lines, 2 do
-		min = math.min( min, lines[i] )
-	end
-
-	return min
-end
-
---[[
-	@instance
-	@desc Calculates the height of the path based on the lines
-	@return [number] height
-]]
-function Path:getHeight()
-	local lines = self.lines
-	local min, max = math.huge, 0
-
-	for i = 2, #lines, 2 do
-		min = math.min( min, lines[i] )
-		max = math.max( max, lines[i] )
-	end
-
-	return max - min
-end
-
---[[
-	@instance
-	@desc Calculates the width of the path based on the lines
-	@return [number] width
-]]
-function Path:getWidth()
-	local lines = self.lines
-	local min, max = math.huge, 0
-
-	for i = 1, #lines, 2 do
-		min = math.min( min, lines[i] )
-		max = math.max( max, lines[i] )
-	end
-
-	return max - min
 end
 
 --[[
@@ -465,18 +414,20 @@ end
 --[[
     @instance
     @desc Gets the points on the outline of the path
-    @param [number] outline -- the outline width
+    @param [number] outlineWidth -- the outline width
     @param [boolean] dualAxis -- whether or not to check both axis
     	this should be true if generating outline points for fill mode
     @return [table] points -- an array of points { [y] = { [1] = x1, [n] = xn } }
     @return [number] minY -- the minimum Y coord
     @return [number] maxY -- the maximum Y coord
 ]]
-function Path:getOutlinePoints( outline, dualAxis ) -- fuckety fuck, need to rewrite this to avoid duplication and support outline
+function Path:getOutlinePoints( outlineWidth, dualAxis ) -- fuckety fuck, need to rewrite this to avoid duplication and support outline
+	dualAxis = dualAxis or false
 	if self.outlinePoints[dualAxis] then
 		return self.outlinePoints[dualAxis]
 	end
 
+	local minY, maxY, minX, maxX = self.y, self.y + self.height - 1, self.x, self.x + self.width - 1
 	-- get minY, maxY, and ...X, maybe pass these 'bounds' in? I mean this will only be used
 	-- in the UI where a button or something (with its own bounds) draws a pathi
 	-- also, how about scaling? We could create a generic Button path that is just scaled
@@ -529,7 +480,8 @@ end
     @desc Gets the outline points
     @return [table] points -- the table of points for the outlined path
 ]]
-function Path:getOutline( outline )
+function Path:getOutline( outlineWidth )
+	outlineWidth = outlineWidth or self.outlineWidth
 	return self:getOutlinePoints( outline, true ), nil -- strip the (min/max)Y
 end
 

@@ -8,7 +8,7 @@ class "Container" extends "View" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Initialises the container, linking up any InterfaceOutlets
 	@param ...
 ]]

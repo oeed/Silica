@@ -6,7 +6,7 @@ class "KeyEvent" extends "Event" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Creates a key event from the arguments
 	@param [table] arguments -- the event arguments
 ]]

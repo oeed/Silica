@@ -12,7 +12,7 @@ class "TextFormatter" {
 	-- but up to you, i'm not really sure how it works
 
 	-- these are defaults, since they can change
-	colour = colours.grey;
+	colour = Graphics.colours.GREY;
 	underline = false;
 	strikethrough = false;
 

@@ -17,7 +17,7 @@ class "InterfaceOutlet" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Initialises the interface outlet
 	@param [string] viewIdentifier -- the identifier of the desire view
 	@param [boolean] trackAll -- whether to track all view with the identifier, or just one

@@ -1,6 +1,6 @@
 
 class "Rectangle" extends "GraphicsObject" {
-	colour = colours.red;
+	colour = Graphics.colours.RED;
 }
 
 function Rectangle:init( x, y, width, height, colour ) -- @constructor( number x, number y, number width, number height, graphics.colour colour )

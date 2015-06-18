@@ -8,16 +8,16 @@ class "ApplicationContainer" extends "Container" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Initialise a application container instance
 	@param [table] properties -- the properties for the view
 ]]
 function ApplicationContainer:init( ... )
 	self.super:init( ... )
 	self.canvas = ScreenCanvas( self.x, self.y, self.width, self.height )
-	self.canvas.colour = colours.lightBlue
 
-	self:insert( Button( { x = 20; y = 20; } ) )
+	self:insert( Button( { x = 20; y = 30; } ) )
+	self:insert( Checkbox( { x = 20; y = 10; } ) )
 end
 
 function ApplicationContainer:draw()

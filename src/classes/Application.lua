@@ -24,7 +24,7 @@ class "Application" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Creates the application runtime for the Silica program. Call :run() on this to start it.
 ]]
 function Application:init()

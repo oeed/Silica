@@ -5,7 +5,7 @@ class "DownMouseEvent" extends "MouseEvent" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Creates a click mouse event from the arguments
 	@param [table] arguments -- the event arguments
 ]]

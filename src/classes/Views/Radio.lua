@@ -5,30 +5,30 @@ class "Radio" extends "View" {
     isEnabled = true;
     isChecked = false;
 
-    textColour = colours.black;
-    backgroundColour = colours.white;
-    outlineColour = colours.lightGrey;
+    textColour = Graphics.colours.BLACK;
+    backgroundColour = Graphics.colours.WHITE;
+    outlineColour = Graphics.colours.LIGHT_GREY;
 
-    pressedTextColour = colours.black;
-    pressedBackgroundColour = colours.lightBlue;
-    pressedOutlineColour = colours.blue;
+    pressedTextColour = Graphics.colours.BLACK;
+    pressedBackgroundColour = Graphics.colours.LIGHT_BLUE;
+    pressedOutlineColour = Graphics.colours.BLUE;
 
-    checkedTextColour = colours.black;
-    checkedBackgroundColour = colours.blue;
+    checkedTextColour = Graphics.colours.BLACK;
+    checkedBackgroundColour = Graphics.colours.BLUE;
     checkedOutlineColour = nil;
 
-    disabledTextColour = colours.lightGrey;
-    disabledBackgroundColour = colours.white;
-    disabledOutlineColour = colours.lightGrey;
+    disabledTextColour = Graphics.colours.LIGHT_GREY;
+    disabledBackgroundColour = Graphics.colours.WHITE;
+    disabledOutlineColour = Graphics.colours.LIGHT_GREY;
 
-    disabledCheckedTextColour = colours.lightGrey;
-    disabledCheckedBackgroundColour = colours.grey;
+    disabledCheckedTextColour = Graphics.colours.LIGHT_GREY;
+    disabledCheckedBackgroundColour = Graphics.colours.GREY;
     disabledCheckedOutlineColour = nil;
 
 }
 
 --[[
-    @instance
+    @constructor
     @desc Creates a button object and connects the event handlers
 ]]
 function Radio:init( ... )

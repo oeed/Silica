@@ -11,6 +11,7 @@ function ContainerEventManager:handleEvent( event )
 	if self:handleEventPhase( event, self.phase.BEFORE ) then
 		return true
 	end
+	
 	for i, childView in ipairs( self.owner.children ) do
 		if childView.event:hasConnections( event.eventType ) then
 			if childView:hitTestEvent( event, self.owner ) then

@@ -5,7 +5,7 @@ class "Interface" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Creates and loads an interface with the given name
 	@param [string] interfaceName -- the file name of the interface
 ]]
@@ -13,15 +13,15 @@ function Interface:init( interfaceName )
 	self.name = interfaceName
 
 	-- TODO: dynamic path resolving for interfaces and other files
-	local path = "/src/interface/" .. interfaceName .. ".sml"
+	local path = "/src/interface/" .. interfaceName .. ".slayout"
 	if fs.exists( path ) then
 		local nodes = XML.fromFile( path )
 		local err = self:initContainer( nodes )
 		if err then
-			error( "Interface XML invaid: " .. self.name .. ".sml. Error: " .. err )
+			error( "Interface XML invaid: " .. self.name .. ".slayout. Error: " .. err )
 		end
 	else
-		error( "Interface file not found: " .. interfaceName .. ".sml" )
+		error( "Interface file not found: " .. interfaceName .. ".slayout" )
 	end
 
 end

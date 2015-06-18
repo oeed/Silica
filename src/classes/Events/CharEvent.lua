@@ -5,7 +5,7 @@ class "CharEvent" extends "Event" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Creates a char event from the arguments
 	@param [table] arguments -- the event arguments
 ]]
