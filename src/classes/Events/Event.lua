@@ -2,6 +2,7 @@
 class "Event" {
 	
 	relativeView = nil; -- the view that the event is relative of
+	eventType = nil;
 
 	MOUSE_UP = "mouse_up";
 	MOUSE_DOWN = "mouse_click";

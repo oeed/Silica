@@ -15,9 +15,6 @@ class "ApplicationContainer" extends "Container" {
 function ApplicationContainer:init( ... )
 	self.super:init( ... )
 	self.canvas = ScreenCanvas( self.x, self.y, self.width, self.height )
-
-	self:insert( Button( { x = 20; y = 30; } ) )
-	self:insert( Checkbox( { x = 20; y = 10; } ) )
 end
 
 function ApplicationContainer:draw()

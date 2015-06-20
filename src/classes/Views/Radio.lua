@@ -1,9 +1,13 @@
 
 class "Radio" extends "View" {
 
+    width = 7;
+    height = 7;
+
     isPressed = false;
     isEnabled = true;
     isChecked = false;
+    cornerRadius = 3.5;
 
     textColour = Graphics.colours.BLACK;
     backgroundColour = Graphics.colours.WHITE;
@@ -15,7 +19,7 @@ class "Radio" extends "View" {
 
     checkedTextColour = Graphics.colours.BLACK;
     checkedBackgroundColour = Graphics.colours.BLUE;
-    checkedOutlineColour = nil;
+    checkedOutlineColour = Graphics.colours.BLUE;
 
     disabledTextColour = Graphics.colours.LIGHT_GREY;
     disabledBackgroundColour = Graphics.colours.WHITE;
@@ -23,7 +27,7 @@ class "Radio" extends "View" {
 
     disabledCheckedTextColour = Graphics.colours.LIGHT_GREY;
     disabledCheckedBackgroundColour = Graphics.colours.GREY;
-    disabledCheckedOutlineColour = nil;
+    disabledCheckedOutlineColour = Graphics.colours.GREY;
 
 }
 
@@ -34,7 +38,33 @@ class "Radio" extends "View" {
 function Radio:init( ... )
 	self.super:init( ... )
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
-    self.event:connectGlobal( Event.MOUSE_UP, self.onMouseUp, EventManager.phase.BEFORE )
+    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+end
+
+function Radio:setHeight( height )
+    self.super:setHeight( height )
+    self:updateCanvas()
+end
+
+--[[
+    @instance
+    @desc Sets up the canvas and it's graphics objects
+]]
+function Radio:initCanvas()
+    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.backgroundColour, self.outlineColour, self.cornerRadius ) )
+end
+
+--[[
+    @instance
+    @desc Update the canvas appearance.
+]]
+function Radio:updateCanvas()
+    if self.backgroundObject then
+        local cornerRadius = math.min( self.height / 2, self.cornerRadius )
+        self.backgroundObject.radius = cornerRadius
+        self.backgroundObject.fillColour = self.isEnabled and ( self.isPressed and self.pressedBackgroundColour or (self.isChecked and self.checkedBackgroundColour or self.backgroundColour ) ) or self.disabledBackgroundColour
+        self.backgroundObject.outlineColour = self.isEnabled and ( self.isPressed and self.pressedOutlineColour or (self.isChecked and self.checkedOutlineColour or self.outlineColour ) ) or self.disabledOutlineColour
+    end
 end
 
 --[[
@@ -50,6 +80,16 @@ function Radio:setIsChecked( isChecked )
     end
 
     self.isChecked = isChecked
+    self:updateCanvas()
+end
+
+--[[
+    @instance
+    @desc Sets whether the button is pressed, changing the drawing state
+]]
+function Radio:setIsPressed( isPressed )
+    self.isPressed = isPressed
+    self:updateCanvas()
 end
 
 --[[
@@ -58,7 +98,7 @@ end
     @param [Event] event -- the mouse up event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
-function Radio:onMouseUp( event, arg2, arg3 )
+function Radio:onGlobalMouseUp( event )
     if self.isPressed then
         self.isPressed = false
         self.isChecked = not self.isChecked
@@ -74,7 +114,7 @@ end
     @param [Event] event -- the mouse up event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
-function Radio:onMouseDown( event, arg2, arg3 )
+function Radio:onMouseDown( event )
     if self.isEnabled then
         self.isPressed = true
     end

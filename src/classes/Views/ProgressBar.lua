@@ -11,24 +11,31 @@ class "ProgressBar" extends "View" {
     maximum = 1;
 
     backgroundColour = Graphics.colours.WHITE;
-    barColour = Graphics.colours.WHITE;
-    stripeColour = Graphics.colours.WHITE;
+    barColour = Graphics.colours.BLUE;
+    stripeColour = Graphics.colours.LIGHT_BLUE;
     outlineColour = Graphics.colours.LIGHT_GREY;
 
     disabledBackgroundColour = Graphics.colours.WHITE;
-    disabledBarColour = Graphics.colours.WHITE;
-    disabledStripeColour = Graphics.colours.WHITE;
+    disabledBarColour = Graphics.colours.GREY;
+    disabledStripeColour = Graphics.colours.LIGHT_GREY;
     disabledOutlineColour = Graphics.colours.LIGHT_GREY;
 
 }
 
 --[[
     @instance
-    @desc Gets the corner radius, shrinking it if necesary
-    @return [number] cornerRadius -- the corner radius
+    @desc Sets the height and changes the corner radius
+    @return [number] height -- the new height
 ]]
-function ProgressBar:getCornerRadius()
-    return math.min( self.cornerRadius, math.floor( self.height / 2 ) )
+function ProgressBar:setHeight( height )
+    if self.canvas then
+        local cornerRadius = math.min( height / 2, self.cornerRadius )
+        self.cornerRadius = cornerRadius
+        self.shadowObject.radius = cornerRadius
+        self.backgroundObject.radius = cornerRadius
+        self.canvas.height = height
+    end
+    self.height = height
 end
 
 --[[

@@ -35,19 +35,18 @@ function Button:init( ... )
     
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self.event:connectGlobal( Event.MOUSE_UP, self.onMouseUp, EventManager.phase.BEFORE )
-
-    self:initCanvas()
 end
 
 function Button:setHeight( height )
+    self.super:setHeight( height )
     if self.canvas then
-        self.shadowObject.topRadius = math.min( height / 2, self.cornerRadius )
-        self.shadowObject.bottomRadius = math.min( height / 2, self.cornerRadius )
-        self.backgroundObject.topRadius = math.min( height / 2, self.cornerRadius )
-        self.backgroundObject.bottomRadius = math.min( height / 2, self.cornerRadius )
-        self.canvas.height = height
+        local cornerRadius = math.min( height / 2, self.cornerRadius )
+        self.cornerRadius = cornerRadius
+        self.shadowObject.radius = cornerRadius
+        self.backgroundObject.radius = cornerRadius
+        self.backgroundObject.height = height - 1
+        self.shadowObject.height = height - 1
     end
-    self.height = height
 end
 
 --[[
@@ -69,7 +68,6 @@ function Button:setIsPressed( isPressed )
     self.backgroundObject.outlineColour = self.isEnabled and ( isPressed and Graphics.colours.TRANSPARENT or self.outlineColour ) or self.disabledOutlineColour
     self.backgroundObject.x = isPressed and 2 or 1
     self.backgroundObject.y = isPressed and 2 or 1
-    self.backgroundObject.hasChanged = true
 
     self.isPressed = isPressed
 end

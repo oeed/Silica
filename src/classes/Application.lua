@@ -29,7 +29,7 @@ class "Application" {
 ]]
 function Application:init()
 	self.event = ApplicationEventManager( self )
-	class.application = self.instance
+	class.application = self
 	
 	if self.interfaceName then
 		self.container = Interface( self.interfaceName ).container
@@ -79,7 +79,7 @@ end
 	@param [number] scheduleId -- the ID of the scheduled task
 	@return [boolean] didUnschedule -- whether the task was unscheduled. this is only false if the task no longer exists or never existed
 ]]
-function Application:unschedule( scheduleId, arg2, arg3 )
+function Application:unschedule( scheduleId )
 	if self.schedules[scheduleId] then
 		self.schedules[scheduleId] = nil
 		return true

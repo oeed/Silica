@@ -61,7 +61,7 @@ All public functions (and private if you feel like it or it's not obvious) must 
 	@param [class] arg3 -- a description of what the variable is
 	@return [type] returnedValue -- a description of what the variable is
 ]]
-function Class:functionName( arg1, arg2, arg3 )
+function Class:functionName( arg1 )
 	return returnedValue
 end
 ```

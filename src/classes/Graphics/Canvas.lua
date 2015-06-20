@@ -85,7 +85,7 @@ end
     @return self
 ]]
 function Canvas:insert( graphicsObject )
-    graphicsObject = graphicsObject.instance or graphicsObject
+    graphicsObject = graphicsObject
     self.hasChanged = true
     if graphicsObject.parent then
         graphicsObject.parent:remove( graphicsObject )
@@ -102,7 +102,7 @@ end
     @return self
 ]]
 function Canvas:remove( graphicsObject )
-    graphicsObject = graphicsObject.instance or graphicsObject
+    graphicsObject = graphicsObject
     local c = false
     for i = #self.children, 1, -1 do
         if self.children[i] == graphicsObject then
@@ -123,11 +123,13 @@ end
     @return self
 ]]
 function Canvas:draw()
-    self.buffer = {}
-    for i = 1, #self.children do
-        self.children[i]:drawTo( self )
+    if self.isVisible then
+        self.buffer = {}
+        for i = 1, #self.children do
+            self.children[i]:drawTo( self )
+        end
+        self.hasChanged = false
     end
-    self.hasChanged = false
     return self
 end
 
@@ -138,12 +140,14 @@ end
     @return self
 ]]
 function Canvas:drawTo( canvas )
-    if self.hasChanged then
-        self:draw()
-    end
-    for x = 1, self.width do
-        for y = 1, self.height do
-            canvas:setPixel( self.x + x - 1, self.y + y - 1, self:getPixel( x, y ) )
+    if self.isVisible then
+        if self.hasChanged then
+            self:draw()
+        end
+        for x = 1, self.width do
+            for y = 1, self.height do
+                canvas:setPixel( self.x + x - 1, self.y + y - 1, self:getPixel( x, y ) )
+            end
         end
     end
     return self

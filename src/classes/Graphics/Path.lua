@@ -93,35 +93,33 @@ local function cubicRoots( P )
     return t;
 end
 
-local function getHorizontalLinearIntersectionPoints( y, line, minX, maxX )
+local function getHorizontalLinearIntersectionPoints( points, y, line, minX, maxX )
 	if line.y1 == line.y2 then
 		if line.y1 == y then
-			local t = {}
 			for x = math.min( line.x1, line.x2 ), math.max( line.x1, line.x2 ) do
-				t[#t+1] = x
+				x = math.floor( x + 0.5 )
+				points[x] = points[x] or {}
+				points[x][y] = true
 			end
-			return t
-		else
-			return {}
 		end
-	end
-	if line.x1 == line.x2 then
+	elseif line.x1 == line.x2 then
 		if y >= math.min( line.y1, line.y2 ) and y <= math.max( line.y1, line.y2 ) then
-			return { line.x1 }
-		else
-			return {}
+			points[line.x1] = points[line.x1] or {}
+			points[line.x1][y] = true
+		end
+	else
+		local m = ( line.y2 - line.y1 ) / ( line.x2 - line.x1 )
+		local c = line.y1 - m * line.x1
+		local x = ( y - c ) / m
+		if x >= math.min( line.y1, line.y2 ) and x <= math.max( line.y1, line.y2 ) then
+			x = math.floor( x + 0.5 )
+			points[x] = points[x] or {}
+			points[x][y] = true
 		end
 	end
-	local m = ( line.y2 - line.y1 ) / ( line.x2 - line.x1 )
-	local c = line.y1 - m * line.x1
-	local y = ( y - c ) / m
-	if y >= math.min( line.y1, line.y2 ) and y <= math.max( line.y1, line.y2 ) then
-		return { y }
-	end
-	return {}
 end
 
-local function getHorizontalCurvedIntersectionPoints( y, line )
+local function getHorizontalCurvedIntersectionPoints( points, y, line )
 	if not line.xCoefficients or not line.yCoefficients then
 		line.xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
 		line.yCoefficients = bezierCoeffs( line.y1, line.controlPoint1Y, line.controlPoint2Y, line.y2 )
@@ -132,48 +130,39 @@ local function getHorizontalCurvedIntersectionPoints( y, line )
 
 	local yRoots = cubicRoots( { yCoefficients[1], yCoefficients[2], yCoefficients[3], yCoefficients[4] - y } )
 
-	local intersections = {}
-
     for i = 1, 3 do
         t = yRoots[i];
         if t > 0 and t < 1 then
 	        local x = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4];
-	        intersections[x] = true
+			x = math.floor( x + 0.5 )
+			points[x] = points[x] or {}
+	        points[x][y] = true
 	    end
     end
-
-    return intersections
 end
 
-local function getVerticalLinearIntersectionPoints( x, line, minY, maxY )
+local function getVerticalLinearIntersectionPoints( points, x, line, minY, maxY )
 	if line.x1 == line.x2 then
 		if line.x1 == x then
-			local t = {}
 			for y = math.min( line.y1, line.y2 ), math.max( line.y1, line.y2 ) do
-				t[#t+1] = y
+				points[x][math.floor( y + 0.5 )] = true
 			end
-			return t
-		else
-			return {}
 		end
-	end
-	if line.y1 == line.y2 then
+	elseif line.y1 == line.y2 then
 		if x >= math.min( line.x1, line.x2 ) and x <= math.max( line.x1, line.x2 ) then
-			return line.y1
-		else
-			return {}
+			points[x][math.floor( line.y1 + 0.5 )] = true
+		end
+	else	
+		local m = ( line.y2 - line.y1 ) / ( line.x2 - line.x1 )
+		local c = line.y1 - m * line.x1
+		local y = m * x + c
+		if y >= math.min( line.y1, line.y2 ) and y <= math.max( line.y1, line.y2 ) then
+			points[x][math.floor( y + 0.5 )] = true
 		end
 	end
-	local m = ( line.y2 - line.y1 ) / ( line.x2 - line.x1 )
-	local c = line.y1 - m * line.x1
-	local y = m * x + c
-	if y >= math.min( line.y1, line.y2 ) and y <= math.max( line.y1, line.y2 ) then
-		return { y }
-	end
-	return {}
 end
 
-local function getVerticalCurvedIntersectionPoints( x, line )
+local function getVerticalCurvedIntersectionPoints( points, x, line )
 	if not line.xCoefficients or not line.yCoefficients then
 		line.xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
 		line.yCoefficients = bezierCoeffs( line.y1, line.controlPoint1Y, line.controlPoint2Y, line.y2 )
@@ -184,17 +173,13 @@ local function getVerticalCurvedIntersectionPoints( x, line )
 
 	local xRoots = cubicRoots( { xCoefficients[1], xCoefficients[2], xCoefficients[3], xCoefficients[4] - x } )
 	
-	local intersections = {}
-
     for i = 1, 3 do
         t = xRoots[i];
         if t > 0 and t < 1 then
         	local y = yCoefficients[1] * t * t * t + yCoefficients[2] * t * t + yCoefficients[3] * t + yCoefficients[4];
-	        intersections[y] = true
+	        points[x][math.floor( y + 0.5 )] = true
 	    end
     end
-    
-    return intersections
 end
 
 class "Path" extends "GraphicsObject" {
@@ -207,8 +192,6 @@ class "Path" extends "GraphicsObject" {
 	currentX = 0;
 	currentY = 0;
 	outlinePoints = {}; -- the generic outline pixels used for fill and outline
-	outline = {}; -- the pre-rendered outline pixels
-	fill = nil; -- the pre-rendered fill pixels
 }
 
 --[[
@@ -217,72 +200,11 @@ class "Path" extends "GraphicsObject" {
 	@param [number] x -- the starting x coordinate
 	@param [number] y -- the starting y coordinate
 ]]
-function Path:init( x, y, width, height )
+function Path:init( x, y, width, height, fillColour, currentX, currentY )
 	self.super:init( x, y, width, height )
-	self.currentX = currentX
-	self.currentY = currentY
-end
-
---[[
-    @instance
-    @desc Draws the rectangle to the canvas
-    @param [Canvas] canvas -- the canvas to draw to
-]]
-function Path:drawTo( canvas )
-	local colour = self.fillColour
-	for x = self.x, self.x + self.width - 1 do
-		for y = self.y, self.y + self.height - 1 do
-			canvas:setPixel( x, y, colour )
-		end
-	end
-end
-
---[[
-	@static
-	@desc Creates an ellipse
-	@param [number] diameterX -- the horizontal diameter of the ellipse 
-	@param [number] diameterY -- the vertical diameter of the ellipse 
-	@return [Path] ellipse -- the ellipse path
-]]
-function Path.ellipse( diameterX, diameterY )
-	topRightRadius = topRightRadius or topLeftRadius
-	bottomLeftRadius = bottomLeftRadius or (topRightRadius or topLeftRadius)
-	bottomRightRadius = bottomRightRadius or (topRightRadius or topRightRadius)
-
-	return ellipse
-end
-
---[[
-	@static
-	@desc Creates a circle
-	@param [number] diameter -- the diameter of the circle 
-	@return [Path] circle -- the circle path
-]]
-function Path.circle( diameter )
-	topRightRadius = topRightRadius or topLeftRadius
-	bottomLeftRadius = bottomLeftRadius or (topRightRadius or topLeftRadius)
-	bottomRightRadius = bottomRightRadius or (topRightRadius or topRightRadius)
-
-	return circle
-end
-
---[[
-	@static
-	@desc Creates a rectangle, or rounded rectangle if radii are defined
-	@param [number] width -- the width of the rectangle
-	@param [number] height -- the height of the rectangle
-	@param [number] topLeftRadius -- the radius of the corners. of the top of the next parameter is defined, or top left if all 4 are
-	@param [number] topRightRadius -- the radius of the bottom corners or top right if all 4 are
-	@param [number] bottomLeftRadius -- the radius of the bottom left corner
-	@param [number] bottomRightRadius -- the radius of the bottom right corner
-	@return [Path] rectangle -- the rectangle path
-]]
-function Path.rectangle( width, height, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius )
-	topRightRadius = topRightRadius or topLeftRadius
-	bottomLeftRadius = bottomLeftRadius or (topRightRadius or topLeftRadius)
-	bottomRightRadius = bottomRightRadius or (topRightRadius or topRightRadius)
-
-	return rectangle
+	self.fillColour = fillColour
+	self.currentX = currentX or x
+	self.currentY = currentY or y
 end
 
 --[[
@@ -324,7 +246,13 @@ end
 	@return [boolean] didAdd -- whether the line was added
 ]]
 function Path:curveTo( endX, endY, controlPoint1X, controlPoint1Y, controlPoint2X, controlPoint2Y )
-	if self.defined or not endX or not endY or not controlPoint1X or not controlPoint1Y or not controlPoint2X or not controlPoint2Y then return false end
+	endX = endX * 10
+	endY = endY * 10
+	controlPoint1X = controlPoint1X * 10
+	controlPoint1Y = controlPoint1Y * 10
+	controlPoint2X = controlPoint2X * 10
+	controlPoint2Y = controlPoint2Y * 10
+		if self.defined or not endX or not endY or not controlPoint1X or not controlPoint1Y or not controlPoint2X or not controlPoint2Y then return false end
 	
 	self.lines[#self.lines + 1] = {
 		mode = "curve";
@@ -358,7 +286,6 @@ end
 	@param [number] endAngle -- the angle to end (in radians)
 	@return [boolean] didAdd -- whether the line was added
 ]]
--- TODO: this needs work
 function Path:arcTo( startAngle, endAngle, radius )
 	if self.defined then return false end
 	
@@ -421,10 +348,9 @@ end
     @return [number] minY -- the minimum Y coord
     @return [number] maxY -- the maximum Y coord
 ]]
-function Path:getOutlinePoints( outlineWidth, dualAxis ) -- fuckety fuck, need to rewrite this to avoid duplication and support outline
-	dualAxis = dualAxis or false
-	if self.outlinePoints[dualAxis] then
-		return self.outlinePoints[dualAxis]
+function Path:getFill()
+	if self.fill then
+		return self.fill
 	end
 
 	local minY, maxY, minX, maxX = self.y, self.y + self.height - 1, self.x, self.x + self.width - 1
@@ -435,62 +361,57 @@ function Path:getOutlinePoints( outlineWidth, dualAxis ) -- fuckety fuck, need t
 
 	-- use a 2d array here to avoid duplication of set pixels
 
-	local intersections = {}
-	for y = minY, maxY do
-		intersections[y] = {}
+
+	local points = {}
+	for x = minX, maxX do
+		points[x] = {}
 		for i = 1, #self.lines do
 			local line = self.lines[i]
-			local points
 			if line.mode == "linear" then
-				points = getHorizontalLinearIntersectionPoints( y, line, minX, maxX )
+				getVerticalLinearIntersectionPoints( points, x, line, minY, maxY )
 			else
-				points = getHorizontalCurvedIntersectionPoints( y, line, minX, maxX )
-			end
-			for p = 1, #points do
-				intersections[y][#intersections[y] + 1] = points[p]
+				getVerticalCurvedIntersectionPoints( points, x, line, minY, maxY )
 			end
 		end
 	end
-	if dualAxis then
-		for x = minX, maxX do
-			for i = 1, #self.lines do
-				local line = self.lines[i]
-				local points
-				if line.mode == "linear" then
-					points = getVerticalLinearIntersectionPoints( x, line, minY, maxY )
-				else
-					points = getVerticalCurvedIntersectionPoints( x, line, minY, maxY )
-				end
-				for p = 1, #points do
-					local y = points[p]
-					if intersections[y] then
-						intersections[y][#intersections[y] + 1] = x
+	for y = minY, maxY do
+		for i = 1, #self.lines do
+			local line = self.lines[i]
+			if line.mode == "linear" then
+				getHorizontalLinearIntersectionPoints( points, y, line, minX, maxX )
+			else
+				getHorizontalCurvedIntersectionPoints( points, y, line, minX, maxX )
+			end
+		end
+	end
+
+	local fill = {}
+	for x = minX, maxX do
+		local fillX = {}
+		if points[x] then
+			local intersectionsX = {}
+			for y, v in pairs( points[x] ) do
+				table.insert( intersectionsX, y )
+			end
+			table.sort( intersectionsX )
+
+			local filling = false
+			for i, startY in pairs( intersectionsX ) do
+				fillX[startY] = true
+				local nextY = intersectionsX[i + 1]
+				if nextY then
+					filling = not filling
+					if filling then
+						for y = startY, nextY do
+							fillX[y] = true
+						end
 					end
 				end
 			end
 		end
+		fill[x] = fillX
 	end
 
-	self.outlinePoints[dualAxis] = points
-	return points, minY, maxY
-end
-
---[[
-    @instance
-    @desc Gets the outline points
-    @return [table] points -- the table of points for the outlined path
-]]
-function Path:getOutline( outlineWidth )
-	outlineWidth = outlineWidth or self.outlineWidth
-	return self:getOutlinePoints( outline, true ), nil -- strip the (min/max)Y
-end
-
---[[
-    @instance
-    @desc Gets the fill points
-    @return [table] points -- the table of points for the filled path
-]]
-function Path:getFill( outline )
-	local points, minY, maxY = self:getOutlinePoints( outline )
-	-- for i = 
+	self.fill = fill
+	return fill
 end

@@ -9,6 +9,7 @@ class "GraphicsObject" {
 	outlineColour = Graphics.colours.TRANSPARENT; -- @property [Graphics.colours] -- The colour of the outline
 	outlineWidth = 1; -- @property [number] -- The thickness of the outline
 	fillColour = Graphics.colours.TRANSPARENT; -- @property [Graphics.colours] -- The fill colour of the object
+	isVisible = true;
 }
 
 --[[
@@ -79,15 +80,19 @@ function GraphicsObject:setFillColour( fillColour )
 	self.hasChanged = true
 	self.fillColour = fillColour
 end
-
 --[[
 	@instance
 	@desc Sets the changed state of the graphics object, applying it to the parent too
 	@param [boolean] hasChanged -- the changed state
 ]]
 function GraphicsObject:setHasChanged( hasChanged )
-	if hasChanged and self.parent then
-		self.parent.hasChanged = true
+	if hasChanged then
+		if self.parent then
+			self.parent.hasChanged = true
+		end
+		if self.fill then
+			self.fill = nil
+		end
 	end
 	self.hasChanged = hasChanged
 end
@@ -116,15 +121,14 @@ function GraphicsObject:getOutline( fill )
 
 	local function xScanline( min, max, inc )
 		for y = 1, self.height do
-			outline[y] = outline[y] or {}
-					
 			local lastX = 0
 			local xPixels = 0
 			for x = min, max, inc do
-				if fill[y][x] then
+				outline[x] = outline[x] or {}
+				if fill[x] and fill[x][y] then
 					if xPixels < outlineWidth then
 						xPixels = xPixels + 1
-						outline[y][x] = true
+						outline[x][y] = true
 					end
 					lastX = x
 				else
@@ -139,10 +143,10 @@ function GraphicsObject:getOutline( fill )
 			local lastY = 0
 			local yPixels = 0
 			for y = min, max, inc do
-				if fill[y][x] then
+				if fill[x] and fill[x][y] then
 					if yPixels < outlineWidth then
 						yPixels = yPixels + 1
-						outline[y][x] = true
+						outline[x][y] = true
 					end
 					lastX = x
 				else
@@ -167,32 +171,34 @@ end
     @return self
 ]]
 function GraphicsObject:drawTo( canvas )
-	local fill = self.fill
-	local outline
-	if self.outlineColour ~= Graphics.colours.TRANSPARENT then
-		outline = self:getOutline( fill )
-	end
+	if self.isVisible then
+		local fill = self.fill
+		local outline
+		if self.outlineColour ~= Graphics.colours.TRANSPARENT then
+			outline = self:getOutline( fill )
+		end
 
-	local fillColour = self.fillColour
-	local outlineColour = self.outlineColour
-	local _x = self.x - 1
-	local _y = self.y - 1
+		local fillColour = self.fillColour
+		local outlineColour = self.outlineColour
+		local _x = self.x - 1
+		local _y = self.y - 1
 
-	for y, col in pairs( fill ) do
-		for x, _ in pairs( col ) do
-			if not outline or not outline[y] or not outline[y][x] then
-				canvas:setPixel( _x + x, _y + y, fillColour )
+		for x, row in pairs( fill ) do
+			for y, _ in pairs( row ) do
+				if not outline or not outline[x] or not outline[x][y] then
+					canvas:setPixel( _x + x, _y + y, fillColour )
+				end
+			end
+		end
+
+		if outline then
+			for x, row in pairs( outline ) do
+				for y, _ in pairs( row ) do
+					canvas:setPixel( _x + x, _y + y, outlineColour )
+				end
 			end
 		end
 	end
-
-	if outline then
-		for y, col in pairs( outline ) do
-			for x, _ in pairs( col ) do
-				canvas:setPixel( _x + x, _y + y, outlineColour )
-			end
-		end
-	end
-
+	
     return self
 end

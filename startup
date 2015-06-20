@@ -19,5 +19,4 @@ end
 
 os.loadAPI('src/Silica')
 
-
 TestApplication():run( ... )

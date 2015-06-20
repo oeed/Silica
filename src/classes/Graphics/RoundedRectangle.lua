@@ -27,11 +27,26 @@ function RoundedRectangle:init( x, y, width, height, fillColour, outlineColour, 
 end
 
 --[[
+	@instance
+	@desc Sets the radius of both sides
+	@param [number] radius -- the new radius
+	@return [type] returnedValue -- description
+]]
+function RoundedRectangle:setRadius( radius )
+	self.topRadius = radius
+	self.bottomRadius = radius
+end
+
+--[[
     @instance
-    @desc Draws the rectangle to the canvas
-    @param [Canvas] canvas -- the canvas to draw to
+    @desc Gets the pixels to be filled
+    @return [table] fill -- the pixels to fill
 ]]
 function RoundedRectangle:getFill()
+	-- print('get fill')
+	if self.fill then return self.fill end
+	-- print('and calc	')
+
 	local fill = {}
 	local fillColour = self.fillColour
 	local tr = self.topRadius
@@ -41,46 +56,47 @@ function RoundedRectangle:getFill()
 	-- local _y = self.y - 1
 	-- local _x = self.x - 1
 
-	for y = 1, self.height do
+	for x = 1, self.width do
 		-- TODO: tidy this up
-		fill[y] = {}
-		if y <= tr then
-			local ySqrd = ( y - tradius )^2
-			for x = -tradius, tradius do
-	     		local distance = ( ySqrd + ( x )^2 )^0.5
+		fill[x] = {}
+		if x <= tr then
+			local xSqrd = ( x - tradius )^2
+			for y = -tradius, tradius do
+	     		local distance = ( xSqrd + ( y )^2 )^0.5
 				if distance <= tr then
-					if x < 0 then
-						fill[y][x + tradius] = true
+					if y < 0 then
+						fill[x][y + tradius] = true
 					else
-						fill[y][x + self.width - tradius + 1] = true
+						fill[x][y + self.height - tradius + 1] = true
 					end
 				end
 	     	end
 
-	     	for x = tr + 1, self.width - tr do
-				fill[y][x] = true
+	     	for y = tr + 1, self.height - tr do
+				fill[x][y] = true
 	     	end
-		elseif y > self.height - br then
-			local ySqrd = ( y - self.height + 2 * br - bradius )^2
-			for x = -bradius, bradius do
-	     		local distance = ( ySqrd + ( x )^2 )^0.5
+		elseif x > self.width - br then
+			local xSqrd = ( x - self.width + 2 * br - bradius )^2
+			for y = -bradius, bradius do
+	     		local distance = ( xSqrd + ( y )^2 )^0.5
 				if distance <= br then
-					if x < 0 then
-						fill[y][x + bradius] = true
+					if y < 0 then
+						fill[x][y + bradius] = true
 					else
-						fill[y][x + self.width - bradius + 1] = true
+						fill[x][y + self.height - bradius + 1] = true
 					end
 				end
 	     	end
 
-	     	for x = tr + 1, self.width - tr do
-				fill[y][x] = true
+	     	for y = tr + 1, self.height - tr do
+				fill[x][y] = true
 	     	end
 	    else
-	    	for x = 1, self.width do
-				fill[y][x] = true
+	    	for y = 1, self.height do
+				fill[x][y] = true
 	     	end
 		end
 	end
+	self.fill = fill
 	return fill
 end

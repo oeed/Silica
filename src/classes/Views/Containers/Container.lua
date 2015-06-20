@@ -23,10 +23,10 @@ class "Container" extends "View" {
     @param value -- the value
 ]]
 function Container:set( key, value )
-	-- TODO: probably not needed
+	-- TODO: probably not needed, interface outlet connecting
 	-- self.super:set( key, value )
 	if value and type( value ) == 'table' and value.typeOf and value:typeOf( InterfaceOutlet ) then
-		value:connect( key, self.instance )
+		value:connect( key, self )
 	elseif self.interfaceOutlets[key] and not value then
 		self.interfaceOutlets[key]:disconnect()
 	end

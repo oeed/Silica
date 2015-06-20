@@ -1,7 +1,7 @@
 
 class "TestApplication" extends "Application" {
 	name = "A test application";
-	-- interfaceName = "main";
+	interfaceName = "main";
 }
 
 --[[

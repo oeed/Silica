@@ -41,7 +41,6 @@ function Checkbox:init( ... )
 	self.super:init( ... )
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self.event:connectGlobal( Event.MOUSE_UP, self.onMouseUp, EventManager.phase.BEFORE )
-    self:initCanvas()
 end
 
 --[[
@@ -54,12 +53,22 @@ end
 
 --[[
     @instance
+    @desc Update the canvas appearance.
+]]
+function Checkbox:updateCanvas()
+    if self.canvas and self.backgroundObject then
+        self.backgroundObject.fillColour = self.isEnabled and ( self.isPressed and self.pressedBackgroundColour or (self.isChecked and self.checkedBackgroundColour or self.backgroundColour ) ) or self.disabledBackgroundColour
+        self.backgroundObject.outlineColour = self.isEnabled and ( self.isPressed and self.pressedOutlineColour or (self.isChecked and self.checkedOutlineColour or self.outlineColour ) ) or self.disabledOutlineColour
+    end
+end
+
+--[[
+    @instance
     @desc Sets whether the button is pressed, changing the drawing state
 ]]
 function Checkbox:setIsPressed( isPressed )
-    self.backgroundObject.fillColour = self.isEnabled and ( isPressed and self.pressedBackgroundColour or (self.isChecked and self.checkedBackgroundColour or self.backgroundColour ) ) or self.disabledBackgroundColour
-    self.backgroundObject.outlineColour = self.isEnabled and ( isPressed and self.pressedOutlineColour or (self.isChecked and self.checkedOutlineColour or self.outlineColour ) ) or self.disabledOutlineColour
     self.isPressed = isPressed
+    self:updateCanvas()
 end
 
 --[[
@@ -67,9 +76,8 @@ end
     @desc Sets whether the button is pressed, changing the drawing state
 ]]
 function Checkbox:setIsChecked( isChecked )
-    self.backgroundObject.fillColour = self.isEnabled and ( self.isPressed and self.pressedBackgroundColour or (isChecked and self.checkedBackgroundColour or self.backgroundColour ) ) or self.disabledBackgroundColour
-    self.backgroundObject.outlineColour = self.isEnabled and ( self.isPressed and self.pressedOutlineColour or (isChecked and self.checkedOutlineColour or self.outlineColour ) ) or self.disabledOutlineColour
     self.isChecked = isChecked
+    self:updateCanvas()
 end
 
 --[[
@@ -101,13 +109,4 @@ function Checkbox:onMouseDown( event )
         self.isPressed = true
     end
     return true
-end
-
---[[
-    @instance
-    @desc Gets the corner radius, shrinking it if necesary
-    @return [number] cornerRadius -- the corner radius
-]]
-function Checkbox:getCornerRadius()
-    return math.min( self.cornerRadius, math.floor( self.height / 2 ) )
 end

@@ -13,15 +13,15 @@ function Interface:init( interfaceName )
 	self.name = interfaceName
 
 	-- TODO: dynamic path resolving for interfaces and other files
-	local path = "/src/interface/" .. interfaceName .. ".slayout"
+	local path = "/src/interface/" .. interfaceName .. ".sml"
 	if fs.exists( path ) then
 		local nodes = XML.fromFile( path )
 		local err = self:initContainer( nodes )
 		if err then
-			error( "Interface XML invaid: " .. self.name .. ".slayout. Error: " .. err )
+			error( "Interface XML invaid: " .. self.name .. ".sml. Error: " .. err )
 		end
 	else
-		error( "Interface file not found: " .. interfaceName .. ".slayout" )
+		error( "Interface file not found: " .. interfaceName .. ".sml" )
 	end
 
 end

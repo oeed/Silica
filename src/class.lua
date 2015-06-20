@@ -39,7 +39,7 @@ function class:newSuper( instance, eq, ... )
 	local super
 	if _class._extends then
 		-- super needs it's super too
-		super = _class._extends:newSuper( instance, ... )
+		super = _class._extends:newSuper( instance, eq, ... )
 		raw.super = super
 	end
 
@@ -62,7 +62,20 @@ function class:newSuper( instance, eq, ... )
 			return nil
 		elseif _class[k] and type( _class[k] ) == 'function' then
 			-- we want super functions to be callable and not overwritten when accessed directly (e.g. self.super:init())
-			return _class[k]
+			local f = _class[k]
+			return function(_self, ...)
+				if _self == raw then
+					-- when calling a function on super, the instance needs to be given, but the super needs to be the super's super
+					local oldSuper = instance.super
+					rawset( instance, 'super', raw.super )
+					local v = { f( instance, ... ) }
+					rawset( instance, 'super', oldSuper )
+					return unpack( v )
+				else
+					return f( _self, ... )
+				end
+			end
+			-- return _class[k]
 		elseif instance[k] then
 			-- however, we don't want any properties (i.e. mutable values) to come from super if they exist in the instanceclass
 			return instance[k]
@@ -122,10 +135,10 @@ function class:new( ... )
 	uniqueTable( _class, raw )
 
 	function raw.mt:__index( k )
-		local rawClass = rawget( _class, k )
-		if rawClass then
+		local rawClassValue = rawget( _class, k )
+		if rawClassValue ~= nil then
 			-- try to take it from the self class (only, not super)
-			return rawClass
+			return rawClassValue
 		end
 
 		if super and super.class and super.class[k] then
@@ -135,9 +148,14 @@ function class:new( ... )
 				local f = super.class[k]
 				return function(_self, ...)
 					if _self == proxy then
-						return f(super, ...)
+						-- when calling a function on super, the instance needs to be given, but the super needs to be the super's super
+						local oldSuper = proxy.super
+						rawset( proxy, 'super', oldSuper.super )
+						local v = { f( proxy, ... ) }
+						rawset( proxy, 'super', oldSuper )
+						return unpack( v )
 					else
-						return f(_self, ...)
+						return f( _self, ... )
 					end
 				end
 			else
@@ -229,7 +247,7 @@ function class:new( ... )
 		local hasSet = type( obj.set ) == 'function'
 		for k, _ in pairs( obj.class ) do
 			local setFunc = 'set' .. k:sub( 1, 1 ):upper() .. k:sub( 2, -1 )
-			local v = obj[k]
+			local v = obj[k] -- TODO: sometimes this is nil when it shouldn't be
 
 			if not prepared[k] and k ~= 'class' and k ~= 'mt' and  k ~= 'super' and type( v ) ~= 'function' and (hasSet or type( raw[setFunc] ) == 'function') then
 				prepared[k] = true
@@ -288,6 +306,10 @@ end
 -- @instance
 function class:properties( properties )
     for k, v in pairs( properties ) do
+    	if type( self[k] ) == 'number' then
+    		v = tonumber( v )
+    	end
+    	
     	self[k] = v
     end
 end

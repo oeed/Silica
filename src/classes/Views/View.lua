@@ -24,6 +24,7 @@ class "View" {
 	identifier = nil;
 	canvas = nil;
 	isCanvasHitTested = true;
+	isVisible = true;
 }
 
 --[[
@@ -39,6 +40,7 @@ function View:init( properties )
 	end
 
 	self.canvas = Canvas( self.x, self.y, self.width, self.height )
+	self:initCanvas()
 	self:initEventManager()
 end
 
@@ -49,6 +51,12 @@ end
 function View:initEventManager()
 	self.event = EventManager( self )
 end
+
+--[[
+    @instance
+    @desc Sets up the canvas and it's graphics objects
+]]
+function View:initCanvas() end
 
 --[[
 	@instance
@@ -99,6 +107,13 @@ function View:setY( y )
 		self.canvas.y = y
 	end
 	self.y = y
+end
+
+function View:setIsVisible( isVisible )
+	if self.canvas then
+		self.canvas.isVisible = isVisible
+	end
+	self.isVisible = isVisible
 end
 
 function View:setWidth( width )
@@ -190,7 +205,8 @@ end
 	@return [boolean] isHit -- whether the hit test hit
 ]]
 function View:hitTest( x, y, parent )
-	return self.x <= x and x <= self.x + self.width - 1
+	return self.x <= x
+	 and x <= self.x + self.width - 1
 	   and self.y <= y and y <= self.y + self.height - 1
 	   and ( not self.isCanvasHitTested or self.canvas:hitTest( x - self.x + 1, y - self.y + 1 ))
 end
