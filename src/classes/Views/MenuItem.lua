@@ -80,6 +80,7 @@ function MenuItem:onGlobalMouseUp( event )
     if self.isPressed then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
+            self.parent:close()
             return self.event:handleEvent( event )
         end
     end

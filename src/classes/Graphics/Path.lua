@@ -119,7 +119,7 @@ local function getHorizontalLinearIntersectionPoints( points, y, line, minX, max
 	end
 end
 
-local function getHorizontalCurvedIntersectionPoints( points, y, line )
+local function getHorizontalCurvedIntersectionPoints( points, y, line, minX, maxX )
 	if not line.xCoefficients or not line.yCoefficients then
 		line.xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
 		line.yCoefficients = bezierCoeffs( line.y1, line.controlPoint1Y, line.controlPoint2Y, line.y2 )
@@ -134,7 +134,7 @@ local function getHorizontalCurvedIntersectionPoints( points, y, line )
         t = yRoots[i];
         if t > 0 and t < 1 then
 	        local x = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4];
-			x = math.floor( x + 0.5 )
+			x = math.floor( math.min( math.max( x, minX ), maxX ) + 0.5 )
 			points[x] = points[x] or {}
 	        points[x][y] = true
 	    end
@@ -162,7 +162,7 @@ local function getVerticalLinearIntersectionPoints( points, x, line, minY, maxY 
 	end
 end
 
-local function getVerticalCurvedIntersectionPoints( points, x, line )
+local function getVerticalCurvedIntersectionPoints( points, x, line, minY, maxY )
 	if not line.xCoefficients or not line.yCoefficients then
 		line.xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
 		line.yCoefficients = bezierCoeffs( line.y1, line.controlPoint1Y, line.controlPoint2Y, line.y2 )
@@ -176,8 +176,9 @@ local function getVerticalCurvedIntersectionPoints( points, x, line )
     for i = 1, 3 do
         t = xRoots[i];
         if t > 0 and t < 1 then
-        	local y = yCoefficients[1] * t * t * t + yCoefficients[2] * t * t + yCoefficients[3] * t + yCoefficients[4];
-	        points[x][math.floor( y + 0.5 )] = true
+        	local y = yCoefficients[1] * t * t * t + yCoefficients[2] * t * t + yCoefficients[3] * t + yCoefficients[4]
+			y = math.floor( math.min( math.max( y, minY ), maxY ) + 0.5 )
+	        points[x][y] = true
 	    end
     end
 end
@@ -246,13 +247,7 @@ end
 	@return [boolean] didAdd -- whether the line was added
 ]]
 function Path:curveTo( endX, endY, controlPoint1X, controlPoint1Y, controlPoint2X, controlPoint2Y )
-	endX = endX * 10
-	endY = endY * 10
-	controlPoint1X = controlPoint1X * 10
-	controlPoint1Y = controlPoint1Y * 10
-	controlPoint2X = controlPoint2X * 10
-	controlPoint2Y = controlPoint2Y * 10
-		if self.defined or not endX or not endY or not controlPoint1X or not controlPoint1Y or not controlPoint2X or not controlPoint2Y then return false end
+	if self.defined or not endX or not endY or not controlPoint1X or not controlPoint1Y or not controlPoint2X or not controlPoint2Y then return false end
 	
 	self.lines[#self.lines + 1] = {
 		mode = "curve";
@@ -266,12 +261,6 @@ function Path:curveTo( endX, endY, controlPoint1X, controlPoint1Y, controlPoint2
 		controlPoint2Y = controlPoint2Y;
 	}
 
-	--[[
-	local pointsTable = self.points
-	pointsTable[#pointsTable + 1] = { controlPoint1X, controlPoint1Y }
-	pointsTable[#pointsTable + 1] = { controlPoint2X, controlPoint2Y }
-	pointsTable[#pointsTable + 1] = { endX, endY }
-	]]
 	self.currentX = endX
 	self.currentY = endY
 	return true
@@ -353,7 +342,7 @@ function Path:getFill()
 		return self.fill
 	end
 
-	local minY, maxY, minX, maxX = self.y, self.y + self.height - 1, self.x, self.x + self.width - 1
+	local minY, maxY, minX, maxX = 1, self.height, 1, self.width
 	-- get minY, maxY, and ...X, maybe pass these 'bounds' in? I mean this will only be used
 	-- in the UI where a button or something (with its own bounds) draws a pathi
 	-- also, how about scaling? We could create a generic Button path that is just scaled

@@ -76,8 +76,8 @@ function class:newSuper( instance, eq, ... )
 				end
 			end
 			-- return _class[k]
-		elseif instance[k] then
-			-- however, we don't want any properties (i.e. mutable values) to come from super if they exist in the instanceclass
+		elseif instance[k] and type( instance[k] ) ~= 'function' then 
+			-- however, we don't want any properties (i.e. mutable values) to come from super if they exist in the instanceclass. we also don't want instance functions called from self.super
 			return instance[k]
 		elseif _class[k] then
 			-- try to use the super's class values
@@ -149,10 +149,9 @@ function class:new( ... )
 				return function(_self, ...)
 					if _self == proxy then
 						-- when calling a function on super, the instance needs to be given, but the super needs to be the super's super
-						local oldSuper = proxy.super
-						rawset( proxy, 'super', oldSuper.super )
+						rawset( proxy, 'super', super.super )
 						local v = { f( proxy, ... ) }
-						rawset( proxy, 'super', oldSuper )
+						rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
 						return unpack( v )
 					else
 						return f( _self, ... )
@@ -173,7 +172,7 @@ function class:new( ... )
 	local lockedGetters = {}
 
 	proxy.raw = raw -- not sure about this, although i guess it can't hurt
-
+	-- TODO: the getter/setter ifs could be made more efficient
 	function proxy.mt:__index( k )
 		-- TODO: if we find a use for this we'll turn it on. but otherwise it probably needs to be made more efficient
 		-- this basically allows a global filter or notification on all get
@@ -193,9 +192,33 @@ function class:new( ... )
 		local rawFunc = raw[getFunc]
 		if not lockedGetters[k] and type( rawV ) ~= 'function' and rawFunc and type( rawFunc ) == 'function' then
 			lockedGetters[k] = true
+
 			local value = rawFunc( proxy )
+			-- if the super has been masked then change it back, then change it again
+			local oldSuper = rawget( proxy, 'super' )
+			rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
+			local v = { rawFunc( proxy ) }
+			rawset( proxy, 'super', oldSuper )
+			local value =  unpack( v )
+
 			lockedGetters[k] = nil
 			return value
+		elseif type( rawV ) == 'function' then
+			return function( _self, ... )
+				if rawequal( _self, proxy ) then
+					return rawV( _self, ... ) -- _self is proxy
+				elseif _self == proxy then -- _self is a super of proxy
+					-- TODO: will this ever be called??
+					-- if the super has been masked then change it back, then change it again
+					local oldSuper = rawget( proxy, 'super' )
+					rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
+					local v = { rawV( proxy, ... ) }
+					rawset( proxy, 'super', oldSuper )
+					return unpack( v )
+				else
+					return rawV( _self, ... )
+				end
+			end
 		else
 			return rawV
 		end
@@ -205,7 +228,7 @@ function class:new( ... )
 		if k == 'super' or k == 'class' then
 			error( 'Cannot set reserved property: ' .. k)
 		end
-
+		-- TODO: maybe don't make the setter call if the value hasn't changed
 		-- this basically allows a global filter or notification on all sets
 		if not lockedSetters[k] and type( raw.set ) == 'function' then
 			lockedSetters[k] = true
@@ -222,7 +245,13 @@ function class:new( ... )
 		local rawFunc = raw[setFunc]
 		if not lockedSetters[k] and type( raw[k] ) ~= 'function' and rawFunc and type( rawFunc ) == 'function' then
 			lockedSetters[k] = true
-			rawFunc( proxy, v )
+
+			-- if the super has been masked then change it back, then change it again
+			local oldSuper = rawget( proxy, 'super' )
+			rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
+			local v = { rawFunc( proxy, v ) }
+			rawset( proxy, 'super', oldSuper )
+
 			lockedSetters[k] = nil
 		else
 			raw[k] = v -- use the passed value if not using the setter
@@ -368,10 +397,10 @@ local function extends( superName )
 			creating.mt[k] = v
 		end
 	end
-	creating.mt.__index = --classes[superName]
-	function(self, k)
-		return classes[superName][k]
-	end
+	creating.mt.__index = classes[superName]
+	-- function(self, k)
+	-- 	return classes[superName][k]
+	-- end
 	-- local super = classes[superName]
  --    function creating.mt:__index( k )
  --    	local v = super[k]

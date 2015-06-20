@@ -80,6 +80,17 @@ function GraphicsObject:setFillColour( fillColour )
 	self.hasChanged = true
 	self.fillColour = fillColour
 end
+
+--[[
+	@instance
+	@desc Sets the visibility of the graphics object
+	@param [boolean] isVisible -- whether the graphics object is visible
+]]
+function GraphicsObject:setIsVisible( isVisible )
+	self.hasChanged = true
+	self.isVisible = isVisible
+end
+
 --[[
 	@instance
 	@desc Sets the changed state of the graphics object, applying it to the parent too

@@ -5,7 +5,9 @@ class "Menu" extends "Container" {
 
 	isPressed = false;
     isEnabled = true;
-	isVisible = true;
+    -- isVisible acts as the boolans of whether the menu is open or closed.
+
+	isSingleShot = false; -- true if the menu should be removed and unlinked when cloesd (as opposed to simply hiding for reuse only)
 
 	topMargin = 3;
 	bottomMargin = 5;
@@ -40,6 +42,7 @@ class "Menu" extends "Container" {
 function Menu:init( ... )
 	self.super:init( ... )
 
+    self.event:connectGlobal( Event.MOUSE_DOWN, self.onGlobalMouseDown, EventManager.phase.BEFORE )
 end
 
 --[[
@@ -94,7 +97,9 @@ end
 
 function Menu:setIsVisible( isVisible )
 	self.super:setIsVisible( isVisible )
-	self:updateLayout()
+	if isVisible then
+		self:updateLayout()
+	end
 end
 
 function Menu:insert( ... )
@@ -107,13 +112,67 @@ function Menu:removeChild( ... )
 	self:updateLayout()
 end
 
-function Menu:onGlobalClick( event )
+--[[
+	@instance
+	@param [Event] -- the mouse down event
+	@desc Closes the menu when somewhere other than the menu is clicked, otherwise handles the event
+]]
+function Menu:onGlobalMouseDown( event )
 	if self.isVisible then
 		if self:hitTestEvent( event ) then
 			self.event:handleEvent( event )
 		else
-			self.isOpen = false
+			self:close()
 		end
 		return true
+	end
+end
+
+--[[
+	@instance
+	@desc Sets the open state of the menu
+	@param [boolean] isOpen -- whether the menu should be open
+]]
+function Menu:setIsOpen( isOpen )
+	if isOpen then
+		self:open()
+	else
+		self:close()
+	end
+end
+
+--[[
+	@instance
+	@desc The open state of the menu
+	@return [boolean] isOpen -- whether the menu is open
+]]
+function Menu:getIsOpen( isOpen )
+	return self.isVisible
+end
+
+--[[
+	@instance
+	@desc Opens the menu if closed, or closes the menu if open
+]]
+function Menu:toggle()
+	self.isOpen = not self.isOpen
+end
+
+--[[
+	@instance
+	@desc Open the menu, hiding it from the screen
+]]
+function Menu:open()
+	self.isVisible = true
+end
+
+--[[
+	@instance
+	@desc Closes the menu, hiding it from the screen
+]]
+function Menu:close()
+	self.isVisible = false
+	if self.isSingleShot then
+
 	end
 end

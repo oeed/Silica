@@ -19,7 +19,7 @@ class "Checkbox" extends "View" {
 
     checkedTextColour = Graphics.colours.BLACK;
     checkedBackgroundColour = Graphics.colours.BLUE;
-    checkedTickColour = Graphics.colours.WHITE;
+    checkedCheckColour = Graphics.colours.WHITE;
     checkedOutlineColour = Graphics.colours.BLUE;
 
     disabledTextColour = Graphics.colours.LIGHT_GREY;
@@ -28,8 +28,10 @@ class "Checkbox" extends "View" {
 
     disabledCheckedTextColour = Graphics.colours.LIGHT_GREY;
     disabledCheckedBackgroundColour = Graphics.colours.GREY;
-    disabledCheckedTickColour = Graphics.colours.LIGHT_GREY;
+    disabledCheckedCheckColour = Graphics.colours.LIGHT_GREY;
     disabledCheckedOutlineColour = Graphics.colours.GREY;
+
+    checkObject = nil;
 
 }
 
@@ -49,6 +51,15 @@ end
 ]]
 function Checkbox:initCanvas()
     self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.backgroundColour, self.outlineColour, self.cornerRadius ) )
+    
+    local checkObject = Path( 2, 2, self.width - 2, self.height - 2, Graphics.colours.TRANSPARENT, 1, 4 )
+    checkObject:lineTo( 2, 5 )
+    checkObject:lineTo( 5, 2 )
+    checkObject:lineTo( 2, 5 )
+    checkObject:close()
+    checkObject.outlineColour = self.checkedCheckColour
+    self.checkObject = checkObject
+    self.canvas:insert( checkObject )
 end
 
 --[[
@@ -59,6 +70,10 @@ function Checkbox:updateCanvas()
     if self.canvas and self.backgroundObject then
         self.backgroundObject.fillColour = self.isEnabled and ( self.isPressed and self.pressedBackgroundColour or (self.isChecked and self.checkedBackgroundColour or self.backgroundColour ) ) or self.disabledBackgroundColour
         self.backgroundObject.outlineColour = self.isEnabled and ( self.isPressed and self.pressedOutlineColour or (self.isChecked and self.checkedOutlineColour or self.outlineColour ) ) or self.disabledOutlineColour
+        self.checkObject.isVisible = self.isChecked and not self.isPressed
+        if self.checkObject.isVisible then
+            self.checkObject.outlineColour = self.isEnabled and self.checkedCheckColour or self.disabledCheckedCheckColour
+        end
     end
 end
 

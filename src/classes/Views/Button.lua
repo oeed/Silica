@@ -1,8 +1,7 @@
 
 class "Button" extends "View" {
 
-    height = 13; -- the default height
-    width = 30;
+    height = 12; -- the default height
 
     isPressed = false;
     isEnabled = true;
@@ -34,7 +33,7 @@ function Button:init( ... )
     self.super:init( ... )
     
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
-    self.event:connectGlobal( Event.MOUSE_UP, self.onMouseUp, EventManager.phase.BEFORE )
+    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 end
 
 function Button:setHeight( height )
@@ -61,15 +60,26 @@ end
 
 --[[
     @instance
+    @desc Update the canvas appearance.
+]]
+function Button:updateCanvas()
+    if self.canvas and self.backgroundObject then
+        self.backgroundObject.fillColour = self.isEnabled and ( self.isPressed and self.pressedBackgroundColour or self.backgroundColour ) or self.disabledBackgroundColour
+        self.backgroundObject.outlineColour = self.isEnabled and ( self.isPressed and Graphics.colours.TRANSPARENT or self.outlineColour ) or self.disabledOutlineColour
+        self.backgroundObject.x = self.isPressed and 2 or 1
+        self.backgroundObject.y = self.isPressed and 2 or 1
+    end
+end
+
+--[[
+    @instance
     @desc Sets whether the button is pressed, changing the drawing state
 ]]
 function Button:setIsPressed( isPressed )
-    self.backgroundObject.fillColour = self.isEnabled and ( isPressed and self.pressedBackgroundColour or self.backgroundColour ) or self.disabledBackgroundColour
-    self.backgroundObject.outlineColour = self.isEnabled and ( isPressed and Graphics.colours.TRANSPARENT or self.outlineColour ) or self.disabledOutlineColour
-    self.backgroundObject.x = isPressed and 2 or 1
-    self.backgroundObject.y = isPressed and 2 or 1
-
     self.isPressed = isPressed
+    if isPressed ~= nil then
+        self:updateCanvas()
+    end
 end
 
 --[[
@@ -78,7 +88,7 @@ end
     @param [Event] event -- the mouse up event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
-function Button:onMouseUp( event )
+function Button:onGlobalMouseUp( event )
     if self.isPressed then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
