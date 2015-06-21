@@ -2,27 +2,16 @@
 class "Button" extends "View" {
 
     height = 12; -- the default height
+    width = 30;
 
     isPressed = false;
     isEnabled = true;
     cornerRadius = 6;
 
-    textColour = Graphics.colours.BLACK;
-    backgroundColour = Graphics.colours.WHITE;
-    outlineColour = Graphics.colours.LIGHT_GREY;
-
-    pressedTextColour = Graphics.colours.WHITE;
-    pressedBackgroundColour = Graphics.colours.BLUE;
-    pressedOutlineColour = nil;
-
-    disabledTextColour = Graphics.colours.LIGHT_GREY;
-    disabledBackgroundColour = Graphics.colours.WHITE;
-    disabledOutlineColour = Graphics.colours.LIGHT_GREY;
-
-    shadowColour = Graphics.colours.GREY;
-
     shadowObject = nil;
     backgroundObject = nil;
+
+    themeStyle = 'default';
 }
 
 --[[
@@ -55,7 +44,43 @@ end
 function Button:initCanvas()
     local cornerRadius = self.cornerRadius
     self.shadowObject = self.canvas:insert( RoundedRectangle( 2, 2, self.width - 1, self.height - 1, self.shadowColour, nil, cornerRadius ) )
-    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 1, self.backgroundColour, self.outlineColour, cornerRadius ) )
+    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 1, self.fillColour, self.outlineColour, cornerRadius ) )
+end
+
+--[[
+    @instance
+    @desc Returns the current fill colour for the current style
+    @return [Graphics.colours] colour -- the fill colour
+]]
+function Button:getFillColour()
+    return self:themeValue( "fillColour", self.themeStyle )
+end
+
+--[[
+    @instance
+    @desc Returns the current outline colour for the current style
+    @return [Graphics.colours] colour -- the outline colour
+]]
+function Button:getOutlineColour()
+    return self:themeValue( "outlineColour", self.themeStyle )
+end
+
+--[[
+    @instance
+    @desc Returns the current shadow colour for the current style
+    @return [Graphics.colours] colour -- the shadow colour
+]]
+function Button:getShadowColour()
+    return self:themeValue( "shadowColour", self.themeStyle )
+end
+
+--[[
+    @instance
+    @desc Returns the current corner radius for the current style
+    @return [number] cornerRadius -- the corner radius
+]]
+function Button:getCornerRadius()
+    return self:themeValue( "cornerRadius", self.themeStyle )
 end
 
 --[[
@@ -63,11 +88,16 @@ end
     @desc Update the canvas appearance.
 ]]
 function Button:updateCanvas()
-    if self.canvas and self.backgroundObject then
-        self.backgroundObject.fillColour = self.isEnabled and ( self.isPressed and self.pressedBackgroundColour or self.backgroundColour ) or self.disabledBackgroundColour
-        self.backgroundObject.outlineColour = self.isEnabled and ( self.isPressed and Graphics.colours.TRANSPARENT or self.outlineColour ) or self.disabledOutlineColour
-        self.backgroundObject.x = self.isPressed and 2 or 1
-        self.backgroundObject.y = self.isPressed and 2 or 1
+    local backgroundObject = self.backgroundObject
+    if self.canvas and backgroundObject then
+        self.themeStyle = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
+        self.shadowObject.fillColour = self.shadowColour
+        backgroundObject.fillColour = self.fillColour
+        backgroundObject.outlineColour = self.outlineColour
+        
+        local isPressed = self.isPressed
+        backgroundObject.x = isPressed and 2 or 1
+        backgroundObject.y = isPressed and 2 or 1
     end
 end
 

@@ -10,13 +10,13 @@ class "MenuItem" extends "View" {
 	isCanvasHitTested = false;
 
 	textColour = Graphics.colours.BLACK;
-    backgroundColour = Graphics.colours.TRANSPARENT;
+    fillColour = Graphics.colours.TRANSPARENT;
 
 	pressedTextColour = Graphics.colours.WHITE;
-    pressedBackgroundColour = Graphics.colours.BLUE;
+    pressedFillColour = Graphics.colours.BLUE;
 
     disabledTextColour = Graphics.colours.LIGHT_GREY;
-    disabledBackgroundColour = Graphics.colours.TRANSPARENT;
+    disabledFillColour = Graphics.colours.TRANSPARENT;
 
     backgroundObject = nil;
 }
@@ -34,7 +34,7 @@ function MenuItem:init( ... )
 end
 
 function MenuItem:initCanvas()
-    self.backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.backgroundColour ) )
+    self.backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
 end
 
 --[[
@@ -43,7 +43,7 @@ end
 ]]
 function MenuItem:updateCanvas()
     if self.backgroundObject then
-	    self.backgroundObject.fillColour = self.isEnabled and ( self.isPressed and self.pressedBackgroundColour or self.backgroundColour ) or self.disabledBackgroundColour
+	    self.backgroundObject.fillColour = self.isEnabled and ( self.isPressed and self.pressedFillColour or self.fillColour ) or self.disabledFillColour
     end
 end
 

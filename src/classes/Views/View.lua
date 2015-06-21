@@ -95,6 +95,17 @@ function View:siblingsOfType( _class )
 	return siblings
 end
 
+--[[
+	@instance
+	@desc Returns the value for the current theme given the property name and style)
+	@param [string] propertyName -- the name of the property
+	@param [string] styleName -- default is 'default', the name of the style
+	@return themeValue -- the theme value
+]]
+function View:themeValue( valueName, styleName )
+	return Theme.active:value( self.class, valueName, styleName )
+end
+
 function View:setX( x )
 	if self.canvas then
 		self.canvas.x = x

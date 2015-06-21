@@ -16,13 +16,13 @@ class "Menu" extends "Container" {
 
     cornerRadius = 4;
 
-    backgroundColour = Graphics.colours.WHITE;
+    fillColour = Graphics.colours.WHITE;
     outlineColour = Graphics.colours.LIGHT_GREY;
 
-    pressedBackgroundColour = Graphics.colours.BLUE;
+    pressedFillColour = Graphics.colours.BLUE;
     pressedOutlineColour = nil;
 
-    disabledBackgroundColour = Graphics.colours.WHITE;
+    disabledFillColour = Graphics.colours.WHITE;
     disabledOutlineColour = Graphics.colours.LIGHT_GREY;
 
     shadowColour = Graphics.colours.GREY;
@@ -52,7 +52,7 @@ end
 function Menu:initCanvas()
     local cornerRadius = self.cornerRadius
     self.shadowObject = self.canvas:insert( RoundedRectangle( 1 + self.shadowRightMargin, 1 + self.shadowTopMargin, self.width - 1, self.height - 2, self.shadowColour, nil, cornerRadius ) )
-    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 2, self.backgroundColour, self.outlineColour, cornerRadius ) )
+    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 2, self.fillColour, self.outlineColour, cornerRadius ) )
 end
 
 function Menu:setHeight( height )

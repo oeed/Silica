@@ -157,7 +157,7 @@ class
 				+ text
 					- setText -- if isAutoWidth set the width
 				+ textColour
-				+ backgroundColour
+				+ fillColour
 				+ [Font.alignment]alignment
 				+ isAutoWidth -- not sure about this. I had it in Bedrock, it basically automatically set the width of the label to the size of the text if true
 				+ isWrapped
@@ -169,11 +169,11 @@ class
 				+ text
 					- setText -- if isAutoWidth set the width
 				+ textColour
-				+ backgroundColour
+				+ fillColour
 				+ activeTextColour
-				+ activeBackgroundColour
+				+ activeFillColour
 				+ disabledTextColour
-				+ disabledBackgroundColour
+				+ disabledFillColour
 				+ [Font]font
 				+ isAutoWidth -- see above
 				+ isEnabled
@@ -185,7 +185,7 @@ class
 
 			* ProgressBar -- I want these to have a looped animation (if it looks okay and isn't too intensive), maybe like the barber wheel effect on OS X, and a indeterminate mode. what do you think, and what's the best way to do this? might need to make an addition to Animation to support this
 				+ isEnabled
-				+ backgroundColour
+				+ fillColour
 				+ barColour
 				+ value
 				+ maximum

@@ -6,7 +6,7 @@ class "MenuButton" extends "Button" {
     menu = nil;
 
     textColour = Graphics.colours.BLACK;
-    backgroundColour = Graphics.colours.WHITE;
+    fillColour = Graphics.colours.WHITE;
     outlineColour = Graphics.colours.LIGHT_GREY;
 
     arrowColour = Graphics.colours.GREY;
@@ -63,6 +63,14 @@ function MenuButton:initCanvas()
     self.openArrowObject = openArrowObject
     self.canvas:insert( openArrowObject )
 end
+--[[
+    @instance
+    @desc Returns the current arrow colour for the current style
+    @return [Graphics.colours] colour -- the arrow colour
+]]
+function MenuButton:getArrowColour()
+    return self:themeValue( "arrowColour", self.themeStyle )
+end
 
 --[[
     @instance
@@ -72,9 +80,10 @@ function MenuButton:updateCanvas()
     local backgroundObject = self.backgroundObject
     if self.canvas and backgroundObject then
         local isPressed, isOpen = self.isPressed, self.menu.isOpen
-        local isActive = ( isPressed and not isOpen ) or ( not isPressed and isOpen ) -- whether the colouring is that of being
-        backgroundObject.fillColour = self.isEnabled and ( isActive and self.pressedBackgroundColour or self.backgroundColour ) or self.disabledBackgroundColour
-        backgroundObject.outlineColour = self.isEnabled and ( isActive and Graphics.colours.TRANSPARENT or self.outlineColour ) or self.disabledOutlineColour
+        local isActive = ( isPressed and not isOpen ) or ( not isPressed and isOpen )
+        self.themeStyle = self.isEnabled and ( isActive and "pressed" or "default" ) or "disabled"
+        backgroundObject.fillColour = self.fillColour
+        backgroundObject.outlineColour = self.outlineColour
         backgroundObject.x = isPressed and 2 or 1
         backgroundObject.y = isPressed and 2 or 1
 
@@ -84,7 +93,7 @@ function MenuButton:updateCanvas()
         inactiveArrow.isVisible = false
         activeArrow.x = self.arrowX + ( isPressed and 1 or 0 )
         activeArrow.y = self.arrowY + ( isPressed and 1 or 0 )
-        activeArrow.outlineColour = ( isActive and self.pressedArrowColour or self.arrowColour )
+        activeArrow.outlineColour = self.arrowColour
     end
 end
 

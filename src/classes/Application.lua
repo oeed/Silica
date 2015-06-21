@@ -31,14 +31,26 @@ function Application:init()
 	self.event = ApplicationEventManager( self )
 	class.application = self
 	
+	Theme.active = Theme( self.themeName )
+	
 	if self.interfaceName then
 		self.container = Interface( self.interfaceName ).container
 	else
 		self.container = ApplicationContainer()
 	end
 
+
 	self.event:connect( Event.TIMER, self.onTimer )
 
+end
+
+--[[
+	@instance
+	@desc Returns the theme name, reverting to default if not defined
+	@return [string] themeName -- description
+]]
+function Application:getThemeName()
+	return self.themeName or "default"
 end
 
 --[[

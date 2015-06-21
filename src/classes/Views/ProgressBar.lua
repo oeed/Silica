@@ -10,12 +10,12 @@ class "ProgressBar" extends "View" {
     value = 0;
     maximum = 1;
 
-    backgroundColour = Graphics.colours.WHITE;
+    fillColour = Graphics.colours.WHITE;
     barColour = Graphics.colours.BLUE;
     stripeColour = Graphics.colours.LIGHT_BLUE;
     outlineColour = Graphics.colours.LIGHT_GREY;
 
-    disabledBackgroundColour = Graphics.colours.WHITE;
+    disabledFillColour = Graphics.colours.WHITE;
     disabledBarColour = Graphics.colours.GREY;
     disabledStripeColour = Graphics.colours.LIGHT_GREY;
     disabledOutlineColour = Graphics.colours.LIGHT_GREY;
@@ -60,10 +60,10 @@ function ProgressBar:draw()
 
     local path = Path.rectangle( self.width, self.height, radius )
 
-    local backgroundColour = isEnabled and self.backgroundColour or self.disabledBackgroundColour
+    local fillColour = isEnabled and self.fillColour or self.disabledFillColour
     local outlineColour = isEnabled and self.outlineColour or self.disabledOutlineColour
 
-    self:drawPath( 1, 1, path, backgroundColour, outlineColour )
+    self:drawPath( 1, 1, path, fillColour, outlineColour )
 
     -- TODO: progress bar stripes
     -- First thing needed is somehow masking the stripes

@@ -1,6 +1,6 @@
 
 class "CordView" extends "Container" {
-	backgroundColour = Graphics.colours.WHITE;
+	fillColour = Graphics.colours.WHITE;
 }
 
 function CordView:init( ... )
@@ -11,7 +11,7 @@ end
 
 function CordView:onClick( event )
 	term.setCursorPos( self:coordinatesTo( event.x, event.y ) )
-	term.setBackgroundColour( self.backgroundColour / 2 )
+	term.setFillColour( self.fillColour / 2 )
 	term.write( ' ' )
 end
 
@@ -20,7 +20,7 @@ function CordView:draw()
 	for _x = x, self.width + x - 1 do
 		for _y = y, self.height + y - 1 do
 			term.setCursorPos( _x, _y )
-			term.setBackgroundColour( self.backgroundColour )
+			term.setFillColour( self.fillColour )
 			term.write( ' ' )
 		end
 	end

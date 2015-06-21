@@ -9,26 +9,6 @@ class "Radio" extends "View" {
     isChecked = false;
     cornerRadius = 3.5;
 
-    textColour = Graphics.colours.BLACK;
-    backgroundColour = Graphics.colours.WHITE;
-    outlineColour = Graphics.colours.LIGHT_GREY;
-
-    pressedTextColour = Graphics.colours.BLACK;
-    pressedBackgroundColour = Graphics.colours.LIGHT_BLUE;
-    pressedOutlineColour = Graphics.colours.BLUE;
-
-    checkedTextColour = Graphics.colours.BLACK;
-    checkedBackgroundColour = Graphics.colours.BLUE;
-    checkedOutlineColour = Graphics.colours.BLUE;
-
-    disabledTextColour = Graphics.colours.LIGHT_GREY;
-    disabledBackgroundColour = Graphics.colours.WHITE;
-    disabledOutlineColour = Graphics.colours.LIGHT_GREY;
-
-    disabledCheckedTextColour = Graphics.colours.LIGHT_GREY;
-    disabledCheckedBackgroundColour = Graphics.colours.GREY;
-    disabledCheckedOutlineColour = Graphics.colours.GREY;
-
 }
 
 --[[
@@ -51,7 +31,34 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Radio:initCanvas()
-    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.backgroundColour, self.outlineColour, self.cornerRadius ) )
+    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.fillColour, self.outlineColour, self.cornerRadius ) )
+end
+
+--[[
+    @instance
+    @desc Returns the current fill colour for the current style
+    @return [Graphics.colours] colour -- the fill colour
+]]
+function Radio:getFillColour()
+    return self:themeValue( "fillColour", self.themeStyle )
+end
+
+--[[
+    @instance
+    @desc Returns the current outline colour for the current style
+    @return [Graphics.colours] colour -- the outline colour
+]]
+function Radio:getOutlineColour()
+    return self:themeValue( "outlineColour", self.themeStyle )
+end
+
+--[[
+    @instance
+    @desc Returns the current corner radius for the current style
+    @return [number] cornerRadius -- the corner radius
+]]
+function Radio:getCornerRadius()
+    return self:themeValue( "cornerRadius", self.themeStyle )
 end
 
 --[[
@@ -62,8 +69,9 @@ function Radio:updateCanvas()
     if self.backgroundObject then
         local cornerRadius = math.min( self.height / 2, self.cornerRadius )
         self.backgroundObject.radius = cornerRadius
-        self.backgroundObject.fillColour = self.isEnabled and ( self.isPressed and self.pressedBackgroundColour or (self.isChecked and self.checkedBackgroundColour or self.backgroundColour ) ) or self.disabledBackgroundColour
-        self.backgroundObject.outlineColour = self.isEnabled and ( self.isPressed and self.pressedOutlineColour or (self.isChecked and self.checkedOutlineColour or self.outlineColour ) ) or self.disabledOutlineColour
+        self.themeStyle = self.isEnabled and ( self.isPressed and "pressed" or (self.isChecked and "checked" or "default" ) ) or ( self.isChecked and "disabledChecked" or "disabled" )
+        self.backgroundObject.fillColour = self.fillColour
+        self.backgroundObject.outlineColour = self.outlineColour
     end
 end
 
@@ -101,8 +109,8 @@ end
 function Radio:onGlobalMouseUp( event )
     if self.isPressed then
         self.isPressed = false
-        self.isChecked = not self.isChecked
         if self:hitTestEvent( event ) then
+            self.isChecked = not self.isChecked
             return self.event:handleEvent( event )
         end
     end
@@ -132,7 +140,7 @@ function Radio:draw()
 
     local path = Path.circle( math.min(self.height, self.height) )
 
-    local backgroundColour = isEnabled and ( isPressed and self.pressedBackgroundColour or ( isChecked and self.checkedBackgroundColour or self.backgroundColour ) ) or ( isChecked and self.disabledCheckedBackgroundColour or self.disabledBackgroundColour )
+    local fillColour = isEnabled and ( isPressed and self.pressedFillColour or ( isChecked and self.checkedFillColour or self.fillColour ) ) or ( isChecked and self.disabledCheckedFillColour or self.disabledFillColour )
     local outlineColour = isEnabled and ( isPressed and self.pressedOutlineColour or self.outlineColour ) or self.disabledOutlineColour
-    self:drawPath( 1, 1, path, backgroundColour, outlineColour )
+    self:drawPath( 1, 1, path, fillColour, outlineColour )
 end

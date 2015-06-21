@@ -10,24 +10,24 @@ class "Checkbox" extends "View" {
     cornerRadius = 2;
 
     textColour = Graphics.colours.BLACK;
-    backgroundColour = Graphics.colours.WHITE;
+    fillColour = Graphics.colours.WHITE;
     outlineColour = Graphics.colours.LIGHT_GREY;
 
     pressedTextColour = Graphics.colours.BLACK;
-    pressedBackgroundColour = Graphics.colours.LIGHT_BLUE;
+    pressedFillColour = Graphics.colours.LIGHT_BLUE;
     pressedOutlineColour = Graphics.colours.BLUE;
 
     checkedTextColour = Graphics.colours.BLACK;
-    checkedBackgroundColour = Graphics.colours.BLUE;
+    checkedFillColour = Graphics.colours.BLUE;
     checkedCheckColour = Graphics.colours.WHITE;
     checkedOutlineColour = Graphics.colours.BLUE;
 
     disabledTextColour = Graphics.colours.LIGHT_GREY;
-    disabledBackgroundColour = Graphics.colours.WHITE;
+    disabledFillColour = Graphics.colours.WHITE;
     disabledOutlineColour = Graphics.colours.LIGHT_GREY;
 
     disabledCheckedTextColour = Graphics.colours.LIGHT_GREY;
-    disabledCheckedBackgroundColour = Graphics.colours.GREY;
+    disabledCheckedFillColour = Graphics.colours.GREY;
     disabledCheckedCheckColour = Graphics.colours.LIGHT_GREY;
     disabledCheckedOutlineColour = Graphics.colours.GREY;
 
@@ -50,7 +50,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Checkbox:initCanvas()
-    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.backgroundColour, self.outlineColour, self.cornerRadius ) )
+    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.fillColour, self.outlineColour, self.cornerRadius ) )
     
     local checkObject = Path( 2, 2, self.width - 2, self.height - 2, Graphics.colours.TRANSPARENT, 1, 4 )
     checkObject:lineTo( 2, 5 )
@@ -64,16 +64,50 @@ end
 
 --[[
     @instance
+    @desc Returns the current fill colour for the current style
+    @return [Graphics.colours] colour -- the fill colour
+]]
+function Checkbox:getFillColour()
+    return self:themeValue( "fillColour", self.themeStyle )
+end
+
+--[[
+    @instance
+    @desc Returns the current outline colour for the current style
+    @return [Graphics.colours] colour -- the outline colour
+]]
+function Checkbox:getOutlineColour()
+    return self:themeValue( "outlineColour", self.themeStyle )
+end
+
+--[[
+    @instance
+    @desc Returns the current check colour for the current style
+    @return [Graphics.colours] colour -- the check colour
+]]
+function Checkbox:getCheckColour()
+    return self:themeValue( "checkColour", self.themeStyle )
+end
+
+--[[
+    @instance
+    @desc Returns the current corner radius for the current style
+    @return [number] cornerRadius -- the corner radius
+]]
+function Checkbox:getCornerRadius()
+    return self:themeValue( "cornerRadius", self.themeStyle )
+end
+
+--[[
+    @instance
     @desc Update the canvas appearance.
 ]]
 function Checkbox:updateCanvas()
     if self.canvas and self.backgroundObject then
-        self.backgroundObject.fillColour = self.isEnabled and ( self.isPressed and self.pressedBackgroundColour or (self.isChecked and self.checkedBackgroundColour or self.backgroundColour ) ) or self.disabledBackgroundColour
-        self.backgroundObject.outlineColour = self.isEnabled and ( self.isPressed and self.pressedOutlineColour or (self.isChecked and self.checkedOutlineColour or self.outlineColour ) ) or self.disabledOutlineColour
-        self.checkObject.isVisible = self.isChecked and not self.isPressed
-        if self.checkObject.isVisible then
-            self.checkObject.outlineColour = self.isEnabled and self.checkedCheckColour or self.disabledCheckedCheckColour
-        end
+        self.themeStyle = self.isEnabled and ( self.isPressed and "pressed" or (self.isChecked and "checked" or "default" ) ) or ( self.isChecked and "disabledChecked" or "disabled" )
+        self.backgroundObject.fillColour = self.fillColour
+        self.backgroundObject.outlineColour = self.outlineColour
+        self.checkObject.outlineColour = self.checkColour
     end
 end
 
@@ -105,8 +139,8 @@ function Checkbox:onMouseUp( event )
     if self.isPressed then
         self.isPressed = false
         if self.isEnabled then
-            self.isChecked = not self.isChecked
     		if self:hitTestEvent( event ) then
+                self.isChecked = not self.isChecked
     			return self.event:handleEvent( event )
             end
 		end

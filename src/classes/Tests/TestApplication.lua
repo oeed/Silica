@@ -2,6 +2,7 @@
 class "TestApplication" extends "Application" {
 	name = "A test application";
 	interfaceName = "main";
+	themeName = "default";
 }
 
 --[[
