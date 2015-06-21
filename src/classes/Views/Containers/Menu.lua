@@ -108,7 +108,7 @@ function Menu:insert( ... )
 end
 
 function Menu:removeChild( ... )
-	self.super:insert( ... )
+	self.super:removeChild( ... )
 	self:updateLayout()
 end
 

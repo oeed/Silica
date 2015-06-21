@@ -12,7 +12,7 @@
 	</MenuButton>
 
 	<Radio>
-		<cornerRadius type="number" default="3.5" />
+		<cornerRadius type="number" default="4" pressed="4" />
 		<fillColour type="Graphics.colours" default="WHITE" pressed="LIGHT_BLUE" checked="BLUE" disabledChecked="GREY" disabled="WHITE"/>
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="BLUE" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
 	</Radio>
@@ -23,4 +23,13 @@
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="BLUE" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
 		<checkColour type="Graphics.colours" default="TRANSPARENT" checked="WHITE" disabledChecked="WHITE" disabled="LIGHT_GREY"/>
 	</Checkbox>
+
+	<ProgressBar>
+		<cornerRadius type="number" default="4" />
+		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY"/>
+		<barColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
+		<stripeColour type="Graphics.colours" default="LIGHT_BLUE" disabled="LIGHT_GREY"/>
+		<barOutlineColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
+	</ProgressBar>
 </Theme>

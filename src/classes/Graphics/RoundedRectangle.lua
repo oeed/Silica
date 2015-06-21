@@ -1,9 +1,35 @@
 
+-- draws a corner with the given radius for the corner given
+local function corner( fill, width, height, radius, position ) -- position is a byte. first bit is 0 if top, second bit is 0 if left
+	if radius <= 0 then return end
+	
+	local minDistance = radius
+	radius = radius + 0.5 -- doing this seems to magically make them look much better
+
+	local centerX = (bit.band( position, 2 ) == 0) and radius or width - radius + 1
+	local centerY = (bit.band( position, 1 ) == 0) and radius or height - radius + 1
+	local minX = (bit.band( position, 2 ) == 0) and 1 or width - minDistance + 1
+	local minY = (bit.band( position, 1 ) == 0) and 1 or height - minDistance + 1
+
+	for x = minX, minX + radius - 1 do
+		fill[x] = fill[x] or {}
+		local xDistance = ( x - centerX ) ^ 2
+		for y = minY, minY + radius - 1 do
+			local distance = ( xDistance + ( y - centerY) ^ 2 ) ^ 0.5
+			if distance <= minDistance then
+				fill[x][y] = true
+			end
+		end
+	end
+end
+
 class "RoundedRectangle" extends "GraphicsObject" {
 	fillColour = Graphics.colours.RED;
 
-	topRadius = 1;
-	bottomRadius = 1;
+	topLeftRadius = 1;
+	topRightRadius = 1;
+	bottomLeftRadius = 1;
+	bottomRightRadius = 1;
 }
 
 --[[
@@ -18,12 +44,14 @@ class "RoundedRectangle" extends "GraphicsObject" {
 	@param [number] bottomLeftRadius -- the radius of the bottom left corner
 	@param [number] bottomRightRadius -- the radius of the bottom right corner
 ]]
-function RoundedRectangle:init( x, y, width, height, fillColour, outlineColour, topRadius, bottomRadius )
+function RoundedRectangle:init( x, y, width, height, fillColour, outlineColour, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius )
 	self.super:init( x, y, width, height )
 	self.fillColour = fillColour or Graphics.colours.TRANSPARENT
 	self.outlineColour = outlineColour or Graphics.colours.TRANSPARENT
-	self.topRadius = topRadius
-	self.bottomRadius = bottomRadius or topRadius
+	self.topLeftRadius = topLeftRadius
+	self.topRightRadius = topRightRadius or topLeftRadius
+	self.bottomLeftRadius = bottomLeftRadius or topRightRadius or topLeftRadius
+	self.bottomRightRadius = bottomRightRadius or bottomLeftRadius or topRightRadius or topLeftRadius
 end
 
 --[[
@@ -33,9 +61,28 @@ end
 	@return [type] returnedValue -- description
 ]]
 function RoundedRectangle:setRadius( radius )
-	self.topRadius = radius
-	self.bottomRadius = radius
+	self.topLeftRadius = radius
+	self.topRightRadius = radius
+	self.bottomLeftRadius = radius
+	self.bottomRightRadius = radius
 end
+
+function RoundedRectangle:setTopLeftRadius( radius )
+	if radius then self.topLeftRadius = math.floor( radius ) end
+end
+
+function RoundedRectangle:setTopRightRadius( radius )
+	if radius then self.topRightRadius = math.floor( radius ) end
+end
+
+function RoundedRectangle:setBottomLeftRadius( radius )
+	if radius then self.bottomLeftRadius = math.floor( radius ) end
+end
+
+function RoundedRectangle:setBottomRightRadius( radius )
+	if radius then self.bottomRightRadius = math.floor( radius ) end
+end
+
 
 --[[
     @instance
@@ -43,60 +90,45 @@ end
     @return [table] fill -- the pixels to fill
 ]]
 function RoundedRectangle:getFill()
-	-- print('get fill')
 	if self.fill then return self.fill end
-	-- print('and calc	')
 
 	local fill = {}
-	local fillColour = self.fillColour
-	local tr = self.topRadius
-	local tradius = ( self.topRadius * 2 + 1 ) / 2
-	local br = self.bottomRadius
-	local bradius = ( self.bottomRadius * 2 + 1 ) / 2
-	-- local _y = self.y - 1
-	-- local _x = self.x - 1
 
-	for x = 1, self.width do
-		-- TODO: tidy this up
-		fill[x] = {}
-		if x <= tr then
-			local xSqrd = ( x - tradius )^2
-			for y = -tradius, tradius do
-	     		local distance = ( xSqrd + ( y )^2 )^0.5
-				if distance <= tr then
-					if y < 0 then
-						fill[x][y + tradius] = true
-					else
-						fill[x][y + self.height - tradius + 1] = true
-					end
-				end
-	     	end
+	local topLeftRadius = self.topLeftRadius
+	local topRightRadius = self.topRightRadius
+	local bottomLeftRadius = self.bottomLeftRadius
+	local bottomRightRadius = self.bottomRightRadius
 
-	     	for y = tr + 1, self.height - tr do
-				fill[x][y] = true
-	     	end
-		elseif x > self.width - br then
-			local xSqrd = ( x - self.width + 2 * br - bradius )^2
-			for y = -bradius, bradius do
-	     		local distance = ( xSqrd + ( y )^2 )^0.5
-				if distance <= br then
-					if y < 0 then
-						fill[x][y + bradius] = true
-					else
-						fill[x][y + self.height - bradius + 1] = true
-					end
-				end
-	     	end
+	local width, height = self.width, self.height
 
-	     	for y = tr + 1, self.height - tr do
-				fill[x][y] = true
-	     	end
-	    else
-	    	for y = 1, self.height do
-				fill[x][y] = true
-	     	end
+	corner( fill, width, height, topLeftRadius, 0 )
+	corner( fill, width, height, topRightRadius, 2 )
+	corner( fill, width, height, bottomLeftRadius, 1 )
+	corner( fill, width, height, bottomRightRadius, 3 )
+
+	local maxTopRadius = math.max( topLeftRadius, topRightRadius )
+	for x = topLeftRadius, self.width - topRightRadius do
+		fill[x] = fill[x] or {}
+		for y = 1, maxTopRadius do
+			fill[x][y] = true
 		end
 	end
+
+	local maxBottomRadius = math.max( bottomLeftRadius, bottomRightRadius )
+	for x = bottomLeftRadius, self.width - bottomRightRadius do
+		fill[x] = fill[x] or {}
+		for y = self.height - maxBottomRadius + 1, self.height do
+			fill[x][y] = true
+		end
+	end
+
+	for x = 1, self.width do
+		fill[x] = fill[x] or {}
+		for y = maxTopRadius + 1, self.height - maxBottomRadius do
+			fill[x][y] = true
+		end
+	end
+
 	self.fill = fill
 	return fill
 end

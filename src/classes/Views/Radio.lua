@@ -7,7 +7,7 @@ class "Radio" extends "View" {
     isPressed = false;
     isEnabled = true;
     isChecked = false;
-    cornerRadius = 3.5;
+    cornerRadius = 4;
 
 }
 
@@ -67,8 +67,7 @@ end
 ]]
 function Radio:updateCanvas()
     if self.backgroundObject then
-        local cornerRadius = math.min( self.height / 2, self.cornerRadius )
-        self.backgroundObject.radius = cornerRadius
+        self.backgroundObject.radius = self.cornerRadius
         self.themeStyle = self.isEnabled and ( self.isPressed and "pressed" or (self.isChecked and "checked" or "default" ) ) or ( self.isChecked and "disabledChecked" or "disabled" )
         self.backgroundObject.fillColour = self.fillColour
         self.backgroundObject.outlineColour = self.outlineColour
@@ -110,7 +109,7 @@ function Radio:onGlobalMouseUp( event )
     if self.isPressed then
         self.isPressed = false
         if self:hitTestEvent( event ) then
-            self.isChecked = not self.isChecked
+            self.isChecked = true
             return self.event:handleEvent( event )
         end
     end

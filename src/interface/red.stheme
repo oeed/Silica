@@ -1,0 +1,26 @@
+<Theme>
+	<Button>
+		<cornerRadius type="number" default="6" />
+		<fillColour type="Graphics.colours" default="WHITE" pressed="RED" disabled="WHITE"/>
+		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY" pressed="TRANSPARENT"/>
+		<shadowColour type="Graphics.colours" default="GREY" disabled="TRANSPARENT"/>
+	</Button>
+	
+	<MenuButton>
+		<arrowColour type="Graphics.colours" default="GREY" pressed="ORANGE" disabled="LIGHT_GREY"/>
+	</MenuButton>
+
+	<Radio>
+		<cornerRadius type="number" default="4" pressed="4" />
+		<fillColour type="Graphics.colours" default="WHITE" pressed="ORANGE" checked="RED" disabledChecked="GREY" disabled="WHITE"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="RED" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
+	</Radio>
+
+	<Checkbox>
+		<cornerRadius type="number" default="2" />
+		<fillColour type="Graphics.colours" default="WHITE" pressed="ORANGE" checked="RED" disabledChecked="GREY" disabled="WHITE"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="RED" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
+		<checkColour type="Graphics.colours" default="TRANSPARENT" checked="WHITE" disabledChecked="WHITE" disabled="LIGHT_GREY"/>
+	</Checkbox>
+</Theme>

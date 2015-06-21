@@ -3,8 +3,8 @@ class "ApplicationContainer" extends "Container" {
 	-- TODO: make this use a Constraint
 	x = 1;
 	y = 1;
-	width = 350;
-	height = 170;
+	width = 310;
+	height = 175;
 }
 
 --[[

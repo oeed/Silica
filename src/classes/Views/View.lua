@@ -17,6 +17,7 @@ class "View" {
 	y = 1;
 	width = 1;
 	height = 1;
+	index = nil;
 	parent = nil;
 	animations = nil;
 	event = nil;
@@ -75,6 +76,21 @@ function View:getSiblings()
 	end
 
 	return siblings
+end
+
+--[[
+	@instance
+	@desc Returns the index of the view in it's parent. 1 is the bottom most view
+	@return [number] index -- an array of the siblings
+]]
+function View:getIndex()
+	if self.parent then
+		for i, child in ipairs( self.parent.children ) do
+			if child == self then
+				return i
+			end
+		end
+	end
 end
 
 --[[

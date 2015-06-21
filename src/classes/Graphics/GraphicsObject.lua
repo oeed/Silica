@@ -7,7 +7,10 @@ class "GraphicsObject" {
 	hasChanged = false; -- @property hasChanged [boolean] - Whether or not the object's internals have hasChanged since it was last drawn
 	parent = nil; -- @property parent [View] - The parent of the object, if it exists
 	outlineColour = Graphics.colours.TRANSPARENT; -- @property [Graphics.colours] -- The colour of the outline
-	outlineWidth = 1; -- @property [number] -- The thickness of the outline
+	leftOutlineWidth = 1; -- @property [number] -- The thickness of the outline
+	topOutlineWidth = 1; -- @property [number] -- The thickness of the outline
+	rightOutlineWidth = 1; -- @property [number] -- The thickness of the outline
+	bottomOutlineWidth = 1; -- @property [number] -- The thickness of the outline
 	fillColour = Graphics.colours.TRANSPARENT; -- @property [Graphics.colours] -- The fill colour of the object
 	isVisible = true;
 }
@@ -73,6 +76,59 @@ end
 
 --[[
 	@instance
+	@desc Sets the outlineWidth of the graphics object
+	@param [number] outlineWidth -- the outlineWidth of the graphics object
+]]
+function GraphicsObject:setOutlineWidth( outlineWidth )
+	self.hasChanged = true
+	self.leftOutlineWidth = outlineWidth
+	self.topOutlineWidth = outlineWidth
+	self.rightOutlineWidth = outlineWidth
+	self.bottomOutlineWidth = outlineWidth
+end
+
+--[[
+	@instance
+	@desc Sets the outlineWidth of the graphics object
+	@param [number] outlineWidth -- the outlineWidth of the graphics object
+]]
+function GraphicsObject:setLeftOutlineWidth( outlineWidth )
+	self.hasChanged = true
+	self.leftOutlineWidth = outlineWidth
+end
+
+--[[
+	@instance
+	@desc Sets the outlineWidth of the graphics object
+	@param [number] outlineWidth -- the outlineWidth of the graphics object
+]]
+function GraphicsObject:setTopOutlineWidth( outlineWidth )
+	self.hasChanged = true
+	self.topOutlineWidth = outlineWidth
+end
+
+--[[
+	@instance
+	@desc Sets the outlineWidth of the graphics object
+	@param [number] outlineWidth -- the outlineWidth of the graphics object
+]]
+function GraphicsObject:setRightOutlineWidth( outlineWidth )
+	self.hasChanged = true
+	self.rightOutlineWidth = outlineWidth
+end
+
+--[[
+	@instance
+	@desc Sets the outlineWidth of the graphics object
+	@param [number] outlineWidth -- the outlineWidth of the graphics object
+]]
+function GraphicsObject:setBottomOutlineWidth( outlineWidth )
+	self.hasChanged = true
+	self.bottomOutlineWidth = outlineWidth
+end
+
+--[[
+	@instance
 	@desc Sets the fillColour of the graphics object
 	@param [number] fillColour -- the fillColour of the graphics object
 ]]
@@ -128,9 +184,8 @@ end
 ]]
 function GraphicsObject:getOutline( fill )
 	local outline = {}
-	local outlineWidth = self.outlineWidth
 
-	local function xScanline( min, max, inc )
+	local function xScanline( min, max, inc, outlineWidth )
 		for y = 1, self.height do
 			local lastX = 0
 			local xPixels = 0
@@ -149,7 +204,7 @@ function GraphicsObject:getOutline( fill )
 		end
 	end
 
-	local function yScanline( min, max, inc )
+	local function yScanline( min, max, inc, outlineWidth )
 		for x = 1, self.width do
 			local lastY = 0
 			local yPixels = 0
@@ -167,10 +222,10 @@ function GraphicsObject:getOutline( fill )
 		end
 	end
 
-	xScanline( 1, self.width, 1 )
-	xScanline( self.width, 1, -1 )
-	yScanline( 1, self.height, 1 )
-	yScanline( self.height, 1, -1 )
+	xScanline( 1, self.width, 1, self.leftOutlineWidth )
+	xScanline( self.width, 1, -1, self.rightOutlineWidth )
+	yScanline( 1, self.height, 1, self.topOutlineWidth )
+	yScanline( self.height, 1, -1, self.bottomOutlineWidth )
 
 	return outline
 end

@@ -103,7 +103,7 @@ end
     @param [Event] event -- the mouse up event
 ]]
 function MenuButton:onGlobalMouseUp( event )
-    if self.isEnabled then
+    if self.isEnabled and self.isPressed then
         self.isPressed = false
         if self:hitTestEvent( event ) then
             -- self.menu:toggle()

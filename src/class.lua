@@ -206,8 +206,8 @@ function class:new( ... )
 		elseif type( rawV ) == 'function' then
 			return function( _self, ... )
 				if rawequal( _self, proxy ) then
-					return rawV( _self, ... ) -- _self is proxy
-				elseif _self == proxy then -- _self is a super of proxy
+					-- return rawV( _self, ... ) -- _self is proxy
+				-- elseif _self == proxy then -- _self is a super of proxy
 					-- TODO: will this ever be called??
 					-- if the super has been masked then change it back, then change it again
 					local oldSuper = rawget( proxy, 'super' )

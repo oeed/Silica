@@ -26,8 +26,9 @@ class "Canvas" extends "GraphicsObject" {
     @param [colour] colour -- the colour coordinate of the pixel
 ]]
 function Canvas:setPixel( x, y, colour )
-    if colour == Graphics.colours.TRANSPARENT then return self end
-    self.buffer[ ( y - 1 ) * self.width + x ] = colour
+    if colour ~= Graphics.colours.TRANSPARENT and x >= 1 and y >= 1 and x <= self.width and y <= self.height then
+        self.buffer[ ( y - 1 ) * self.width + x ] = colour
+    end
     return self
 end
 
