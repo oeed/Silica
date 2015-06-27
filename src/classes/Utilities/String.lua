@@ -27,7 +27,6 @@ function String:split( delimeter )
 	return splitString
 end
 
-
 --[[
 	@instance
 	@desc The file extension of the string

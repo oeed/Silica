@@ -1,3 +1,4 @@
+
 os.loadAPI('src/debug')
 _G.debug = debug
 
@@ -13,7 +14,13 @@ end
 
 function _G.log( text )
 	local h = fs.open('log', 'a')
-	h.write(text .. '\n')
+	h.write(tostring(text) .. '\n')
+	h.close()	
+end
+
+function _G.log2( text )
+	local h = fs.open('log2', 'a')
+	h.write(tostring(text) .. '\n')
 	h.close()	
 end
 

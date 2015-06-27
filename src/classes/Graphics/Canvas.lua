@@ -67,7 +67,7 @@ function Canvas:map( shader, x, y, width, height )
     local changes = {}
     for _x = x or 1, ( x or 1 ) + ( width or self.width ) - 1 do
         for _y = y or 1, ( x or 1 ) + ( height or self.height ) - 1 do
-            local colour = shader( _x, _y, self:getPixel( x, y ) )
+            local colour = shader( _x, _y, self:getPixel( _x, _y ) )
             if colour and colour ~= 0 then
                 changes[#changes + 1] = { _x, _y, colour }
             end
@@ -126,8 +126,9 @@ end
 function Canvas:draw()
     if self.isVisible then
         self.buffer = {}
-        for i = 1, #self.children do
-            self.children[i]:drawTo( self )
+        local children = self.children
+        for i = 1, #children do
+            children[i]:drawTo( self )
         end
         self.hasChanged = false
     end
@@ -143,13 +144,29 @@ end
 function Canvas:drawTo( canvas )
     if self.isVisible then
         if self.hasChanged then
+            -- log( tostring(self) .. 'is rerendering at ' .. os.clock() )
             self:draw()
         end
-        for x = 1, self.width do
-            for y = 1, self.height do
-                canvas:setPixel( self.x + x - 1, self.y + y - 1, self:getPixel( x, y ) )
+        
+        local width = self.width
+        local height = self.height
+        local fillColour = self.fillColour
+        local buffer = self.buffer
+        local _x = self.x - 1
+        local _y = self.y - 1
+        
+        -- log( tostring(self) .. 'is drawing to parent at ' .. os.clock() )
+
+        local _setPixel = canvas.setPixel
+        for x = 1, width do
+            for y = 1, height do
+                _setPixel( canvas, x + _x, y + _y, buffer[ ( y - 1 ) * width + x ] or fillColour)
+                -- canvas:setPixel( x + _x, y + _y, self:getPixel( x, y ) )
             end
         end
+
+        -- log( tostring(self) .. 'is done drawing to parent at ' .. os.clock() )
+
     end
     return self
 end

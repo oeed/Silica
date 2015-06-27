@@ -10,9 +10,19 @@ class "PathView" extends "View" {
     @constructor
     @desc Creates a button object and connects the event handlers
 ]]
--- function PathView:init( ... )
---     self.super:init( ... )
--- end
+function PathView:init( ... )
+    self.super:init( ... )
+    self:event( Event.MOUSE_DOWN, self.onMouseDown )
+end
+
+function PathView:onMouseDown( event )
+    if event.mouseButton == MouseEvent.mouseButtons.RIGHT then
+    	local menu = Menu.fromInterface( 'menu' )
+    	menu:showContext( self, event.x, event.y )
+    end
+    return true
+end
+
 
 --[[
     @instance
@@ -21,15 +31,26 @@ class "PathView" extends "View" {
 function PathView:initCanvas()
 	self.canvas.fillColour = Graphics.colours.LIGHT_GREY
 
-	local path = Path( 10, 10, self.width - 20, self.height - 20, Graphics.colours.BLUE)
-	-- path:curveTo( 4, 3.5, 3, 1, 3, 3.5 - 1.25 )
-	-- path:curveTo( 2, 6, 3, 3.5 + 1.25, 3, 5 )
-	-- path:lineTo( 40, 20 )
-	-- path:lineTo( 40, 40 )
-	path:lineTo( 50, 20 )
-	path:curveTo( 80, 60, 30, 40, 40, 50 )
-	path:lineTo( 10, 80 )
+	local path = Path( 1, 1, self.width - 20, self.height - 20, Graphics.colours.BLUE, 1, 1 )
+	path:curveTo( 20, 60, 50, 35 + 12.5, 0, 40 )
+	path:lineTo( 50, 40 )
+	path:lineTo( 1, 30 )
+	path:lineTo( 40, 15 )
+	path:lineTo( 40, 25 )
+	path:lineTo( 60, 20 )
+	path:lineTo( 50, 10 )
+
+	local size = 5
+	
 	path:close()
-	path.outlineColour = Graphics.colours.LIME
+	path.outlineColour = Graphics.colours.RED
+	self.canvas:insert( Shader( 1, 1, self.canvas.width, self.canvas.height, function( x, y )
+		return ( math.ceil( x / size ) + math.ceil( y / size ) ) % 2 == 0 and Graphics.colours.LIGHT_GREY or Graphics.colours.WHITE
+	end ) )
 	self.canvas:insert( path )
 end
+
+--[[
+m = .3
+c = -10
+]]

@@ -9,15 +9,6 @@ class "MenuItem" extends "View" {
     isEnabled = true;
 	isCanvasHitTested = false;
 
-	textColour = Graphics.colours.BLACK;
-    fillColour = Graphics.colours.TRANSPARENT;
-
-	pressedTextColour = Graphics.colours.WHITE;
-    pressedFillColour = Graphics.colours.BLUE;
-
-    disabledTextColour = Graphics.colours.LIGHT_GREY;
-    disabledFillColour = Graphics.colours.TRANSPARENT;
-
     backgroundObject = nil;
 }
 
@@ -34,40 +25,33 @@ function MenuItem:init( ... )
 end
 
 function MenuItem:initCanvas()
-    self.backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
-end
-
---[[
-    @instance
-    @desc Update the canvas appearance.
-]]
-function MenuItem:updateCanvas()
-    if self.backgroundObject then
-	    self.backgroundObject.fillColour = self.isEnabled and ( self.isPressed and self.pressedFillColour or self.fillColour ) or self.disabledFillColour
-    end
+    local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
+    self.theme:connect( backgroundObject, 'fillColour' )
+    self.backgroundObject = backgroundObject
 end
 
 function MenuItem:setWidth( width )
     self.super:setWidth( width )
-    if self.backgroundObject then
-        self.backgroundObject.width = width
-    end
+    self.backgroundObject.width = width
 end
 
 function MenuItem:setHeight( height )
     self.super:setHeight( height )
-    if self.backgroundObject then
-        self.backgroundObject.height = height
-    end
+    self.backgroundObject.height = height
 end
 
---[[
-    @instance
-    @desc Sets whether the menu item is pressed, changing the drawing state
-]]
+function MenuItem:updateThemeStyle()
+    self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
+end
+
+function MenuItem:setIsEnabled( isEnabled )
+    self.isEnabled = isEnabled
+    self:updateThemeStyle()
+end
+
 function MenuItem:setIsPressed( isPressed )
     self.isPressed = isPressed
-    self:updateCanvas()
+    self:updateThemeStyle()
 end
 
 --[[

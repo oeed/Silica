@@ -10,6 +10,11 @@
 	<MenuButton>
 		<arrowColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
 	</MenuButton>
+	
+	<MenuItem>
+		<fillColour type="Graphics.colours" default="TRANSPARENT" pressed="BLUE" disabled="TRANSPARENT"/>
+		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
+	</MenuItem>
 
 	<Radio>
 		<cornerRadius type="number" default="4" pressed="4" />

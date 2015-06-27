@@ -1,4 +1,20 @@
 
+local setters, getters = {}, {}
+setmetatable( setters, {
+	__index = function( self, k )
+		local v = "set" .. k:sub( 1, 1 ):upper() .. k:sub( 2 )
+		rawset( self, k, v )
+		return v
+	end;
+} )
+setmetatable( getters, {
+	__index = function( self, k )
+		local v = "get" .. k:sub( 1, 1 ):upper() .. k:sub( 2 )
+		rawset( self, k, v )
+		return v
+	end;
+} )
+
 local classes = {}
 local creating
 local USE_GLOBALS = true
@@ -56,18 +72,22 @@ function class:newSuper( instance, eq, ... )
 
 	raw.mt.__eq = eq
 
+	local _rawSuper = raw.super
 	function raw.mt:__index( k )
 		if k == 'super' then
 			-- only ever called if this class doesn't have a super, to prevent super refering back to itself return nil
 			return nil
-		elseif _class[k] and type( _class[k] ) == 'function' then
+		end
+
+		local _classValue = _class[k]
+		if _classValue and type( _classValue ) == 'function' then
 			-- we want super functions to be callable and not overwritten when accessed directly (e.g. self.super:init())
-			local f = _class[k]
+			local f = _classValue
 			return function(_self, ...)
 				if _self == raw then
 					-- when calling a function on super, the instance needs to be given, but the super needs to be the super's super
-					local oldSuper = instance.super
-					rawset( instance, 'super', raw.super )
+					local oldSuper = rawget( instance, 'super' )
+					rawset( instance, 'super', _rawSuper )
 					local v = { f( instance, ... ) }
 					rawset( instance, 'super', oldSuper )
 					return unpack( v )
@@ -75,27 +95,15 @@ function class:newSuper( instance, eq, ... )
 					return f( _self, ... )
 				end
 			end
-			-- return _class[k]
-		elseif instance[k] and type( instance[k] ) ~= 'function' then 
+		end
+
+		local _instanceValue = instance[k]
+		if _instanceValue and type( _instanceValue ) ~= 'function' then 
 			-- however, we don't want any properties (i.e. mutable values) to come from super if they exist in the instanceclass. we also don't want instance functions called from self.super
-			return instance[k]
-		elseif _class[k] then
+			return _instanceValue
+		elseif _classValue then
 			-- try to use the super's class values
-			return _class[k]
-		-- elseif super and super.class and super.class[k] then
-		-- 	-- otherwise, check super's super classes for a value
-		-- 	if type( super.class[k] ) == 'function' then
-		-- 		local f = super.class[k]
-		-- 		return function(_self, ...)
-		-- 			if _self == instance then
-		-- 				return f(super, ...)
-		-- 			else
-		-- 				return f(_self, ...)
-		-- 			end
-		-- 		end
-		-- 	else
-		-- 		return super.class[k]
-		-- 	end
+			return _classValue
 		end
 	end
 
@@ -134,6 +142,9 @@ function class:new( ... )
 
 	uniqueTable( _class, raw )
 
+
+	local _superClass = super and super.class or nil
+	local _superSuper = super and super.super or nil
 	function raw.mt:__index( k )
 		local rawClassValue = rawget( _class, k )
 		if rawClassValue ~= nil then
@@ -141,24 +152,26 @@ function class:new( ... )
 			return rawClassValue
 		end
 
-		if super and super.class and super.class[k] then
-			-- otherwise, check super classes for a value
-			if type( super.class[k] ) == 'function' then
-				-- TODO: if the value is a function we need to call it on super, not self.
-				local f = super.class[k]
-				return function(_self, ...)
-					if _self == proxy then
-						-- when calling a function on super, the instance needs to be given, but the super needs to be the super's super
-						rawset( proxy, 'super', super.super )
-						local v = { f( proxy, ... ) }
-						rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
-						return unpack( v )
-					else
-						return f( _self, ... )
+		if _superClass then
+			local f = _superClass[k]
+			if f then
+				-- otherwise, check super classes for a value
+				if type( f ) == 'function' then
+					return function(_self, ...)
+						if _self == proxy then
+							-- when calling a function on super, the instance needs to be given, but the super needs to be the super's super
+							local oldSuper = rawget( proxy, 'super' )
+							rawset( proxy, 'super', _superSuper )
+							local v = { f( proxy, ... ) }
+							rawset( proxy, 'super', oldSuper ) -- as it's the proxy setting to nil simply causes it to look in raw again
+							return unpack( v )
+						else
+							return f( _self, ... )
+						end
 					end
+				else
+					return f
 				end
-			else
-				return super.class[k]
 			end
 		end
 
@@ -173,41 +186,53 @@ function class:new( ... )
 
 	proxy.raw = raw -- not sure about this, although i guess it can't hurt
 	-- TODO: the getter/setter ifs could be made more efficient
+
+	local _rawGet = ( raw.get and type( raw.get ) == 'function' ) and raw.get or nil
 	function proxy.mt:__index( k )
-		-- TODO: if we find a use for this we'll turn it on. but otherwise it probably needs to be made more efficient
-		-- this basically allows a global filter or notification on all get
-		-- if not lockedGetters[k] and raw.get and type( raw.get ) == 'function' then
-		-- 	lockedGetters[k] = true
-		-- 	local use, value = raw.get( proxy, k )
-		-- 	lockedGetters[k] = nil
-		-- 	if use then
-		-- 		return value
-		-- 	end	
-		-- end
+		local isRawFunc
+		local rawV
+		if not lockedGetters[k] then
 
-		-- basically, if the get'Key' function is set, return it's value
-		-- non-function properties can't use it, because, well, it's just futile really
-		local getFunc = 'get' .. k:sub( 1, 1 ):upper() .. k:sub( 2, -1 )
-		local rawV = raw[k]
-		local rawFunc = raw[getFunc]
-		if not lockedGetters[k] and type( rawV ) ~= 'function' and rawFunc and type( rawFunc ) == 'function' then
-			lockedGetters[k] = true
+			-- this basically allows a global filter or notification on all get
+			if _rawGet then
+				lockedGetters[k] = true
+				local use, value = _rawGet( proxy, k )
+				lockedGetters[k] = nil
+				if use then
+					return value
+				end	
+			end
 
-			local value = rawFunc( proxy )
-			-- if the super has been masked then change it back, then change it again
-			local oldSuper = rawget( proxy, 'super' )
-			rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
-			local v = { rawFunc( proxy ) }
-			rawset( proxy, 'super', oldSuper )
-			local value =  unpack( v )
+			-- basically, if the get'Key' function is set, return it's value
+			-- non-function properties can't use it, because, well, it's just futile really
+			-- 
+			rawV = raw[k]
+			isRawFunc = type( rawV ) == 'function'
+			if not isRawFunc then
+				local rawFunc = raw[getters[k]]
+				if rawFunc and type( rawFunc ) == 'function' then
+					lockedGetters[k] = true
 
-			lockedGetters[k] = nil
-			return value
-		elseif type( rawV ) == 'function' then
+					local value = rawFunc( proxy )
+					-- if the super has been masked then change it back, then change it again
+					local oldSuper = rawget( proxy, 'super' )
+					rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
+					local v = { rawFunc( proxy ) }
+					rawset( proxy, 'super', oldSuper )
+					local value =  unpack( v )
+
+					lockedGetters[k] = nil
+					return value
+				end
+			end
+		end
+
+		rawV = ( rawV == nil ) and raw[k] or rawV
+		isRawFunc = ( isRawFunc == nil ) and type( rawV ) == 'function' or isRawFunc
+
+		if isRawFunc then
 			return function( _self, ... )
 				if rawequal( _self, proxy ) then
-					-- return rawV( _self, ... ) -- _self is proxy
-				-- elseif _self == proxy then -- _self is a super of proxy
 					-- TODO: will this ever be called??
 					-- if the super has been masked then change it back, then change it again
 					local oldSuper = rawget( proxy, 'super' )
@@ -219,43 +244,50 @@ function class:new( ... )
 					return rawV( _self, ... )
 				end
 			end
-		else
-			return rawV
 		end
+
+		return rawV
 	end
 
+	local _rawSet = ( raw.set and type( raw.set ) == 'function' ) and raw.set or nil
 	function proxy.mt:__newindex( k, v )
 		if k == 'super' or k == 'class' then
 			error( 'Cannot set reserved property: ' .. k)
 		end
-		-- TODO: maybe don't make the setter call if the value hasn't changed
-		-- this basically allows a global filter or notification on all sets
-		if not lockedSetters[k] and type( raw.set ) == 'function' then
-			lockedSetters[k] = true
-			local use, value = raw.set( proxy, k, v )
-			lockedSetters[k] = nil
-			if use then
-				raw[k] = value
-				return
-			end	
+
+		if not lockedSetters[k] then
+			-- TODO: maybe don't make the setter call if the value hasn't changed
+			-- this basically allows a global filter or notification on all sets
+			if _rawSet then
+				lockedSetters[k] = true
+				local use, value = _rawSet( proxy, k, v )
+				lockedSetters[k] = nil
+				if use then
+					raw[k] = value
+					return
+				end	
+			end
+
+			-- if the filter wasn't applied, if the set'Key' function is set, call it
+			local isRawFunc = type( raw[k] ) == 'function'
+			if not isRawFunc then
+				local rawFunc = raw[setters[k]]
+				if rawFunc and type( rawFunc ) == 'function' then
+					lockedSetters[k] = true
+
+					-- if the super has been masked then change it back, then change it again
+					local oldSuper = rawget( proxy, 'super' )
+					rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
+					local v = { rawFunc( proxy, v ) }
+					rawset( proxy, 'super', oldSuper )
+
+					lockedSetters[k] = nil
+					return
+				end
+			end
 		end
 
-		-- if the filter wasn't applied, if the set'Key' function is set, call it
-		local setFunc = 'set' .. k:sub( 1, 1 ):upper() .. k:sub( 2, -1 )
-		local rawFunc = raw[setFunc]
-		if not lockedSetters[k] and type( raw[k] ) ~= 'function' and rawFunc and type( rawFunc ) == 'function' then
-			lockedSetters[k] = true
-
-			-- if the super has been masked then change it back, then change it again
-			local oldSuper = rawget( proxy, 'super' )
-			rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
-			local v = { rawFunc( proxy, v ) }
-			rawset( proxy, 'super', oldSuper )
-
-			lockedSetters[k] = nil
-		else
-			raw[k] = v -- use the passed value if not using the setter
-		end
+		raw[k] = v -- use the passed value if not using a setter
 	end
 
 	local proxyId = tostring(proxy):sub(8) -- remove 'table: ' from the id
@@ -289,7 +321,8 @@ function class:new( ... )
 		end
 	end
 
-	prepare( raw )
+	-- TODO: does this help at all??
+	-- prepare( raw )
 
 	return proxy
 end

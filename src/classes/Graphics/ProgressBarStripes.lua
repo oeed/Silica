@@ -17,7 +17,7 @@ function ProgressBarStripes:setAnimationStep( animationStep )
 	self.animationStep = math.floor(animationStep)
 end
 
--- doing this is a little naughty, but it is the easiest and fastest way to doing it
+-- doing this is a little naughty, but it is the easiest and nope way to doing it
 function ProgressBarStripes:drawTo( canvas )
 	if self.isVisible then
 		local fill = self.fill
@@ -34,13 +34,19 @@ function ProgressBarStripes:drawTo( canvas )
 		local _x = self.x - 1
 		local _y = self.y - 1
 
-		for x, row in pairs( fill ) do
-			for y, _ in pairs( row ) do
-				if not outline or not outline[x] or not outline[x][y] then
-					canvas:setPixel( _x + x, _y + y, (math.ceil( (x + y - animationStep) / stripeWidth) % 2 == 1 ) and fillColour or stripeColour )
-				end
+		local function fmap( x, y, colour )
+			if fill[x] and fill[x][y] then
+				return ( ( ( x + y - animationStep ) / stripeWidth ) % 2 < 1 ) and fillColour or stripeColour
 			end
 		end
+		local function ofmap( x, y, colour )
+			if outline[x] and outline[x][y] then
+				return outlineColour
+			elseif fill[x] and fill[x][y] then
+				return ( ( ( x + y - animationStep ) / stripeWidth ) % 2 < 1 ) and fillColour or stripeColour
+			end
+		end
+		canvas:map( outline and ofmap or fmap, _x, _y, self.width, self.height )
 
 		if outline then
 			for x, row in pairs( outline ) do

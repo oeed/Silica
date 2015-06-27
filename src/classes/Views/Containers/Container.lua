@@ -56,6 +56,11 @@ function Container:insert( childView, position )
 	childView.parent = self
 	self.canvas:insert( childView.canvas )
 
+	for i, childView in ipairs( self.children ) do
+		local onSiblingsChanged = childView.onSiblingsChanged
+		if onSiblingsChanged then onSiblingsChanged( childView ) end
+	end
+
 	for key, interfaceOutlet in pairs( self.interfaceOutlets ) do
 		interfaceOutlet:childAdded( childView )
 	end
@@ -89,13 +94,57 @@ end
 -- 	self.canvas:drawTo( target )
 -- end
 
+
+
+--[[
+	@instance
+	@desc Moves the view to be the top of it's siblings
+	@param [View] childView -- the view to make front most
+]]
+function Container:sendToFront( frontView, position )
+	local children = self.children
+	for i, childView in ipairs( children ) do
+		if childView == frontView then
+			table.remove( children, i )
+			if position then table.insert( children, position, childView )
+			else table.insert( children, childView ) end
+		end
+	end
+	local frontCanvas = frontView.canvas
+	local canvasChildren = self.canvas.children
+	for i, childCanvas in ipairs( canvasChildren ) do
+		if childCanvas == frontCanvas then
+			table.remove( canvasChildren, i )
+			if position then table.insert( canvasChildren, position, childCanvas )
+			else table.insert( canvasChildren, childCanvas ) end
+		end
+	end
+	
+	for i, childView in ipairs( self.children ) do
+		local onSiblingsChanged = childView.onSiblingsChanged
+		if onSiblingsChanged then onSiblingsChanged( childView ) end
+	end
+
+	self.canvas.hasChanged = true
+	frontView.canvas.hasChanged = true
+end
+
+--[[
+	@instance
+	@desc Moves the view to be the bottom of it's siblings
+	@param [View] childView -- the view to make botom most
+]]
+function Container:sendToBack( childView )
+	self:sendToFront( childView, 1 )
+end
+
 --[[
 	@instance
 	@desc Removes the first instance of the child view from the container
 	@param [View] childView -- the view to add to the container
 	@return [boolean] didRemove -- whether a child was removed
 ]]
-function Container:removeChild( removingView, position )
+function Container:removeChild( removingView )
 	local didRemove = false
 
 	for i, childView in ipairs( self.children ) do
@@ -105,6 +154,11 @@ function Container:removeChild( removingView, position )
 			didRemove = true
 			break
 		end
+	end
+
+	for i, childView in ipairs( self.children ) do
+		local onSiblingsChanged = childView.onSiblingsChanged
+		if onSiblingsChanged then onSiblingsChanged( childView ) end
 	end
 
 	removingView.parent = nil

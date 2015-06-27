@@ -12,6 +12,7 @@ class "Event" {
 	CHAR = "char";
 	TIMER = "timer";
 	TERMINATE = "terminate";
+	MENU_CHANGED = "interface_menu_changed";
 
 }
 

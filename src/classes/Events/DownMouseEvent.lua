@@ -18,5 +18,6 @@ function DownMouseEvent:init( arguments )
 		self.y = arguments[4]
 		self.globalX = arguments[3]
 		self.globalY = arguments[4]
+
 	end
 end

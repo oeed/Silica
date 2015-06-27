@@ -16,14 +16,14 @@ local function fromXMLString( value )
 	return value;
 end
 
-local function lex( text )
+local function lex( text, pos, line )
 	local tokens = {}
-	local pos, line, char = 1, 1, 1
+	local pos, line = pos or 1, line or 1
 	local function push( type, value )
 		tokens[#tokens + 1] = {
 			type = type;
 			value = value;
-			char = char;
+			pos = pos;
 			line = line;
 		}
 	end
@@ -31,7 +31,6 @@ local function lex( text )
 		local c = text:sub( pos, pos )
 		if c == "\n" then
 			line = line + 1
-			char = 1
 			pos = pos + 1
 		elseif c:find "%s" then
 			pos = pos + #text:match( "%s+", pos )
@@ -52,10 +51,10 @@ local function lex( text )
 				end
 			end
 			if not f then
-				return false, "[" .. l .. " (char:" .. char .. ")]: expected '" .. c .. "' to close string"
+				return false, "[" .. l .. " (char:" .. pos .. ")]: expected '" .. c .. "' to close string"
 			end
-		elseif c:find "[a-zA-Z%-%._]" then
-			local v = text:match( "[a-zA-Z%d%-%._]+", pos )
+		elseif c:find "[a-zA-Z%-_]" then
+			local v = text:match( "[a-zA-Z%d%-_]+", pos )
 			push( "word", v )
 			pos = pos + #v
 		elseif text:find( "^#?%.?%d", pos ) then
@@ -75,14 +74,19 @@ local function lex( text )
 				v = v / 100
 			end
 			push( "number", v )
-		elseif text:find( "^<!%-%-.-%-%->", pos ) then
-			pos = pos + #text:match( "^<!%-%-.-%-%->", pos )
+		elseif text:find( "<!%-%-.-%-%->", pos ) then
+			pos = pos + #text:match( "<!%-%-.-%-%->", pos )
 		else
 			push( "symbol", c )
 			pos = pos + 1
 		end
 	end
+	print "done"
 	return tokens
+end
+
+local function err( token, msg )
+	return "[" .. token.line .. " (char:" .. token.pos .. ")]: " .. msg
 end
 
 local parser = {}
@@ -97,7 +101,7 @@ end
 
 function parser:throw( message )
 	if self.last then
-		self.exception = "[line " .. self.last.line .. ", char " .. self.last.char .. "]: " .. message
+		self.exception = "[line " .. self.last.line .. ", char " .. self.last.pos .. "]: " .. message
 	else
 		self.exception = "[unknown]: " .. message
 	end
@@ -241,48 +245,7 @@ function parser:parseXMLBody()
 	return blocks
 end
 
-class "XML" {}
+local test = [[ <a> <b x:true/> <c x=5% y="hello </a>"/>]]
 
---[[
-	@static
-	@desc Loads XML from source text
-	@param [string] xmlText -- the XML text to parse
-	@return [table] xmlNodes -- the parsed XML nodes
-	on error:
-	@return false
-	@return [string] error -- the error message
-]]
-function XML.fromText( xmlText )
-	local tokens, err = lex( xmlText )
-	if not tokens then
-		return false, err
-	end
-
-	local p = parser:new( tokens )
-	local blocks, data = p:parseXMLBody()
-
-	if not blocks then
-		return false, data
-	end
-	if data then -- if they put a </*> in the main body
-		return p:throw( "unexpected '</" .. data .. ">' in main body" )
-	end
-	return blocks
-end
-
---[[
-	@static
-	@desc Loads an XML file
-	@param [string] filePath -- the path to the XML file
-	@return [table] xmlNodes -- the parsed XML nodes
-]]
-function XML.fromFile( filePath )
-	local h = fs.open( filePath, "r" )
-	if not h then
-		error( "Failed to open XML file: " .. filePath )
-	end
-
-	local text = h.readAll()
-	h.close()
-	return XML.fromText( text )
-end
+local p = parser:new( lex( test ) )
+local blocks, err = p:parseXMLBody()

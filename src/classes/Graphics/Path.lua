@@ -1,6 +1,8 @@
 
+local sin, cos, floor, min, max, abs, acos, PI = math.sin, math.cos, math.floor, math.min, math.max, math.abs, math.acos, math.pi
+
 local function round( num )
-	return math.floor( num + 0.5 )
+	return floor( num + 0.5 )
 end
 
 -- the next few functions are just taken from a site for bezier intersection, hence the terribly variables. don't hate.
@@ -36,8 +38,6 @@ local function bezierCoeffs( P0, P1, P2, P3 )
 	return Z;
 end
 
-local abs, acos, cos = math.abs, math.acos, math.cos
- 
 local function cubicRoots( P )
 
 	local a = P[1]
@@ -75,8 +75,8 @@ local function cubicRoots( P )
         local th = acos( R / (-(Q^3))^.5 )
         
         t[1] = 2 * ( -Q )^.5 * cos( th / 3 ) - A / 3
-        t[2] = 2 * ( -Q )^.5 * cos( ( th + 2 * math.pi ) / 3 ) - A / 3
-        t[3] = 2 * ( -Q )^.5 * cos( ( th + 4 * math.pi ) / 3 ) - A / 3
+        t[2] = 2 * ( -Q )^.5 * cos( ( th + 2 * PI ) / 3 ) - A / 3
+        t[3] = 2 * ( -Q )^.5 * cos( ( th + 4 * PI ) / 3 ) - A / 3
         local Im = 0.0
     end
     
@@ -93,33 +93,22 @@ local function cubicRoots( P )
     return t;
 end
 
-local function getHorizontalLinearIntersectionPoints( points, y, line, minX, maxX )
-	if line.y1 == line.y2 then
-		if line.y1 == y then
-			for x = math.min( line.x1, line.x2 ), math.max( line.x1, line.x2 ) do
-				x = math.floor( x + 0.5 )
-				points[x] = points[x] or {}
-				points[x][y] = true
-			end
-		end
-	elseif line.x1 == line.x2 then
-		if y >= math.min( line.y1, line.y2 ) and y <= math.max( line.y1, line.y2 ) then
-			points[line.x1] = points[line.x1] or {}
-			points[line.x1][y] = true
+local function getLinearIntersectionPoint( points, y, line, minX, maxX )
+	if line.x1 == line.x2 then
+		if y >= min( line.y1, line.y2 ) and y <= max( line.y1, line.y2 ) then
+			points[#points + 1] = line.x1
 		end
 	else
 		local m = ( line.y2 - line.y1 ) / ( line.x2 - line.x1 )
 		local c = line.y1 - m * line.x1
 		local x = ( y - c ) / m
-		if x >= math.min( line.y1, line.y2 ) and x <= math.max( line.y1, line.y2 ) then
-			x = math.floor( x + 0.5 )
-			points[x] = points[x] or {}
-			points[x][y] = true
+		if x >= min( line.x1, line.x2 ) - .00001 and x <= max( line.x1, line.x2 ) + .0001 then
+			points[#points + 1] = x
 		end
 	end
 end
 
-local function getHorizontalCurvedIntersectionPoints( points, y, line, minX, maxX )
+local function getCurvedIntersectionPoints( points, y, line, minX, maxX )
 	if not line.xCoefficients or not line.yCoefficients then
 		line.xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
 		line.yCoefficients = bezierCoeffs( line.y1, line.controlPoint1Y, line.controlPoint2Y, line.y2 )
@@ -134,51 +123,8 @@ local function getHorizontalCurvedIntersectionPoints( points, y, line, minX, max
         t = yRoots[i];
         if t > 0 and t < 1 then
 	        local x = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4];
-			x = math.floor( math.min( math.max( x, minX ), maxX ) + 0.5 )
-			points[x] = points[x] or {}
-	        points[x][y] = true
-	    end
-    end
-end
-
-local function getVerticalLinearIntersectionPoints( points, x, line, minY, maxY )
-	if line.x1 == line.x2 then
-		if line.x1 == x then
-			for y = math.min( line.y1, line.y2 ), math.max( line.y1, line.y2 ) do
-				points[x][math.floor( y + 0.5 )] = true
-			end
-		end
-	elseif line.y1 == line.y2 then
-		if x >= math.min( line.x1, line.x2 ) and x <= math.max( line.x1, line.x2 ) then
-			points[x][math.floor( line.y1 + 0.5 )] = true
-		end
-	else	
-		local m = ( line.y2 - line.y1 ) / ( line.x2 - line.x1 )
-		local c = line.y1 - m * line.x1
-		local y = m * x + c
-		if y >= math.min( line.y1, line.y2 ) and y <= math.max( line.y1, line.y2 ) then
-			points[x][math.floor( y + 0.5 )] = true
-		end
-	end
-end
-
-local function getVerticalCurvedIntersectionPoints( points, x, line, minY, maxY )
-	if not line.xCoefficients or not line.yCoefficients then
-		line.xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
-		line.yCoefficients = bezierCoeffs( line.y1, line.controlPoint1Y, line.controlPoint2Y, line.y2 )
-	end
-
-	local xCoefficients = line.xCoefficients
-	local yCoefficients = line.yCoefficients
-
-	local xRoots = cubicRoots( { xCoefficients[1], xCoefficients[2], xCoefficients[3], xCoefficients[4] - x } )
-	
-    for i = 1, 3 do
-        t = xRoots[i];
-        if t > 0 and t < 1 then
-        	local y = yCoefficients[1] * t * t * t + yCoefficients[2] * t * t + yCoefficients[3] * t + yCoefficients[4]
-			y = math.floor( math.min( math.max( y, minY ), maxY ) + 0.5 )
-	        points[x][y] = true
+			x = min( max( x, minX ), maxX )
+			points[#points + 1] = x
 	    end
     end
 end
@@ -204,8 +150,8 @@ class "Path" extends "GraphicsObject" {
 function Path:init( x, y, width, height, fillColour, currentX, currentY )
 	self.super:init( x, y, width, height )
 	self.fillColour = fillColour
-	self.currentX = currentX or x
-	self.currentY = currentY or y
+	self.currentX = currentX or 1
+	self.currentY = currentY or 1
 end
 
 --[[
@@ -275,20 +221,23 @@ end
 	@param [number] endAngle -- the angle to end (in radians)
 	@return [boolean] didAdd -- whether the line was added
 ]]
-function Path:arcTo( startAngle, endAngle, radius )
+
+local SPECIAL_CONST = 8 / 30 / PI
+
+function Path:arc( startAngle, endAngle, radius )
 	if self.defined then return false end
-	
+
 	local lines = self.lines
 
 	local currentX, currentY = self.currentX, self.currentY
-	local centreX, centreY = currentX - math.sin( startAngle ) * radius, currentY + math.cos( startAngle ) * radius
+	local centreX, centreY = currentX - sin( startAngle ) * radius, currentY + cos( startAngle ) * radius
 
-	local circumference = math.pi * radius * 2
 	local length = endAngle - startAngle
-	local segments = 8 * math.abs( length ) / circumference * radius
+	local segments = floor( radius * abs( length ) * SPECIAL_CONST + .5 )
+
 	for i = 0, segments do
 		local angle = startAngle + length * i / segments
-		local x, y = centreX + math.sin( angle ) * radius, centreY - math.cos( angle ) * radius
+		local x, y = centreX + sin( angle ) * radius, centreY - cos( angle ) * radius
 
 		lines[#lines + 1] = {
 			mode = "linear";
@@ -343,62 +292,53 @@ function Path:getFill()
 	end
 
 	local minY, maxY, minX, maxX = 1, self.height, 1, self.width
-	-- get minY, maxY, and ...X, maybe pass these 'bounds' in? I mean this will only be used
-	-- in the UI where a button or something (with its own bounds) draws a pathi
-	-- also, how about scaling? We could create a generic Button path that is just scaled
-	-- to the size of the button
-
-	-- use a 2d array here to avoid duplication of set pixels
-
-
-	local points = {}
-	for x = minX, maxX do
-		points[x] = {}
-		for i = 1, #self.lines do
-			local line = self.lines[i]
-			if line.mode == "linear" then
-				getVerticalLinearIntersectionPoints( points, x, line, minY, maxY )
-			else
-				getVerticalCurvedIntersectionPoints( points, x, line, minY, maxY )
-			end
-		end
-	end
-	for y = minY, maxY do
-		for i = 1, #self.lines do
-			local line = self.lines[i]
-			if line.mode == "linear" then
-				getHorizontalLinearIntersectionPoints( points, y, line, minX, maxX )
-			else
-				getHorizontalCurvedIntersectionPoints( points, y, line, minX, maxX )
-			end
-		end
-	end
-
 	local fill = {}
-	for x = minX, maxX do
-		local fillX = {}
-		if points[x] then
-			local intersectionsX = {}
-			for y, v in pairs( points[x] ) do
-				table.insert( intersectionsX, y )
-			end
-			table.sort( intersectionsX )
 
+	for y = minY, maxY do
+
+		local points = {}
+
+		for i = 1, #self.lines do
+			local line = self.lines[i]
+			if line.mode == "linear" then
+				getLinearIntersectionPoint( points, y, line, minX, maxX )
+			else
+				getCurvedIntersectionPoints( points, y, line, minX, maxX )
+			end
+		end
+
+		local vertex = {}
+		table.sort( points )
+		for i = #points, 2, -1 do
+			if points[i] == points[i-1] then
+				vertex[i] = true
+				vertex[i-1] = true
+			elseif round( points[i] ) == round( points[i-1] ) then
+				vertex[i] = true
+				vertex[i-1] = true
+			end
+		end
+
+		if #points == 1 then
+			local x = floor( points[1] + .5 )
+			fill[x] = fill[x] or {}
+			fill[x][y] = true
+		else
 			local filling = false
-			for i, startY in pairs( intersectionsX ) do
-				fillX[startY] = true
-				local nextY = intersectionsX[i + 1]
-				if nextY then
+			for i = 1, #points - 1 do
+				if vertex[i] and filling then
+
+				else
 					filling = not filling
-					if filling then
-						for y = startY, nextY do
-							fillX[y] = true
-						end
+				end
+				if filling then
+					for x = floor( points[i] + .5 ), floor( points[i + 1] + .5 ) do
+						fill[x] = fill[x] or {}
+						fill[x][y] = true
 					end
 				end
 			end
 		end
-		fill[x] = fillX
 	end
 
 	self.fill = fill

@@ -19,7 +19,6 @@ function SegmentContainer:updateLayout()
 			childView.x = width + 1
 			childView.y = 1
 			width = width + childView.width
-			childView:updateCanvas()
 		end
 		self.width = width
 		self.height = height

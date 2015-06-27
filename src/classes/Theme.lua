@@ -16,13 +16,16 @@ function Theme:init( themeName )
 	-- TODO: dynamic path resolving for interfaces and other files
 	local path = "/src/interface/" .. themeName .. ".stheme"
 	if fs.exists( path ) then
-		local nodes = XML.fromFile( path )
-		local err = self:initTheme( nodes )
+		local nodes, err = XML.fromFile( path )
+		if not nodes then
+			error( path .. err, 0 )
+		end
+		local err = self:initTheme( nodes[1] )
 		if err then
-			error( "Theme XML invaid: " .. self.name .. ".stheme. Error: " .. err )
+			error( "Theme XML invaid: " .. self.name .. ".stheme. Error: " .. err, 0 )
 		end
 	else
-		error( "Theme file not found: " .. themeName .. ".stheme" )
+		error( "Theme file not found: " .. themeName .. ".stheme", 0 )
 	end
 end
 
@@ -33,19 +36,18 @@ end
 function Theme:initTheme( nodes )
 	if not nodes then
 		return "Format invalid."
-	elseif nodes.name ~= "Theme" then
-		return "Root element must be 'Theme'."
+	elseif nodes.type ~= "Theme" then
+		return "Root element must be 'Theme', got '" .. tostring( nodes.type ) .. "'."
 	end
 
 	local classes = {}
-	for i, classNode in ipairs( nodes.childNodes ) do
+	for i, classNode in ipairs( nodes.body ) do
 		local classTheme = {}
-		for i2, propertyNode in ipairs( classNode.childNodes ) do
+		for i2, propertyNode in ipairs( classNode.body ) do
 			local propertyTheme = {}
 			local validationTypeName = propertyNode.attributes.type
 			for styleName, styleValue in pairs( propertyNode.attributes ) do
 				if styleName ~= "type" then
-					-- TODO: validation of theme values
 					if Validator.isValid( styleValue, validationTypeName ) then
 						propertyTheme[styleName] = Validator.parse( styleValue, validationTypeName )
 					else
@@ -53,9 +55,9 @@ function Theme:initTheme( nodes )
 					end
 				end
 			end
-			classTheme[propertyNode.name] = propertyTheme
+			classTheme[propertyNode.type] = propertyTheme
 		end
-		classes[classNode.name] = classTheme
+		classes[classNode.type] = classTheme
 	end
 	self.classes = classes
 end
@@ -95,6 +97,7 @@ function Theme:value( _class, propertyName, styleName, noError )
 
 	-- an error occured, try to see if the value was defined for a super class
 	if _class._extends then
+
 		local themeValue = self:value( _class._extends, propertyName, styleName, true )
 		if themeValue then
 			return themeValue

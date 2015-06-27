@@ -26,6 +26,7 @@ class "View" {
 	canvas = nil;
 	isCanvasHitTested = true;
 	isVisible = true;
+	theme = nil;
 }
 
 --[[
@@ -35,13 +36,14 @@ class "View" {
 ]]
 function View:init( properties )
 	self.animations = { names = {} }
+	self.theme = ThemeOutlet( self )
+	self.canvas = Canvas( self.x, self.y, self.width, self.height )
+	self:initCanvas()
 
 	if properties and type( properties ) == "table" then
 		self:properties( properties )
 	end
 
-	self.canvas = Canvas( self.x, self.y, self.width, self.height )
-	self:initCanvas()
 	self:initEventManager()
 end
 
@@ -111,17 +113,6 @@ function View:siblingsOfType( _class )
 	return siblings
 end
 
---[[
-	@instance
-	@desc Returns the value for the current theme given the property name and style)
-	@param [string] propertyName -- the name of the property
-	@param [string] styleName -- default is 'default', the name of the style
-	@return themeValue -- the theme value
-]]
-function View:themeValue( valueName, styleName )
-	return Theme.active:value( self.class, valueName, styleName )
-end
-
 function View:setX( x )
 	if self.canvas then
 		self.canvas.x = x
@@ -141,6 +132,11 @@ function View:setIsVisible( isVisible )
 		self.canvas.isVisible = isVisible
 	end
 	self.isVisible = isVisible
+end
+
+function View:getIsVisible()
+	-- if we don't have a parent we're effectively not visible
+	return self.parent and self.isVisible
 end
 
 function View:setWidth( width )
@@ -247,7 +243,8 @@ end
 ]]
 function View:hitTestEvent( event, parent )
 	parent = parent or self.parent
-	if event:typeOf( MouseEvent ) then
+	if not parent then return false
+	elseif event:typeOf( MouseEvent ) then
 		event:makeRelative( parent )
 		local x, y = event.x, event.y
 		return self:hitTest( x, y, parent )

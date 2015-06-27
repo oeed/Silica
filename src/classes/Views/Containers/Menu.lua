@@ -7,7 +7,7 @@ class "Menu" extends "Container" {
     isEnabled = true;
     -- isVisible acts as the boolans of whether the menu is open or closed.
 
-	isSingleShot = false; -- true if the menu should be removed and unlinked when cloesd (as opposed to simply hiding for reuse only)
+	isSingleShot = false; -- true if the menu should be removed and unlinked when closed (as opposed to simply hiding for reuse only)
 
 	topMargin = 3;
 	bottomMargin = 5;
@@ -55,6 +55,40 @@ function Menu:initCanvas()
     self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 2, self.fillColour, self.outlineColour, cornerRadius ) )
 end
 
+--[[
+	@static
+	@desc Creates a menu from interface file
+	@param [string] interfaceName -- the name of the interface file
+	@return [Menu] menu -- the menu
+]]
+function Menu.fromInterface( interfaceName )
+	local interface = Interface( interfaceName, Menu )
+	if interface then
+		local menu = interface.container
+		menu.interface = interface
+		return menu
+	end
+end
+
+--[[
+	@instance
+	@desc Show the menu as a context menu (sets it as a single shot)
+	@param [View] owner -- the object that invoked the context menu (usually the thing right clicked)
+	@param [number] x -- the x coordinate of the click (from event.x)
+	@param [number] y -- the y coordinate of the click (from event.y)
+]]
+function Menu:showContext( owner, x, y )
+	self.owner = owner
+	self.isSingleShot = true
+	self.x = x + owner.x - 1 - 5
+	self.y = y + owner.y - 1 - 5
+	if self.parent then
+        self.parent:removeChild( self )
+    end
+	owner.parent:insert( self )
+	self.isVisible = true
+end
+
 function Menu:setHeight( height )
     self.super:setHeight( height )
     if self.canvas then
@@ -66,8 +100,14 @@ end
 function Menu:setWidth( width )
     self.super:setWidth( width )
     if self.canvas then
-        self.backgroundObject.width = width - self.shadowRightMargin
-        self.shadowObject.width = width - self.shadowRightMargin
+    	local _width = width - self.shadowRightMargin
+        self.backgroundObject.width = _width
+        self.shadowObject.width = _width
+
+		local height = self.topMargin
+		for i, childView in ipairs( self.children ) do
+			childView.width = _width
+		end
     end
 end
 
@@ -77,18 +117,20 @@ end
 ]]
 function Menu:updateLayout()
 	if self.isVisible then
-		local width = 1
+		local width = self.owner and ( self.owner.menuMargin and self.owner.width + 2 * self.owner.menuMargin or 1 ) or 1
+		log('wid '..width)
 		local height = self.topMargin
 		for i, childView in ipairs( self.children ) do
 			width = math.max( width, childView.width )
 		end
 		width = width + (1 - width % 2) -- it must be an odd number (for the separators)
 		-- TODO: target position
+		
+		local height = self.topMargin
 		for i, childView in ipairs( self.children ) do
 			childView.x = 1
 			childView.y = height + 1
 			height = height + childView.height
-			childView.width = width
 		end
 		self.width = width + self.shadowRightMargin
 		self.height = height + self.bottomMargin
@@ -119,7 +161,9 @@ end
 ]]
 function Menu:onGlobalMouseDown( event )
 	if self.isVisible then
-		if self:hitTestEvent( event ) then
+		if self.owner and self.owner:hitTestEvent( event ) then
+			self.owner.event:handleEvent( event )
+		elseif self:hitTestEvent( event ) then
 			self.event:handleEvent( event )
 		else
 			self:close()
@@ -164,6 +208,9 @@ end
 ]]
 function Menu:open()
 	self.isVisible = true
+	if self.owner then
+		self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
+	end
 end
 
 --[[
@@ -172,7 +219,10 @@ end
 ]]
 function Menu:close()
 	self.isVisible = false
+	if self.owner then
+		self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
+	end
 	if self.isSingleShot then
-
+		-- TODO: dispose menu if single shot
 	end
 end

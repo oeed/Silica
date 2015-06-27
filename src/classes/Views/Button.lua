@@ -6,12 +6,9 @@ class "Button" extends "View" {
 
     isPressed = false;
     isEnabled = true;
-    cornerRadius = 6;
 
     shadowObject = nil;
     backgroundObject = nil;
-
-    themeStyle = 'default';
 }
 
 --[[
@@ -25,91 +22,51 @@ function Button:init( ... )
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 end
 
-function Button:setHeight( height )
-    self.super:setHeight( height )
-    if self.canvas then
-        local cornerRadius = math.min( height / 2, self.cornerRadius )
-        self.cornerRadius = cornerRadius
-        self.shadowObject.radius = cornerRadius
-        self.backgroundObject.radius = cornerRadius
-        self.backgroundObject.height = height - 1
-        self.shadowObject.height = height - 1
-    end
-end
-
 --[[
     @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Button:initCanvas()
-    local cornerRadius = self.cornerRadius
-    self.shadowObject = self.canvas:insert( RoundedRectangle( 2, 2, self.width - 1, self.height - 1, self.shadowColour, nil, cornerRadius ) )
-    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 1, self.fillColour, self.outlineColour, cornerRadius ) )
+    local shadowObject = self.canvas:insert( RoundedRectangle( 2, 2, self.width - 1, self.height - 1, self.theme.shadowColour ) )
+    local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 1, self.theme.fillColour, self.theme.outlineColour, cornerRadius ) )
+
+    self.theme:connect( backgroundObject, 'fillColour' )
+    self.theme:connect( backgroundObject, 'outlineColour' )
+    self.theme:connect( backgroundObject, 'radius', 'cornerRadius' )
+    self.theme:connect( shadowObject, 'shadowColour' )
+    self.theme:connect( shadowObject, 'radius', 'cornerRadius' )
+
+    self.backgroundObject = backgroundObject
+    self.shadowObject = shadowObject
 end
 
---[[
-    @instance
-    @desc Returns the current fill colour for the current style
-    @return [Graphics.colours] colour -- the fill colour
-]]
-function Button:getFillColour()
-    return self:themeValue( "fillColour", self.themeStyle )
+function Button:setHeight( height )
+    self.super:setHeight( height )
+    self.backgroundObject.height = height - 1
+    self.shadowObject.height = height - 1
 end
 
---[[
-    @instance
-    @desc Returns the current outline colour for the current style
-    @return [Graphics.colours] colour -- the outline colour
-]]
-function Button:getOutlineColour()
-    return self:themeValue( "outlineColour", self.themeStyle )
+function Button:setWidth( width )
+    self.super:setWidth( width )
+    self.backgroundObject.width = width - 1
+    self.shadowObject.width = width - 1
 end
 
---[[
-    @instance
-    @desc Returns the current shadow colour for the current style
-    @return [Graphics.colours] colour -- the shadow colour
-]]
-function Button:getShadowColour()
-    return self:themeValue( "shadowColour", self.themeStyle )
+function Button:updateThemeStyle()
+    self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
 end
 
---[[
-    @instance
-    @desc Returns the current corner radius for the current style
-    @return [number] cornerRadius -- the corner radius
-]]
-function Button:getCornerRadius()
-    return self:themeValue( "cornerRadius", self.themeStyle )
+function Button:setIsEnabled( isEnabled )
+    self.isEnabled = isEnabled
+    self:updateThemeStyle()
 end
 
---[[
-    @instance
-    @desc Update the canvas appearance.
-]]
-function Button:updateCanvas()
-    local backgroundObject = self.backgroundObject
-    if self.canvas and backgroundObject then
-        self.themeStyle = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
-        self.shadowObject.fillColour = self.shadowColour
-        backgroundObject.fillColour = self.fillColour
-        backgroundObject.outlineColour = self.outlineColour
-        
-        local isPressed = self.isPressed
-        backgroundObject.x = isPressed and 2 or 1
-        backgroundObject.y = isPressed and 2 or 1
-    end
-end
-
---[[
-    @instance
-    @desc Sets whether the button is pressed, changing the drawing state
-]]
 function Button:setIsPressed( isPressed )
     self.isPressed = isPressed
-    if isPressed ~= nil then
-        self:updateCanvas()
-    end
+    self:updateThemeStyle()
+    local backgroundObject = self.backgroundObject
+    backgroundObject.x = isPressed and 2 or 1
+    backgroundObject.y = isPressed and 2 or 1
 end
 
 --[[

@@ -1,4 +1,7 @@
 
+-- hello there?
+-- is there anybody in there?
+
 class "ScreenCanvas" extends "Canvas" {
 	fillColour = Graphics.colours.WHITE;
 	drawn = {};
@@ -10,10 +13,16 @@ class "ScreenCanvas" extends "Canvas" {
 	@param [term] terminal -- the terminal object to draw to
 	@return self
 ]]
-function ScreenCanvas:drawToTerminal( terminal )
+function ScreenCanvas:drawToTerminal( terminal )	
     if self.isVisible then
 		if self.hasChanged then
+			local startScr = os.clock()
+        	-- log( 'Starting ScreenCanvas:draw() at ' .. startScr )
+
 			self:draw()
+        	-- log( 'Finished ScreenCanvas:draw() dt: ' .. os.clock() - startScr )
+
+        	-- log( 'Starting render to screen at ' .. os.clock() )
 
 			terminal = terminal or term
 
@@ -41,36 +50,42 @@ function ScreenCanvas:drawToTerminal( terminal )
 				[width - 1]={ [1]=true, [2]=true, [height - 1]=true, [height]=true },
 				[width]={ [1]=true, [2]=true, [3]=true, [4]=true, [height - 3]=true, [height - 2]=true, [height - 1]=true, [height]=true },
 			}
+			local cornerColour = Graphics.colours.GREY
+			for x, v in pairs( corner ) do -- ipairs won't do the [height-3] indexes, for example
+				for y, v in pairs( v ) do
+					buffer[ ( y - 1 ) * width + x ] = cornerColour
+				end
+			end
 			for y = 1, self.height do
 				currentY = y
 				currentLength = 0
 				currentColour = nil
 				for x = 1, width do
-					-- if x == width then print(corner[x])  print(corner[x][y]) end
-					if not corner[x] or not corner[x][y] then
-						local p = ( y - 1 ) * width + x
-						local c = buffer[p] or colour
-						if c ~= drawn[p] then
-							drawn[p] = c
-							if currentColour == c then
-								currentLength = currentLength + 1
-							else
-								draw()
-								currentLength = 1
-								currentX = x
-								currentColour = c
-							end
-						elseif currentLength ~= 0 then
-							draw()
-							currentLength = 0
-							currentColour = nil
+					local p = ( y - 1 ) * width + x
+					local c = buffer[p] or colour
+					if c ~= drawn[p] then
+						drawn[p] = c
+						if currentColour == c then
+							currentLength = currentLength + 1
 						else
-							currentColour = nil
+							draw()
+							currentLength = 1
+							currentX = x
+							currentColour = c
 						end
+					elseif currentLength ~= 0 then
+						draw()
+						currentLength = 0
+						currentColour = nil
+					else
+						currentColour = nil
 					end
 				end
 				draw()
 			end
+
+        	-- log( 'Finished render to screen at ' .. os.clock() )
+
 		end
 	end
 	return self

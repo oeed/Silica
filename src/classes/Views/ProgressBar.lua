@@ -12,16 +12,6 @@ class "ProgressBar" extends "View" {
     value = 0.3;
     maximum = 1;
 
-    fillColour = Graphics.colours.WHITE;
-    barColour = Graphics.colours.BLUE;
-    stripeColour = Graphics.colours.LIGHT_BLUE;
-    outlineColour = Graphics.colours.LIGHT_GREY;
-
-    disabledFillColour = Graphics.colours.WHITE;
-    disabledBarColour = Graphics.colours.GREY;
-    disabledStripeColour = Graphics.colours.LIGHT_GREY;
-    disabledOutlineColour = Graphics.colours.LIGHT_GREY;
-
     backgroundObject = nil;
     stripesObject = nil;
 
@@ -32,82 +22,35 @@ class "ProgressBar" extends "View" {
     @desc Sets up the canvas and it's graphics objects
 ]]
 function ProgressBar:initCanvas()
-    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.fillColour, self.outlineColour, self.cornerRadius ) )
-    self.stripesObject = self.canvas:insert( ProgressBarStripes( 1, 1, math.floor( (self.value/self.maximum) * self.width + 0.5 ), self.height, self.barColour, self.barColour, self.stripeColour, self.cornerRadius ) )
+    local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
+    local stripesObject = self.canvas:insert( ProgressBarStripes( 1, 1, math.floor( (self.value/self.maximum) * self.width + 0.5 ), self.height, self.theme.barColour, self.theme.barColour, self.theme.stripeColour, self.theme.cornerRadius ) )
+    self.theme:connect( backgroundObject, 'fillColour' )
+    self.theme:connect( backgroundObject, 'outlineColour' )
+    self.theme:connect( backgroundObject, 'radius', 'cornerRadius' )
+    self.theme:connect( stripesObject, 'fillColour', 'barColour' )
+    self.theme:connect( stripesObject, 'outlineColour', 'barColour' )
+    self.theme:connect( stripesObject, 'stripeColour' )
+    self.theme:connect( stripesObject, 'radiusLeft', 'cornerRadius' )
+
+    self.backgroundObject = backgroundObject
+    self.stripesObject = stripesObject
 end
 
---[[
-    @instance
-    @desc Returns the current fill colour for the current style
-    @return [Graphics.colours] colour -- the fill colour
-]]
-function ProgressBar:getFillColour()
-    return self:themeValue( "fillColour", self.themeStyle )
+function ProgressBar:setWidth( width )
+    self.width = width
+    self.backgroundObject.width = width
+    self.stripesObject.width = math.floor( (self.value/self.maximum) * width + 0.5 )
 end
 
---[[
-    @instance
-    @desc Returns the current outline colour for the current style
-    @return [Graphics.colours] colour -- the outline colour
-]]
-function ProgressBar:getOutlineColour()
-    return self:themeValue( "outlineColour", self.themeStyle )
+function ProgressBar:setHeight( height )
+    self.height = height
+    self.backgroundObject.height = height
+    self.stripesObject.height = height
 end
 
---[[
-    @instance
-    @desc Returns the current bar colour for the current style
-    @return [Graphics.colours] colour -- the bar colour
-]]
-function ProgressBar:getBarColour()
-    return self:themeValue( "barColour", self.themeStyle )
-end
-
---[[
-    @instance
-    @desc Returns the current stripe colour for the current style
-    @return [Graphics.colours] colour -- the stripe colour
-]]
-function ProgressBar:getStripeColour()
-    return self:themeValue( "stripeColour", self.themeStyle )
-end
-
---[[
-    @instance
-    @desc Returns the current bar outline colour for the current style
-    @return [Graphics.colours] colour -- the bar outline colour
-]]
-function ProgressBar:getBarOutlineColour()
-    return self:themeValue( "barOutlineColour", self.themeStyle )
-end
-
---[[
-    @instance
-    @desc Returns the current corner radius for the current style
-    @return [number] cornerRadius -- the corner radius
-]]
-function ProgressBar:getCornerRadius()
-    return self:themeValue( "cornerRadius", self.themeStyle )
-end
-
---[[
-    @instance
-    @desc Update the canvas appearance.
-]]
-function ProgressBar:updateCanvas()
-    local backgroundObject = self.backgroundObject
-    if self.canvas and backgroundObject then
-        self.themeStyle = self.isEnabled and "default" or "disabled"
-        local stripesObject = self.stripesObject
-        local width, height = self.width, self.height
-        backgroundObject.width = width
-        backgroundObject.fillColour = self.fillColour
-        backgroundObject.outlineColour = self.outlineColour
-        stripesObject.width = math.floor( (self.value/self.maximum) * width + 0.5 )
-        stripesObject.fillColour = self.barColour
-        stripesObject.outlineColour = self.barColour
-        stripesObject.stripeColour = self.stripeColour
-    end
+function ProgressBar:setIsEnabled( isEnabled )
+    self.isEnabled = isEnabled
+    self.themeStyle = self.isEnabled and "default" or "disabled"
 end
 
 --[[
@@ -117,7 +60,7 @@ end
 ]]
 function ProgressBar:setValue( value )
     self.value = math.min( math.max( value, 0 ), self.maximum )
-    self:updateCanvas()
+    self.stripesObject.width = math.floor( (self.value/self.maximum) * self.width + 0.5 )
 end
 
 --[[
@@ -127,16 +70,16 @@ end
 ]]
 function ProgressBar:setMaximum( maximum )
     self.maximum = math.max( maximum, 0 )
-    self:updateCanvas()
+    self.stripesObject.width = math.floor( (self.value/self.maximum) * self.width + 0.5 )
 end
 
 --[[
-	@instance
-	@desc Fired on a screen update. Animates the stripes
-	@param [number] deltaTime -- the time since last update
+    @instance
+    @desc Fired on a screen update. Animates the stripes
+    @param [number] deltaTime -- the time since last update
 ]]
 function ProgressBar:update( deltaTime )
-	if self.value > 0 or self.isIndeterminate then
-		-- self.stripesObject.animationStep = self.stripesObject.animationStep + deltaTime * 20
-	end
+    if self.value > 0 or self.isIndeterminate then
+        -- self.stripesObject.animationStep = self.stripesObject.animationStep + deltaTime * 20
+    end
 end
