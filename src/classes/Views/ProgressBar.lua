@@ -22,6 +22,7 @@ class "ProgressBar" extends "View" {
     @desc Sets up the canvas and it's graphics objects
 ]]
 function ProgressBar:initCanvas()
+    self.super:initCanvas()
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
     local stripesObject = self.canvas:insert( ProgressBarStripes( 1, 1, math.floor( (self.value/self.maximum) * self.width + 0.5 ), self.height, self.theme.barColour, self.theme.barColour, self.theme.stripeColour, self.theme.cornerRadius ) )
     self.theme:connect( backgroundObject, 'fillColour' )

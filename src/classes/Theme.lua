@@ -75,6 +75,7 @@ function Theme:value( _class, propertyName, styleName, noError )
 	if styleName == 'type' then
 		error( "Reserverd style name: " .. styleName )
 	end
+	styleName = styleName or 'default'
 	local className = _class.className
 
 	local err

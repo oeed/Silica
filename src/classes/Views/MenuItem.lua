@@ -29,6 +29,7 @@ function MenuItem:init( ... )
 end
 
 function MenuItem:initCanvas()
+    self.super:initCanvas()
     local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
     self.theme:connect( backgroundObject, 'fillColour' )
     self.backgroundObject = backgroundObject

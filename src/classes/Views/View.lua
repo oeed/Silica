@@ -38,12 +38,11 @@ class "View" {
 function View:init( properties )
 	self.animations = { names = {} }
 	self.theme = ThemeOutlet( self )
-	self.canvas = Canvas( self.x, self.y, self.width, self.height )
+	self:initCanvas()
 
 	if properties and type( properties ) == "table" then
 		self:properties( properties )
 	end
-	self:initCanvas()
 
 	self:initEventManager()
 end
@@ -60,7 +59,9 @@ end
     @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
-function View:initCanvas() end
+function View:initCanvas()
+	self.canvas = Canvas( self.x, self.y, self.width, self.height )
+end
 
 --[[
 	@instance

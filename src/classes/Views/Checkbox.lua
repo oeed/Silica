@@ -27,6 +27,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Checkbox:initCanvas()
+    self.canvas = ScreenCanvas( self.x, self.y, self.width, self.height )
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
     
     local checkObject = Path( 2, 2, self.width - 2, self.height - 2, Graphics.colours.TRANSPARENT, 1, 4 )

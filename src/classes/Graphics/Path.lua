@@ -156,6 +156,17 @@ end
 
 --[[
 	@instance
+	@desc Moves the current position to the given coordinates.
+	@param [number] x -- the x coordinate to move to
+	@param [number] y -- the y coordinate to move to
+]]
+function Path:moveTo( x, y )
+	self.currentX = x
+	self.currentY = y
+end
+
+--[[
+	@instance
 	@desc Adds a straight line from the current position to the specified position
 	@param [number] x -- the x coordinate to add a line to
 	@param [number] y -- the y coordinate to add a line to

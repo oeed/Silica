@@ -51,6 +51,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Menu:initCanvas()
+	self.super:initCanvas()
     local cornerRadius = self.cornerRadius
     self.shadowObject = self.canvas:insert( RoundedRectangle( 1 + self.shadowRightMargin, 1 + self.shadowTopMargin, self.width - 1, self.height - 2, self.shadowColour, nil, cornerRadius ) )
     self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 2, self.fillColour, self.outlineColour, cornerRadius ) )

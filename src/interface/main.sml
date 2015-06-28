@@ -30,6 +30,9 @@
 	<ProgressBar  x=70 y=150 />
 
 	<Window x=150 y=40 width=130 height=90 >
+		<WindowContainer>
+	<Button identifier=okayButton x=10 y=10 text=Okay />
+		</WindowContainer>
 	</Window>
 
 </ApplicationContainer>

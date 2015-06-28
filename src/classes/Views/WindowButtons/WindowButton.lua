@@ -1,9 +1,10 @@
 
 class "WindowButton" extends "View" {
-	width = 5;
-	height = 5;
+	width = 9;
+	height = 7;
     isPressed = false;
     backgroundObject = nil;
+    symbolObject = nil;
     window = nil;
 }
 
@@ -20,11 +21,12 @@ function WindowButton:init( ... )
 end
 
 function WindowButton:initCanvas()
+	self.super:initCanvas()
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height ) )
 
     self.theme:connect( backgroundObject, 'fillColour' )
     -- self.theme:connect( backgroundObject, 'outlineColour' )
-    self.theme:connect( backgroundObject, 'radius', 'cornerRadius' )
+    self.theme:connect( backgroundObject, 'topLeftRadius', 'cornerRadius' )
 
     self.backgroundObject = backgroundObject
 end
@@ -65,7 +67,6 @@ end
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
 function WindowButton:onMouseDown( event )
-	log('hia')
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
     end

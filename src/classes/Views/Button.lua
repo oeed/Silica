@@ -27,6 +27,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Button:initCanvas()
+    self.super:initCanvas()
     local shadowObject = self.canvas:insert( RoundedRectangle( 2, 2, self.width - 1, self.height - 1, self.theme.shadowColour ) )
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 1, self.theme.fillColour, self.theme.outlineColour, cornerRadius ) )
 

@@ -38,10 +38,8 @@ function Application:init()
 	if self.interfaceName then
 		self.container = Interface( self.interfaceName ).container
 	else
-		log('balnk')
 		self.container = ApplicationContainer()
 	end
-log('hi')
 
 	self.event:connect( Event.TIMER, self.onTimer )
 

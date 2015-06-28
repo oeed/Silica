@@ -1,6 +1,6 @@
 
 class "ScreenCanvas" extends "Canvas" {
-	fillColour = Graphics.colours.WHITE;
+	fillColour = Graphics.colours.LIGHT_BLUE;
 	drawn = {};
 }
 

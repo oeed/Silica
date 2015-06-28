@@ -25,6 +25,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Radio:initCanvas()
+    self.super:initCanvas()
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
     self.theme:connect( backgroundObject, 'fillColour' )
     self.theme:connect( backgroundObject, 'outlineColour' )

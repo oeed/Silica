@@ -23,6 +23,7 @@ function SeparatorMenuItem:init( ... )
 end
 
 function SeparatorMenuItem:initCanvas()
+	self.super:initCanvas()
     self.backgroundObject = self.canvas:insert( Separator( 5, 2, self.width - 8, 1 ) )
 end
 

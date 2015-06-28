@@ -48,17 +48,20 @@
 	</Window>
 	
 	<CloseWindowButton>
-		<fillColour type="Graphics.colours" default="RED" pressed="ORANGE" disabled="GREY"/>
-		<cornerRadius type="number" default="2" />
+		<fillColour type="Graphics.colours" default="LIGHT_GREY" pressed="RED" disabled="GREY"/>
+		<symbolColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="GREY"/>
+		<cornerRadius type="number" default="4" />
 	</CloseWindowButton>
 	
 	<MinimiseWindowButton>
-		<fillColour type="Graphics.colours" default="ORANGE" pressed="ORANGE" disabled="GREY"/>
-		<cornerRadius type="number" default="2" />
+		<fillColour type="Graphics.colours" default="LIGHT_GREY" pressed="ORANGE" disabled="GREY"/>
+		<symbolColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="GREY"/>
+		<cornerRadius type="number" default="0" />
 	</MinimiseWindowButton>
 	
 	<MaximiseWindowButton>
-		<fillColour type="Graphics.colours" default="LIME" pressed="ORANGE" disabled="GREY"/>
-		<cornerRadius type="number" default="2" />
+		<fillColour type="Graphics.colours" default="LIGHT_GREY" pressed="LIME" disabled="GREY"/>
+		<symbolColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="GREY"/>
+		<cornerRadius type="number" default="0" />
 	</MaximiseWindowButton>
 </Theme>

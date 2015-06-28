@@ -29,6 +29,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function PathView:initCanvas()
+	self.super:initCanvas()
 	self.canvas.fillColour = Graphics.colours.LIGHT_GREY
 
 	local path = Path( 1, 1, self.width - 20, self.height - 20, Graphics.colours.BLUE, 1, 1 )

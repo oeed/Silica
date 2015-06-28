@@ -14,6 +14,9 @@ class "ApplicationContainer" extends "Container" {
 ]]
 function ApplicationContainer:init( ... )
 	self.super:init( ... )
+end
+
+function ApplicationContainer:initCanvas()
 	self.canvas = ScreenCanvas( self.x, self.y, self.width, self.height )
 end
 
