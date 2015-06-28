@@ -1,8 +1,8 @@
 
 class "Window" extends "Container" {
-	separatorObject = nil;	
-	shadowObject = nil;
-	barObject = nil;	
+	-- separatorObject = nil;	
+	-- shadowObject = nil;
+	-- barObject = nil;	
 	barHeight = 7;
 
 	container = nil;
@@ -21,6 +21,9 @@ class "Window" extends "Container" {
     minHeight = 40;
     maxWidth = 200;
     maxHeight = 150;
+
+
+    isCanvasHitTested = false;
 }
 
 --[[
@@ -48,6 +51,7 @@ end
 ]]
 function Window:initCanvas()
     self.super:initCanvas()
+    -- self.canvas.fillColour = Graphics.colours.GREEN
 	local barHeight = self.barHeight
     local shadowObject = self.canvas:insert( RoundedRectangle( 3, 4, self.width - 2, self.height - 3 ) )
     local barObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 2, barHeight ) )
@@ -154,8 +158,8 @@ function Window:onMouseDownAfter( event )
         y = event.y
         local width = self.width
         local height = self.height
-        local isResizingX = x >= width - 2
-        local isResizingY = y >= height - 3
+        local isResizingX = x >= width - 6
+        local isResizingY = y >= height - 8
         self.isResizingX = isResizingX
         self.isResizingY = isResizingY
         self.isDragging = not ( isResizingX or isResizingY )

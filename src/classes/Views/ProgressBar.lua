@@ -91,6 +91,6 @@ end
 ]]
 function ProgressBar:update( deltaTime )
     if self.value > 0 or self.isIndeterminate then
-        -- self.stripesObject.animationStep = self.stripesObject.animationStep + deltaTime * 20
+        self.stripesObject.animationStep = self.stripesObject.animationStep + deltaTime * 20
     end
 end

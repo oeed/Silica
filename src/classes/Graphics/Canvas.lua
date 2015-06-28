@@ -163,12 +163,12 @@ function Canvas:drawTo( canvas )
         local canvasWidth = canvas.width
         local canvasHeight = canvas.height
         local canvasBuffer = canvas.buffer
-        local transparent = Graphics.colours.TRANSPARENT
+        local TRANSPARENT = Graphics.colours.TRANSPARENT
         for x = 1, width do
             for y = 0, height - 1 do -- just so there's no need for y-1 below
                 local colour = buffer[y * width + x] or fillColour
                 local nx, ny = x + _x, y + _y
-                if colour ~= transparent and nx >= 1 and ny >= 1 and nx <= canvasWidth and ny <= canvasHeight then
+                if colour ~= TRANSPARENT and nx >= 1 and ny >= 1 and nx <= canvasWidth and ny <= canvasHeight then
                     canvasBuffer[( ny - 1 ) * canvasWidth + nx] = colour
                 end
             end

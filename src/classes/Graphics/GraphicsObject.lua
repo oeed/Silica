@@ -154,8 +154,9 @@ end
 ]]
 function GraphicsObject:setHasChanged( hasChanged )
 	if hasChanged then
-		if self.parent then
-			self.parent.hasChanged = true
+		local parent = self.parent
+		if parent then
+			parent.hasChanged = true
 		end
 		if self.fill then
 			self.fill = nil
@@ -234,10 +235,10 @@ function GraphicsObject:getOutline( fill )
 end
 
 --[[
-    @instance
-    @desc Draws a the graphics object to the canvas
-    @param [Canvas] canvas -- the canvas to draw to
-    @return self
+	@instance
+	@desc Draws a the graphics object to the canvas
+	@param [Canvas] canvas -- the canvas to draw to
+	@return self
 ]]
 function GraphicsObject:drawTo( canvas )
 	if self.isVisible then
@@ -252,10 +253,20 @@ function GraphicsObject:drawTo( canvas )
 		local _x = self.x - 1
 		local _y = self.y - 1
 
+		local buffer = canvas.buffer
+		local width, height = canvas.width, canvas.height
+		local TRANSPARENT = Graphics.colours.TRANSPARENT
+		local function setPixel( x, y, colour )
+			if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then
+				buffer[ ( y - 1 ) * width + x ] = colour
+			end
+			return canvas
+		end
+
 		for x, row in pairs( fill ) do
 			for y, _ in pairs( row ) do
 				if not outline or not outline[x] or not outline[x][y] then
-					canvas:setPixel( _x + x, _y + y, fillColour )
+					setPixel( _x + x, _y + y, fillColour )
 				end
 			end
 		end
@@ -263,11 +274,11 @@ function GraphicsObject:drawTo( canvas )
 		if outline then
 			for x, row in pairs( outline ) do
 				for y, _ in pairs( row ) do
-					canvas:setPixel( _x + x, _y + y, outlineColour )
+					setPixel( _x + x, _y + y, outlineColour )
 				end
 			end
 		end
 	end
 	
-    return self
+	return self
 end
