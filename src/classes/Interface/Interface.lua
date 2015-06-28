@@ -84,4 +84,5 @@ function Interface:initContainer( nodes, extend )
 	end
 
 	self.container = container
+	self.container.event:handleEvent( LoadedInterfaceEvent( self.container ) )
 end

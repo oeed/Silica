@@ -6,7 +6,6 @@
 
 	<Checkbox identifier=agreeCheckbox x=10 y=40 isChecked=true />
 
-
 	<Container x=10 y=60 width=20 height=40>
 		<Radio y=1 isChecked=true />
 		<Radio y=11/>
@@ -29,5 +28,8 @@
 	<PathView x=70 y=35 />
 
 	<ProgressBar  x=70 y=150 />
+
+	<Window x=150 y=40 width=130 height=90 >
+	</Window>
 
 </ApplicationContainer>

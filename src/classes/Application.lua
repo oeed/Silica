@@ -12,6 +12,7 @@ class "Application" {
 	container = nil;
 	event = nil;
 	schedules = {};
+	keyboardShortcutManager = nil;
 
 	interfaceName = nil;
 
@@ -30,15 +31,17 @@ class "Application" {
 function Application:init()
 	self.event = ApplicationEventManager( self )
 	class.application = self
+	self.keyboardShortcutManager = KeyboardShortcutManager( self )
 	
 	Theme.active = Theme( self.themeName )
 	
 	if self.interfaceName then
 		self.container = Interface( self.interfaceName ).container
 	else
+		log('balnk')
 		self.container = ApplicationContainer()
 	end
-
+log('hi')
 
 	self.event:connect( Event.TIMER, self.onTimer )
 
@@ -68,7 +71,6 @@ function Application:update()
 
 	self.container:update( deltaTime )
 	self.container:draw()
-	
 end
 
 --[[
@@ -77,7 +79,7 @@ end
 	@param [number] time -- in how many seconds the function should be run
 	@param [function] func -- the function to call
 	@param [class] _class -- the class to call the function on (optional)
-	@param tag -- any unique value you want to be associated with the tag. will be passed as the only parameter (other than self)
+	@param ... -- any values you want. will be passed as the parameters (other than self)
 	@return [number] scheduleId -- the ID of the scheduled task
 ]]
 function Application:schedule( func, time, ... )

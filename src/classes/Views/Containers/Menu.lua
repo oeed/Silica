@@ -8,6 +8,7 @@ class "Menu" extends "Container" {
     -- isVisible acts as the boolans of whether the menu is open or closed.
 
 	isSingleShot = false; -- true if the menu should be removed and unlinked when closed (as opposed to simply hiding for reuse only)
+	hitTestOwner = false; -- true if clicks should first be sent to the owner if they hit test (and it has one)
 
 	topMargin = 3;
 	bottomMargin = 5;
@@ -118,7 +119,6 @@ end
 function Menu:updateLayout()
 	if self.isVisible then
 		local width = self.owner and ( self.owner.menuMargin and self.owner.width + 2 * self.owner.menuMargin or 1 ) or 1
-		log('wid '..width)
 		local height = self.topMargin
 		for i, childView in ipairs( self.children ) do
 			width = math.max( width, childView.width )
@@ -161,7 +161,7 @@ end
 ]]
 function Menu:onGlobalMouseDown( event )
 	if self.isVisible then
-		if self.owner and self.owner:hitTestEvent( event ) then
+		if self.hitTestOwner and self.owner and self.owner:hitTestEvent( event ) then
 			self.owner.event:handleEvent( event )
 		elseif self:hitTestEvent( event ) then
 			self.event:handleEvent( event )
@@ -224,5 +224,6 @@ function Menu:close()
 	end
 	if self.isSingleShot then
 		-- TODO: dispose menu if single shot
+		self.parent:remove( self )
 	end
 end

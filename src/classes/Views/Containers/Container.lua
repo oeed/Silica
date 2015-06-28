@@ -23,8 +23,6 @@ class "Container" extends "View" {
     @param value -- the value
 ]]
 function Container:set( key, value )
-	-- TODO: probably not needed, interface outlet connecting
-	-- self.super:set( key, value )
 	if value and type( value ) == 'table' and value.typeOf and value:typeOf( InterfaceOutlet ) then
 		value:connect( key, self )
 	elseif self.interfaceOutlets[key] and not value then
@@ -38,32 +36,6 @@ end
 ]]
 function Container:initEventManager()
 	self.event = ContainerEventManager( self )
-end
-
---[[
-	@instance
-	@desc Adds a child view to the container (on the top by default)
-	@param [View] childView -- the view to add to the container
-	@param [number] position -- the z-position of the child (top by default). higher number means further back
-]]
-function Container:insert( childView, position )
-	if position then
-		table.insert( self.children, position, childView )
-	else
-		self.children[#self.children + 1] = childView
-	end
-
-	childView.parent = self
-	self.canvas:insert( childView.canvas )
-
-	for i, childView in ipairs( self.children ) do
-		local onSiblingsChanged = childView.onSiblingsChanged
-		if onSiblingsChanged then onSiblingsChanged( childView ) end
-	end
-
-	for key, interfaceOutlet in pairs( self.interfaceOutlets ) do
-		interfaceOutlet:childAdded( childView )
-	end
 end
 
 --[[
@@ -140,11 +112,38 @@ end
 
 --[[
 	@instance
+	@desc Adds a child view to the container (on the top by default)
+	@param [View] childView -- the view to add to the container
+	@param [number] position -- the z-position of the child (top by default). higher number means further back
+	@return [View] childView -- the sent child view
+]]
+function Container:insert( childView, position )
+	if position then
+		table.insert( self.children, position, childView )
+	else
+		self.children[#self.children + 1] = childView
+	end
+
+	childView.parent = self
+	self.canvas:insert( childView.canvas )
+
+	for i, childView in ipairs( self.children ) do
+		local onSiblingsChanged = childView.onSiblingsChanged
+		if onSiblingsChanged then onSiblingsChanged( childView ) end
+	end
+	for key, interfaceOutlet in pairs( self.interfaceOutlets ) do
+		interfaceOutlet:childAdded( childView )
+	end
+	return childView
+end
+
+--[[
+	@instance
 	@desc Removes the first instance of the child view from the container
 	@param [View] childView -- the view to add to the container
 	@return [boolean] didRemove -- whether a child was removed
 ]]
-function Container:removeChild( removingView )
+function Container:remove( removingView )
 	local didRemove = false
 
 	for i, childView in ipairs( self.children ) do

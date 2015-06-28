@@ -1,20 +1,17 @@
 
-class "Button" extends "View" {
-
-    height = 12; -- the default height
-    width = 30;
-
+class "WindowButton" extends "View" {
+	width = 5;
+	height = 5;
     isPressed = false;
-
-    shadowObject = nil;
     backgroundObject = nil;
+    window = nil;
 }
 
 --[[
     @constructor
     @desc Creates a button object and connects the event handlers
 ]]
-function Button:init( ... )
+function WindowButton:init( ... )
     self.super:init( ... )
     
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
@@ -22,51 +19,28 @@ function Button:init( ... )
     if self.onMouseUp then self:event( Event.MOUSE_UP, self.onMouseUp ) end
 end
 
---[[
-    @instance
-    @desc Sets up the canvas and it's graphics objects
-]]
-function Button:initCanvas()
-    local shadowObject = self.canvas:insert( RoundedRectangle( 2, 2, self.width - 1, self.height - 1, self.theme.shadowColour ) )
-    local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 1, self.theme.fillColour, self.theme.outlineColour, cornerRadius ) )
+function WindowButton:initCanvas()
+    local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height ) )
 
     self.theme:connect( backgroundObject, 'fillColour' )
-    self.theme:connect( backgroundObject, 'outlineColour' )
+    -- self.theme:connect( backgroundObject, 'outlineColour' )
     self.theme:connect( backgroundObject, 'radius', 'cornerRadius' )
-    self.theme:connect( shadowObject, 'shadowColour' )
-    self.theme:connect( shadowObject, 'radius', 'cornerRadius' )
 
     self.backgroundObject = backgroundObject
-    self.shadowObject = shadowObject
 end
 
-function Button:setHeight( height )
-    self.super:setHeight( height )
-    self.backgroundObject.height = height - 1
-    self.shadowObject.height = height - 1
-end
-
-function Button:setWidth( width )
-    self.super:setWidth( width )
-    self.backgroundObject.width = width - 1
-    self.shadowObject.width = width - 1
-end
-
-function Button:updateThemeStyle()
+function WindowButton:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
 end
 
-function Button:setIsEnabled( isEnabled )
+function WindowButton:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
     self:updateThemeStyle()
 end
 
-function Button:setIsPressed( isPressed )
+function WindowButton:setIsPressed( isPressed )
     self.isPressed = isPressed
     self:updateThemeStyle()
-    local backgroundObject = self.backgroundObject
-    backgroundObject.x = isPressed and 2 or 1
-    backgroundObject.y = isPressed and 2 or 1
 end
 
 --[[
@@ -75,7 +49,7 @@ end
     @param [Event] event -- the mouse up event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
-function Button:onGlobalMouseUp( event )
+function WindowButton:onGlobalMouseUp( event )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
@@ -90,7 +64,8 @@ end
     @param [Event] event -- the mouse down event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
-function Button:onMouseDown( event )
+function WindowButton:onMouseDown( event )
+	log('hia')
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
     end

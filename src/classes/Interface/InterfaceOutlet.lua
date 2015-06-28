@@ -51,7 +51,6 @@ function InterfaceOutlet:connect( key, container )
 	else
 		self.views = container:findChild( self.identifier )
 	end
-
 	-- When you index the the outlet it will return tracked view(s)
 	self.container['get' .. self.key:sub( 1, 1 ):upper() .. self.key:sub( 2, -1 )] = function( container )
 		return self.views

@@ -5,7 +5,7 @@ class "InterfaceEvent" extends "Event" {
 
 --[[
 	@constructor
-	@desc Creates a interface event from the arguments
+	@desc Creates an interface event from the arguments
 	@param [class] owner -- the owner view
 ]]
 function InterfaceEvent:init( owner )

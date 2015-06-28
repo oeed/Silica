@@ -84,7 +84,7 @@ end
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
 function Checkbox:onMouseUp( event )	
-    if self.isPressed then
+    if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled then
     		if self:hitTestEvent( event ) then
@@ -102,7 +102,7 @@ end
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
 function Checkbox:onMouseDown( event )
-    if self.isEnabled then
+    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
     end
     return true

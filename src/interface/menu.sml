@@ -1,5 +1,5 @@
-<Menu>
-	<MenuItem text="Blah" />
+<TasksMenu>
+	<RebootMenuItem text="Blah" />
 	<SeparatorMenuItem/>
-	<MenuItem text="Boo" />
-</Menu>
+	<MenuItem identifier="greenItem" text="Boo" />
+</TasksMenu>

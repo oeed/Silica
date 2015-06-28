@@ -1,6 +1,6 @@
 
-class "KeyEvent" extends "Event" {
-	eventType = Event.KEY;
+class "KeyDownEvent" extends "Event" {
+	eventType = Event.KEY_DOWN;
 	keyCode = nil;
 	isCharacter = nil;
 }
@@ -10,7 +10,7 @@ class "KeyEvent" extends "Event" {
 	@desc Creates a key event from the arguments
 	@param [table] arguments -- the event arguments
 ]]
-function KeyEvent:init( arguments )
+function KeyDownEvent:init( arguments )
 	self.super:init( arguments )
 
 	if #arguments >= 2 then

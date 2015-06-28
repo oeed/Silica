@@ -173,7 +173,10 @@ function GraphicsObject:setParent( parent )
 	if self.parent then
 		self.parent:remove( self )
 	end
-	parent:insert( self )
+	self.parent = parent
+	if parent then
+		parent:insert( self )
+	end
 end
 
 --[[

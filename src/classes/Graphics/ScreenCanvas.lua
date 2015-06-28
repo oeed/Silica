@@ -1,7 +1,4 @@
 
--- hello there?
--- is there anybody in there?
-
 class "ScreenCanvas" extends "Canvas" {
 	fillColour = Graphics.colours.WHITE;
 	drawn = {};

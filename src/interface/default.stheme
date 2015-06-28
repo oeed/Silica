@@ -37,4 +37,28 @@
 		<stripeColour type="Graphics.colours" default="LIGHT_BLUE" disabled="LIGHT_GREY"/>
 		<barOutlineColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
 	</ProgressBar>
+
+	<Window>
+		<topCornerRadius type="number" default="4" />
+		<bottomCornerRadius type="number" default="2" />
+		<barColour type="Graphics.colours" default="LIGHT_GREY" />
+		<separatorColour type="Graphics.colours" default="GREY" disabled="LIGHT_GREY" />
+		<textColour type="Graphics.colours" default="BLACK" disabled="GREY"/>
+		<shadowColour type="Graphics.colours" default="GREY" />
+	</Window>
+	
+	<CloseWindowButton>
+		<fillColour type="Graphics.colours" default="RED" pressed="ORANGE" disabled="GREY"/>
+		<cornerRadius type="number" default="2" />
+	</CloseWindowButton>
+	
+	<MinimiseWindowButton>
+		<fillColour type="Graphics.colours" default="ORANGE" pressed="ORANGE" disabled="GREY"/>
+		<cornerRadius type="number" default="2" />
+	</MinimiseWindowButton>
+	
+	<MaximiseWindowButton>
+		<fillColour type="Graphics.colours" default="LIME" pressed="ORANGE" disabled="GREY"/>
+		<cornerRadius type="number" default="2" />
+	</MaximiseWindowButton>
 </Theme>

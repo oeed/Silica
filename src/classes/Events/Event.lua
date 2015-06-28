@@ -8,11 +8,14 @@ class "Event" {
 	MOUSE_DOWN = "mouse_click";
 	MOUSE_DRAG = "mouse_drag";
 	MOUSE_SCROLL = "mouse_scroll";
-	KEY = "key";
+	KEY_DOWN = "key";
+	KEY_UP = "key_up";
 	CHAR = "char";
 	TIMER = "timer";
 	TERMINATE = "terminate";
 	MENU_CHANGED = "interface_menu_changed";
+	INTERFACE_LOADED = "interface_loaded";
+	KEYBOARD_SHORTCUT = "interface_keyboard_shortcut";
 
 }
 

@@ -44,10 +44,19 @@ function PathView:initCanvas()
 	
 	path:close()
 	path.outlineColour = Graphics.colours.RED
+
+	local path2 = Path( 40, 40, 60, 60, Graphics.colours.GREEN, 40, 40 )
+	path2:lineTo( 1, 40 )
+	path2:arc( math.pi * 3/2, math.pi * 2, 39 )
+	path2:lineTo( 60, 20 )
+	path2:close()
+
 	self.canvas:insert( Shader( 1, 1, self.canvas.width, self.canvas.height, function( x, y )
 		return ( math.ceil( x / size ) + math.ceil( y / size ) ) % 2 == 0 and Graphics.colours.LIGHT_GREY or Graphics.colours.WHITE
 	end ) )
+
 	self.canvas:insert( path )
+	self.canvas:insert( path2 )
 end
 
 --[[

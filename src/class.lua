@@ -30,10 +30,7 @@ local function uniqueTable( _class, raw )
 	for k, v in pairs( _class ) do
 		-- if the properties contain any blank tables generate a new table so it's not shared between instances
 		if type( v ) == 'table' then
-			if v.typeOf and v:typeOf( InterfaceOutlet ) then
-	    		-- InterfaceOutlets kinda cheat, they set the class property to a share instance, so we need to generate a unique one
-	    		raw[k] = InterfaceOutlet( v.viewIdentifier, v.trackAll )
-	    	elseif #v == 0 then
+			if #v == 0 then
 				local keyFound = false
 				for k2, v2 in pairs(v) do
 					keyFound = true
@@ -297,6 +294,14 @@ function class:new( ... )
 
 	setmetatable( proxy, proxy.mt )
 
+
+	for k, v in pairs( _class ) do
+		if type( v ) == 'table' and v.typeOf and v:typeOf( InterfaceOutlet ) then
+    		-- link interface outlets, they set the class property to a share instance, so we need to generate a unique one
+    		proxy[k] = InterfaceOutlet( v.viewIdentifier or k, v.trackAll )
+    	end
+    end
+
     -- once the class has been created, pass the arguments to the init function for handling
     if proxy.init and type( proxy.init ) == 'function' then
     	proxy:init( ... )
@@ -322,7 +327,7 @@ function class:new( ... )
 	end
 
 	-- TODO: does this help at all??
-	-- prepare( raw )
+	prepare( raw )
 
 	return proxy
 end

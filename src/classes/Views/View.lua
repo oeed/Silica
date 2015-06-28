@@ -27,6 +27,7 @@ class "View" {
 	isCanvasHitTested = true;
 	isVisible = true;
 	theme = nil;
+	isEnabled = true;
 }
 
 --[[
@@ -38,11 +39,11 @@ function View:init( properties )
 	self.animations = { names = {} }
 	self.theme = ThemeOutlet( self )
 	self.canvas = Canvas( self.x, self.y, self.width, self.height )
-	self:initCanvas()
 
 	if properties and type( properties ) == "table" then
 		self:properties( properties )
 	end
+	self:initCanvas()
 
 	self:initEventManager()
 end
@@ -78,6 +79,24 @@ function View:getSiblings()
 	end
 
 	return siblings
+end
+
+--[[
+	@instance
+	@desc Returns whether the control is enabled, rising up to the parent containers as well
+	@return [boolean] isEnabled -- whether the view is enabled
+]]
+function View:getIsEnabled()
+	if not self.isEnabled then
+		return false
+	else
+		local parent = self.parent
+		if parent and not parent.isEnabled then
+			return false
+		else
+			return true
+		end
+	end
 end
 
 --[[
@@ -228,8 +247,8 @@ end
 	@return [boolean] isHit -- whether the hit test hit
 ]]
 function View:hitTest( x, y, parent )
-	return self.x <= x
-	 and x <= self.x + self.width - 1
+	return self.isVisible and self.x <= x
+	   and x <= self.x + self.width - 1
 	   and self.y <= y and y <= self.y + self.height - 1
 	   and ( not self.isCanvasHitTested or self.canvas:hitTest( x - self.x + 1, y - self.y + 1 ))
 end

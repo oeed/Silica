@@ -7,16 +7,6 @@ class "MenuButton" extends "Button" {
 
     menuMargin = 5;
 
-    textColour = Graphics.colours.BLACK;
-    fillColour = Graphics.colours.WHITE;
-    outlineColour = Graphics.colours.LIGHT_GREY;
-
-    arrowColour = Graphics.colours.GREY;
-
-    pressedArrowColour = Graphics.colours.LIGHT_BLUE;
-
-    disabledArrowColour = Graphics.colours.LIGHT_GREY;
-
     closeArrowObject = nil;
     openArrowObject = nil;
 }
@@ -31,6 +21,7 @@ function MenuButton:init( ... )
     menu.owner = self
     menu.isSingleShot = false
     menu.isVisible = false
+    menu.hitTestOwner = true
     menu.topMargin = Menu.topMargin + 6
     self.menu = menu
     self:event( Event.MENU_CHANGED, self.onMenuChanged )

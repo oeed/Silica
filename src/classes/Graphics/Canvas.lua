@@ -144,8 +144,9 @@ end
 function Canvas:drawTo( canvas )
     if self.isVisible then
         if self.hasChanged then
-            -- log( tostring(self) .. 'is rerendering at ' .. os.clock() )
+            local drawdt = os.clock()
             self:draw()
+            -- log( tostring(self) .. 'is rerendering dt ' .. os.clock() - drawdt )
         end
         
         local width = self.width
@@ -153,19 +154,27 @@ function Canvas:drawTo( canvas )
         local fillColour = self.fillColour
         local buffer = self.buffer
         local _x = self.x - 1
-        local _y = self.y - 1
+        local _y = self.y
         
+
+        local start = os.clock()
         -- log( tostring(self) .. 'is drawing to parent at ' .. os.clock() )
 
-        local _setPixel = canvas.setPixel
+        local canvasWidth = canvas.width
+        local canvasHeight = canvas.height
+        local canvasBuffer = canvas.buffer
+        local transparent = Graphics.colours.TRANSPARENT
         for x = 1, width do
-            for y = 1, height do
-                _setPixel( canvas, x + _x, y + _y, buffer[ ( y - 1 ) * width + x ] or fillColour)
-                -- canvas:setPixel( x + _x, y + _y, self:getPixel( x, y ) )
+            for y = 0, height - 1 do -- just so there's no need for y-1 below
+                local colour = buffer[y * width + x] or fillColour
+                local nx, ny = x + _x, y + _y
+                if colour ~= transparent and nx >= 1 and ny >= 1 and nx <= canvasWidth and ny <= canvasHeight then
+                    canvasBuffer[( ny - 1 ) * canvasWidth + nx] = colour
+                end
             end
         end
 
-        -- log( tostring(self) .. 'is done drawing to parent at ' .. os.clock() )
+        -- log( tostring(self) .. 'is done drawing to parent dt ' .. os.clock() - start )
 
     end
     return self

@@ -84,7 +84,7 @@ end
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
 function Radio:onGlobalMouseUp( event )
-    if self.isPressed then
+    if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self:hitTestEvent( event ) then
             self.isChecked = true
@@ -100,7 +100,7 @@ end
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
 function Radio:onMouseDown( event )
-    if self.isEnabled then
+    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
     end
     return true
