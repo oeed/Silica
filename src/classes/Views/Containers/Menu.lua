@@ -93,7 +93,7 @@ end
 
 function Menu:setHeight( height )
     self.super:setHeight( height )
-    if self.canvas then
+    if self.hasInit then
         self.backgroundObject.height = height - self.shadowTopMargin
         self.shadowObject.height = height - self.shadowTopMargin
     end
@@ -101,7 +101,7 @@ end
 
 function Menu:setWidth( width )
     self.super:setWidth( width )
-    if self.canvas then
+    if self.hasInit then
     	local _width = width - self.shadowRightMargin
         self.backgroundObject.width = _width
         self.shadowObject.width = _width
@@ -140,7 +140,7 @@ end
 
 function Menu:setIsVisible( isVisible )
 	self.super:setIsVisible( isVisible )
-	if isVisible then
+	if isVisible and self.hasInit then
 		self:updateLayout()
 	end
 end
@@ -209,7 +209,7 @@ end
 ]]
 function Menu:open()
 	self.isVisible = true
-	if self.owner then
+	if self.hasInit and self.owner then
 		self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
 	end
 end
@@ -220,11 +220,13 @@ end
 ]]
 function Menu:close()
 	self.isVisible = false
-	if self.owner then
-		self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
-	end
-	if self.isSingleShot then
-		-- TODO: dispose menu if single shot
-		self.parent:remove( self )
+	if self.hasInit then
+		if self.owner then
+			self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
+		end
+		if self.isSingleShot then
+			-- TODO: dispose menu if single shot
+			self.parent:remove( self )
+		end
 	end
 end

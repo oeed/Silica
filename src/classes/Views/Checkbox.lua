@@ -27,7 +27,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Checkbox:initCanvas()
-    self.canvas = ScreenCanvas( self.x, self.y, self.width, self.height )
+    self.super:initCanvas()
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
     
     local checkObject = Path( 2, 2, self.width - 2, self.height - 2, Graphics.colours.TRANSPARENT, 1, 4 )
@@ -52,12 +52,16 @@ end
 
 function Checkbox:setHeight( height )
     self.super:setHeight( height )
-    self.backgroundObject.height = height
+    if self.hasInit then
+        self.backgroundObject.height = height
+    end
 end
 
 function Checkbox:setWidth( width )
     self.super:setWidth( width )
-    self.backgroundObject.width = width
+    if self.hasInit then
+        self.backgroundObject.width = width
+    end
 end
 
 --[[
@@ -66,7 +70,20 @@ end
 ]]
 function Checkbox:setIsPressed( isPressed )
     self.isPressed = isPressed
-    self:updateThemeStyle()
+    if self.hasInit then
+        self:updateThemeStyle()
+    end
+end
+
+--[[
+    @instance
+    @desc Sets whether the button is pressed, changing the drawing state
+]]
+function Checkbox:setIsEnabled( isEnabled )
+    self.isEnabled = isEnabled
+    if self.hasInit then
+        self:updateThemeStyle()
+    end
 end
 
 --[[
@@ -75,7 +92,9 @@ end
 ]]
 function Checkbox:setIsChecked( isChecked )
     self.isChecked = isChecked
-    self:updateThemeStyle()
+    if self.hasInit then
+        self:updateThemeStyle()
+    end
 end
 
 --[[

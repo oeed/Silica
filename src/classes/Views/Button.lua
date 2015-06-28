@@ -43,14 +43,18 @@ end
 
 function Button:setHeight( height )
     self.super:setHeight( height )
-    self.backgroundObject.height = height - 1
-    self.shadowObject.height = height - 1
+    if self.hasInit then
+        self.backgroundObject.height = height - 1
+        self.shadowObject.height = height - 1
+    end
 end
 
 function Button:setWidth( width )
     self.super:setWidth( width )
-    self.backgroundObject.width = width - 1
-    self.shadowObject.width = width - 1
+    if self.hasInit then
+        self.backgroundObject.width = width - 1
+        self.shadowObject.width = width - 1
+    end
 end
 
 function Button:updateThemeStyle()
@@ -59,15 +63,19 @@ end
 
 function Button:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
-    self:updateThemeStyle()
+    if self.hasInit then
+        self:updateThemeStyle()
+    end
 end
 
 function Button:setIsPressed( isPressed )
     self.isPressed = isPressed
-    self:updateThemeStyle()
-    local backgroundObject = self.backgroundObject
-    backgroundObject.x = isPressed and 2 or 1
-    backgroundObject.y = isPressed and 2 or 1
+    if self.hasInit then
+        self:updateThemeStyle()
+        local backgroundObject = self.backgroundObject
+        backgroundObject.x = isPressed and 2 or 1
+        backgroundObject.y = isPressed and 2 or 1
+    end
 end
 
 --[[

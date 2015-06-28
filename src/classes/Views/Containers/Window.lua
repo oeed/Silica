@@ -9,12 +9,18 @@ class "Window" extends "Container" {
     closeButton = nil;
     minimiseButton = nil;
     maximiseButton = nil;
+    isEnabled = false;
 
 	dragX = nil;
 	dragY = nil;
     isDragging = false;
     isResizingX = false;
 	isResizingY = false;
+
+    minWidth = 60;
+    minHeight = 40;
+    maxWidth = 200;
+    maxHeight = 150;
 }
 
 --[[
@@ -25,16 +31,15 @@ class "Window" extends "Container" {
 function Window:init( ... )
 	self.super:init( ... )
 
-    self.closeButton = self:insert( CloseWindowButton( { x = 1, y = 1 } ))
-    self.minimiseButton = self:insert( MinimiseWindowButton( { x = 10, y = 1 } ))
-    self.maximiseButton = self:insert( MaximiseWindowButton( { x = 19, y = 1 } ))
+    self.closeButton = self:insert( CloseWindowButton( { x = 1, y = 1, window = self } ))
+    self.minimiseButton = self:insert( MinimiseWindowButton( { x = 10, y = 1, window = self } ))
+    self.maximiseButton = self:insert( MaximiseWindowButton( { x = 19, y = 1, window = self } ))
 	self.container = self:insert( WindowContainer( { x = 1, y = self.barHeight + 2, width = self.width - 2, height = self.height - self.barHeight - 5 } ) )
-    self:event( Event.MOUSE_DOWN, self.onMouseDown, EventManager.phase.AFTER )
+    self:event( Event.MOUSE_DOWN, self.onMouseDownBefore, EventManager.phase.BEFORE )
+    self:event( Event.MOUSE_DOWN, self.onMouseDownAfter, EventManager.phase.AFTER )
     self.event:connectGlobal( Event.MOUSE_DRAG, self.onGlobalMouseDrag )
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
     self:event( Event.INTERFACE_LOADED, self.onInterfaceLoaded )
-
-    self.container:insert( Button( { x = 10, y = 10 } ) )
 end
 
 --[[
@@ -60,19 +65,25 @@ function Window:initCanvas()
 end
 
 function Window:setHeight( height )
+    height = math.max( math.min( height, self.maxHeight ), self.minHeight )
     self.super:setHeight( height )
-    self.shadowObject.height = height - 3
-    local container = self.container
-    if container then container.height = height - self.barHeight - 5 end
+    if self.hasInit then
+        self.shadowObject.height = height - 3
+        local container = self.container
+        if container then container.height = height - self.barHeight - 5 end
+    end
 end
 
 function Window:setWidth( width )
+    width = math.max( math.min( width, self.maxWidth ), self.minWidth )
     self.super:setWidth( width )
-    self.shadowObject.width = width - 2
-    self.barObject.width = width - 2
-    self.separatorObject.width = width - 2
-    local container = self.container
-    if container then container.width = width - 2 end
+    if self.hasInit then
+        self.shadowObject.width = width - 2
+        self.barObject.width = width - 2
+        self.separatorObject.width = width - 2
+        local container = self.container
+        if container then container.width = width - 2 end
+    end
 end
 
 function Window:onInterfaceLoaded( event )
@@ -94,13 +105,50 @@ function Window:updateThemeStyle()
     self.theme.style = self.isEnabled and "default" or "disabled"
 end
 
+function Window:setIsEnabled( isEnabled )
+    self.super:setIsEnabled( isEnabled )
+    if self.hasInit then
+        self:updateThemeStyle()
+    end
+end
+
 --[[
     @instance
-    @desc Fired when the mouse is pushed on the window bar. Starts dragging.
+    @desc Focus on the window, bringing it to the front and enabling controls whilst unfocusing other windows
+]]
+function Window:focus()
+    self.isEnabled = true
+    self.parent:sendToFront( self )
+    for i, sibling in ipairs( self:siblingsOfType( Window ) ) do
+        sibling:unfocus()
+    end
+end
+
+--[[
+    @instance
+    @desc Unfocus on the window, disabling controls
+]]
+function Window:unfocus()
+    self.isEnabled = false
+end
+
+--[[
+    @instance
+    @desc Fired when the mouse is pushed on the window bar before children have recieved the event. Makes the window front most and active
     @param [Event] event -- the mouse down event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onMouseDown( event )
+function Window:onMouseDownBefore( event )
+    self:focus()
+end
+
+--[[
+    @instance
+    @desc Fired when the mouse is pushed on the window bar after children have recieved the event. Starts dragging.
+    @param [Event] event -- the mouse down event
+    @return [bool] preventPropagation -- prevent anyone else using the event
+]]
+function Window:onMouseDownAfter( event )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         x = event.x
         y = event.y
@@ -125,19 +173,23 @@ end
 ]]
 function Window:onGlobalMouseDrag( event )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+        local preventPropagation = false
         if self.isDragging then
             self.x = event.x - self.dragX + 1
             self.y = event.y - self.dragY + 1
+            preventPropagation = true
         else
             if self.isResizingX then
                 self.width = event.x - self.x + self.dragX + 1
+                preventPropagation = true
             end
             if self.isResizingY then
                 self.height = event.y - self.y + self.dragY + 1
+                preventPropagation = true
             end
         end
+        return preventPropagation
     end
-    return true
 end
 
 --[[
@@ -154,11 +206,6 @@ function Window:onGlobalMouseUp( event )
         self.isResizingX = false
         self.isResizingY = false
     end
-end
-
-function Window:setIsEnabled( isEnabled )
-    self.isEnabled = isEnabled
-    self:updateThemeStyle()
 end
 
 --[[

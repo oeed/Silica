@@ -37,12 +37,16 @@ end
 
 function MenuItem:setWidth( width )
     self.super:setWidth( width )
-    self.backgroundObject.width = width
+    if self.hasInit then
+        self.backgroundObject.width = width
+    end
 end
 
 function MenuItem:setHeight( height )
     self.super:setHeight( height )
-    self.backgroundObject.height = height
+    if self.hasInit then
+        self.backgroundObject.height = height
+    end
 end
 
 function MenuItem:updateThemeStyle()
@@ -51,12 +55,16 @@ end
 
 function MenuItem:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
-    self:updateThemeStyle()
+    if self.hasInit then
+        self:updateThemeStyle()
+    end
 end
 
 function MenuItem:setIsPressed( isPressed )
     self.isPressed = isPressed
-    self:updateThemeStyle()
+    if self.hasInit then
+        self:updateThemeStyle()
+    end
 end
 
 --[[

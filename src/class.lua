@@ -122,7 +122,7 @@ end
 function class:new( ... )
 	local _class = self
 	local raw = {}
-	local proxy = {} -- the proxy. 'self' always needs to be this, NOT raw
+	local proxy = { hasInit = false } -- the proxy. 'self' always needs to be this, NOT raw
 	local super
 	proxy.mt = {}
 
@@ -294,7 +294,6 @@ function class:new( ... )
 
 	setmetatable( proxy, proxy.mt )
 
-
 	for k, v in pairs( _class ) do
 		if type( v ) == 'table' and v.typeOf and v:typeOf( InterfaceOutlet ) then
     		-- link interface outlets, they set the class property to a share instance, so we need to generate a unique one
@@ -302,20 +301,13 @@ function class:new( ... )
     	end
     end
 
-    -- once the class has been created, pass the arguments to the init function for handling
-    if proxy.init and type( proxy.init ) == 'function' then
-    	proxy:init( ... )
-    end
-
-	-- use the setters with all the starting values. this will be useful, trust me
+	-- use the setters with all the starting values
 	local prepared = {}
 	local function prepare( obj )
 		local hasSet = type( obj.set ) == 'function'
 		for k, _ in pairs( obj.class ) do
-			local setFunc = 'set' .. k:sub( 1, 1 ):upper() .. k:sub( 2, -1 )
 			local v = obj[k] -- TODO: sometimes this is nil when it shouldn't be
-
-			if not prepared[k] and k ~= 'class' and k ~= 'mt' and  k ~= 'super' and type( v ) ~= 'function' and (hasSet or type( raw[setFunc] ) == 'function') then
+			if not prepared[k] and k ~= 'class' and k ~= 'mt' and  k ~= 'super' and type( v ) ~= 'function' and (hasSet or type( raw[setters[k]] ) == 'function') then
 				prepared[k] = true
 				proxy[k] = v
 			end
@@ -326,8 +318,13 @@ function class:new( ... )
 		end
 	end
 
-	-- TODO: does this help at all??
 	prepare( raw )
+
+    -- once the class has been created, pass the arguments to the init function for handling
+    proxy.hasInit = true
+    if proxy.init and type( proxy.init ) == 'function' then
+    	proxy:init( ... )
+    end
 
 	return proxy
 end

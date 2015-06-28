@@ -25,24 +25,27 @@ end
 
 function SegmentButton:setWidth( width )
     self.super.super:setWidth( width )
-    local isFirst = self.index == 1
-    local isLast = self.parent and (self.index == #self.parent.children) or false
-    self.backgroundObject.width = isLast and width - 2 or width - 2
-    self.shadowObject.width = (isLast or isFirst) and width - 1 or width
+    if self.hasInit then
+        local isFirst = self.index == 1
+        local isLast = self.parent and (self.index == #self.parent.children) or false
+        self.backgroundObject.width = isLast and width - 2 or width - 2
+        self.shadowObject.width = (isLast or isFirst) and width - 1 or width
+    end
 end
 
 function SegmentButton:setIsPressed( isPressed )
     self.super:setIsPressed( isPressed )
+    if self.hasInit then
+        local isFirst = self.index == 1
+        local isLast = self.parent and (self.index == #self.parent.children) or false
+        if not isFirst and isPressed then
+            self.backgroundObject.x = 1
+        end
 
-    local isFirst = self.index == 1
-    local isLast = self.parent and (self.index == #self.parent.children) or false
-    if not isFirst and isPressed then
-        self.backgroundObject.x = 1
-    end
-
-    if isLast then
-        local width = self.width
-        self.backgroundObject.width = isPressed and width or width - 1
+        if isLast then
+            local width = self.width
+            self.backgroundObject.width = isPressed and width or width - 1
+        end
     end
 end
 

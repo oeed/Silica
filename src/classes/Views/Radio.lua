@@ -35,12 +35,16 @@ end
 
 function Radio:setHeight( height )
     self.super:setHeight( height )
-    self.backgroundObject.height = height
+    if self.hasInit then
+        self.backgroundObject.height = height
+    end
 end
 
 function Radio:setWidth( width )
     self.super:setWidth( width )
-    self.backgroundObject.width = width
+    if self.hasInit then
+        self.backgroundObject.width = width
+    end
 end
 
 --[[
@@ -49,14 +53,15 @@ end
     @param [boolean] isChecked -- the new checked state
 ]]
 function Radio:setIsChecked( isChecked )
-    if isChecked then
-        for i, sibling in ipairs( self:siblingsOfType( Radio ) ) do
-            sibling.isChecked = false
-        end
-    end
-
     self.isChecked = isChecked
-    self:updateThemeStyle()
+    if self.hasInit then
+        if isChecked then
+            for i, sibling in ipairs( self:siblingsOfType( Radio ) ) do
+                sibling.isChecked = false
+            end
+        end
+        self:updateThemeStyle()
+    end
 end
 
 
@@ -66,7 +71,9 @@ end
 
 function Radio:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
-    self:updateThemeStyle()
+    if self.hasInit then
+        self:updateThemeStyle()
+    end
 end
 
 --[[
@@ -75,7 +82,9 @@ end
 ]]
 function Radio:setIsPressed( isPressed )
     self.isPressed = isPressed
-    self:updateThemeStyle()
+    if self.hasInit then
+        self:updateThemeStyle()
+    end
 end
 
 --[[

@@ -6,11 +6,6 @@
 
 	<Checkbox identifier=agreeCheckbox x=10 y=40 isChecked=true />
 
-	<Container x=10 y=60 width=20 height=40>
-		<Radio y=1 isChecked=true />
-		<Radio y=11/>
-		<Radio y=21/>
-	</Container>
 
 	<Container x=50 y=60 width=20 height=40>
 		<Radio y=1 isChecked=true />
@@ -25,13 +20,31 @@
 	</SegmentContainer>
 
 	
-	<PathView x=70 y=35 />
+	<!-- <PathView x=70 y=35 /> -->
 
 	<ProgressBar  x=70 y=150 />
 
-	<Window x=150 y=40 width=130 height=90 >
+	<Window x=50 y=10 width=80 height=60 >
 		<WindowContainer>
-	<Button identifier=okayButton x=10 y=10 text=Okay />
+			<MenuButton x=5 y=5 text=Okay />
+			<Checkbox identifier=agreeCheckbox x=5 y=25 isChecked=true />
+			<Container x=60 y=5 width=20 height=40>
+				<Radio y=1 isChecked=true />
+				<Radio y=11/>
+				<Radio y=21/>
+			</Container>
+		</WindowContainer>
+	</Window>
+
+	<Window x=150 y=40 width=80 height=60 >
+		<WindowContainer>
+			<Button x=5 y=5 text=Okay />
+			<Checkbox identifier=agreeCheckbox x=5 y=25 isChecked=true />
+			<Container x=50 y=5 width=20 height=40>
+				<Radio y=1 isChecked=true />
+				<Radio y=11/>
+				<Radio y=21/>
+			</Container>
 		</WindowContainer>
 	</Window>
 

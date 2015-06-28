@@ -134,21 +134,21 @@ function View:siblingsOfType( _class )
 end
 
 function View:setX( x )
-	if self.canvas then
+	if self.hasInit then
 		self.canvas.x = x
 	end
 	self.x = x
 end
 
 function View:setY( y )
-	if self.canvas then
+	if self.hasInit then
 		self.canvas.y = y
 	end
 	self.y = y
 end
 
 function View:setIsVisible( isVisible )
-	if self.canvas then
+	if self.hasInit then
 		self.canvas.isVisible = isVisible
 	end
 	self.isVisible = isVisible
@@ -160,14 +160,14 @@ function View:getIsVisible()
 end
 
 function View:setWidth( width )
-	if self.canvas then
+	if self.hasInit then
 		self.canvas.width = width
 	end
 	self.width = width
 end
 
 function View:setHeight( height )
-	if self.canvas then
+	if self.hasInit then
 		self.canvas.height = height
 	end
 	self.height = height

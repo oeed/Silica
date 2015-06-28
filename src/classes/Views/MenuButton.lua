@@ -59,7 +59,7 @@ end
 
 function MenuButton:setHeight( height )
     self.super:setHeight( height )
-    if self.canvas then
+    if self.hasInit then
         self.closeArrowObject.y = math.ceil( ( self.height - 4 ) / 2 ) + 1
         self.openArrowObject.y = math.ceil( ( self.height - 4 ) / 2 ) + 1
     end
@@ -125,7 +125,9 @@ end
 
 function MenuButton:setIsPressed( isPressed )
     self.super:setIsPressed( isPressed )
-    self:updateArrows()
+    if self.hasInit then
+        self:updateArrows()
+    end
 end
 
 --[[

@@ -66,7 +66,13 @@ end
 -- 	self.canvas:drawTo( target )
 -- end
 
-
+function Container:setIsEnabled( isEnabled )
+    self.isEnabled = isEnabled
+    for i, childView in ipairs( self.children ) do
+    	-- we need to update the isEnabled value for all children, the best way is just to send the current value
+    	childView.isEnabled = childView.raw.isEnabled
+    end
+end
 
 --[[
 	@instance
@@ -126,6 +132,8 @@ function Container:insert( childView, position )
 
 	childView.parent = self
 	self.canvas:insert( childView.canvas )
+	-- we need to update the isEnabled value
+	childView.isEnabled = childView.raw.isEnabled
 
 	for i, childView in ipairs( self.children ) do
 		local onSiblingsChanged = childView.onSiblingsChanged

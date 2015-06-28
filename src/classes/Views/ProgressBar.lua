@@ -38,20 +38,26 @@ function ProgressBar:initCanvas()
 end
 
 function ProgressBar:setWidth( width )
-    self.width = width
-    self.backgroundObject.width = width
-    self.stripesObject.width = math.floor( (self.value/self.maximum) * width + 0.5 )
+    self.super:setWidth( width )
+    if self.hasInit then
+        self.backgroundObject.width = width
+        self.stripesObject.width = math.floor( (self.value/self.maximum) * width + 0.5 )
+    end
 end
 
 function ProgressBar:setHeight( height )
-    self.height = height
-    self.backgroundObject.height = height
-    self.stripesObject.height = height
+    self.super:setHeight( height )
+    if self.hasInit then
+        self.backgroundObject.height = height
+        self.stripesObject.height = height
+    end
 end
 
 function ProgressBar:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
-    self.themeStyle = self.isEnabled and "default" or "disabled"
+    if self.hasInit then
+        self.theme.style = self.isEnabled and "default" or "disabled"
+    end
 end
 
 --[[
@@ -61,7 +67,9 @@ end
 ]]
 function ProgressBar:setValue( value )
     self.value = math.min( math.max( value, 0 ), self.maximum )
-    self.stripesObject.width = math.floor( (self.value/self.maximum) * self.width + 0.5 )
+    if self.hasInit then
+        self.stripesObject.width = math.floor( ( self.value / self.maximum ) * self.width + 0.5 )
+    end
 end
 
 --[[
@@ -71,7 +79,9 @@ end
 ]]
 function ProgressBar:setMaximum( maximum )
     self.maximum = math.max( maximum, 0 )
-    self.stripesObject.width = math.floor( (self.value/self.maximum) * self.width + 0.5 )
+    if self.hasInit then
+        self.stripesObject.width = math.floor( ( self.value / self.maximum ) * self.width + 0.5 )
+    end
 end
 
 --[[
