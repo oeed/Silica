@@ -73,8 +73,17 @@ function Canvas:map( shader, x, y, width, height )
             end
         end
     end
+    local buffer = self.buffer
+    local width, height = self.width, self.height
+    local TRANSPARENT = Graphics.colours.TRANSPARENT
+    local function setPixel( x, y, colour )
+        if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then
+            buffer[ ( y - 1 ) * width + x ] = colour
+        end
+        return self
+    end
     for i = 1, #changes do
-        self:setPixel( unpack( changes[i] ) )
+        setPixel( unpack( changes[i] ) )
     end
     return self
 end

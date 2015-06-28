@@ -1,0 +1,478 @@
+trying disconnect on fillColour
+looking for fillColour
+connect fillColourto 1
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+connect outlineColourto 256
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+connect radiusto 0
+trying disconnect on shadowColour
+looking for shadowColour
+fillColour
+outlineColour
+radius
+connect shadowColourto nil
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+radius
+shadowColour
+connect radiusto 0
+trying disconnect on fillColour
+looking for fillColour
+connect fillColourto 1
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+connect outlineColourto 256
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+connect radiusto 0
+trying disconnect on shadowColour
+looking for shadowColour
+fillColour
+outlineColour
+radius
+connect shadowColourto nil
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+radius
+shadowColour
+connect radiusto 0
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+outlineColour
+radius
+shadowColour
+radius
+connect outlineColourto 0
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+outlineColour
+radius
+shadowColour
+radius
+outlineColour
+connect outlineColourto 0
+trying disconnect on fillColour
+looking for fillColour
+connect fillColourto 1
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+connect outlineColourto 256
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+connect radiusto 0
+trying disconnect on shadowColour
+looking for shadowColour
+fillColour
+outlineColour
+radius
+connect shadowColourto nil
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+radius
+shadowColour
+connect radiusto 0
+looking for radius
+fillColour
+outlineColour
+radius
+disconnecting ThemeOutlet.radius new value 0
+0 now 
+0 is true
+connect first
+trying disconnect on leftRadius
+looking for leftRadius
+fillColour
+outlineColour
+connect leftRadiusto 0
+connect last
+trying disconnect on rightRadius
+looking for rightRadius
+fillColour
+outlineColour
+connect rightRadiusto 0
+trying disconnect on fillColour
+looking for fillColour
+connect fillColourto 1
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+connect outlineColourto 256
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+connect radiusto 0
+trying disconnect on shadowColour
+looking for shadowColour
+fillColour
+outlineColour
+radius
+connect shadowColourto nil
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+radius
+shadowColour
+connect radiusto 0
+looking for radius
+fillColour
+outlineColour
+radius
+disconnecting ThemeOutlet.radius new value 0
+0 now 
+6 is false
+connect first
+trying disconnect on leftRadius
+looking for leftRadius
+fillColour
+outlineColour
+connect leftRadiusto 6
+looking for rightRadius
+fillColour
+outlineColour
+0 is true
+looking for leftRadius
+fillColour
+outlineColour
+connect last
+trying disconnect on rightRadius
+looking for rightRadius
+fillColour
+outlineColour
+connect rightRadiusto 0
+trying disconnect on fillColour
+looking for fillColour
+connect fillColourto 1
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+connect outlineColourto 256
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+connect radiusto 0
+trying disconnect on shadowColour
+looking for shadowColour
+fillColour
+outlineColour
+radius
+connect shadowColourto nil
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+radius
+shadowColour
+connect radiusto 0
+looking for radius
+fillColour
+outlineColour
+radius
+disconnecting ThemeOutlet.radius new value 0
+0 now 
+6 is false
+connect first
+trying disconnect on leftRadius
+looking for leftRadius
+fillColour
+outlineColour
+connect leftRadiusto 6
+looking for rightRadius
+fillColour
+outlineColour
+6 is false
+looking for leftRadius
+fillColour
+outlineColour
+looking for rightRadius
+fillColour
+outlineColour
+0 is true
+looking for leftRadius
+fillColour
+outlineColour
+connect last
+trying disconnect on rightRadius
+looking for rightRadius
+fillColour
+outlineColour
+connect rightRadiusto 0
+trying disconnect on fillColour
+looking for fillColour
+connect fillColourto 1
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+connect outlineColourto 256
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+connect radiusto 0
+trying disconnect on shadowColour
+looking for shadowColour
+fillColour
+outlineColour
+radius
+connect shadowColourto nil
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+radius
+shadowColour
+connect radiusto 0
+trying disconnect on fillColour
+looking for fillColour
+connect fillColourto 1
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+connect outlineColourto 256
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+connect radiusto 0
+trying disconnect on shadowColour
+looking for shadowColour
+fillColour
+outlineColour
+radius
+connect shadowColourto nil
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+radius
+shadowColour
+connect radiusto 0
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+outlineColour
+radius
+shadowColour
+radius
+connect outlineColourto 0
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+outlineColour
+radius
+shadowColour
+radius
+outlineColour
+connect outlineColourto 0
+trying disconnect on fillColour
+looking for fillColour
+connect fillColourto 1
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+connect outlineColourto 256
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+connect radiusto 0
+trying disconnect on shadowColour
+looking for shadowColour
+fillColour
+outlineColour
+radius
+connect shadowColourto nil
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+radius
+shadowColour
+connect radiusto 0
+looking for radius
+fillColour
+outlineColour
+radius
+disconnecting ThemeOutlet.radius new value 0
+0 now 
+0 is true
+connect first
+trying disconnect on leftRadius
+looking for leftRadius
+fillColour
+outlineColour
+shadowColour
+radius
+connect leftRadiusto 0
+connect last
+trying disconnect on rightRadius
+looking for rightRadius
+fillColour
+outlineColour
+shadowColour
+radius
+leftRadius
+connect rightRadiusto 0
+trying disconnect on fillColour
+looking for fillColour
+connect fillColourto 1
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+connect outlineColourto 256
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+connect radiusto 0
+trying disconnect on shadowColour
+looking for shadowColour
+fillColour
+outlineColour
+radius
+connect shadowColourto nil
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+radius
+shadowColour
+connect radiusto 0
+looking for radius
+fillColour
+outlineColour
+radius
+disconnecting ThemeOutlet.radius new value 0
+0 now 
+6 is false
+connect first
+trying disconnect on leftRadius
+looking for leftRadius
+fillColour
+outlineColour
+shadowColour
+radius
+leftRadius
+disconnecting ThemeOutlet.leftRadius new value 0
+connect leftRadiusto 0
+looking for rightRadius
+fillColour
+outlineColour
+shadowColour
+radius
+leftRadius
+rightRadius
+disconnecting ThemeOutlet.rightRadius new value 0
+0 is true
+looking for leftRadius
+fillColour
+outlineColour
+shadowColour
+radius
+connect last
+trying disconnect on rightRadius
+looking for rightRadius
+fillColour
+outlineColour
+shadowColour
+radius
+connect rightRadiusto 0
+trying disconnect on fillColour
+looking for fillColour
+connect fillColourto 1
+trying disconnect on outlineColour
+looking for outlineColour
+fillColour
+connect outlineColourto 256
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+connect radiusto 0
+trying disconnect on shadowColour
+looking for shadowColour
+fillColour
+outlineColour
+radius
+connect shadowColourto nil
+trying disconnect on radius
+looking for radius
+fillColour
+outlineColour
+radius
+shadowColour
+connect radiusto 0
+looking for radius
+fillColour
+outlineColour
+radius
+disconnecting ThemeOutlet.radius new value 0
+0 now 
+0 is false
+connect first
+trying disconnect on leftRadius
+looking for leftRadius
+fillColour
+outlineColour
+shadowColour
+radius
+leftRadius
+disconnecting ThemeOutlet.leftRadius new value 0
+connect leftRadiusto 0
+looking for rightRadius
+fillColour
+outlineColour
+shadowColour
+radius
+leftRadius
+6 is false
+looking for leftRadius
+fillColour
+outlineColour
+shadowColour
+radius
+rightRadius
+looking for rightRadius
+fillColour
+outlineColour
+shadowColour
+radius
+rightRadius
+disconnecting ThemeOutlet.rightRadius new value 0
+0 is true
+looking for leftRadius
+fillColour
+outlineColour
+shadowColour
+radius
+connect last
+trying disconnect on rightRadius
+looking for rightRadius
+fillColour
+outlineColour
+shadowColour
+radius
+connect rightRadiusto 0
+instance of `Menu`: 0adbf950
+instance of `Menu`: 109bd148

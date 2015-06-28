@@ -1,15 +1,10 @@
 
-os.loadAPI('src/debug')
-_G.debug = debug
-
-local h = fs.open('log', 'w')
-h.write('')
-h.close()
+fs.open('log', 'w').close()
 
 local _print = print
-function _G.print(text)
-	_print(text)
-	log(tostring(text))
+function _G.print(...)
+	_print(...)
+	log(tostring(... or ""))
 end
 
 function _G.log( text )
@@ -24,6 +19,15 @@ function _G.log2( text )
 	h.close()	
 end
 
+-- os.loadAPI('src/debug')
+-- _G.debug = debug
+
 os.loadAPI('src/Silica')
+
+BitmapFont.convertFile( "fontmerged", "src/fonts/Auckland.sfont", 32, 8, {
+	name = "Auckland";
+	author = "oeed";
+	version = 0.9;
+} )
 
 TestApplication():run( ... )

@@ -20,10 +20,13 @@ end
 
 --[[
     @instance
-    @desc Draws a circle to the canvas
-    @param [Canvas] canvas -- the canvas to draw to
+    @desc Gets the pixes to be filled
+    @return [table] fill -- the pixels to fill
 ]]
-function Circle:drawTo( canvas )
+function Circle:getFill()
+	-- if self.fill then return self.fill end
+
+	local fill = {}
 	local fillColour = self.fillColour
 	local r = math.min( self.width, self.height ) / 2
 	local radius = ( math.min( self.width, self.height ) + 1 ) / 2
@@ -35,8 +38,10 @@ function Circle:drawTo( canvas )
 			-- TODO: could probably make this faster by only square rooting once per y
      		local distance = ( ySqrd + ( x - radius )^2 )^0.5
 			if distance <= r then
-				canvas:setPixel( _x + x, _y + y, fillColour )
+				fill[x] = fill[x] or {}
+				fill[x][y] = true
 			end
-     	end
+		end
 	end
+	return fill
 end

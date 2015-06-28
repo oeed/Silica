@@ -1,0 +1,4 @@
+
+class "VectorFont" extends "Font" {
+	
+}

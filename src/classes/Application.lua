@@ -142,7 +142,8 @@ function Application:run( ... )
 	self:update()
 
 	while self.isRunning do
-		local args = { coroutine.yield() }
+		local args = { os.pullEvent() }
+		-- local args = { coroutine.yield() }
 		local event = Event.create( args )
 		event.relativeView = self.container
 		self.event:handleEvent( event )

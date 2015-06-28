@@ -1,13 +1,10 @@
-SYNTAX:
-	byte: [n>3]
-	name: [byte]+
-	meta: [0][name][1][name][2]
-	header: [byte][byte][byte]
-	linear: ([0][byte][byte])
-	bezier: ([1][byte][byte][byte][byte][byte][byte])
-	arc: ([2][byte][byte][byte])
-	line: [linear]|[bezier]|[arc]
+VECTOR SYNTAX:
+	fuck knows
+BITMAP SYNTAX:
+	sbyte: [1-255]
+	bitmapdata: [0-255]{ ( height <= 8 ? 1 : 2 ) * width }
 
-	[meta]*
-	[3]
-	([header][line]+)*
+		([0][sbyte]+[0][sbyte]+[0])* // metadata
+		[1] // start of font
+		[0-255] // the height of the font
+		([0-255][0-255][bitmapdata])+ // the character, the width, and the bitmap data associated
