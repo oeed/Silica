@@ -69,19 +69,17 @@ function MenuButton:initCanvas()
     self.super:initCanvas()
     local arrowX, arrowY = self.width - 10, math.ceil( ( self.height - 4 ) / 2 ) + 1
 
-    local closeArrowObject = Path( arrowX, arrowY, 5, 3, Graphics.colours.TRANSPARENT, 1, 3 )
+    local closeArrowObject = OutlinePath( arrowX, arrowY, 5, 3, 1, 3 )
     closeArrowObject:lineTo( 3, 1 )
     closeArrowObject:lineTo( 5, 3 )
-    closeArrowObject:lineTo( 3, 1 )
     closeArrowObject:close()
     closeArrowObject.isVisible = false
     self.closeArrowObject = closeArrowObject
     self.canvas:insert( closeArrowObject )
 
-    local openArrowObject = Path( arrowX, arrowY, 5, 3, Graphics.colours.TRANSPARENT, 1, 1 )
+    local openArrowObject = OutlinePath( arrowX, arrowY, 5, 3, 1, 1 )
     openArrowObject:lineTo( 3, 3 )
     openArrowObject:lineTo( 5, 1 )
-    openArrowObject:lineTo( 3, 3 )
     openArrowObject:close()
     self.openArrowObject = openArrowObject
     self.canvas:insert( openArrowObject )

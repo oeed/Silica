@@ -24,7 +24,7 @@ end
 
 os.loadAPI('src/Silica')
 
-BitmapFont.convertFile( "fontmerged", "src/fonts/Auckland.sfont", 32, 8, {
+BitmapFont.convertFile( "font src/auckland", "src/fonts/Auckland.sfont", 32, 8, {
 	name = "Auckland";
 	author = "oeed";
 	version = 0.9;

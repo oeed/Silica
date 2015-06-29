@@ -17,8 +17,13 @@ class "WindowCanvas" extends "Canvas" { }
 function WindowCanvas:draw( ... )
     if self.isVisible then
     	self.super:draw( ... )
-        -- look in FontWindowCanvas
-        -- dman
+       
+    	local y = self.height - 1
+    	local width = self.width
+    	local buffer = self.buffer
+    	local transparent = Graphics.colours.TRANSPARENT
+    	buffer[y * width + 1] = transparent
+    	buffer[y * width + width] = transparent
     end
     return self
 end

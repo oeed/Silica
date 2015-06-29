@@ -30,10 +30,9 @@ function Checkbox:initCanvas()
     self.super:initCanvas()
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
     
-    local checkObject = Path( 2, 2, self.width - 2, self.height - 2, Graphics.colours.TRANSPARENT, 1, 4 )
+    local checkObject = OutlinePath( 2, 2, self.width - 2, self.height - 2, 1, 4 )
     checkObject:lineTo( 2, 5 )
     checkObject:lineTo( 5, 2 )
-    checkObject:lineTo( 2, 5 )
     checkObject:close()
 
     self.theme:connect( backgroundObject, 'fillColour' )

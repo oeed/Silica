@@ -144,10 +144,14 @@ class "Path" extends "GraphicsObject" {
 --[[
 	@constructor
 	@desc Creates the start of a path
-	@param [number] x -- the starting x coordinate
-	@param [number] y -- the starting y coordinate
+	@param [number] x -- the x coordinate
+	@param [number] y -- the y coordinate
+	@param [number] width -- the starting y coordinate
+	@param [number] height -- the starting y coordinate
+	@param [number] currentX -- the starting x coordinate
+	@param [number] currentY -- the starting y coordinate
 ]]
-function Path:init( x, y, width, height, fillColour, currentX, currentY )
+function Path:init( x, y, width, height, currentX, currentY )
 	self.super:init( x, y, width, height )
 	self.fillColour = fillColour
 	self.currentX = currentX or 1
@@ -271,13 +275,14 @@ end
 	@desc Closes the path (i.e. makes the end meet the start), making it immutable and drawable
 	@return [boolean] didClose -- whether the path was closed
 ]]
-function Path:close()
+function Path:close( linkedToEnd )
+	linkedToEnd = (linkedToEnd == nil) and true or false
 	if self.defined then return false end
 
 	if #self.lines == 0 then
 		error( "Path has no lines!", 2 )
 	end
-	if self.lines[1].x1 ~= self.lines[#self.lines].x2 or self.lines[1].y1 ~= self.lines[#self.lines].y2 then
+	if linkedToEnd and (self.lines[1].x1 ~= self.lines[#self.lines].x2 or self.lines[1].y1 ~= self.lines[#self.lines].y2) then
 		self:lineTo( self.lines[1].x1, self.lines[1].y1 )
 	end
 
@@ -285,6 +290,39 @@ function Path:close()
 	self.currentX = nil
 	self.currentY = nil
 	return true
+end
+
+--[[
+	@instance
+	@desc Get an array of the intersection points (essentially the outline)
+	@return [table] points -- the points
+	@return [table] vertices -- the points
+]]
+function Path:getPointsAndVertices( y, minX, maxX )
+	local points = {}
+
+	for i = 1, #self.lines do
+		local line = self.lines[i]
+		if line.mode == "linear" then
+			getLinearIntersectionPoint( points, y, line, minX, maxX )
+		else
+			getCurvedIntersectionPoints( points, y, line, minX, maxX )
+		end
+	end
+
+	local vertices = {}
+	table.sort( points )
+	for i = #points, 2, -1 do
+		if points[i] == points[i-1] then
+			vertices[i] = true
+			vertices[i-1] = true
+		elseif round( points[i] ) == round( points[i-1] ) then
+			vertices[i] = true
+			vertices[i-1] = true
+		end
+	end
+
+	return points, vertices
 end
 
 --[[
@@ -307,28 +345,7 @@ function Path:getFill()
 
 	for y = minY, maxY do
 
-		local points = {}
-
-		for i = 1, #self.lines do
-			local line = self.lines[i]
-			if line.mode == "linear" then
-				getLinearIntersectionPoint( points, y, line, minX, maxX )
-			else
-				getCurvedIntersectionPoints( points, y, line, minX, maxX )
-			end
-		end
-
-		local vertex = {}
-		table.sort( points )
-		for i = #points, 2, -1 do
-			if points[i] == points[i-1] then
-				vertex[i] = true
-				vertex[i-1] = true
-			elseif round( points[i] ) == round( points[i-1] ) then
-				vertex[i] = true
-				vertex[i-1] = true
-			end
-		end
+		local points, vertices = self:getPointsAndVertices( y, minX, maxX )
 
 		if #points == 1 then
 			local x = floor( points[1] + .5 )
@@ -337,7 +354,7 @@ function Path:getFill()
 		else
 			local filling = false
 			for i = 1, #points - 1 do
-				if vertex[i] and filling then
+				if vertices[i] and filling then
 
 				else
 					filling = not filling

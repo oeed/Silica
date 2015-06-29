@@ -32,7 +32,7 @@ function PathView:initCanvas()
 	self.super:initCanvas()
 	self.canvas.fillColour = Graphics.colours.LIGHT_GREY
 
-	local path = Path( 1, 1, self.width - 20, self.height - 20, Graphics.colours.BLUE, 1, 1 )
+	local path = Path( 1, 1, self.width - 20, self.height - 20, 1, 1 )
 	path:curveTo( 20, 60, 50, 35 + 12.5, 0, 40 )
 	path:lineTo( 50, 40 )
 	path:lineTo( 1, 30 )
@@ -44,20 +44,27 @@ function PathView:initCanvas()
 	local size = 5
 	
 	path:close()
+	path.fillColour = Graphics.colours.BLUE
 	path.outlineColour = Graphics.colours.RED
 
-	local path2 = Path( 40, 40, 60, 60, Graphics.colours.GREEN, 40, 40 )
-	path2:lineTo( 1, 40 )
-	path2:arc( math.pi * 3/2, math.pi * 2, 39 )
-	path2:lineTo( 60, 20 )
-	path2:close()
+	-- local path2 = Path( 40, 40, 60, 60, 40, 40 )
+	-- path2:lineTo( 1, 40 )
+	-- path2:arc( math.pi * 3/2, math.pi * 2, 39 )
+	-- path2:lineTo( 60, 20 )
+	-- path2:close()
+
+	local path3 = OutlinePath( 50, 50, 60, 60 )
+	path3:lineTo( 20, 2 )
+	path3:close()
+	path3.outlineColour = colours.lime
 
 	self.canvas:insert( Shader( 1, 1, self.canvas.width, self.canvas.height, function( x, y )
 		return ( math.ceil( x / size ) + math.ceil( y / size ) ) % 2 == 0 and Graphics.colours.LIGHT_GREY or Graphics.colours.WHITE
 	end ) )
 
 	self.canvas:insert( path )
-	self.canvas:insert( path2 )
+	-- self.canvas:insert( path2 )
+	self.canvas:insert( path3 )
 end
 
 --[[

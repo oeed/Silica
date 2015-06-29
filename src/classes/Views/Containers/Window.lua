@@ -19,7 +19,7 @@ class "Window" extends "Container" {
 
     minWidth = 60;
     minHeight = 40;
-    maxWidth = 200;
+    maxWidth = 300;
     maxHeight = 150;
 
 
