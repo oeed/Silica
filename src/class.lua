@@ -1,4 +1,5 @@
 
+-- cache the names of the property getter/setter functions
 local setters, getters = {}, {}
 setmetatable( setters, {
 	__index = function( self, k )

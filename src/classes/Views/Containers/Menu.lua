@@ -1,5 +1,6 @@
 
 class "Menu" extends "Container" {
+-- TODO: prevent menu going out of the screen
 	targetX = 1; -- the desired location of the menu. this is the originally set x value, the actual x value can change to prevent overflowing with the screen
 	targetY = 1;
 
@@ -16,17 +17,6 @@ class "Menu" extends "Container" {
 	shadowTopMargin = 2;
 
     cornerRadius = 4;
-
-    fillColour = Graphics.colours.WHITE;
-    outlineColour = Graphics.colours.LIGHT_GREY;
-
-    pressedFillColour = Graphics.colours.BLUE;
-    pressedOutlineColour = nil;
-
-    disabledFillColour = Graphics.colours.WHITE;
-    disabledOutlineColour = Graphics.colours.LIGHT_GREY;
-
-    shadowColour = Graphics.colours.GREY;
 
     shadowObject = nil;
     backgroundObject = nil;

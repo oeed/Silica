@@ -19,7 +19,7 @@ class "Checkbox" extends "View" {
 function Checkbox:init( ... )
 	self.super:init( ... )
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
-    self.event:connectGlobal( Event.MOUSE_UP, self.onMouseUp, EventManager.phase.BEFORE )
+    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 end
 
 --[[
@@ -30,10 +30,10 @@ function Checkbox:initCanvas()
     self.super:initCanvas()
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
     
-    local checkObject = OutlinePath( 2, 2, self.width - 2, self.height - 2, 1, 4 )
+    local checkObject = Path( 2, 2, self.width - 2, self.height - 2, 1, 4 )
     checkObject:lineTo( 2, 5 )
     checkObject:lineTo( 5, 2 )
-    checkObject:close()
+    checkObject:close( false )
 
     self.theme:connect( backgroundObject, 'fillColour' )
     self.theme:connect( backgroundObject, 'outlineColour' )
@@ -102,7 +102,7 @@ end
     @param [Event] event -- the mouse up event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
-function Checkbox:onMouseUp( event )	
+function Checkbox:onGlobalMouseUp( event )	
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled then

@@ -13,9 +13,8 @@ class "Circle" extends "GraphicsObject" {}
 	@param [number] bottomLeftRadius -- the radius of the bottom left corner
 	@param [number] bottomRightRadius -- the radius of the bottom right corner
 ]]
-function Circle:init( x, y, diameter, fillColour )
+function Circle:init( x, y, diameter )
 	self.super:init( x, y, diameter, diameter )
-	self.fillColour = fillColour
 end
 
 --[[

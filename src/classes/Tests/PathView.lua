@@ -53,10 +53,13 @@ function PathView:initCanvas()
 	-- path2:lineTo( 60, 20 )
 	-- path2:close()
 
-	local path3 = OutlinePath( 50, 50, 60, 60 )
+	local path3 = Path( 50, 50, 60, 60 )
 	path3:lineTo( 20, 2 )
-	path3:close()
-	path3.outlineColour = colours.lime
+	path3:lineTo( 30, 25 )
+	path3:arc( math.pi / 2, math.pi * 2, 15 )
+	path3:lineTo( 15, 0 )
+	path3:close( false )
+	path3.outlineColour = Graphics.colours.BLACK
 
 	self.canvas:insert( Shader( 1, 1, self.canvas.width, self.canvas.height, function( x, y )
 		return ( math.ceil( x / size ) + math.ceil( y / size ) ) % 2 == 0 and Graphics.colours.LIGHT_GREY or Graphics.colours.WHITE

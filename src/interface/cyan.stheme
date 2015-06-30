@@ -1,0 +1,28 @@
+<Theme extends=default>
+	<Window>
+		<topCornerRadius type="number" default="4" />
+		<bottomCornerRadius type="number" default="2" />
+		<barColour type="Graphics.colours" default="CYAN" disabled="LIGHT_GREY" />
+		<separatorColour type="Graphics.colours" default="LIGHT_BLUE" disabled="WHITE" />
+		<textColour type="Graphics.colours" default="BLACK" disabled="GREY"/>
+		<shadowColour type="Graphics.colours" default="GREY" />
+	</Window>
+	
+	<CloseWindowButton>
+		<fillColour type="Graphics.colours" default="CYAN" pressed="RED" disabled="TRANSPARENT"/>
+		<symbolColour type="Graphics.colours" default="WHITE" pressed="WHITE" disabled="GREY"/>
+		<cornerRadius type="number" default="4" />
+	</CloseWindowButton>
+	
+	<MinimiseWindowButton>
+		<fillColour type="Graphics.colours" default="CYAN" pressed="ORANGE" disabled="TRANSPARENT"/>
+		<symbolColour type="Graphics.colours" default="WHITE" pressed="WHITE" disabled="GREY"/>
+		<cornerRadius type="number" default="0" />
+	</MinimiseWindowButton>
+	
+	<MaximiseWindowButton>
+		<fillColour type="Graphics.colours" default="CYAN" pressed="LIME" disabled="TRANSPARENT"/>
+		<symbolColour type="Graphics.colours" default="WHITE" pressed="WHITE" disabled="GREY"/>
+		<cornerRadius type="number" default="0" />
+	</MaximiseWindowButton>
+</Theme>

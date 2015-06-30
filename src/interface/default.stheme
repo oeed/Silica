@@ -41,27 +41,38 @@
 	<Window>
 		<topCornerRadius type="number" default="4" />
 		<bottomCornerRadius type="number" default="2" />
-		<barColour type="Graphics.colours" default="LIGHT_GREY" />
+		<barColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY" />
 		<separatorColour type="Graphics.colours" default="GREY" disabled="LIGHT_GREY" />
 		<textColour type="Graphics.colours" default="BLACK" disabled="GREY"/>
 		<shadowColour type="Graphics.colours" default="GREY" />
 	</Window>
 	
 	<CloseWindowButton>
-		<fillColour type="Graphics.colours" default="LIGHT_GREY" pressed="RED" disabled="LIGHT_GREY"/>
-		<symbolColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="GREY"/>
+		<fillColour type="Graphics.colours" default="RED" pressed="RED" disabled="TRANSPARENT"/>
+		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="GREY"/>
+		<symbolColour type="Graphics.colours" default="TRANSPARENT" pressed="WHITE" disabled="TRANSPARENT"/>
 		<cornerRadius type="number" default="4" />
 	</CloseWindowButton>
 	
 	<MinimiseWindowButton>
-		<fillColour type="Graphics.colours" default="LIGHT_GREY" pressed="ORANGE" disabled="LIGHT_GREY"/>
-		<symbolColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="GREY"/>
-		<cornerRadius type="number" default="0" />
+		<fillColour type="Graphics.colours" default="ORANGE" pressed="ORANGE" disabled="TRANSPARENT"/>
+		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="GREY"/>
+		<symbolColour type="Graphics.colours" default="TRANSPARENT" pressed="WHITE" disabled="TRANSPARENT"/>
+		<cornerRadius type="number" default="4" />
 	</MinimiseWindowButton>
 	
 	<MaximiseWindowButton>
-		<fillColour type="Graphics.colours" default="LIGHT_GREY" pressed="LIME" disabled="LIGHT_GREY"/>
-		<symbolColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="GREY"/>
-		<cornerRadius type="number" default="0" />
+		<fillColour type="Graphics.colours" default="LIME" pressed="LIME" disabled="TRANSPARENT"/>
+		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="GREY"/>
+		<symbolColour type="Graphics.colours" default="TRANSPARENT" pressed="WHITE" disabled="TRANSPARENT"/>
+		<cornerRadius type="number" default="4" />
 	</MaximiseWindowButton>
+
+	<Scrollbar>
+		<fillColour type="Graphics.colours" default="LIGHT_GREY" />
+		<scrollerColour type="Graphics.colours" default="WHITE" pressed="BLUE" disabled="WHITE" />
+		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="TRANSPARENT" />
+		<grabberColour type="Graphics.colours" default="GREY" pressed="WHITE" disabled="LIGHT_GREY" />
+		<cornerRadius type="number" default="2" />
+	</Scrollbar>
 </Theme>

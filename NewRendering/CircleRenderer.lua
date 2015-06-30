@@ -1,0 +1,4 @@
+
+class "CircleRenderer" extends "GenericRenderer" {
+	
+}

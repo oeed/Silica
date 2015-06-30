@@ -44,6 +44,7 @@ end
 	@param [number] deltaTime -- the time since last update
 ]]
 function Container:update( deltaTime )
+	self.super:update( deltaTime )
 	for i, childView in ipairs( self.children ) do
 		childView:update( deltaTime )
 	end

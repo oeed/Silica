@@ -1,9 +1,9 @@
 
 local DEFAULT_TIME = .3
-local DEFAULT_EASING = "inOutSine"
+local DEFAULT_EASING = Animation.easing.IN_OUT_SINE
 
 local function newAnimation( self, label, time, values, easing, onFinish )
-	local animation = AnimationA( time, self, values, easing )
+	local animation = Animation( time, self, values, easing, true )
 	for i = #self.animations, 1, -1 do
 		if self.animations[i].label == label then
 			table.remove( self.animations, i )
@@ -279,13 +279,15 @@ end
 	@param [number] deltaTime -- time since last update
 ]]
 function View:update( dt )
-	for i = #self.animations, 1, -1 do
-		self.animations[i].animation:update( dt )
-		if self.animations[i].clock >= self.animations[i].duration then
-			if self.animations[i].onFinish then
-				self.animations[i].onFinish( self )
+	local animations = self.animations
+	for i = #animations, 1, -1 do
+		local animation = animations[i]
+		animation.animation:update( dt )
+		if animation.animation.time >= animation.animation.duration then
+			if animation.onFinish then
+				animation.onFinish( self )
 			end
-			table.remove( self.animations, i )
+			table.remove( animations, i )
 		end
 	end
 end

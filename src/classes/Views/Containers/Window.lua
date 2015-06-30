@@ -34,10 +34,13 @@ class "Window" extends "Container" {
 function Window:init( ... )
 	self.super:init( ... )
 
+    local width = self.width
+
     self.closeButton = self:insert( CloseWindowButton( { x = 1, y = 1, window = self } ))
-    self.minimiseButton = self:insert( MinimiseWindowButton( { x = 10, y = 1, window = self } ))
-    self.maximiseButton = self:insert( MaximiseWindowButton( { x = 19, y = 1, window = self } ))
+    self.minimiseButton = self:insert( MinimiseWindowButton( { x = 9, y = 1, window = self } ))
+    self.maximiseButton = self:insert( MaximiseWindowButton( { x = 17, y = 1, window = self } ))
 	self.container = self:insert( WindowContainer( { x = 1, y = self.barHeight + 2, width = self.width - 2, height = self.height - self.barHeight - 5 } ) )
+    
     self:event( Event.MOUSE_DOWN, self.onMouseDownBefore, EventManager.phase.BEFORE )
     self:event( Event.MOUSE_DOWN, self.onMouseDownAfter, EventManager.phase.AFTER )
     self.event:connectGlobal( Event.MOUSE_DRAG, self.onGlobalMouseDrag )

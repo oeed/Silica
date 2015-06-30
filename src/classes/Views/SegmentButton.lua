@@ -30,6 +30,8 @@ function SegmentButton:setWidth( width )
         local isLast = self.parent and (self.index == #self.parent.children) or false
         self.backgroundObject.width = isLast and width - 2 or width - 2
         self.shadowObject.width = (isLast or isFirst) and width - 1 or width
+        self.separatorObject.x = width
+        self.separatorBackgroundObject.x = width
     end
 end
 

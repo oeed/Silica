@@ -1,4 +1,4 @@
-<Theme>
+<Theme extends=default>
 	<Button>
 		<cornerRadius type="number" default="2" />
 		<fillColour type="Graphics.colours" default="WHITE" pressed="RED" disabled="WHITE"/>

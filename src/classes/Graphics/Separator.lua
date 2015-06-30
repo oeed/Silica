@@ -5,7 +5,6 @@ class "Separator" extends "GraphicsObject" {
 
 function Separator:init( x, y, width, height )
 	self.super:init( x, y, width, height )
-	self.fillColour = fillColour
 end
 
 --[[

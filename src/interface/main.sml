@@ -1,8 +1,8 @@
-<ApplicationContainer>
+<ApplicationContainer theme=red>
 
 	<Button identifier=okayButton x=10 y=10 text=Okay />
 
-	<MenuButton x=60 y=10 text=Okay />
+	<MenuButton x=60 y=10 text="erm" />
 
 	<SegmentContainer x=120 y=10>
 		<SegmentButton text=One isChecked=true />
@@ -11,7 +11,13 @@
 	</SegmentContainer>
 
 	
-	<PathView x=10 y=35 />
+
+	<ScrollView x=200 y=35 width=100 height=100 >
+		<ScrollContainer width=90 height=200 >
+			<PathView x=10 width=80 y=35 />
+		</ScrollContainer>
+	</ScrollView>
+
 
 	<!-- <ProgressBar  x=70 y=150 /> -->
 	<!-- <ProgressBar  x=70 y=130 />
@@ -24,12 +30,12 @@
 	<ProgressBar  x=70 y=80 />
 	<ProgressBar  x=70 y=60 /> -->
 
-	<Window x=10 y=10 width=300 height=60 >
+	<!-- <Window x=10 y=10 width=300 height=60 >
 		<FontWindowContainer>
 		</FontWindowContainer>
 	</Window>
 
-	<Window x=150 y=100 width=0 height=60 >
+	<Window x=150 y=100 width=100 height=60 >
 		<WindowContainer>
 			<ProgressBar x=6 y=35 />
 			<Button x=5 y=5 text=Okay />
@@ -40,6 +46,6 @@
 				<Radio y=21/>
 			</Container>
 		</WindowContainer>
-	</Window>
+	</Window> -->
 
 </ApplicationContainer>

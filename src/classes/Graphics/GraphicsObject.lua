@@ -265,8 +265,9 @@ function GraphicsObject:drawTo( canvas )
 
 		if fill then
 			for x, row in pairs( fill ) do
+				local outlineX = outline and outline[x]
 				for y, _ in pairs( row ) do
-					if not outline or not outline[x] or not outline[x][y] then
+					if not outline or not outlineX or not outlineX [y] then
 						setPixel( _x + x, _y + y, fillColour )
 					end
 				end

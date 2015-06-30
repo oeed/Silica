@@ -1,52 +1,51 @@
 
-class "WindowButton" extends "View" {
-	width = 9;
-	height = 7;
-    isPressed = false;
-    backgroundObject = nil;
-    symbolObject = nil;
-    window = nil;
+class "Scrollbar" extends "View" {
+	width = 7;
+    isHorizontal = false;
+	scrollerObject = nil;
+	grabberObject = nil;
 }
 
---[[
-    @constructor
-    @desc Creates a button object and connects the event handlers
-]]
-function WindowButton:init( ... )
-    self.super:init( ... )
-    
+function Scrollbar:init( ... )
+	self.super:init( ... )
+    -- self:event( Event.MOUSE_SCROLL, self.onMouseScroll )
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
-    if self.onMouseUp then self:event( Event.MOUSE_UP, self.onMouseUp ) end
 end
 
-function WindowButton:initCanvas()
-	self.super:initCanvas()
+--[[
+    @instance
+    @desc Sets up the canvas and it's graphics objects
+]]
+function Scrollbar:initCanvas()
+    self.super:initCanvas()
 
-    local backgroundObject = self.canvas:insert( Circle( 3, 2, 5, 5 ) )
-    self.theme:connect( backgroundObject, 'fillColour' )
-    -- local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height ) )
+    self.theme:connect( self.canvas, 'fillColour' )
 
-    self.theme:connect( backgroundObject, 'outlineColour' )
-    -- self.theme:connect( backgroundObject, 'topLeftRadius', 'cornerRadius' )
+    local scrollerObject = self.canvas:insert( RoundedRectangle( 2, 3, self.width - 2, 30 ) )
+    local grabberObject = self.canvas:insert( ScrollbarGrabber( 3, 3, self.width - 4, 30 ) )
 
+    self.theme:connect( scrollerObject, 'fillColour', 'scrollerColour' )
+    self.theme:connect( scrollerObject, 'outlineColour' )
+    self.theme:connect( scrollerObject, 'radius', 'cornerRadius' )
+    self.theme:connect( grabberObject, 'fillColour', 'grabberColour' )
 
-
-    self.backgroundObject = backgroundObject
+    self.scrollerObject = scrollerObject
+    self.grabberObject = grabberObject
 end
 
-function WindowButton:updateThemeStyle()
+function Scrollbar:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
 end
 
-function WindowButton:setIsEnabled( isEnabled )
+function Scrollbar:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
     if self.hasInit then
         self:updateThemeStyle()
     end
 end
 
-function WindowButton:setIsPressed( isPressed )
+function Scrollbar:setIsPressed( isPressed )
     self.isPressed = isPressed
     if self.hasInit then
         self:updateThemeStyle()
@@ -59,7 +58,7 @@ end
     @param [Event] event -- the mouse up event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
-function WindowButton:onGlobalMouseUp( event )
+function Scrollbar:onGlobalMouseUp( event )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
@@ -74,7 +73,7 @@ end
     @param [Event] event -- the mouse down event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
-function WindowButton:onMouseDown( event )
+function Scrollbar:onMouseDown( event )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
     end

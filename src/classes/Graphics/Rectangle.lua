@@ -17,9 +17,10 @@ function Rectangle:getFill()
 	-- if self.fill then return self.fill end
 
 	local fill = {}
+	local height = self.height
 	for x = 1, self.width do
 		local fillX = {}
-		for y = 1, self.height do
+		for y = 1, height do
 			fillX[y] = true
 		end
 		fill[x] = fillX

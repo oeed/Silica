@@ -1,7 +1,21 @@
 
 local floor, ceil = math.floor, math.ceil
-
 local cache = {}
+
+local function readstring( handle )
+	local v = handle.read()
+	local s = ""
+	while v ~= 0 do
+		s = s .. string.char( v )
+		v = handle.read()
+	end
+	return s
+end
+local function writestring( handle, text )
+	for i = 1, #text do
+		handle.write( text:byte( i ) )
+	end
+end
 
 local function renderCharacterScaledDown( setPixel, character, _x, _y, cw, ch, scale, colour )
 	_x = _x - 1
@@ -52,6 +66,74 @@ function Font:init( source, desiredHeight, reload )
 	self.height = height
 	self.desiredHeight = desiredHeight or height
 	self.scale = ( desiredHeight or height ) / height
+end
+
+function Font.readMetadata( file )
+	local h = fs.open( file, "rb" )
+	if h then
+		local metadata = {}
+		local v = h.read()
+		while v == 0 do
+			local key, value = readstring( h ), readstring( h )
+			metadata[key] = value
+			v = h.read()
+		end
+		h.close()
+		return metadata
+	end
+end
+
+function Font.encodeFile( file, characters, height, metadata )
+	local h = fs.open( file, "wb" )
+	if h then
+		for k, v in pairs( metadata or {} ) do
+			h.write( 0 )
+			writestring( h, tostring( k ) )
+			h.write( 0 )
+			writestring( h, tostring( v ) )
+			h.write( 0 )
+		end
+		h.write( 1 )
+		h.write( height )
+		local bytes
+		if metadata.fontType == "vector" then
+			bytes = BitmapFont.encodeSet( characters, height )
+		else
+			bytes = VectorFont.encodeSet( characters, height )
+		end
+		for _, byte in ipairs( bytes ) do
+			h.write( byte )
+		end
+		h.close()
+		return true
+	end
+end
+
+function Font.decodeFile( file )
+	local h = fs.open( file, "rb" )
+	if h then
+		local metadata = {}
+		local v = h.read()
+		while v == 0 do
+			local key, value = readstring( h ), readstring( h )
+			metadata[key] = value
+			v = h.read()
+		end
+		local height = h.read()
+		local bytes = {}
+		for byte in h.read do
+			bytes[#bytes + 1] = byte
+		end
+
+		local fontType = metadata.fontType
+		local characters
+		if fontType == "vector" then
+			characters = BitmapFont.decodeSet( bytes, height )
+		else
+			characters = VectorFont.decodeSet( bytes, height )
+		end
+		return characters, height, metadata
+	end
 end
 
 --[[

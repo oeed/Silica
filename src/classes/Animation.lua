@@ -18,13 +18,13 @@ local function copyTables(destination, keysTable, valuesTable)
     return destination
 end
 
-local function performEasingOnSubject(subject, targetValues, initialValues, clock, duration, easingFunc, round)
+local function performEasingOnSubject(subject, targetValues, initialValues, time, duration, easingFunc, round)
     local t,b,c,d
     for k,v in pairs(targetValues) do
         if type(v) == 'table' then
-            performEasingOnSubject(subject[k], v, initialValues[k], clock, duration, easingFunc)
+            performEasingOnSubject(subject[k], v, initialValues[k], time, duration, easingFunc)
         else
-            t,b,c,d = clock, initialValues[k], v - initialValues[k], duration
+            t,b,c,d = time, initialValues[k], v - initialValues[k], duration
             if round then
                 subject[k] = math.floor( easingFunc(t,b,c,d) + 0.5 )
             else
@@ -41,7 +41,7 @@ class "Animation" {
 	targetValues = nil;
 	easingFunc = nil;
 	initialValues = nil;
-	clock = nil;
+	time = nil;
 }
 
 --[[
@@ -52,37 +52,38 @@ class "Animation" {
     @param [class] targetValues -- the targetValues of the animation
     @param [Animation.easing] easingFunc -- the easing function of the animation
 ]]
-function Animation:init( duration, subject, targetValues, easingFunc )
+function Animation:init( duration, subject, targetValues, easingFunc, round )
     self.duration = duration
     self.subject = subject
     self.targetValues = targetValues
     self.easingFunc = easingFunc
+    self.round = round
     self.initialValues = copyTables( {}, targetValues, subject )
-    self.clock = 0
+    self.time = 0
 end
 
 --[[
 	@instance
 	@desc Sets the animation to the specificed time point
-	@param [number] time -- description
+	@param [number] time -- the time point
 	@return [boolean] isComplete -- whether the animation is complete
 ]]
-function Animation:set( time )
-	assert(type(clock) == 'number', "clock must be a positive number or 0")
+function Animation:setTime( time )
+	assert(type(time) == 'number', "time must be a positive number or 0")
 
-	self.clock = clock
+	self.time = time
 
-	if self.clock <= 0 then
-		self.clock = 0
+	if self.time <= 0 then
+		self.time = 0
 		copyTables(self.subject, self.initialValues)
-	elseif self.clock >= self.duration then -- the tween has expired
-		self.clock = self.duration
+	elseif self.time >= self.duration then -- the tween has expired
+		self.time = self.duration
 		copyTables(self.subject, self.targetValues)
 	else
-		performEasingOnSubject(self.subject, self.targetValues, self.initialValues, self.clock, self.duration, self.easingFunc, self.round)
+		performEasingOnSubject(self.subject, self.targetValues, self.initialValues, self.time, self.duration, self.easingFunc, self.round)
 	end
 
-	return self.clock >= self.duration
+	return self.time >= self.duration
 end
 
 --[[
@@ -91,7 +92,7 @@ end
 	@return [boolean] isComplete -- whether the animation is complete
 ]]
 function Animation:reset()
-	return self:set( 0 )
+	return self:setTime( 0 )
 end
 
 --[[
@@ -101,7 +102,7 @@ end
 	@return [boolean] isComplete -- whether the animation is complete
 ]]
 function Animation:update( deltaTime )
-	return self:set( self.clock + deltaTime )
+	return self:setTime( self.time + deltaTime )
 end
 	
 

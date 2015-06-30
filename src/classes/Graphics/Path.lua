@@ -5,7 +5,7 @@ local function round( num )
 	return floor( num + 0.5 )
 end
 
--- the next few functions are just taken from a site for bezier intersection, hence the terribly variables. don't hate.
+-- the next few functions are just taken from a site for bezier intersection, hence the terribly named variables. don't hate.
 local function sgn( n )
 	return n < 0 and -1 or 1
 end
@@ -93,10 +93,10 @@ local function cubicRoots( P )
     return t;
 end
 
-local function getLinearIntersectionPoint( points, y, line, minX, maxX )
-	if line.x1 == line.x2 then
-		if y >= min( line.y1, line.y2 ) and y <= max( line.y1, line.y2 ) then
-			points[#points + 1] = line.x1
+local function getHorizontalLinearIntersectionPoint( points, y, line, minX, maxX )
+	if abs( line.x1 - line.x2 ) < .00001 then
+		if y >= min( line.y1, line.y2 ) - .00001 and y <= max( line.y1, line.y2 ) + .0001 then
+			points[#points + 1] = floor( line.x1 + .5 )
 		end
 	else
 		local m = ( line.y2 - line.y1 ) / ( line.x2 - line.x1 )
@@ -108,7 +108,22 @@ local function getLinearIntersectionPoint( points, y, line, minX, maxX )
 	end
 end
 
-local function getCurvedIntersectionPoints( points, y, line, minX, maxX )
+local function getVerticalLinearIntersectionPoint( points, x, line, minY, maxY )
+	if abs( line.y1 - line.y2 ) < .00001 then
+		if x >= math.min( line.x1, line.x2 ) - .00001 and x <= math.max( line.x1, line.x2 ) + .0001 then
+			points[#points + 1] = floor( line.y1 + 0.5 )
+		end
+	else
+		local m = ( line.y2 - line.y1 ) / ( line.x2 - line.x1 )
+		local c = line.y1 - m * line.x1
+		local y = m * x + c
+		if y >= min( line.y1, line.y2 ) - .00001 and y <= max( line.y1, line.y2 ) + .0001 then
+			points[#points + 1] = y
+		end
+	end
+end
+
+local function getHorizontalCurvedIntersectionPoints( points, y, line, minX, maxX )
 	if not line.xCoefficients or not line.yCoefficients then
 		line.xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
 		line.yCoefficients = bezierCoeffs( line.y1, line.controlPoint1Y, line.controlPoint2Y, line.y2 )
@@ -128,6 +143,30 @@ local function getCurvedIntersectionPoints( points, y, line, minX, maxX )
 	    end
     end
 end
+
+local function getVerticalCurvedIntersectionPoints( points, x, line, minY, maxY )
+	if not line.xCoefficients or not line.yCoefficients then
+		line.xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
+		line.yCoefficients = bezierCoeffs( line.y1, line.controlPoint1Y, line.controlPoint2Y, line.y2 )
+	end
+
+	local xCoefficients = line.yCoefficients
+	local yCoefficients = line.xCoefficients
+
+	local yRoots = cubicRoots( { yCoefficients[1], yCoefficients[2], yCoefficients[3], yCoefficients[4] - x } )
+
+    for i = 1, 3 do
+        t = yRoots[i];
+        if t > 0 and t < 1 then
+	        local y = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4];
+			y = min( max( y, minY ), maxY )
+			points[#points + 1] = y
+	    end
+    end
+end
+
+local getLinearIntersectionPoint = getHorizontalLinearIntersectionPoint
+local getCurvedIntersectionPoints = getHorizontalCurvedIntersectionPoints
 
 class "Path" extends "GraphicsObject" {
 	lines = {};
@@ -237,8 +276,6 @@ end
 	@return [boolean] didAdd -- whether the line was added
 ]]
 
-local SPECIAL_CONST = 8 / 30 / PI
-
 function Path:arc( startAngle, endAngle, radius )
 	if self.defined then return false end
 
@@ -248,7 +285,7 @@ function Path:arc( startAngle, endAngle, radius )
 	local centreX, centreY = currentX - sin( startAngle ) * radius, currentY + cos( startAngle ) * radius
 
 	local length = endAngle - startAngle
-	local segments = floor( radius * abs( length ) * SPECIAL_CONST + .5 )
+	local segments = floor( radius * abs( length ) * PI + .5 )
 
 	for i = 0, segments do
 		local angle = startAngle + length * i / segments
@@ -292,6 +329,34 @@ function Path:close( linkedToEnd )
 	return true
 end
 
+function Path:getHorizontalIntersections( y, minX, maxX )
+	local points = {}
+	local lines = self.lines
+	for i = 1, #lines do
+		if lines[i].mode == "linear" then
+			getHorizontalLinearIntersectionPoint( points, y, lines[i], minX, maxX )
+		else
+			getHorizontalCurvedIntersectionPoints( points, y, lines[i], minX, maxX )
+		end
+	end
+	table.sort( points )
+	return points
+end
+
+function Path:getVerticalIntersections( x, minY, maxY )
+	local points = {}
+	local lines = self.lines
+	for i = 1, #lines do
+		if lines[i].mode == "linear" then
+			getVerticalLinearIntersectionPoint( points, x, lines[i], minY, maxY )
+		else
+			getVerticalCurvedIntersectionPoints( points, x, lines[i], minY, maxY )
+		end
+	end
+	table.sort( points )
+	return points
+end
+
 --[[
 	@instance
 	@desc Get an array of the intersection points (essentially the outline)
@@ -300,9 +365,9 @@ end
 ]]
 function Path:getPointsAndVertices( y, minX, maxX )
 	local points = {}
-
-	for i = 1, #self.lines do
-		local line = self.lines[i]
+	local lines = self.lines
+	for i = 1, #lines do
+		local line = lines[i]
 		if line.mode == "linear" then
 			getLinearIntersectionPoint( points, y, line, minX, maxX )
 		else
@@ -313,10 +378,7 @@ function Path:getPointsAndVertices( y, minX, maxX )
 	local vertices = {}
 	table.sort( points )
 	for i = #points, 2, -1 do
-		if points[i] == points[i-1] then
-			vertices[i] = true
-			vertices[i-1] = true
-		elseif round( points[i] ) == round( points[i-1] ) then
+		if round( points[i] ) == round( points[i-1] ) then
 			vertices[i] = true
 			vertices[i-1] = true
 		end
@@ -336,16 +398,14 @@ end
     @return [number] maxY -- the maximum Y coord
 ]]
 function Path:getFill()
-	if self.fill then
-		return self.fill
-	end
+	if self.fill then return self.fill end
 
 	local minY, maxY, minX, maxX = 1, self.height, 1, self.width
 	local fill = {}
 
 	for y = minY, maxY do
 
-		local points, vertices = self:getPointsAndVertices( y, minX, maxX )
+		local points = self:getHorizontalIntersections( y, minX, maxX )
 
 		if #points == 1 then
 			local x = floor( points[1] + .5 )
@@ -354,9 +414,8 @@ function Path:getFill()
 		else
 			local filling = false
 			for i = 1, #points - 1 do
-				if vertices[i] and filling then
-
-				else
+				local isVertex = ( round( points[i] ) == round( points[i + 1] ) ) or ( points[i-1] and round( points[i] ) == round( points[i - 1] ) )
+				if not filling or not isVertex then
 					filling = not filling
 				end
 				if filling then
@@ -371,4 +430,35 @@ function Path:getFill()
 
 	self.fill = fill
 	return fill
+end
+
+
+function Path:getOutline()
+	if self.outline then return self.outline end
+
+	local minY, maxY, minX, maxX = 1, self.height, 1, self.width
+	local outline = {}
+
+	for y = minY, maxY do
+		local points = self:getHorizontalIntersections( y, minX, maxX )
+
+		for i = 1, #points do
+			local x = round( points[i] )
+			outline[x] = outline[x] or {}
+			outline[x][y] = true
+		end
+	end
+
+	for x = minX, maxX do
+		outline[x] = outline[x] or {}
+		local points = self:getVerticalIntersections( x, minY, maxY )
+
+		for i = 1, #points do
+			local y = round( points[i] )
+			outline[x][y] = true
+		end
+	end
+
+	self.outline = outline
+	return outline
 end
