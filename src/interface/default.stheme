@@ -1,6 +1,6 @@
 <Theme>
 	<Button>
-		<cornerRadius type="number" default="6" />
+		<cornerRadius type="number" default="8" />
 		<fillColour type="Graphics.colours" default="WHITE" pressed="BLUE" disabled="WHITE"/>
 		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY" pressed="TRANSPARENT"/>
