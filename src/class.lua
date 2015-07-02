@@ -231,7 +231,6 @@ function class:new( ... )
 		if isRawFunc then
 			return function( _self, ... )
 				if rawequal( _self, proxy ) then
-					-- TODO: will this ever be called??
 					-- if the super has been masked then change it back, then change it again
 					local oldSuper = rawget( proxy, 'super' )
 					rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again

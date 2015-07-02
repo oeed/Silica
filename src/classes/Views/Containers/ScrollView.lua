@@ -1,9 +1,17 @@
 
+local exp = math.exp
+
+local SCROLL_DECAY = -8
+local SCROLL_SPEED = 180
+local SCROLL_ACCELERATION = 1.2--0.97
+local SPEED_CUTOFF = 0.2
+
 class "ScrollView" extends "Container" {
 	contents = nil;
 	horizontalScrollbar = nil;
 	verticalScrollbar = nil;
-	scrollSpeed = 10;
+
+	verticalStartTime = 0;
 	verticalVelocity = 0;
 	horizontalVelocity = 0;
 }
@@ -24,12 +32,7 @@ function ScrollView:init( ... )
     self:sendToFront( self.verticalScrollbar )
 
     self:event( Event.INTERFACE_LOADED, self.onInterfaceLoaded )
-    self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self:event( Event.MOUSE_SCROLL, self.onMouseScroll )
-end
-
-function ScrollView:onMouseDown( event )
-	self.offsetY = 30
 end
 
 function ScrollView:onInterfaceLoaded( event )
@@ -41,6 +44,7 @@ function ScrollView:onInterfaceLoaded( event )
             self:remove( self.container )
             self.container = childView
             -- self:sendToFront( self.horizontalScrollbar )
+			self.verticalScrollbar:getScroller()
             self:sendToFront( self.verticalScrollbar )
             break
         end
@@ -68,28 +72,59 @@ end
 	@desc Set vertical scroll offset of the contents
 	@param [number] offsetY -- the vertical offset
 ]]
-function ScrollView:setOffsetY( offsetY )
+function ScrollView:setOffsetY( offsetY, isVelocity )
 	local container = self.container
 	if container then
 		local height = self.height
-		local realOffsetY = math.max( math.min( offsetY, math.max( container.height - height, 0 ) ), 1 )
-		self.offsetY = realOffsetY
-		-- container:animateY( -realOffsetY, 0.5, Animation.easing.EASE_OUT_CUBIC )
+		local currentOffsetY = self.offsetY
+		local realOffsetY = math.max( math.min( offsetY, math.max( container.height - height, 0 ) ), 0 )
+		self.raw.offsetY = realOffsetY
+		self.verticalScrollbar:getScroller()
+		if realOffsetY ~= offsetY then
+			self.verticalVelocity = 0
+			self.verticalVelocityTime = 0
+		end
+		container.y = 1 - math.floor( realOffsetY + 0.5 )
 	end
 end
 
+
 function ScrollView:update( deltaTime )
+	self.super:update( deltaTime )
 	local verticalVelocity = self.verticalVelocity
-	
+	if verticalVelocity ~= 0 then
+		local startTime
+		local time = self.verticalVelocityTime
+		local newVerticalVelocity = verticalVelocity * exp( SCROLL_DECAY * (time + deltaTime) )
+		local distance
+		if math.abs( newVerticalVelocity ) <= SPEED_CUTOFF then
+			self.verticalVelocity = 0
+			self.verticalVelocityTime = 0
+		else
+			self.verticalVelocityTime = time + deltaTime
+			local currentVerticalVelocity = verticalVelocity * exp( SCROLL_DECAY * time )
+			self:setOffsetY( self.offsetY + (currentVerticalVelocity - newVerticalVelocity) / SCROLL_DECAY, true )
+		end
+	end
 end
 
 --[[
 	@instance
-	@desc Scrolls the scroll view in the direction (and magnitude) given
-	@param [MouseEvent.directions/number] direction -- the direction/distance to scroll
+	@desc Scrolls the scroll view to the offset given, animating the value
+	@param [number] offsetY -- the direction/distance to scroll
 ]]
-function ScrollView:scroll( direction )
-	self.offsetY = self.offsetY + direction
+function ScrollView:scrollTo( offsetY )
+	-- calculate the velocity required to reach a certain point
+	-- see https://www.desmos.com/calculator/qis3qhbsvs for details
+	-- d = vi / a * ( 1 - e ^ ln( vf / vi ) )
+	-- it turns out that this is far easier than oeed first thought and spent an hour playing with integrals...
+	-- vi = ad + vf
+	-- (vi - vf)/a = d
+	local deltaOffsetY = offsetY - self.offsetY
+	local velocity = SCROLL_DECAY * deltaOffsetY + SPEED_CUTOFF
+	self.verticalVelocity = velocity
+	self.verticalVelocityTime = 0
+	-- self.offsetY = self.offsetY + direction
 	-- TODO: horizontal scrolling
 end
 
@@ -101,7 +136,16 @@ end
 ]]
 function ScrollView:onMouseScroll( event )
 	if self.isEnabled then
-		self:scroll( event.direction * self.scrollSpeed )
+		local direction = event.direction
+		local verticalVelocity = self.verticalVelocity
+		instantaneousVelocity = verticalVelocity and verticalVelocity * exp( SCROLL_DECAY * (self.verticalVelocityTime or 0) ) or 0
+		self.verticalVelocityTime = 0
+		if direction * verticalVelocity > 1 then
+			self.verticalVelocity = -direction * math.abs(instantaneousVelocity + direction * SCROLL_SPEED) ^ SCROLL_ACCELERATION
+		else
+			self.verticalVelocity = -direction * SCROLL_SPEED
+		end
+		-- self:scroll( event.direction * SCROLL_SPEED )
 	end
 	return true
 end

@@ -459,6 +459,44 @@ function Path:getOutline()
 		end
 	end
 
-	self.outline = outline
-	return outline
+	local thickendOutline = {}
+	local function xScanline( min, max, inc, outlineWidth )
+		if outlineWidth <= 1 then return end
+		for y = 1, self.height do
+			for x = min, max, inc do
+				if outline[x] and outline[x][y] then
+					for i = 1 - outlineWidth, outlineWidth - 1 do
+						thickendOutline[x + i] = thickendOutline[x + i] or {}
+						thickendOutline[x + i][y] = true
+					end	
+				end
+			end
+		end
+	end
+
+	local function yScanline( min, max, inc, outlineWidth )
+		for x = 1, self.width do
+			local lastY = 0
+			local yPixels = 0
+			local outlineX = outline[x]
+			if outlineX then
+				for y, isSet in pairs( outlineX ) do
+					if isSet then
+						for i = 1 - outlineWidth, outlineWidth - 1 do
+							thickendOutline[x + i] = thickendOutline[x + i] or {}
+							thickendOutline[x][y + i] = true
+						end	
+					end
+				end
+			end
+		end
+	end
+
+	xScanline( 1, self.width, 1, self.leftOutlineWidth )
+	xScanline( self.width, 1, -1, self.rightOutlineWidth )
+	yScanline( 1, self.height, 1, self.topOutlineWidth )
+	yScanline( self.height, 1, -1, self.bottomOutlineWidth )
+
+	self.outline = thickendOutline
+	return thickendOutline
 end

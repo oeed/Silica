@@ -45,7 +45,7 @@ function EventManager:connect( eventType, func, phase, eventManager )
 
 		table.insert( self.handles[eventType], { func, phase, eventManager } )
 	else
-		error( "Attempted to connect non-function to event: " .. eventType )
+		error( "Attempted to connect non-function to event: " .. eventType .. ' for class: ' .. tostring( self.owner or nil ))
 	end
 end
 
@@ -87,7 +87,7 @@ function EventManager:connectGlobal( eventType, func, phase )
 
 		self.application.event:connect( eventType, func, phase, self )
 	else
-		error( "Attempted to connect non-function to global event: " .. eventType )
+		error( "Attempted to connect non-function to global event: " .. eventType .. ' for class: ' .. tostring( self.owner or nil ))
 	end
 end
 

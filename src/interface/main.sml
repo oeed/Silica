@@ -13,7 +13,7 @@
 	
 
 	<ScrollView x=200 y=35 width=100 height=100 >
-		<ScrollContainer width=90 height=200 >
+		<ScrollContainer width=90 height=600 >
 			<PathView x=10 width=80 y=35 />
 		</ScrollContainer>
 	</ScrollView>
@@ -30,12 +30,12 @@
 	<ProgressBar  x=70 y=80 />
 	<ProgressBar  x=70 y=60 /> -->
 
-	<!-- <Window x=10 y=10 width=300 height=60 >
+	<Window x=10 y=10 width=100 height=60 >
 		<FontWindowContainer>
 		</FontWindowContainer>
 	</Window>
 
-	<Window x=150 y=100 width=100 height=60 >
+	<Window x=50 y=100 width=100 height=60 >
 		<WindowContainer>
 			<ProgressBar x=6 y=35 />
 			<Button x=5 y=5 text=Okay />

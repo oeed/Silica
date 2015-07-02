@@ -81,6 +81,7 @@ function MenuButton:initCanvas()
     openArrowObject:lineTo( 3, 3 )
     openArrowObject:lineTo( 5, 1 )
     openArrowObject:close( false )
+    openArrowObject.outlineWidth = 2
     self.openArrowObject = openArrowObject
     self.canvas:insert( openArrowObject )
 

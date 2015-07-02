@@ -8,10 +8,7 @@ class "Circle" extends "GraphicsObject" {}
 	@param [number] y -- the y coordinate of the rectangle
 	@param [number] width -- the width of the rectangle
 	@param [number] height -- the height of the rectangle
-	@param [number] topLeftRadius -- the radius of the corners. of the top of the next parameter is defined, or top left if all 4 are
-	@param [number] topRightRadius -- the radius of the bottom corners or top right if all 4 are
-	@param [number] bottomLeftRadius -- the radius of the bottom left corner
-	@param [number] bottomRightRadius -- the radius of the bottom right corner
+	@param [number] radius -- the radius of the corners. of the top of the next parameter is defined, or top left if all 4 are
 ]]
 function Circle:init( x, y, diameter )
 	self.super:init( x, y, diameter, diameter )
@@ -29,8 +26,6 @@ function Circle:getFill()
 	local fillColour = self.fillColour
 	local r = math.min( self.width, self.height ) / 2
 	local radius = ( math.min( self.width, self.height ) + 1 ) / 2
-	local _y = self.y - 1
-	local _x = self.x - 1
 	for y = 1, self.height do
 		local ySqrd = ( y - radius )^2
 		for x = 1, self.width do

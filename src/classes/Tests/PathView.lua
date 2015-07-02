@@ -1,7 +1,7 @@
 
 class "PathView" extends "View" {
 
-    height = 100; -- the default height
+    height = 550; -- the default height
     width = 100;
 
 }
@@ -41,7 +41,7 @@ function PathView:initCanvas()
 	path:lineTo( 60, 20 )
 	path:lineTo( 50, 10 )
 
-	local size = 5
+	local size = 3
 	
 	path:close()
 	path.fillColour = Graphics.colours.BLUE

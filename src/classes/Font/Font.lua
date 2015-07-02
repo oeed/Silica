@@ -176,6 +176,7 @@ function Font:render( canvas, text, x, y, colour )
 	local buffer = canvas.buffer
 	local width, height = canvas.width, canvas.height
 	local TRANSPARENT = Graphics.colours.TRANSPARENT
+	local spacing, scale = self.spacing, self.scale
 	local function setPixel( x, y, colour )
 		if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then
 	        buffer[ ( y - 1 ) * width + x ] = colour
@@ -205,6 +206,6 @@ function Font:render( canvas, text, x, y, colour )
 				end
 			end
 		end
-		x = x + cwidth + self.spacing * self.scale
+		x = x + cwidth + spacing * scale
 	end
 end

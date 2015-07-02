@@ -19,6 +19,13 @@ function _G.log2( text )
 	h.close()	
 end
 
+-- if not fs.exists( 'oeed' ) then
+-- 	shell.run "NewRendering/test.lua"
+-- 	read()
+-- 	os.reboot()
+-- 	do return end
+-- end
+
 -- os.loadAPI('src/debug')
 -- _G.debug = debug
 
