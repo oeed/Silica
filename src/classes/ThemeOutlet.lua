@@ -67,7 +67,7 @@ end
 function ThemeOutlet:setStyle( style )
 	self.style = style
 
-	for i, connection in ipairs( self.connections ) do
+	for i, connection in pairs( self.connections ) do
 		connection[1][connection[2]] = self:themeValue( connection[3], style )
 	end
 end

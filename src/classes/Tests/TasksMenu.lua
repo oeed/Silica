@@ -10,6 +10,6 @@ end
 
 function TasksMenu:onInterfaceLoaded( event )
 	if event.owner == self then
-		self.greenItem.backgroundObject.fillColour = Graphics.colours.GREEN
+		-- self.greenItem.backgroundObject.fillColour = Graphics.colours.GREEN
 	end
 end

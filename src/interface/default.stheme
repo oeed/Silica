@@ -1,14 +1,31 @@
 <Theme>
 	<Button>
 		<cornerRadius type="number" default="8" />
+		<leftMargin type="number" default="7" />
+		<rightMargin type="number" default="7" />
 		<fillColour type="Graphics.colours" default="WHITE" pressed="BLUE" disabled="WHITE"/>
 		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY" pressed="TRANSPARENT"/>
 		<shadowColour type="Graphics.colours" default="GREY" disabled="TRANSPARENT"/>
 	</Button>
+
+	<SegmentButton>
+		<centerMargin type="number" default="4" />
+		<separatorDotColour type="Graphics.colours" default="LIGHT_GREY"/>
+		<separatorFillColour type="Graphics.colours" default="WHITE"/>
+		<separatorOutlineColour type="Graphics.colours" default="LIGHT_GREY"/>
+	</SegmentButton>
+
+	<Menu>
+		<cornerRadius type="number" default="4" />
+		<fillColour type="Graphics.colours" default="WHITE" />
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" />
+		<shadowColour type="Graphics.colours" default="GREY" />
+	</Menu>
 	
 	<MenuButton>
 		<arrowColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
+		<rightMargin type="number" default="15" />
 	</MenuButton>
 	
 	<MenuItem>
@@ -75,4 +92,19 @@
 		<grabberColour type="Graphics.colours" default="GREY" pressed="WHITE" disabled="LIGHT_GREY" />
 		<cornerRadius type="number" default="2" />
 	</Scrollbar>
+
+	<Label>
+		<textColour type="Graphics.colours" default="BLACK" disabled="LIGHT_GREY"/>
+		<fillColour type="Graphics.colours" default="TRANSPARENT" disabled="TRANSPARENT"/>
+	</Label>
+
+	<TextBox>
+		<cornerRadius type="number" default="8" />
+		<leftMargin type="number" default="7" />
+		<rightMargin type="number" default="7" />
+		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
+		<textColour type="Graphics.colours" default="BLACK" disabled="LIGHT_GREY"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="BLUE" />
+	</TextBox>
+
 </Theme>

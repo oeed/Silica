@@ -1,7 +1,9 @@
 
+local TEXT_MARGIN = 12
+
 class "MenuItem" extends "View" {
 
-	height = 9;
+	height = 10;
 	width = 40;
 
     isPressed = false;
@@ -11,6 +13,7 @@ class "MenuItem" extends "View" {
     keyboardShortcut = nil;
     text = nil;
 
+    font = nil;
     backgroundObject = nil;
 }
 
@@ -31,14 +34,52 @@ end
 function MenuItem:initCanvas()
     self.super:initCanvas()
     local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
+    local textObject = self.canvas:insert( Text( 7, 2, self.height, self.width - TEXT_MARGIN, self.text ) )
+
     self.theme:connect( backgroundObject, 'fillColour' )
+    self.theme:connect( textObject, 'textColour' )
+
     self.backgroundObject = backgroundObject
+    self.textObject = textObject
+
+    if not self.font then
+        self.font = Font.systemFont
+    end
+end
+
+function MenuItem:setFont( font )
+    self.font = font
+    local textObject = self.textObject
+    if textObject then
+        local fontWidth = self.font:getWidth( text )
+        self.width = fontWidth + TEXT_MARGIN
+        self.textObject.font = font
+        local parent = self.parent
+        if parent then
+            parent.needsLayoutUpdate = true
+        end
+    end
+end
+
+function MenuItem:setText( text )
+    self.text = text
+    local textObject = self.textObject
+    if textObject then
+        local fontWidth = self.font:getWidth( text )
+        self.width = fontWidth + TEXT_MARGIN
+        self.textObject.text = text
+        local parent = self.parent
+        if parent then
+            parent.needsLayoutUpdate = true
+        end
+    end
 end
 
 function MenuItem:setWidth( width )
     self.super:setWidth( width )
     if self.hasInit then
         self.backgroundObject.width = width
+        self.textObject.width = width - TEXT_MARGIN
     end
 end
 
@@ -74,13 +115,11 @@ end
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
 function MenuItem:onGlobalMouseUp( event )
-    if self:hitTestEvent( event ) then
-        if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
-            self.isPressed = false
-            if self.isEnabled then
-                self.parent:close()
-                return self.event:handleEvent( event )
-            end
+    if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+        self.isPressed = false
+        if self.isEnabled and self:hitTestEvent( event ) then
+            self.parent:close()
+            return self.event:handleEvent( event )
         end
         return true
     end

@@ -47,7 +47,7 @@ function ScreenCanvas:drawToTerminal( terminal )
 				[width - 1]={ [1]=true, [2]=true, [height - 1]=true, [height]=true },
 				[width]={ [1]=true, [2]=true, [3]=true, [4]=true, [height - 3]=true, [height - 2]=true, [height - 1]=true, [height]=true },
 			}
-			local cornerColour = Graphics.colours.GREY
+			local cornerColour = Graphics.colours.BLACK
 			for x, v in pairs( corner ) do -- ipairs won't do the [height-3] indexes, for example
 				for y, v in pairs( v ) do
 					buffer[ ( y - 1 ) * width + x ] = cornerColour

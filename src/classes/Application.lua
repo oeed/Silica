@@ -34,6 +34,7 @@ function Application:init()
 	self.keyboardShortcutManager = KeyboardShortcutManager( self )
 	
 	Theme.active = Theme( self.themeName )
+	Font.initPresets()
 	
 	if self.interfaceName then
 		self.container = Interface( self.interfaceName ).container

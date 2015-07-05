@@ -9,6 +9,8 @@ class "MenuButton" extends "Button" {
 
     closeArrowObject = nil;
     openArrowObject = nil;
+
+    needsArrowUpdate = false;
 }
 
 --[[
@@ -22,7 +24,7 @@ function MenuButton:init( ... )
     menu.isSingleShot = false
     menu.isVisible = false
     menu.hitTestOwner = true
-    menu.topMargin = Menu.topMargin + 6
+    menu.topMargin = Menu.topMargin + 8
     self.menu = menu
     self:event( Event.MENU_CHANGED, self.onMenuChanged )
 end
@@ -36,7 +38,7 @@ function MenuButton:setParent( parent )
             menu.parent:removeChild( menu )
         end
         menu.x = self.x - 5
-        menu.y = self.y + 5
+        menu.y = self.y + 7
         parent:insert( menu )
     end
 end
@@ -59,48 +61,51 @@ end
 
 function MenuButton:setHeight( height )
     self.super:setHeight( height )
-    if self.hasInit then
-        self.closeArrowObject.y = math.ceil( ( self.height - 4 ) / 2 ) + 1
-        self.openArrowObject.y = math.ceil( ( self.height - 4 ) / 2 ) + 1
-    end
+    self.needsArrowUpdate = true
 end
 
 function MenuButton:initCanvas()
     self.super:initCanvas()
-    local arrowX, arrowY = self.width - 10, math.ceil( ( self.height - 4 ) / 2 ) + 1
+    local arrowX, arrowY = self.width - 12, math.ceil( ( self.height - 4 ) / 2 )
 
-    local closeArrowObject = Path( arrowX, arrowY, 5, 3, 1, 3 )
-    closeArrowObject:lineTo( 3, 1 )
-    closeArrowObject:lineTo( 5, 3 )
+    local closeArrowObject = Path( 1, 1, 7, 4, 1, 4 )
+    closeArrowObject:lineTo( 4, 1 )
+    closeArrowObject:lineTo( 7, 4 )
     closeArrowObject:close( false )
     closeArrowObject.isVisible = false
     self.closeArrowObject = closeArrowObject
     self.canvas:insert( closeArrowObject )
 
-    local openArrowObject = Path( arrowX, arrowY, 5, 3, 1, 1 )
-    openArrowObject:lineTo( 3, 3 )
-    openArrowObject:lineTo( 5, 1 )
+    local openArrowObject = Path( 1, 1, 7, 4, 1, 1 )
+    openArrowObject:lineTo( 4, 4 )
+    openArrowObject:lineTo( 7, 1 )
     openArrowObject:close( false )
-    openArrowObject.outlineWidth = 2
     self.openArrowObject = openArrowObject
     self.canvas:insert( openArrowObject )
 
     self.theme:connect( closeArrowObject, 'outlineColour', 'arrowColour' )
     self.theme:connect( openArrowObject, 'outlineColour', 'arrowColour' )
+    self.needsArrowUpdate = true
 end
 
 --[[
     @instance
-    @desc Whether the button is pressed xor open
+    @desc Whether the button is pressed or open
     @return [boolean] isActive -- whether the button is active
 ]]
 function MenuButton:getIsActive()
-    local isPressed, isOpen = self.isPressed, self.menu.isOpen
-    return ( isPressed and not isOpen ) or ( not isPressed and isOpen )
+    return self.isPressed or self.menu.isOpen
 end
 
 function MenuButton:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isActive and "pressed" or "default" ) or "disabled"
+end
+
+function MenuButton:update()
+    self.super:update()
+    if self.needsArrowUpdate then
+        self:updateArrows()
+    end
 end
 
 --[[
@@ -112,20 +117,22 @@ end
     @return [type] returnedValue -- description
 ]]
 function MenuButton:updateArrows()
-    local isOpen = self.menu.isOpen
-    local arrowX, arrowY = self.width - 10, math.ceil( ( self.height - 4 ) / 2 ) + 1
+    local menu = self.menu
+    local isOpen = menu and menu.isOpen
+    local arrowX, arrowY = self.width - 12, math.ceil( ( self.height - 4 ) / 2 ) + 1
     local activeArrow = isOpen and self.closeArrowObject or self.openArrowObject
     local inactiveArrow = isOpen and self.openArrowObject or self.closeArrowObject
     activeArrow.isVisible = true
     inactiveArrow.isVisible = false
     activeArrow.x = arrowX + ( self.isPressed and 1 or 0 )
     activeArrow.y = arrowY + ( self.isPressed and 1 or 0 )
+    self.needsArrowUpdate = false
 end
 
 function MenuButton:setIsPressed( isPressed )
     self.super:setIsPressed( isPressed )
     if self.hasInit then
-        self:updateArrows()
+        self.needsArrowUpdate = true
     end
 end
 

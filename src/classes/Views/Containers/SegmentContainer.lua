@@ -1,6 +1,6 @@
 
 class "SegmentContainer" extends "Container" {
-	
+	needsLayoutUpdate = false;	
 }
 
 --[[
@@ -25,12 +25,19 @@ function SegmentContainer:updateLayout()
 	end
 end
 
+function SegmentContainer:update()
+    self.super:update()
+    if self.needsLayoutUpdate then
+        self:updateLayout()
+    end
+end
+
 function SegmentContainer:insert( ... )
 	self.super:insert( ... )
-	self:updateLayout()
+	self.needsLayoutUpdate = true
 end
 
 function SegmentContainer:removeChild( ... )
 	self.super:removeChild( ... )
-	self:updateLayout()
+	self.needsLayoutUpdate = true
 end

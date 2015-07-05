@@ -16,31 +16,47 @@ function SegmentButton:initCanvas()
     self.separatorObject = self.canvas:insert( Separator( self.width, 3, 1, self.height - 4 ) )
     separatorBackgroundObject.leftOutlineWidth = 0
     separatorBackgroundObject.rightOutlineWidth = 0
-    self.theme:connect( separatorBackgroundObject, 'fillColour' )
-    self.theme:connect( separatorBackgroundObject, 'outlineColour' )
+    local theme = self.theme
+    theme:connect( separatorBackgroundObject, 'fillColour', 'separatorFillColour' )
+    theme:connect( separatorBackgroundObject, 'dotColour', 'separatorDotColour' )
+    theme:connect( separatorBackgroundObject, 'outlineColour', 'separatorOutlineColour' )
+    theme:connect( self, 'centerMargin' )
     self.separatorBackgroundObject = separatorBackgroundObject
-    self.theme:disconnect( self.backgroundObject, 'radius', 'cornerRadius' )
-    self.theme:disconnect( self.shadowObject, 'radius', 'cornerRadius' )
+    theme:disconnect( self.backgroundObject, 'radius', 'cornerRadius' )
+    theme:disconnect( self.shadowObject, 'radius', 'cornerRadius' )
 end
 
 function SegmentButton:setWidth( width )
     self.super.super:setWidth( width )
     if self.hasInit then
-        local isFirst = self.index == 1
-        local isLast = self.parent and (self.index == #self.parent.children) or false
-        self.backgroundObject.width = isLast and width - 2 or width - 2
+        local isFirst = self.isFirst
+        local isLast = self.isLast
+        self.backgroundObject.width = isLast and width - 1 or width - 1
         self.shadowObject.width = (isLast or isFirst) and width - 1 or width
         self.separatorObject.x = width
         self.separatorBackgroundObject.x = width
+
+        local textObject = self.textObject
+        textObject.x = self.leftMargin + 1
+        textObject.width = width - self.leftMargin - self.rightMargin
+        self.parent.needsLayoutUpdate = true
     end
+end
+
+function SegmentButton:getRightMargin()
+    return self.isLast and self.rightMargin or self.centerMargin
+end
+
+function SegmentButton:getLeftMargin()
+    return self.isFirst and self.leftMargin or self.centerMargin
 end
 
 function SegmentButton:setIsPressed( isPressed )
     self.super:setIsPressed( isPressed )
     if self.hasInit then
-        local isFirst = self.index == 1
-        local isLast = self.parent and (self.index == #self.parent.children) or false
-        if not isFirst and isPressed then
+        local isFirst = self.isFirst
+        local isLast = self.isLast
+        if not isFirst and not isLast and isPressed then
             self.backgroundObject.x = 1
         end
 
@@ -58,9 +74,8 @@ end
 function SegmentButton:onSiblingsChanged()
     local backgroundObject = self.backgroundObject
     local shadowObject = self.shadowObject
-    local index = self.index
-    local isFirst = index == 1
-    local isLast = self.parent and (index == #self.parent.children) or false
+    local isFirst = self.isFirst
+    local isLast = self.isLast
 
     shadowObject.x = (isLast or isFirst) and 2 or 1
     backgroundObject.leftOutlineWidth = isFirst and 1 or 0

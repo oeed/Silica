@@ -14,6 +14,16 @@ end
 
 --[[
 	@instance
+	@desc Sets the font of the text object
+	@param [number] font -- the font of the text object
+]]
+function GraphicsObject:setFont( font )
+	self.hasChanged = true
+	self.font = font
+end
+
+--[[
+	@instance
 	@desc Draws a the text to the canvas
 	@param [Canvas] canvas -- the canvas to draw to
 	@return self
@@ -23,15 +33,14 @@ function Text:drawTo( canvas )
 		local font = self.font
 		local width = self.width
 
-		if false then
-		local fontWidth = font:getWidth( self.text )
-		local x = 1
-		if self.alignment == Font.alignments.CENTRE then
-			x = math.floor( width / 2 - fontWidth / 2 + 1 )
-		elseif self.alignment == Font.alignments.RIGHT then
-			x = width - fontWidth + 1
-		end
-		end
+		-- TODO: font alignment
+		-- local fontWidth = font:getWidth( self.text )
+		-- local x = 1
+		-- if self.alignment == Font.alignments.CENTRE then
+		-- 	x = math.floor( width / 2 - fontWidth / 2 + 1 )
+		-- elseif self.alignment == Font.alignments.RIGHT then
+		-- 	x = width - fontWidth + 1
+		-- end
         font:render( canvas, self.text, self.x, self.y, self.textColour )
 	end
 	return self

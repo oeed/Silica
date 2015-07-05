@@ -98,7 +98,6 @@ function Theme:value( _class, propertyName, styleName, noError )
 
 	-- an error occured, try to see if the value was defined for a super class
 	if _class._extends then
-
 		local themeValue = self:value( _class._extends, propertyName, styleName, true )
 		if themeValue then
 			return themeValue

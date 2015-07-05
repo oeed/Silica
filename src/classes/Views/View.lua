@@ -84,6 +84,25 @@ end
 
 --[[
 	@instance
+	@desc Returns true if the view is the first child of it's parent
+	@return [boolean] isFirst -- whether  the view is the first child of it's parent
+]]
+function View:getIsFirst()
+    return self.index == 1
+end
+
+--[[
+	@instance
+	@desc Returns true if the view is the last child of it's parent
+	@return [boolean] isLast -- whether  the view is the last child of it's parent
+]]
+function View:getIsLast()
+    local parent = self.parent
+    return parent and (self.index == #parent.children) or false
+end
+
+--[[
+	@instance
 	@desc Returns whether the control is enabled, rising up to the parent containers as well
 	@return [boolean] isEnabled -- whether the view is enabled
 ]]

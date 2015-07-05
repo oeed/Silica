@@ -1,4 +1,8 @@
 
+local MENU_OWNER_LEFT_OFFSET = 5
+local MENU_OWNER_TOP_OFFSET = 9
+local MENU_CONTEXT_OFFSET = 5
+
 class "Menu" extends "Container" {
 -- TODO: prevent menu going out of the screen
 	targetX = 1; -- the desired location of the menu. this is the originally set x value, the actual x value can change to prevent overflowing with the screen
@@ -23,6 +27,8 @@ class "Menu" extends "Container" {
 
     width = 40;
     height = 40;
+
+	needsLayoutUpdate = false;	
 }
 
 --[[
@@ -43,8 +49,17 @@ end
 function Menu:initCanvas()
 	self.super:initCanvas()
     local cornerRadius = self.cornerRadius
-    self.shadowObject = self.canvas:insert( RoundedRectangle( 1 + self.shadowRightMargin, 1 + self.shadowTopMargin, self.width - 1, self.height - 2, self.shadowColour, nil, cornerRadius ) )
-    self.backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 2, self.fillColour, self.outlineColour, cornerRadius ) )
+    local shadowObject = self.canvas:insert( RoundedRectangle( 1 + self.shadowRightMargin, 1 + self.shadowTopMargin, self.width - 1, self.height - 2 ) )
+    local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 2 ) )
+
+    self.theme:connect( backgroundObject, 'fillColour' )
+    self.theme:connect( backgroundObject, 'outlineColour' )
+    self.theme:connect( backgroundObject, 'radius', 'cornerRadius' )
+    self.theme:connect( shadowObject, 'fillColour', 'shadowColour' )
+    self.theme:connect( shadowObject, 'radius', 'cornerRadius' )
+
+	self.shadowObject = shadowObject
+	self.backgroundObject = backgroundObject
 end
 
 --[[
@@ -72,8 +87,8 @@ end
 function Menu:showContext( owner, x, y )
 	self.owner = owner
 	self.isSingleShot = true
-	self.x = x + owner.x - 1 - 5
-	self.y = y + owner.y - 1 - 5
+	self.x = x + owner.x - 1 - MENU_CONTEXT_OFFSET
+	self.y = y + owner.y - 1 - MENU_CONTEXT_OFFSET
 	if self.parent then
         self.parent:removeChild( self )
     end
@@ -108,41 +123,47 @@ end
 	@desc Updates the location and size of the menu as well as the location and size of the menu items
 ]]
 function Menu:updateLayout()
-	if self.isVisible then
-		local width = self.owner and ( self.owner.menuMargin and self.owner.width + 2 * self.owner.menuMargin or 1 ) or 1
-		local height = self.topMargin
-		for i, childView in ipairs( self.children ) do
-			width = math.max( width, childView.width )
-		end
-		width = width + (1 - width % 2) -- it must be an odd number (for the separators)
-		-- TODO: target position
-		
-		local height = self.topMargin
-		for i, childView in ipairs( self.children ) do
-			childView.x = 1
-			childView.y = height + 1
-			height = height + childView.height
-		end
-		self.width = width + self.shadowRightMargin
-		self.height = height + self.bottomMargin
+	local width = self.owner and ( self.owner.menuMargin and self.owner.width + 2 * self.owner.menuMargin or 1 ) or 1
+	local height = self.topMargin
+	for i, childView in ipairs( self.children ) do
+		width = math.max( width, childView.width )
 	end
+	width = width + (1 - width % 2) -- it must be an odd number (for the separators)
+	-- TODO: target position
+	
+	local height = self.topMargin
+	for i, childView in ipairs( self.children ) do
+		childView.x = 1
+		childView.y = height + 1
+		height = height + childView.height
+	end
+	self.width = width + self.shadowRightMargin
+	self.height = height + self.bottomMargin
+	self.needsLayoutUpdate = false
+end
+
+function Menu:update()
+    self.super:update()
+    if self.needsLayoutUpdate then
+        self:updateLayout()
+    end
 end
 
 function Menu:setIsVisible( isVisible )
 	self.super:setIsVisible( isVisible )
 	if isVisible and self.hasInit then
-		self:updateLayout()
+		self.needsLayoutUpdate = true
 	end
 end
 
 function Menu:insert( ... )
 	self.super:insert( ... )
-	self:updateLayout()
+		self.needsLayoutUpdate = true
 end
 
 function Menu:removeChild( ... )
 	self.super:removeChild( ... )
-	self:updateLayout()
+		self.needsLayoutUpdate = true
 end
 
 --[[

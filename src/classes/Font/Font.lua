@@ -68,6 +68,11 @@ function Font:init( source, desiredHeight, reload )
 	self.scale = ( desiredHeight or height ) / height
 end
 
+function Font.initPresets()
+	-- TODO: make this come from the theme
+	Font.systemFont = Font.named( "Auckland" )
+end
+
 function Font.readMetadata( file )
 	local h = fs.open( file, "rb" )
 	if h then
@@ -127,6 +132,7 @@ function Font.decodeFile( file )
 
 		local fontType = metadata.fontType
 		local characters
+
 		if fontType == "vector" then
 			characters = BitmapFont.decodeSet( bytes, height )
 		else
@@ -153,19 +159,21 @@ function Font:getHeight()
 end
 
 function Font:getWidth( text )
+	if not text then return 0 end
 	local width = 0
+	local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing
 	for i = 1, #text do
-		local scale = self.scale
 		local char = text:byte( i )
 		local bitmap
-		if self.characters[char] then
-			bitmap = self.characters[char]
+		if characters[char] then
+			bitmap = characters[char]
 		else
 			bitmap = no_char_map
-			scale = self.desiredHeight / 6
+			scale = desiredHeight / 6
 		end
-		width = width + bitmap.width * scale + self.spacing * scale
+		width = width + bitmap.width * scale + spacing * scale
 	end
+	width = width - spacing -- remove the last undedded bit of spacing at the end
 	return width
 end
 
@@ -174,29 +182,28 @@ function Font:render( canvas, text, x, y, colour )
 	x = x - 1
 	text = text == nil and "" or tostring( text )
 	local buffer = canvas.buffer
-	local width, height = canvas.width, canvas.height
+	local width, height, _height = canvas.width, canvas.height, self.height
 	local TRANSPARENT = Graphics.colours.TRANSPARENT
-	local spacing, scale = self.spacing, self.scale
+	local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing
 	local function setPixel( x, y, colour )
 		if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then
 	        buffer[ ( y - 1 ) * width + x ] = colour
 	    end
 	end
 	for i = 1, #text do
-		local scale = self.scale
 		local char = text:byte( i )
 		local bitmap
-		if self.characters[char] then
-			bitmap = self.characters[char]
+		if characters[char] then
+			bitmap = characters[char]
 		else
 			bitmap = no_char_map
-			scale = self.desiredHeight / 6
+			scale = desiredHeight / 6
 		end
 		local cwidth = bitmap.width * scale
 		if scale < 1 then
-			renderCharacterScaledDown( setPixel, bitmap, x, y, bitmap.width, self.height, scale, colour )
+			renderCharacterScaledDown( setPixel, bitmap, x, y, bitmap.width, _height, scale, colour )
 		else
-			for _y = 1, self.desiredHeight do
+			for _y = 1, desiredHeight do
 				for _x = 1, ceil( cwidth ) do
 					local bx, by = ceil( _x / scale ), ceil( _y / scale )
 					local char_is_on = bitmap[by] and bitmap[by][bx]

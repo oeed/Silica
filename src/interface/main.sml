@@ -2,7 +2,7 @@
 
 	<Button identifier=okayButton x=10 y=10 text=Okay />
 
-	<MenuButton x=60 y=10 text="erm" />
+	<MenuButton x=60 y=10 text="Test" />
 
 	<SegmentContainer x=120 y=10>
 		<SegmentButton text=One isChecked=true />
@@ -10,7 +10,8 @@
 		<SegmentButton text=Three isChecked=true />
 	</SegmentContainer>
 
-	
+	<Label x=10 y=30 text="I'm a good ol' label!" />
+	<TextBox width=120 x=10 y=50 text="I'm a text box!" />
 
 	<ScrollView x=200 y=35 width=100 height=100 >
 		<ScrollContainer width=90 height=600 >
@@ -30,7 +31,7 @@
 	<ProgressBar  x=70 y=80 />
 	<ProgressBar  x=70 y=60 /> -->
 
-	<Window x=10 y=10 width=100 height=60 >
+	<!--<Window x=10 y=10 width=100 height=60 >
 		<FontWindowContainer>
 		</FontWindowContainer>
 	</Window>
