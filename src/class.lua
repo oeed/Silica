@@ -30,10 +30,10 @@ end
 local function uniqueTable( _class, raw )
 	for k, v in pairs( _class ) do
 		-- if the properties contain any blank tables generate a new table so it's not shared between instances
-		if type( v ) == 'table' then
+		if type( v ) == "table" then
 			if #v == 0 then
 				local keyFound = false
-				for k2, v2 in pairs(v) do
+				for k2, v2 in pairs( v ) do
 					keyFound = true
 					break
 				end
@@ -72,22 +72,22 @@ function class:newSuper( instance, eq, ... )
 
 	local _rawSuper = raw.super
 	function raw.mt:__index( k )
-		if k == 'super' then
+		if k == "super" then
 			-- only ever called if this class doesn't have a super, to prevent super refering back to itself return nil
 			return nil
 		end
 
 		local _classValue = _class[k]
-		if _classValue and type( _classValue ) == 'function' then
-			-- we want super functions to be callable and not overwritten when accessed directly (e.g. self.super:init())
+		if _classValue and type( _classValue ) == "function" then
+			-- we want super functions to be callable and not overwritten when accessed directly (e.g. self.super:init( ) )
 			local f = _classValue
 			return function(_self, ...)
 				if _self == raw then
 					-- when calling a function on super, the instance needs to be given, but the super needs to be the super's super
-					local oldSuper = rawget( instance, 'super' )
-					rawset( instance, 'super', _rawSuper )
+					local oldSuper = rawget( instance, "super" )
+					rawset( instance, "super", _rawSuper )
 					local v = { f( instance, ... ) }
-					rawset( instance, 'super', oldSuper )
+					rawset( instance, "super", oldSuper )
 					return unpack( v )
 				else
 					return f( _self, ... )
@@ -96,7 +96,7 @@ function class:newSuper( instance, eq, ... )
 		end
 
 		local _instanceValue = instance[k]
-		if _instanceValue and type( _instanceValue ) ~= 'function' then 
+		if _instanceValue and type( _instanceValue ) ~= "function" then 
 			-- however, we don't want any properties (i.e. mutable values) to come from super if they exist in the instanceclass. we also don't want instance functions called from self.super
 			return _instanceValue
 		elseif _classValue then
@@ -110,7 +110,7 @@ function class:newSuper( instance, eq, ... )
 		instance[k] = v
 	end
 
-	local rawId = tostring(raw):sub(8) -- remove 'table: ' from the id
+	local rawId = tostring( raw):sub(8 ) -- remove 'table: ' from the id
 	function raw.mt:__tostring()
     	return 'instance of `' .. _class.className .. '` as super: ' .. rawId
     end
@@ -123,7 +123,7 @@ end
 function class:new( ... )
 	local _class = self
 	local raw = {}
-	local proxy = { hasInit = false } -- the proxy. 'self' always needs to be this, NOT raw
+	local proxy = { hasInit = false } -- the proxy. "self" always needs to be this, NOT raw
 	local super
 	proxy.mt = {}
 
@@ -154,14 +154,14 @@ function class:new( ... )
 			local f = _superClass[k]
 			if f then
 				-- otherwise, check super classes for a value
-				if type( f ) == 'function' then
+				if type( f ) == "function" then
 					return function(_self, ...)
 						if _self == proxy then
 							-- when calling a function on super, the instance needs to be given, but the super needs to be the super's super
-							local oldSuper = rawget( proxy, 'super' )
-							rawset( proxy, 'super', _superSuper )
+							local oldSuper = rawget( proxy, "super" )
+							rawset( proxy, "super", _superSuper )
 							local v = { f( proxy, ... ) }
-							rawset( proxy, 'super', oldSuper ) -- as it's the proxy setting to nil simply causes it to look in raw again
+							rawset( proxy, "super", oldSuper ) -- as it's the proxy setting to nil simply causes it to look in raw again
 							return unpack( v )
 						else
 							return f( _self, ... )
@@ -182,10 +182,12 @@ function class:new( ... )
 	local lockedSetters = {}
 	local lockedGetters = {}
 
+	proxy.__lockedSetters = lockedSetters
+	proxy.__lockedGetters = lockedGetters
 	proxy.raw = raw -- not sure about this, although i guess it can't hurt
 	-- TODO: the getter/setter ifs could be made more efficient
 
-	local _rawGet = ( raw.get and type( raw.get ) == 'function' ) and raw.get or nil
+	local _rawGet = ( raw.get and type( raw.get ) == "function" ) and raw.get or nil
 	function proxy.mt:__index( k )
 		local isRawFunc
 		local rawV
@@ -201,22 +203,22 @@ function class:new( ... )
 				end	
 			end
 
-			-- basically, if the get'Key' function is set, return it's value
+			-- basically, if the get"Key" function is set, return it's value
 			-- non-function properties can't use it, because, well, it's just futile really
 			-- 
 			rawV = raw[k]
-			isRawFunc = type( rawV ) == 'function'
+			isRawFunc = type( rawV ) == "function"
 			if not isRawFunc then
 				local rawFunc = raw[getters[k]]
-				if rawFunc and type( rawFunc ) == 'function' then
+				if rawFunc and type( rawFunc ) == "function" then
 					lockedGetters[k] = true
 
 					local value = rawFunc( proxy )
 					-- if the super has been masked then change it back, then change it again
-					local oldSuper = rawget( proxy, 'super' )
-					rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
+					local oldSuper = rawget( proxy, "super" )
+					rawset( proxy, "super", nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
 					local v = { rawFunc( proxy ) }
-					rawset( proxy, 'super', oldSuper )
+					rawset( proxy, "super", oldSuper )
 					local value =  unpack( v )
 
 					lockedGetters[k] = nil
@@ -226,16 +228,16 @@ function class:new( ... )
 		end
 
 		rawV = ( rawV == nil ) and raw[k] or rawV
-		isRawFunc = ( isRawFunc == nil ) and type( rawV ) == 'function' or isRawFunc
+		isRawFunc = ( isRawFunc == nil ) and type( rawV ) == "function" or isRawFunc
 
 		if isRawFunc then
 			return function( _self, ... )
 				if rawequal( _self, proxy ) then
 					-- if the super has been masked then change it back, then change it again
-					local oldSuper = rawget( proxy, 'super' )
-					rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
+					local oldSuper = rawget( proxy, "super" )
+					rawset( proxy, "super", nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
 					local v = { rawV( proxy, ... ) }
-					rawset( proxy, 'super', oldSuper )
+					rawset( proxy, "super", oldSuper )
 					return unpack( v )
 				else
 					return rawV( _self, ... )
@@ -246,9 +248,9 @@ function class:new( ... )
 		return rawV
 	end
 
-	local _rawSet = ( raw.set and type( raw.set ) == 'function' ) and raw.set or nil
+	local _rawSet = ( raw.set and type( raw.set ) == "function" ) and raw.set or nil
 	function proxy.mt:__newindex( k, v )
-		if k == 'super' or k == 'class' then
+		if k == "super" or k == "class" then
 			error( 'Cannot set reserved property: ' .. k)
 		end
 
@@ -265,18 +267,18 @@ function class:new( ... )
 				end	
 			end
 
-			-- if the filter wasn't applied, if the set'Key' function is set, call it
-			local isRawFunc = type( raw[k] ) == 'function'
+			-- if the filter wasn't applied, if the set"Key" function is set, call it
+			local isRawFunc = type( raw[k] ) == "function"
 			if not isRawFunc then
 				local rawFunc = raw[setters[k]]
-				if rawFunc and type( rawFunc ) == 'function' then
+				if rawFunc and type( rawFunc ) == "function" then
 					lockedSetters[k] = true
 
 					-- if the super has been masked then change it back, then change it again
-					local oldSuper = rawget( proxy, 'super' )
-					rawset( proxy, 'super', nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
+					local oldSuper = rawget( proxy, "super" )
+					rawset( proxy, "super", nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
 					local v = { rawFunc( proxy, v ) }
-					rawset( proxy, 'super', oldSuper )
+					rawset( proxy, "super", oldSuper )
 
 					lockedSetters[k] = nil
 					return
@@ -287,7 +289,7 @@ function class:new( ... )
 		raw[k] = v -- use the passed value if not using a setter
 	end
 
-	local proxyId = tostring(proxy):sub(8) -- remove 'table: ' from the id
+	local proxyId = tostring( proxy):sub(8 ) -- remove 'table: ' from the id
 	function proxy.mt:__tostring()
     	return 'instance of `' .. _class.className .. '`: ' .. proxyId
     end
@@ -295,7 +297,7 @@ function class:new( ... )
 	setmetatable( proxy, proxy.mt )
 
 	for k, v in pairs( _class ) do
-		if type( v ) == 'table' and v.typeOf and v:typeOf( InterfaceOutlet ) then
+		if type( v ) == "table" and v.typeOf and v:typeOf( InterfaceOutlet ) then
     		-- link interface outlets, they set the class property to a share instance, so we need to generate a unique one
     		proxy[k] = InterfaceOutlet( v.viewIdentifier or k, v.trackAll )
     	end
@@ -304,10 +306,10 @@ function class:new( ... )
 	-- use the setters with all the starting values
 	local prepared = {}
 	local function prepare( obj )
-		local hasSet = type( obj.set ) == 'function'
+		local hasSet = type( obj.set ) == "function"
 		for k, _ in pairs( obj.class ) do
 			local v = obj[k] -- TODO: sometimes this is nil when it shouldn't be
-			if not prepared[k] and k ~= 'class' and k ~= 'mt' and  k ~= 'super' and type( v ) ~= 'function' and (hasSet or type( raw[setters[k]] ) == 'function') then
+			if not prepared[k] and k ~= "class" and k ~= "mt" and  k ~= "super" and type( v ) ~= "function" and (hasSet or type( raw[setters[k]] ) == "function") then
 				prepared[k] = true
 				proxy[k] = v
 			end
@@ -322,7 +324,7 @@ function class:new( ... )
 
     -- once the class has been created, pass the arguments to the init function for handling
     proxy.hasInit = true
-    if proxy.init and type( proxy.init ) == 'function' then
+    if proxy.init and type( proxy.init ) == "function" then
     	proxy:init( ... )
     end
 
@@ -370,7 +372,7 @@ end
 -- @instance
 function class:properties( properties )
     for k, v in pairs( properties ) do
-    	if type( self[k] ) == 'number' then
+    	if type( self[k] ) == "number" then
     		v = tonumber( v )
     	end
     	
@@ -440,7 +442,7 @@ local function extends( superName )
  --    function creating.mt:__index( k )
  --    	local v = super[k]
 
- --    	if type( rawget( super, k ) ) == 'function' then -- rawget is used just to prevent calls compounding
+ --    	if type( rawget( super, k ) ) == "function" then -- rawget is used just to prevent calls compounding
  --    		return function(_, ...)
  --    			return 
  --    		end

@@ -67,15 +67,15 @@ end
 	@desc Gets a value from the theme with the given style for the given class
 	@param [string] _class -- the name of the class to get the value for
 	@param [string] propertyName -- the name of the property
-	@param [string] styleName -- default is 'default', the style of the value (e.g. disabled, pressed, etc.)
+	@param [string] styleName -- default is "default", the style of the value (e.g. disabled, pressed, etc.)
 	@param [boolean] noError -- whether the function should return false instead of erroring
 	@return themeValue -- the theme value
 ]]
 function Theme:value( _class, propertyName, styleName, noError )
-	if styleName == 'type' then
+	if styleName == "type" then
 		error( "Reserverd style name: " .. styleName )
 	end
-	styleName = styleName or 'default'
+	styleName = styleName or "default"
 	local className = _class.className
 
 	local err
@@ -83,7 +83,7 @@ function Theme:value( _class, propertyName, styleName, noError )
 	if classTheme then
 		local propertyTheme = classTheme[propertyName]
 		if propertyTheme then
-			local styleValue = propertyTheme[styleName] or propertyTheme['default']
+			local styleValue = propertyTheme[styleName] or propertyTheme["default"]
 			if styleValue then
 				return styleValue
 			else

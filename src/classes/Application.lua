@@ -13,6 +13,7 @@ class "Application" {
 	event = nil;
 	schedules = {};
 	keyboardShortcutManager = nil;
+	focus = nil;
 
 	interfaceName = nil;
 
@@ -60,7 +61,7 @@ end
 	@desc Update all application's views
 ]]
 function Application:update()
-	-- not exactally sure how to handle deltaTime for the first one. for now it's zero
+	-- TODO: not exactally sure how to handle deltaTime for the first one. for now it's zero
 	local lastUpdate = self.lastUpdate or 0
 	local deltaTime = os.clock() - lastUpdate
 	self.updateTimer = os.startTimer( 0.05 )
@@ -74,10 +75,31 @@ end
 
 --[[
 	@instance
+	@desc Sets the view that is currently focused (i.e. the selected text box). Do NOT use this when unsetting/remove the focus, use :clearFocus instead
+	@param [view] newFocus -- the view that is to be focused upon
+]]
+function Application:setFocus( newFocus )
+	local oldFocus = self.focus
+	if oldFocus ~= newFocus then
+		self.focus = newFocus
+		self.event:handleEvent( FocusChangedInterfaceEvent( newFocus ) )
+	end
+end
+
+--[[
+	@instance
+	@desc Unfocuses the view that is currently focused (i.e. the selected text box)
+]]
+function Application:clearFocus()
+	self.focus = false	
+end
+
+--[[
+	@instance
 	@desc Schedules a function to be called at a specified time in the future
 	@param [number] time -- in how many seconds the function should be run
 	@param [function] func -- the function to call
-	@param [class] _class -- the class to call the function on (optional)
+	@param [class] _class -- the class to call the function on ( optional )
 	@param ... -- any values you want. will be passed as the parameters (other than self)
 	@return [number] scheduleId -- the ID of the scheduled task
 ]]
@@ -111,7 +133,7 @@ function Application:checkScheduled( lastUpdate )
 			local func = task[1]
 			table.remove( task, 2 )
 			table.remove( task, 1 )
-			func( unpack(task) )
+			func( unpack( task ) )
 			self.schedules[scheduleId] = nil
 		end
 	end
@@ -143,9 +165,7 @@ function Application:run( ... )
 	self:update()
 
 	while self.isRunning do
-		local args = { os.pullEvent() }
-		-- local args = { coroutine.yield() }
-		local event = Event.create( args )
+		local event = Event.create( os.pullEvent() )
 		event.relativeView = self.container
 		self.event:handleEvent( event )
 	end

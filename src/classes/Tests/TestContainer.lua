@@ -16,7 +16,7 @@ function TestContainer:setIsOpen( isOpen )
 	self.isOpen = isOpen
 
 	-- Don't worry, this is only temporary for testing until Canvas is ready
-	term.setTextColor(colors.white)
+	term.setTextColor( colors.white )
 	if isOpen then
 		term.setFillColour( Graphics.colours.LIME )
 		for i = 1, 15 do

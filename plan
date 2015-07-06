@@ -63,12 +63,12 @@ Main Event Loop
 	--  this is the definition of EventManager:handleEvent
 	--	self referring to [EventManager]event
 		for connection in self.connections[event.eventType] -- this needs to be ordered by some priority. it could maybe just be based on when it's inserted, or alternatively an optional third value in the { self, self.onClick } table inserted in to self.events
-			-- connection[2] is the function, connection[1] is the 'self' (from { self, self.onClick } mentioned above)
-			if connection[2]( connection[1], event ) -- if the handler returns true it indicates that it's 'stealing' the event (i.e. stop trickling it down or let anyone else have it)
+			-- connection[2] is the function, connection[1] is the "self" (from { self, self.onClick } mentioned above)
+			if connection[2]( connection[1], event ) -- if the handler returns true it indicates that it's "stealing" the event (i.e. stop trickling it down or let anyone else have it)
 				return true
 	
 		-- once all the global responders have done their thing start sending it down the responder chain
-		-- a container EventManager is actually [ContainerEventManager]event (it's just initialised as ContainerEventManager() not EventManager()) which is a subclass of EventManager
+		-- a container EventManager is actually [ContainerEventManager]event (it's just initialised as ContainerEventManager() not EventManager( ) ) which is a subclass of EventManager
 		-- this is so it can pass the event on to children if they hit test and in the correct order (i.e. top most first)
 		event:makeRelative( application.container )
 		application.container.event:handleEvent ( [Event]event ) -- send it to the root container
@@ -98,7 +98,7 @@ class
 		- set -- a value was set (maybe have a blacklist?), tell self it needs to be drawn
 
 		-- CrazedProgrammer can decide how the drawing functions work really, although there naturally needs to be a function to invoke when a value changes and draw is needed, and then aso a function to call when the screen is drawn
-		-- IMPORTANT: the function 'draw' will be overridden by subclasses, so no logic can be placed in it by default. HOWEVER, the children will need to be drawn afterwards (without relying on super:draw()), so we'll need to figure out the whole drawing proccess
+		-- IMPORTANT: the function "draw" will be overridden by subclasses, so no logic can be placed in it by default. HOWEVER, the children will need to be drawn afterwards (without relying on super:draw( ) ), so we'll need to figure out the whole drawing proccess
 		- draw () -- draw the view immediately (not checking if it's in queue or whatever, unless it's hidden or something)
 		- needsDraw () -- tell the view that it needs to be drawn
 		- tryDraw () -- check if the 
@@ -181,7 +181,7 @@ class
 
 				- draw
 
-				-- connected to the comment in Application, we need to decide how event handlers will work. do we go 'onClick' or some other way
+				-- connected to the comment in Application, we need to decide how event handlers will work. do we go "onClick" or some other way
 
 			* ProgressBar -- I want these to have a looped animation (if it looks okay and isn't too intensive), maybe like the barber wheel effect on OS X, and a indeterminate mode. what do you think, and what's the best way to do this? might need to make an addition to Animation to support this
 				+ isEnabled
@@ -223,8 +223,8 @@ class
 		+ eventType -- simply the default CC value for example, mouse_click
 
 
-		+ MOUSE_UP = 'mouse_up' -- constants for public use
-		+ MOUSE_DOWN = 'mouse_down'
+		+ MOUSE_UP = "mouse_up" -- constants for public use
+		+ MOUSE_DOWN = "mouse_down"
 
 		- init( ... ) -- makes an [Event] straight the values return from os.pullEvent, etc.
 		
@@ -256,17 +256,17 @@ class
 
 	* Font
 		+ size  -- measured in pixel height of a capital letter
-		+ family -- e.g. 'Helvetica' (although we'll naturally need to make our own fonts)
+		+ family -- e.g. "Helvetica" (although we'll naturally need to make our own fonts)
 		+ isBold
 		+ isItalic
 		+ isUnderlined
 		+ characterPaths {
-				'a' = { -- might be a better way to do this
-					'normal' = [Path]...,
-					'bold' = [Path]...,
+				"a" = { -- might be a better way to do this
+					"normal" = [Path]...,
+					"bold" = [Path]...,
 					-- etc
 				}
-				'A' = ...
+				"A" = ...
 			}
 
 		+ alignment {} -- not part of the font instance (like easing is to Animation), more of an enum really
@@ -353,7 +353,7 @@ class
 		- tilt ( degrees ) -- returns a rotated version. do we use degrees or radians? i'm personally far more comfortable with degrees as I've seldom used radians, but if they'll be beneficial then I'll learn.
 		- rotates ( degrees ) -- sets to the rotated version
 
-	-- startup would essentially just go MyApplicationSubclass():run()
+	-- startup would essentially just go MyApplicationSubclass( ):run( )
 	* Application -- or Program? or something else? essentially the central control point/kernel for the program. core functionality should be here (like event handling, but other than that it should be as small as possible)
 		+ name -- I'm thinking these would be defined in a subclass, rather than through a constructor
 		+ path

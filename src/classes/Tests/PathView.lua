@@ -17,7 +17,7 @@ end
 
 function PathView:onMouseDown( event )
     if event.mouseButton == MouseEvent.mouseButtons.RIGHT then
-    	local menu = Menu.fromInterface( 'menu' )
+    	local menu = Menu.fromInterface( "menu" )
     	menu:showContext( self, event.x, event.y )
     end
     return true

@@ -1,7 +1,7 @@
 
 class "KeyboardShortcutEvent" extends "Event" {
 	eventType = Event.KEYBOARD_SHORTCUT;
-	keys = nil;
+	keys = false;
 }
 
 --[[
@@ -10,6 +10,5 @@ class "KeyboardShortcutEvent" extends "Event" {
 	@param [table] arguments -- the event arguments
 ]]
 function KeyboardShortcutEvent:init( keys )
-	self.super:init( { Event.KEYBOARD_SHORTCUT } )
 	self.keys = keys
 end

@@ -18,8 +18,8 @@ function Label:initCanvas()
     local width, height, theme = self.width, self.height, self.theme
     local textObject = self.canvas:insert( Text( 1, 1, self.width, self.height, self.text ) )
 
-    theme:connect( textObject, 'textColour' )
-    theme:connect( self.canvas, 'fillColour' )
+    theme:connect( textObject, "textColour" )
+    theme:connect( self.canvas, "fillColour" )
     self.textObject = textObject
 
     if not self.font then

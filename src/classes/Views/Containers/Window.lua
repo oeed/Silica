@@ -60,12 +60,12 @@ function Window:initCanvas()
     local barObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 2, barHeight ) )
     local separatorObject = self.canvas:insert( Rectangle( 1, barHeight + 1, self.width - 2, 1 ) )
 
-    self.theme:connect( barObject, 'fillColour', 'barColour' )
-    self.theme:connect( barObject, 'topRadius', 'topCornerRadius' )
-    self.theme:connect( separatorObject, 'fillColour', 'separatorColour' )
-    self.theme:connect( shadowObject, 'topRadius', 'topCornerRadius' )
-    self.theme:connect( shadowObject, 'bottomRadius', 'bottomCornerRadius' )
-    self.theme:connect( shadowObject, 'fillColour', 'shadowColour' )
+    self.theme:connect( barObject, "fillColour", "barColour" )
+    self.theme:connect( barObject, "topRadius", "topCornerRadius" )
+    self.theme:connect( separatorObject, "fillColour", "separatorColour" )
+    self.theme:connect( shadowObject, "topRadius", "topCornerRadius" )
+    self.theme:connect( shadowObject, "bottomRadius", "bottomCornerRadius" )
+    self.theme:connect( shadowObject, "fillColour", "shadowColour" )
     self.shadowObject = shadowObject
 	self.barObject = barObject
 	self.separatorObject = separatorObject
@@ -142,7 +142,7 @@ end
 --[[
     @instance
     @desc Fired when the mouse is pushed on the window bar before children have recieved the event. Makes the window front most and active
-    @param [Event] event -- the mouse down event
+    @param [MouseDownEvent] event -- the mouse down event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
 function Window:onMouseDownBefore( event )
@@ -152,7 +152,7 @@ end
 --[[
     @instance
     @desc Fired when the mouse is pushed on the window bar after children have recieved the event. Starts dragging.
-    @param [Event] event -- the mouse down event
+    @param [MouseDownEvent] event -- the mouse down event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
 function Window:onMouseDownAfter( event )

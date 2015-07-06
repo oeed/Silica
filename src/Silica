@@ -19,7 +19,7 @@ function loadName( name )
 
 		local list = fs.list( path )
 
-		for i, v in ipairs(list) do
+		for i, v in ipairs( list ) do
 			if fs.isDir( path .. '/' .. v ) then
 				if checkDir( path .. '/' .. v) then
 					return true

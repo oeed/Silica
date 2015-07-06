@@ -61,7 +61,7 @@ local function _serialize( v, t )
 end
 local function timestamp()
 	local t = tostring( os.clock() )
-	if #t:match "%.(%d+)" == 1 then
+	if #t:match "%.( %d+ )" == 1 then
 		return "[" .. t .. "0]: "
 	elseif not t:find "%." then
 		return "[" .. t .. ".00]: "
@@ -90,12 +90,12 @@ local function writeContent( content, include_time )
 	end
 end
 local function _traceback(ignore, level)
-	level = type(level) == "number" and level
-	local errorLevel = 3 + (type(ignore) == "number" and ignore or 0)
+	level = type( level ) == "number" and level
+	local errorLevel = 3 + ( type(ignore ) == "number" and ignore or 0)
 	local errorDiff = errorLevel
 	local errorPos, result = nil, {}
 	repeat
-		errorPos = select(2, pcall(error, "@", errorLevel)):match("^(.+): @$")
+		errorPos = select(2, pcall(error, "@", errorLevel)):match( "^(.+ ): @$")
 		if errorPos then
 			result[#result + 1] = errorPos
 			errorLevel = errorLevel + 1
@@ -124,11 +124,11 @@ function debug.traceback( level, as_string )
 end
 
 function debug.line( level )
-	return tonumber( select( 2, pcall( error, "@", 2 + ( level or 1 ) ) ):match "^.+:(%d+): @$" ) or "unknown"
+	return tonumber( select( 2, pcall( error, "@", 2 + ( level or 1 ) ) ):match "^.+:( %d+ ): @$" ) or "unknown"
 end
 
 function debug.pos( level )
-	return select( 2, pcall( error, "@", 2 + ( level or 1 ) ) ):match "^(.+): @$" or "unknown"
+	return select( 2, pcall( error, "@", 2 + ( level or 1 ) ) ):match "^( .+ ): @$" or "unknown"
 end
 
 function debug.call( f )
@@ -195,15 +195,15 @@ function debug.note( message )
 end
 
 function debug.flag( message, level )
-	return writeContent( "Info: " .. ("%q"):format( tostring( message ) ) .. "  in " .. debug.traceback( ( level or 1 ) + 1, true ):gsub( "\n", " " ), true )
+	return writeContent( "Info: " .. ( "%q" ):format( tostring( message ) ) .. "  in " .. debug.traceback( ( level or 1 ) + 1, true ):gsub( "\n", " " ), true )
 end
 
 function debug.warning( message, level )
-	return writeContent( "WARNING: " .. ("%q"):format( tostring( message ) ) .. "  in " .. debug.traceback( ( level or 1 ) + 1, true ):gsub( "\n", " " ), true )
+	return writeContent( "WARNING: " .. ( "%q" ):format( tostring( message ) ) .. "  in " .. debug.traceback( ( level or 1 ) + 1, true ):gsub( "\n", " " ), true )
 end
 
 function debug.error( message, level )
-	writeContent( "FATAL: " .. ("%q"):format( tostring( message ) ) .. "  in " .. debug.traceback( ( level or 1 ) + 1, true ):gsub( "\n", " " ), true )
+	writeContent( "FATAL: " .. ( "%q" ):format( tostring( message ) ) .. "  in " .. debug.traceback( ( level or 1 ) + 1, true ):gsub( "\n", " " ), true )
 	return error( message, level )
 end
 

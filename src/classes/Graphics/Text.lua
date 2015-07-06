@@ -24,6 +24,16 @@ end
 
 --[[
 	@instance
+	@desc Sets the text of the text object
+	@param [number] text -- the text of the text object
+]]
+function GraphicsObject:setText( text )
+	self.hasChanged = true
+	self.text = text
+end
+
+--[[
+	@instance
 	@desc Draws a the text to the canvas
 	@param [Canvas] canvas -- the canvas to draw to
 	@return self

@@ -22,20 +22,20 @@ end
 function Scrollbar:initCanvas()
     self.super:initCanvas()
 
-    self.theme:connect( self.canvas, 'fillColour' )
+    self.theme:connect( self.canvas, "fillColour" )
 
     local scrollerObject = self.canvas:insert( RoundedRectangle( 2, 3, self.width - 2, 30 ) )
     local grabberObject = self.canvas:insert( ScrollbarGrabber( 3, 3, self.width - 4, 30 ) )
 
-    self.theme:connect( scrollerObject, 'fillColour', 'scrollerColour' )
-    self.theme:connect( scrollerObject, 'outlineColour' )
-    self.theme:connect( scrollerObject, 'radius', 'cornerRadius' )
-    self.theme:connect( grabberObject, 'fillColour', 'grabberColour' )
+    self.theme:connect( scrollerObject, "fillColour", "scrollerColour" )
+    self.theme:connect( scrollerObject, "outlineColour" )
+    self.theme:connect( scrollerObject, "radius", "cornerRadius" )
+    self.theme:connect( grabberObject, "fillColour", "grabberColour" )
 
     local position, size = self.scroller
     -- local position, size = self:getScroller()
-    -- log(position)
-    -- log(size)
+    -- log( position )
+    -- log( size )
     self.scrollerObject = scrollerObject
     self.grabberObject = grabberObject
 end
@@ -110,7 +110,7 @@ end
 --[[
     @instance
     @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
-    @param [Event] event -- the mouse down event
+    @param [MouseDownEvent] event -- the mouse down event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
 function Scrollbar:onMouseDown( event )

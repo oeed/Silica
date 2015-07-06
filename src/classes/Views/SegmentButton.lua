@@ -17,13 +17,13 @@ function SegmentButton:initCanvas()
     separatorBackgroundObject.leftOutlineWidth = 0
     separatorBackgroundObject.rightOutlineWidth = 0
     local theme = self.theme
-    theme:connect( separatorBackgroundObject, 'fillColour', 'separatorFillColour' )
-    theme:connect( separatorBackgroundObject, 'dotColour', 'separatorDotColour' )
-    theme:connect( separatorBackgroundObject, 'outlineColour', 'separatorOutlineColour' )
-    theme:connect( self, 'centerMargin' )
+    theme:connect( separatorBackgroundObject, "fillColour", "separatorFillColour" )
+    theme:connect( separatorBackgroundObject, "dotColour", "separatorDotColour" )
+    theme:connect( separatorBackgroundObject, "outlineColour", "separatorOutlineColour" )
+    theme:connect( self, "centerMargin" )
     self.separatorBackgroundObject = separatorBackgroundObject
-    theme:disconnect( self.backgroundObject, 'radius', 'cornerRadius' )
-    theme:disconnect( self.shadowObject, 'radius', 'cornerRadius' )
+    theme:disconnect( self.backgroundObject, "radius", "cornerRadius" )
+    theme:disconnect( self.shadowObject, "radius", "cornerRadius" )
 end
 
 function SegmentButton:setWidth( width )
@@ -85,19 +85,19 @@ function SegmentButton:onSiblingsChanged()
 
 
     if isFirst then
-        self.theme:connect( backgroundObject, 'leftRadius', 'cornerRadius' )
-        self.theme:connect( shadowObject, 'leftRadius', 'cornerRadius' )
+        self.theme:connect( backgroundObject, "leftRadius", "cornerRadius" )
+        self.theme:connect( shadowObject, "leftRadius", "cornerRadius" )
     else
-        self.theme:disconnect( backgroundObject, 'leftRadius', 'cornerRadius' )
-        self.theme:disconnect( shadowObject, 'leftRadius', 'cornerRadius' )
+        self.theme:disconnect( backgroundObject, "leftRadius", "cornerRadius" )
+        self.theme:disconnect( shadowObject, "leftRadius", "cornerRadius" )
     end
 
     if isLast then
-        self.theme:connect( backgroundObject, 'rightRadius', 'cornerRadius' )
-        self.theme:connect( shadowObject, 'rightRadius', 'cornerRadius' )
+        self.theme:connect( backgroundObject, "rightRadius", "cornerRadius" )
+        self.theme:connect( shadowObject, "rightRadius", "cornerRadius" )
     else
-        self.theme:disconnect( backgroundObject, 'rightRadius', 'cornerRadius' )
-        self.theme:disconnect( shadowObject, 'rightRadius', 'cornerRadius' )
+        self.theme:disconnect( backgroundObject, "rightRadius", "cornerRadius" )
+        self.theme:disconnect( shadowObject, "rightRadius", "cornerRadius" )
     end
 
 

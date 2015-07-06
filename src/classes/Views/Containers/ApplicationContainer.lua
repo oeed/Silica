@@ -14,6 +14,8 @@ class "ApplicationContainer" extends "Container" {
 ]]
 function ApplicationContainer:init( ... )
 	self.super:init( ... )
+
+    self:event( Event.MOUSE_DOWN, self.onMouseUp, EventManager.phase.AFTER )
 end
 
 function ApplicationContainer:initCanvas()
@@ -31,4 +33,14 @@ end
 
 function ApplicationContainer:draw()
 	self.canvas:drawToTerminal()
+end
+
+--[[
+    @instance
+    @desc Fired when the mouse is released and doesn't hit anything else. Unfocuses the focused view, if any.
+    @param [MouseDownEvent] event -- the mouse up event
+    @return [bool] preventPropagation -- prevent anyone else using the event
+]]
+function ApplicationContainer:onMouseUp( event )
+    self.application:clearFocus()
 end

@@ -1,8 +1,8 @@
 
 class "Event" {
 	
-	relativeView = nil; -- the view that the event is relative of
-	eventType = nil;
+	relativeView = false; -- the view that the event is relative of
+	eventType = false;
 
 	MOUSE_UP = "mouse_up";
 	MOUSE_DOWN = "mouse_click";
@@ -10,12 +10,14 @@ class "Event" {
 	MOUSE_SCROLL = "mouse_scroll";
 	KEY_DOWN = "key";
 	KEY_UP = "key_up";
-	CHAR = "char";
+	CHARACTER = "char";
 	TIMER = "timer";
 	TERMINATE = "terminate";
 	MENU_CHANGED = "interface_menu_changed";
 	INTERFACE_LOADED = "interface_loaded";
 	KEYBOARD_SHORTCUT = "interface_keyboard_shortcut";
+	FOCUS_CHANGED = "interface_focus";
+	TEXT_CHANGED = "interface_text";
 
 }
 
@@ -23,7 +25,7 @@ local eventClasses = {}
 
 --[[
 	@static
-	@desc Registers an Event subclass to a event type name (e.g. DownMouseEvent links with "mouse_down")
+	@desc Registers an Event subclass to a event type name (e.g. MouseDownEvent links with "mouse_down")
 	@param [class] _class -- the class that was constructed
 ]]
 function Event.register( eventType, subclass )
@@ -44,31 +46,18 @@ end
 --[[
 	@static
 	@desc Creates an event with the arguments in a table from os.pullEvent or similar function
-	@param [table] arguments -- the event arguments
+	@param [Event.eventTypes] eventType -- the event type
+	@param ... -- the event arguments
 	@returns [Event] event
 ]]
-function Event.create( arguments )
-	if #arguments >= 1 then
-		local eventType = arguments[1]
-		local eventClass = eventClasses[eventType]
+function Event.create( eventType, ... )
+	if not eventType then error( "No event type given to Event.create!" ) end
 
-		if eventClass then
-			return eventClass( arguments )
-		else
-			return Event( arguments )
-		end
-	end
-end
-
---[[
-	@constructor
-	@desc Create an event using a table of the values returned from os.pullEvent. Generally called by Event.create.
-	@param [table] arguments -- the event arguments
-	@return [type] returnedValue -- description
-]]
-function Event:init( arguments )
-	if #arguments >= 1 then
-		self.eventType = arguments[1]
+	local eventClass = eventClasses[eventType]
+	if eventClass then
+		return eventClass( ... )
+	else
+		return Event()
 	end
 end
 

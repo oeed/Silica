@@ -23,7 +23,7 @@ class "Container" extends "View" {
     @param value -- the value
 ]]
 function Container:set( key, value )
-	if value and type( value ) == 'table' and value.typeOf and value:typeOf( InterfaceOutlet ) then
+	if value and type( value ) == "table" and value.typeOf and value:typeOf( InterfaceOutlet ) then
 		value:connect( key, self )
 	elseif self.interfaceOutlets[key] and not value then
 		self.interfaceOutlets[key]:disconnect()
@@ -182,7 +182,7 @@ end
 
 --[[
 	@instance
-	@desc Returns the (first) child with the given identifier
+	@desc Returns the ( first ) child with the given identifier
 	@param [string] identifier -- the identifier of the child view
 	@param [boolean] descendTree -- true by default. whether child Containers should be looked through
 	@return [View] childView -- the found child view

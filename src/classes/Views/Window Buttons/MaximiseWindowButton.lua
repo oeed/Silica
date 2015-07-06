@@ -9,7 +9,7 @@ function MaximiseWindowButton:initCanvas()
     symbolObject:moveTo( 1, 2 )
     symbolObject:lineTo( 3, 2 )
     symbolObject:close( false )
-    self.theme:connect( symbolObject, 'outlineColour', 'symbolColour' )
+    self.theme:connect( symbolObject, "outlineColour", "symbolColour" )
     self.symbolObject = self.canvas:insert( symbolObject )
 end
 

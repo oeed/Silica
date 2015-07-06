@@ -3,8 +3,8 @@ class "WindowContainer" extends "Container" {
 	backgroundObject = nil;
 }
 
-function WindowContainer:init(...)
-	self.super:init(...)
+function WindowContainer:init( ... )
+	self.super:init( ... )
 end
 
 function WindowContainer:initCanvas()

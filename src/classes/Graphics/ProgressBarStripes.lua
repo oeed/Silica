@@ -14,7 +14,7 @@ end
 
 function ProgressBarStripes:setAnimationStep( animationStep )
 	self.hasChanged = true
-	self.animationStep = math.floor(animationStep)
+	self.animationStep = math.floor( animationStep )
 end
 
 -- doing this is a little naughty, but it is the easiest and nope way to doing it

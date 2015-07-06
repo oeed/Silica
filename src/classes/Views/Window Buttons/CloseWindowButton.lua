@@ -10,7 +10,7 @@ function CloseWindowButton:initCanvas()
     symbolObject:lineTo( 1, 3 )
     symbolObject:close( false )
 
-    self.theme:connect( symbolObject, 'outlineColour', 'symbolColour' )
+    self.theme:connect( symbolObject, "outlineColour", "symbolColour" )
     self.symbolObject = self.canvas:insert( symbolObject )
 end
 

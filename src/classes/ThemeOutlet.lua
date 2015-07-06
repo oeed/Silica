@@ -23,7 +23,7 @@ end
 	@return value -- the value
 ]]
 function ThemeOutlet:get( key )
-	if key == 'themeValue' or self[key] or key == 'instance' then return false end
+	if key == "themeValue" or self[key] or key == "instance" then return false end
 	return true, self:themeValue( key, self.style )
 end
 
@@ -76,7 +76,7 @@ end
 	@instance
 	@desc Returns the value for the current theme given the property name and style)
 	@param [string] propertyName -- the name of the property
-	@param [string] styleName -- default is 'default', the name of the style
+	@param [string] styleName -- default is "default", the name of the style
 	@return themeValue -- the theme value
 ]]
 function ThemeOutlet:themeValue( valueName, styleName )

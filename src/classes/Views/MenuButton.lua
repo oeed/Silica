@@ -19,7 +19,7 @@ class "MenuButton" extends "Button" {
 ]]
 function MenuButton:init( ... )
     self.super:init( ... )
-    menu = Menu.fromInterface( 'menu' )
+    menu = Menu.fromInterface( "menu" )
     menu.owner = self
     menu.isSingleShot = false
     menu.isVisible = false
@@ -83,8 +83,8 @@ function MenuButton:initCanvas()
     self.openArrowObject = openArrowObject
     self.canvas:insert( openArrowObject )
 
-    self.theme:connect( closeArrowObject, 'outlineColour', 'arrowColour' )
-    self.theme:connect( openArrowObject, 'outlineColour', 'arrowColour' )
+    self.theme:connect( closeArrowObject, "outlineColour", "arrowColour" )
+    self.theme:connect( openArrowObject, "outlineColour", "arrowColour" )
     self.needsArrowUpdate = true
 end
 

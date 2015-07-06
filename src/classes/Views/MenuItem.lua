@@ -36,8 +36,8 @@ function MenuItem:initCanvas()
     local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
     local textObject = self.canvas:insert( Text( 7, 2, self.height, self.width - TEXT_MARGIN, self.text ) )
 
-    self.theme:connect( backgroundObject, 'fillColour' )
-    self.theme:connect( textObject, 'textColour' )
+    self.theme:connect( backgroundObject, "fillColour" )
+    self.theme:connect( textObject, "textColour" )
 
     self.backgroundObject = backgroundObject
     self.textObject = textObject

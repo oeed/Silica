@@ -35,10 +35,10 @@ function Checkbox:initCanvas()
     checkObject:lineTo( 5, 2 )
     checkObject:close( false )
 
-    self.theme:connect( backgroundObject, 'fillColour' )
-    self.theme:connect( backgroundObject, 'outlineColour' )
-    self.theme:connect( backgroundObject, 'radius', 'cornerRadius' )
-    self.theme:connect( checkObject, 'outlineColour', 'checkColour' )
+    self.theme:connect( backgroundObject, "fillColour" )
+    self.theme:connect( backgroundObject, "outlineColour" )
+    self.theme:connect( backgroundObject, "radius", "cornerRadius" )
+    self.theme:connect( checkObject, "outlineColour", "checkColour" )
 
     self.backgroundObject = backgroundObject
     self.checkObject = checkObject

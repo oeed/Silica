@@ -24,11 +24,11 @@ function WindowButton:initCanvas()
 	self.super:initCanvas()
 
     local backgroundObject = self.canvas:insert( Circle( 3, 2, 5, 5 ) )
-    self.theme:connect( backgroundObject, 'fillColour' )
+    self.theme:connect( backgroundObject, "fillColour" )
     -- local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height ) )
 
-    self.theme:connect( backgroundObject, 'outlineColour' )
-    -- self.theme:connect( backgroundObject, 'topLeftRadius', 'cornerRadius' )
+    self.theme:connect( backgroundObject, "outlineColour" )
+    -- self.theme:connect( backgroundObject, "topLeftRadius", "cornerRadius" )
 
 
 
@@ -71,7 +71,7 @@ end
 --[[
     @instance
     @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
-    @param [Event] event -- the mouse down event
+    @param [MouseDownEvent] event -- the mouse down event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
 function WindowButton:onMouseDown( event )

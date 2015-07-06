@@ -52,11 +52,11 @@ function Menu:initCanvas()
     local shadowObject = self.canvas:insert( RoundedRectangle( 1 + self.shadowRightMargin, 1 + self.shadowTopMargin, self.width - 1, self.height - 2 ) )
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 2 ) )
 
-    self.theme:connect( backgroundObject, 'fillColour' )
-    self.theme:connect( backgroundObject, 'outlineColour' )
-    self.theme:connect( backgroundObject, 'radius', 'cornerRadius' )
-    self.theme:connect( shadowObject, 'fillColour', 'shadowColour' )
-    self.theme:connect( shadowObject, 'radius', 'cornerRadius' )
+    self.theme:connect( backgroundObject, "fillColour" )
+    self.theme:connect( backgroundObject, "outlineColour" )
+    self.theme:connect( backgroundObject, "radius", "cornerRadius" )
+    self.theme:connect( shadowObject, "fillColour", "shadowColour" )
+    self.theme:connect( shadowObject, "radius", "cornerRadius" )
 
 	self.shadowObject = shadowObject
 	self.backgroundObject = backgroundObject

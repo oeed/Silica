@@ -34,6 +34,8 @@ end
 	@param [function] func -- the function called when the event occurs
 ]]
 function EventManager:connect( eventType, func, phase, eventManager )
+	if not eventType then error( "No event type given to EventManager:connect!" ) end
+	
 	if func and type( func ) == "function" then
 		phase = phase or EventManager.phase.BEFORE
 		eventManager = eventManager or self

@@ -20,7 +20,7 @@ if not fs.exists( file ) then
 end
 
 for i = 1, #meta do
-	local k, v = meta[i]:match "^(.-)=(.+)$"
+	local k, v = meta[i]:match "^(.-)=( .+ )$"
 	if not k then
 		return error( "malformed metadata '" .. meta[i] .. "', no '='" )
 	end

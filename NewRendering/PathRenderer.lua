@@ -72,7 +72,7 @@ local function cubicRoots( P )
             t[3]=-1
         end
     else -- distinct real roots
-        local th = acos( R / (-(Q^3))^.5 )
+        local th = acos( R / (-( Q^3) )^.5 )
         
         t[1] = 2 * ( -Q )^.5 * cos( th / 3 ) - A / 3
         t[2] = 2 * ( -Q )^.5 * cos( ( th + 2 * PI ) / 3 ) - A / 3

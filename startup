@@ -1,35 +1,34 @@
-
-fs.open('log', 'w').close()
+fs.open("log", "w").close()
 
 local _print = print
-function _G.print(...)
-	_print(...)
+function _G.print( ... )
+	_print( ... )
 	log(tostring(... or ""))
 end
 
 function _G.log( text )
-	local h = fs.open('log', 'a')
-	h.write(tostring(text) .. '\n')
+	local h = fs.open("log", "a")
+	h.write( tostring(text ) .. '\n')
 	h.close()	
 end
 
 function _G.log2( text )
-	local h = fs.open('log2', 'a')
-	h.write(tostring(text) .. '\n')
+	local h = fs.open("log2", "a")
+	h.write( tostring(text ) .. '\n')
 	h.close()	
 end
 
--- if not fs.exists( 'oeed' ) then
+-- if not fs.exists( "oeed" ) then
 -- 	shell.run "NewRendering/test.lua"
 -- 	read()
 -- 	os.reboot()
 -- 	do return end
 -- end
 
--- os.loadAPI('src/debug')
+-- os.loadAPI( 'src/debug' )
 -- _G.debug = debug
 
-os.loadAPI('src/Silica')
+os.loadAPI( 'src/Silica' )
 
 BitmapFont.convertFile( "font src/auckland", "src/fonts/Auckland.sfont", 32, 8, {
 	name = "Auckland";

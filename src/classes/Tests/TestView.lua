@@ -18,7 +18,7 @@ function TestView:update( deltaTime )
 end
 
 function TestView:draw()
-	term.setFillColour(Graphics.colours.BLACK)
+	term.setFillColour( Graphics.colours.BLACK )
 	term.clear()
 
 	local function xy( position )

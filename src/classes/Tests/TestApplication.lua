@@ -11,7 +11,7 @@ class "TestApplication" extends "Application" {
 ]]
 function TestApplication:init()
 	self.super:init()
-	self:event( Event.CHAR, self.onChar )
+	self:event( Event.CHARACTER, self.onChar )
 end
 
 --[[
@@ -21,7 +21,7 @@ end
 	@return [boolean] stopPropagation
 ]]
 function TestApplication:onChar( event )
-	if event.char == '\\' then
+	if event.character == '\\' then
 		os.reboot()
 	end
 end

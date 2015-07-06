@@ -10,11 +10,11 @@ class "Validator" {}
 ]]
 function Validator.validatorType( typeName )
 	-- TODO: make validator types dynamic
-	if typeName == 'Graphics.colours' then
-		return function(k) return Graphics.colours[k] end
-	elseif typeName == 'number' then
+	if typeName == "Graphics.colours" then
+		return function( k ) return Graphics.colours[k] end
+	elseif typeName == "number" then
 		return tonumber
-	elseif typeName == 'string' then
+	elseif typeName == "string" then
 		return tostring
 	end
 end
@@ -28,7 +28,7 @@ end
 ]]
 function Validator.isValid( value, typeName )
 	local validatorType = Validator.validatorType( typeName )
-	return validatorType(value) ~= nil
+	return validatorType( value ) ~= nil
 end
 
 --[[
@@ -40,5 +40,5 @@ end
 ]]
 function Validator.parse( value, typeName )
 	local validatorType = Validator.validatorType( typeName )
-	return validatorType(value)
+	return validatorType( value )
 end

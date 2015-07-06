@@ -42,14 +42,14 @@ function Button:initCanvas()
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, width - 1, height - 1, theme.fillColour, theme.outlineColour, cornerRadius ) )
     local textObject = self.canvas:insert( Text( 1, 5, self.width, 10, self.text ) )
 
-    theme:connect( backgroundObject, 'fillColour' )
-    theme:connect( backgroundObject, 'outlineColour' )
-    theme:connect( backgroundObject, 'radius', 'cornerRadius' )
-    theme:connect( shadowObject, 'shadowColour' )
-    theme:connect( shadowObject, 'radius', 'cornerRadius' )
-    theme:connect( textObject, 'textColour' )
-    theme:connect( self, 'leftMargin' )
-    theme:connect( self, 'rightMargin' )
+    theme:connect( backgroundObject, "fillColour" )
+    theme:connect( backgroundObject, "outlineColour" )
+    theme:connect( backgroundObject, "radius", "cornerRadius" )
+    theme:connect( shadowObject, "shadowColour" )
+    theme:connect( shadowObject, "radius", "cornerRadius" )
+    theme:connect( textObject, "textColour" )
+    theme:connect( self, "leftMargin" )
+    theme:connect( self, "rightMargin" )
 
     self.backgroundObject = backgroundObject
     self.shadowObject = shadowObject
@@ -194,7 +194,7 @@ end
 --[[
     @instance
     @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
-    @param [Event] event -- the mouse down event
+    @param [MouseDownEvent] event -- the mouse down event
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
 function Button:onMouseDown( event )

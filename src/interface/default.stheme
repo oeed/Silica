@@ -104,7 +104,7 @@
 		<rightMargin type="number" default="7" />
 		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
 		<textColour type="Graphics.colours" default="BLACK" disabled="LIGHT_GREY"/>
-		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="BLUE" />
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" focused="BLUE" pressed="GREY" />
 	</TextBox>
 
 </Theme>

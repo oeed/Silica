@@ -96,6 +96,20 @@ end
 
 `"` should be used to define strings, not `'`
 
-A blank line should be left at the top and bottom of files, just to make it look a bit 'prettier'.
+A blank line should be left at the top and bottom of files, just to make it look a bit "prettier".
 
 English spelling should be used (not American-English), so "colour" instead of "color", "grey" instead of "gray".
+
+### Helpful Regexes
+
+Replace single quotes with double:
+```
+Find: '(\w+)'
+Replace: "$1"
+```
+
+Add spaces around brackets:
+```
+Find: \(([^-\s]+)\)
+Replace: ( $1 )
+```

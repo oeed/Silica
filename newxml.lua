@@ -1,12 +1,12 @@
 
 local function fromXMLString( value )
-	value = string.gsub(value, "&#x([%x]+)%;",
-		function(h) 
-			return string.char(tonumber(h,16))
+	value = string.gsub(value, "&#x( [%x]+ )%;",
+		function( h ) 
+			return string.char( tonumber(h,16) )
 		end);
 	value = string.gsub(value, "&#([0-9]+)%;",
-		function(h)
-			return string.char(tonumber(h,10))
+		function( h )
+			return string.char( tonumber(h,10) )
 		end);
 	value = string.gsub (value, "&quot;", "\"");
 	value = string.gsub (value, "&apos;", "'");

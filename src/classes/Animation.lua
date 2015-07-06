@@ -4,12 +4,12 @@ local pow, sin, cos, pi, sqrt, abs, asin = math.pow, math.sin, math.cos, math.pi
 
 local function copyTables(destination, keysTable, valuesTable)
     valuesTable = valuesTable or keysTable
-    local mt = getmetatable(keysTable)
-    if mt and getmetatable(destination) == nil then
+    local mt = getmetatable( keysTable )
+    if mt and getmetatable( destination ) == nil then
         setmetatable(destination, mt)
     end
-    for k,v in pairs(keysTable) do
-        if type(v) == 'table' then
+    for k,v in pairs( keysTable ) do
+        if type( v ) == "table" then
             destination[k] = copyTables({}, v, valuesTable[k])
         else
             destination[k] = valuesTable[k]
@@ -20,15 +20,15 @@ end
 
 local function performEasingOnSubject(subject, targetValues, initialValues, time, duration, easingFunc, round)
     local t,b,c,d
-    for k,v in pairs(targetValues) do
-        if type(v) == 'table' then
+    for k,v in pairs( targetValues ) do
+        if type( v ) == "table" then
             performEasingOnSubject(subject[k], v, initialValues[k], time, duration, easingFunc)
         else
             t,b,c,d = time, initialValues[k], v - initialValues[k], duration
             if round then
-                subject[k] = math.floor( easingFunc(t,b,c,d) + 0.5 )
+                subject[k] = math.floor( easingFunc( t,b,c,d ) + 0.5 )
             else
-                subject[k] = easingFunc(t,b,c,d)
+                subject[k] = easingFunc( t,b,c,d )
             end
         end
     end
@@ -69,7 +69,7 @@ end
 	@return [boolean] isComplete -- whether the animation is complete
 ]]
 function Animation:setTime( time )
-	assert(type(time) == 'number', "time must be a positive number or 0")
+	assert( type(time ) == "number", "time must be a positive number or 0")
 
 	self.time = time
 
@@ -259,10 +259,10 @@ function Animation.easing.OUT_IN_CIRC( t, b, c, d )
 end
 
 -- elastic
-function Animation.easing.CALCULATE_P_A_S(p,a,c,d)
+function Animation.easing.CALCULATE_P_A_S( p,a,c,d )
 	p, a = p or d * 0.3, a or 0
-	if a < abs(c) then return p, c, p / 4 end -- p, a, s
-	return p, a, p / (2 * pi) * asin(c/a) -- p,a,s
+	if a < abs( c ) then return p, c, p / 4 end -- p, a, s
+	return p, a, p / (2 * pi) * asin( c/a ) -- p,a,s
 end
 
 function Animation.easing.IN_ELASTIC( t, b, c, d, a, p )
@@ -270,7 +270,7 @@ function Animation.easing.IN_ELASTIC( t, b, c, d, a, p )
 	if t == 0 then return b end
 	t = t / d
 	if t == 1 then return b + c end
-	p,a,s = calculatePAS(p,a,c,d)
+	p,a,s = calculatePAS( p,a,c,d )
 	t = t - 1
 	return -(a * pow(2, 10 * t) * sin((t * d - s) * (2 * pi) / p)) + b
 end
@@ -280,7 +280,7 @@ function Animation.easing.OUT_ELASTIC( t, b, c, d, a, p )
 	if t == 0 then return b end
 	t = t / d
 	if t == 1 then return b + c end
-	p,a,s = calculatePAS(p,a,c,d)
+	p,a,s = calculatePAS( p,a,c,d )
 	return a * pow(2, -10 * t) * sin((t * d - s) * (2 * pi) / p) + c + b
 end
 
@@ -289,7 +289,7 @@ function Animation.easing.IN_OUT_ELASTIC( t, b, c, d, a, p )
 	if t == 0 then return b end
 	t = t / d * 2
 	if t == 2 then return b + c end
-	p,a,s = calculatePAS(p,a,c,d)
+	p,a,s = calculatePAS( p,a,c,d )
 	t = t - 1
 	if t < 0 then return -0.5 * (a * pow(2, 10 * t) * sin((t * d - s) * (2 * pi) / p)) + b end
 	return a * pow(2, -10 * t) * sin((t * d - s) * (2 * pi) / p ) * 0.5 + c + b

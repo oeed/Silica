@@ -155,7 +155,7 @@ function Canvas:drawTo( canvas )
         if self.hasChanged then
             local drawdt = os.clock()
             self:draw()
-            -- log( tostring(self) .. 'is rerendering dt ' .. os.clock() - drawdt )
+            -- log( tostring( self ) .. 'is rerendering dt ' .. os.clock() - drawdt )
         end
         
         local width = self.width
@@ -167,7 +167,7 @@ function Canvas:drawTo( canvas )
         
 
         local start = os.clock()
-        -- log( tostring(self) .. 'is drawing to parent at ' .. os.clock() )
+        -- log( tostring( self ) .. 'is drawing to parent at ' .. os.clock() )
 
         local canvasWidth = canvas.width
         local canvasHeight = canvas.height
@@ -183,7 +183,7 @@ function Canvas:drawTo( canvas )
             end
         end
 
-        -- log( tostring(self) .. 'is done drawing to parent dt ' .. os.clock() - start )
+        -- log( tostring( self ) .. 'is done drawing to parent dt ' .. os.clock() - start )
 
     end
     return self

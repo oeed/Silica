@@ -1,6 +1,6 @@
 
 class "InterfaceEvent" extends "Event" {
-	owner = nil;
+	owner = false;
 }
 
 --[[
@@ -9,6 +9,5 @@ class "InterfaceEvent" extends "Event" {
 	@param [class] owner -- the owner view
 ]]
 function InterfaceEvent:init( owner )
-	self.super:init( { self.eventType } )
 	self.owner = owner
 end

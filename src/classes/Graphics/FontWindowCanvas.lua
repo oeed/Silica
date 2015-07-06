@@ -25,10 +25,10 @@ function FontWindowCanvas:draw( ... )
         font2:render( self, "Aßen Sie Ihr Frühstück gern?", 10, 18, 2 ^ math.random( 0, 15 ) )
 
         -- local font2 = BitmapFont( 'src/fonts/Auckland.sfont' )
-        font2:render( self, "Silica"..string.char(153).." © 2015 oeed & awsumben13", 10, 28, 2 ^ math.random( 0, 15 ) )
+        font2:render( self, "Silica"..string.char( 153 ).." © 2015 oeed & awsumben13", 10, 28, 2 ^ math.random( 0, 15 ) )
 
-        font2:render( self, "Das Mädchen sagte, "..string.char(132).."Wissen Sie über Silica?\"", 10, 38, 2 ^ math.random( 0, 15 ) )
-        font2:render( self, "4,50"..string.char(128).." 35¢ 9.99£ 350¥ 560µm", 10, 48, 2 ^ math.random( 0, 15 ) )
+        font2:render( self, "Das Mädchen sagte, "..string.char( 132 ).."Wissen Sie über Silica?\"", 10, 38, 2 ^ math.random( 0, 15 ) )
+        font2:render( self, "4,50"..string.char( 128 ).." 35¢ 9.99£ 350¥ 560µm", 10, 48, 2 ^ math.random( 0, 15 ) )
 
         -- local font3 = BitmapFont( 'src/fonts/Auckland.sfont', 16 )
         -- font3:render( self, "1234567890O", 10, 38, 2 ^ math.random( 0, 15 ) )

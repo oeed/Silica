@@ -20,8 +20,8 @@ end
 ]]
 function String:split( delimeter )
 	local splitString = {}
-	local t = string.format( "([^%s]+)", delimeter )
-	self.str:gsub( t, function(t)
+	local t = string.format( "( [^%s]+ )", delimeter )
+	self.str:gsub( t, function( t )
 		splitString[#splitString+1] = t
 	end )
 	return splitString
@@ -33,7 +33,7 @@ end
 	@return [table] components -- a table with the directory path, file name and then extension
 ]]
 function String:pathComponents()
-	return string.match( self.str, "(.-)([^/]-([^%.]+))$" )
+	return string.match( self.str, "(.-)([^/]-( [^%.]+) )$" )
 end
 
 -- TODO: more string methods
