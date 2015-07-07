@@ -1,6 +1,9 @@
 <ApplicationContainer theme=red>
 
-	<Button identifier=okayButton x=10 y=10 text=Okay />
+	<Button identifier=okayButton x=100 y=10 text=Okay />
+	<TestView y=25/>
+
+	<!-- <Button identifier=okayButton x=10 y=10 text=Okay />
 
 	<MenuButton x=60 y=10 text="Test" />
 
@@ -19,6 +22,8 @@
 			<PathView x=10 width=80 y=35 />
 		</ScrollContainer>
 	</ScrollView>
+
+	<AlertWindow></AlertWindow> -->
 
 
 	<!-- <ProgressBar  x=70 y=150 /> -->

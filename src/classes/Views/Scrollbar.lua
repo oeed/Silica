@@ -145,11 +145,5 @@ function Scrollbar:onGlobalMouseDrag( event )
         parent:scrollTo( math.floor( position / traySize * parent.container.height ) )
       
         event:makeRelative( oldRelative )
-
-        -- if self.direction == "vertical" then
-        --     self.target:setContentVScroll( math.floor( position / traySize * self.target:getContentHeight( ) ) )
-        -- else
-        --     self.target:setContentHScroll( math.floor( position / traySize * self.target:getContentWidth( ) ) )
-        -- end
     end
 end

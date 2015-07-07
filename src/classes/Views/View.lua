@@ -39,12 +39,23 @@ function View:init( properties )
 	self.animations = { names = {} }
 	self.theme = ThemeOutlet( self )
 	self:initCanvas()
+	if not self.canvas then
+		error( "View not given a canvas: '" .. tostring( self ) .. "'")
+	end
 
 	if properties and type( properties ) == "table" then
 		self:properties( properties )
 	end
 
 	self:initEventManager()
+	if not self.event then
+		error( "View not given an event manager: '" .. tostring( self ) .. "'")
+	end
+
+	self:initConstraint()
+	if not self.constraint then
+		error( "View not given a constraint: '" .. tostring( self ) .. "'")
+	end
 end
 
 --[[
@@ -61,6 +72,16 @@ end
 ]]
 function View:initCanvas()
 	self.canvas = Canvas( self.x, self.y, self.width, self.height )
+end
+
+--[[
+    @instance
+    @desc Sets up the canvas and it's graphics objects
+]]
+function View:initConstraint()
+	if not self.constraint then
+    	self.constraint = Constraint( self, { left = self.x, top = self.y, width = self.width, height = self.height } )
+    end
 end
 
 --[[
@@ -152,18 +173,84 @@ function View:siblingsOfType( _class )
 	return siblings
 end
 
-function View:setX( x )
+--[[
+	@instance
+	@desc Sets the view x coordinate
+	@param [type] x -- the x coordinate
+	@param [bool] isFromConstraint -- true if the view's constraint is the one setting the value. Don't ever call it with this true unless you really know what you're doing!
+]]
+function View:setX( x, isFromConstraint )
 	if self.hasInit then
 		self.canvas.x = x
 	end
 	self.x = x
+
+	if not isFromConstraint then
+		local constraint = self.constraint
+		if constraint then
+			constraint:manualValue( "x", x )
+		end
+	end
 end
 
-function View:setY( y )
+--[[
+	@instance
+	@desc Sets the view y coordinate
+	@param [type] y -- the y coordinate
+	@param [bool] isFromConstraint -- true if the view's constraint is the one setting the value. Don't ever call it with this true unless you really know what you're doing!
+]]
+function View:setY( y, isFromConstraint )
 	if self.hasInit then
 		self.canvas.y = y
 	end
 	self.y = y
+
+	if not isFromConstraint then
+		local constraint = self.constraint
+		if constraint then
+			constraint:manualValue( "y", y )
+		end
+	end
+end
+
+--[[
+	@instance
+	@desc Sets the view width
+	@param [type] width -- the width
+	@param [bool] isFromConstraint -- true if the view's constraint is the one setting the value. Don't ever call it with this true unless you really know what you're doing!
+]]
+function View:setWidth( width, isFromConstraint )
+	if self.hasInit then
+		self.canvas.width = width
+	end
+	self.width = width
+
+	if not isFromConstraint then
+		local constraint = self.constraint
+		if constraint then
+			constraint:manualValue( "width", width )
+		end
+	end
+end
+
+--[[
+	@instance
+	@desc Sets the view height
+	@param [type] height -- the height
+	@param [bool] isFromConstraint -- true if the view's constraint is the one setting the value. Don't ever call it with this true unless you really know what you're doing!
+]]
+function View:setHeight( height, isFromConstraint )
+	if self.hasInit then
+		self.canvas.height = height
+	end
+	self.height = height
+
+	if not isFromConstraint then
+		local constraint = self.constraint
+		if constraint then
+			constraint:manualValue( "height", height )
+		end
+	end
 end
 
 function View:setIsVisible( isVisible )
@@ -176,20 +263,6 @@ end
 function View:getIsVisible()
 	-- if we don't have a parent we're effectively not visible
 	return self.parent and self.isVisible
-end
-
-function View:setWidth( width )
-	if self.hasInit then
-		self.canvas.width = width
-	end
-	self.width = width
-end
-
-function View:setHeight( height )
-	if self.hasInit then
-		self.canvas.height = height
-	end
-	self.height = height
 end
 
 --[[

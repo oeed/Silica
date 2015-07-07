@@ -1,40 +1,20 @@
 
 class "TestView" extends "View" {
-	position = 1;
+	width = 40;
+	height = 40;
 }
 
-function TestView:init()
-	self.super:init()
-	self.application:schedule( 2, self.flash, self, "hello" )
+function TestView:init( ... )
+	self.super:init( ... )
 end
 
-function TestView:flash( text )
-	term.clear()
-	print( text )
+function TestView:initConstraint()
+	if not self.constraint then
+    	self.constraint = Constraint( self, { right = "100%" } )
+    end
 end
 
-function TestView:update( deltaTime )
-	self.position = self.position + 1
-end
-
-function TestView:draw()
-	term.setFillColour( Graphics.colours.BLACK )
-	term.clear()
-
-	local function xy( position )
-		position = position % (52 * 19)
-		return position % 52, math.ceil( position / 52 )
-	end
-
-	term.setFillColour( Graphics.colours.GREY )
-	term.setCursorPos( xy( self.position - 2 ) )
-	term.write( " " )
-
-	term.setFillColour( Graphics.colours.LIGHT_GREY )
-	term.setCursorPos( xy( self.position - 1 ) )
-	term.write( " " )
-
-	term.setFillColour( Graphics.colours.WHITE )
-	term.setCursorPos( xy( self.position ) )
-	term.write( " " )
+function TestView:initCanvas( ... )
+	self.super:initCanvas( ... )
+	self.canvas.fillColour = Graphics.colours.RED
 end

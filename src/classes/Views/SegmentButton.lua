@@ -1,10 +1,18 @@
 
+-- TODO: this needs some fixes to make the last button have a gap on it's left when pushed
+
 class "SegmentButton" extends "Button" {
 	
 	separatorObject = nil;
 
 }
 
+function SegmentButton:init( ... )
+    self.super:init( ... )
+    self:event( Event.PARENT_CHANGED, self.onSiblingOrParentChanged )
+    self:event( Event.SIBLING_ADDED, self.onSiblingOrParentChanged )
+    self:event( Event.SIBLING_ADDED, self.onSiblingOrParentChanged )
+end
 
 --[[
     @instance
@@ -35,10 +43,11 @@ function SegmentButton:setWidth( width )
         self.shadowObject.width = (isLast or isFirst) and width - 1 or width
         self.separatorObject.x = width
         self.separatorBackgroundObject.x = width
-
+        
         local textObject = self.textObject
-        textObject.x = self.leftMargin + 1
-        textObject.width = width - self.leftMargin - self.rightMargin
+        local leftMargin, rightMargin = self.leftMargin, self.rightMargin
+        textObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1
+        textObject.width = width - leftMargin - rightMargin
         self.parent.needsLayoutUpdate = true
     end
 end
@@ -56,13 +65,11 @@ function SegmentButton:setIsPressed( isPressed )
     if self.hasInit then
         local isFirst = self.isFirst
         local isLast = self.isLast
-        if not isFirst and not isLast and isPressed then
-            self.backgroundObject.x = 1
-        end
-
         if isLast then
+            log('set pressed')
             local width = self.width
-            self.backgroundObject.width = isPressed and width or width - 1
+            self.backgroundObject.x = isPressed and 2 or 1
+            self.backgroundObject.width = isPressed and width - 2 or width - 1
         end
     end
 end
@@ -70,12 +77,14 @@ end
 --[[
     @instance
     @desc Fired when it's siblings changed or it is added/removed from it's parent
+    @param [Event] event -- the event
 ]]
-function SegmentButton:onSiblingsChanged()
+function SegmentButton:onSiblingOrParentChanged( event )
     local backgroundObject = self.backgroundObject
     local shadowObject = self.shadowObject
     local isFirst = self.isFirst
     local isLast = self.isLast
+    local theme = self.theme
 
     shadowObject.x = (isLast or isFirst) and 2 or 1
     backgroundObject.leftOutlineWidth = isFirst and 1 or 0
@@ -85,24 +94,24 @@ function SegmentButton:onSiblingsChanged()
 
 
     if isFirst then
-        self.theme:connect( backgroundObject, "leftRadius", "cornerRadius" )
-        self.theme:connect( shadowObject, "leftRadius", "cornerRadius" )
+        theme:connect( backgroundObject, "leftRadius", "cornerRadius" )
+        theme:connect( shadowObject, "leftRadius", "cornerRadius" )
     else
-        self.theme:disconnect( backgroundObject, "leftRadius", "cornerRadius" )
-        self.theme:disconnect( shadowObject, "leftRadius", "cornerRadius" )
+        theme:disconnect( backgroundObject, "leftRadius", "cornerRadius" )
+        theme:disconnect( shadowObject, "leftRadius", "cornerRadius" )
     end
 
     if isLast then
-        self.theme:connect( backgroundObject, "rightRadius", "cornerRadius" )
-        self.theme:connect( shadowObject, "rightRadius", "cornerRadius" )
+        theme:connect( backgroundObject, "rightRadius", "cornerRadius" )
+        theme:connect( shadowObject, "rightRadius", "cornerRadius" )
     else
-        self.theme:disconnect( backgroundObject, "rightRadius", "cornerRadius" )
-        self.theme:disconnect( shadowObject, "rightRadius", "cornerRadius" )
+        theme:disconnect( backgroundObject, "rightRadius", "cornerRadius" )
+        theme:disconnect( shadowObject, "rightRadius", "cornerRadius" )
     end
 
 
     local width = self.width
     local isPressed = self.isPressed
-    backgroundObject.width = (isLast and isPressed) and width or width - 1
+    -- backgroundObject.width = (isLast and isPressed) and width or width - 1
     shadowObject.width = ((isLast and not isPressed) or isFirst) and width - 1 or width
 end

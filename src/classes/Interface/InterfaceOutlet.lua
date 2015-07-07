@@ -9,10 +9,10 @@
 -- }
 
 class "InterfaceOutlet" {
-	viewIdentifier = nil;
-	key = nil;
-	container = nil;
-	views = nil;
+	viewIdentifier = false;
+	key = false;
+	container = false;
+	views = false;
 	trackAll = false; -- whether the outlet keeps track of all views with the given identifier, or just one
 }
 
@@ -64,7 +64,7 @@ end
 	@param [Container] container -- the container to connect to
 ]]
 function InterfaceOutlet:disconnect()
-	self.container = nil
+	self.container = false
 	local key = self.key
 	if key and container then
 		self.container["get" .. self.key:sub( 1, 1 ):upper() .. self.key:sub( 2, -1 )] = nil

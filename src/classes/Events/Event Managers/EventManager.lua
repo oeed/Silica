@@ -153,13 +153,12 @@ end
 	@desc Performs the handles for a specific phase
 	@param [Event] event -- the event to handle
 	@param [EventManager.phase] phase -- the phase desired
-	@param [type] arg3 -- description
 	@return [boolean] stopPropagation -- whether no further handles should recieve this event
 ]]
 function EventManager:handleEventPhase( event, phase )
 	if self.handles[event.eventType] then
 		for i, handle in ipairs( self.handles[event.eventType] ) do
-			if phase == handle[2] then -- if caller doesn't care what
+			if phase == handle[2] then
 				-- handle[1] is the handle function
 				-- handle[2] is the phase
 				-- handle[3] is the event manager

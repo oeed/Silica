@@ -99,10 +99,11 @@ function Container:sendToFront( frontView, position )
 		end
 	end
 	
-	for i, childView in ipairs( self.children ) do
-		local onSiblingsChanged = childView.onSiblingsChanged
-		if onSiblingsChanged then onSiblingsChanged( childView ) end
-	end
+	-- TODO: screen order changed events?
+	-- for i, childView in ipairs( self.children ) do
+	-- 	local onSiblingsChanged = childView.onSiblingsChanged
+	-- 	if onSiblingsChanged then onSiblingsChanged( childView ) end
+	-- end
 
 	self.canvas.hasChanged = true
 	frontView.canvas.hasChanged = true
@@ -131,14 +132,18 @@ function Container:insert( childView, position )
 		self.children[#self.children + 1] = childView
 	end
 
+	local oldParent = childView.parent 
 	childView.parent = self
 	self.canvas:insert( childView.canvas )
 	-- we need to update the isEnabled value
 	childView.isEnabled = childView.raw.isEnabled
 
-	for i, childView in ipairs( self.children ) do
-		local onSiblingsChanged = childView.onSiblingsChanged
-		if onSiblingsChanged then onSiblingsChanged( childView ) end
+	for i, _childView in ipairs( self.children ) do
+		if _childView == childView then
+			_childView.event:handleEvent( ParentChangedInterfaceEvent( self, oldParent ) )
+		else
+			_childView.event:handleEvent( SiblingAddedInterfaceEvent( childView ) )
+		end
 	end
 	for key, interfaceOutlet in pairs( self.interfaceOutlets ) do
 		interfaceOutlet:childAdded( childView )

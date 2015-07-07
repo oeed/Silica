@@ -75,8 +75,9 @@ function Button:setWidth( width )
         self.backgroundObject.width = width - 1
         self.shadowObject.width = width - 1
         local textObject = self.textObject
-        textObject.x = self.leftMargin + 1
-        textObject.width = width - self.leftMargin - self.rightMargin
+        local leftMargin, rightMargin = self.leftMargin, self.rightMargin
+        textObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1
+        textObject.width = width - leftMargin - rightMargin
     end
 end
 
@@ -134,6 +135,10 @@ function Button:setFont( font )
     end
 end
 
+function Button:setNeedsAutosize( needsAutosize )
+    self.needsAutosize = needsAutosize
+end
+
 --[[
     @instance
     @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text
@@ -171,7 +176,7 @@ function Button:setIsPressed( isPressed )
         backgroundObject.x = isPressed and 2 or 1
         backgroundObject.y = isPressed and 2 or 1
         local textObject = self.textObject
-        textObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1
+        -- textObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1
         textObject.y = isPressed and 6 or 5
     end
 end
@@ -186,6 +191,8 @@ function Button:onGlobalMouseUp( event )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
+            -- TODO: remove!
+            self.x = math.floor( math.random(1,200 ) )
             return self.event:handleEvent( event )
         end
     end

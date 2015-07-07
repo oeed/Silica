@@ -4,6 +4,8 @@ class "Event" {
 	relativeView = false; -- the view that the event is relative of
 	eventType = false;
 
+	isSentToChildren = true; -- whether the event will be passed to children
+
 	MOUSE_UP = "mouse_up";
 	MOUSE_DOWN = "mouse_click";
 	MOUSE_DRAG = "mouse_drag";
@@ -18,6 +20,9 @@ class "Event" {
 	KEYBOARD_SHORTCUT = "interface_keyboard_shortcut";
 	FOCUS_CHANGED = "interface_focus";
 	TEXT_CHANGED = "interface_text";
+	SIBLING_ADDED = "interface_sibling_added";
+	SIBLING_REMOVED = "interface_sibling_removed";
+	PARENT_CHANGED = "interface_parent_changed";
 
 }
 

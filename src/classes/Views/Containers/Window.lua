@@ -39,13 +39,29 @@ function Window:init( ... )
     self.closeButton = self:insert( CloseWindowButton( { x = 1, y = 1, window = self } ))
     self.minimiseButton = self:insert( MinimiseWindowButton( { x = 9, y = 1, window = self } ))
     self.maximiseButton = self:insert( MaximiseWindowButton( { x = 17, y = 1, window = self } ))
-	self.container = self:insert( WindowContainer( { x = 1, y = self.barHeight + 2, width = self.width - 2, height = self.height - self.barHeight - 5 } ) )
+
+    self:loadInterface()
     
     self:event( Event.MOUSE_DOWN, self.onMouseDownBefore, EventManager.phase.BEFORE )
     self:event( Event.MOUSE_DOWN, self.onMouseDownAfter, EventManager.phase.AFTER )
     self.event:connectGlobal( Event.MOUSE_DRAG, self.onGlobalMouseDrag )
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
     self:event( Event.INTERFACE_LOADED, self.onInterfaceLoaded )
+end
+
+--[[
+    @static
+    @desc Creates a menu from interface file
+    @param [string] interfaceName -- the name of the interface file
+    @return [Menu] menu -- the menu
+]]
+function Window.fromInterface( interfaceName )
+    local interface = Interface( interfaceName, Menu )
+    if interface then
+        local window = interface.container
+        window.interface = interface
+        return window
+    end
 end
 
 --[[
@@ -69,6 +85,27 @@ function Window:initCanvas()
     self.shadowObject = shadowObject
 	self.barObject = barObject
 	self.separatorObject = separatorObject
+end
+
+--[[
+    @instance
+    @desc Loads the interface specified by the self.interface interface name
+]]
+function Window:loadInterface()
+    local interfaceName = self.interface
+    if interfaceName then
+        local barHeight = self.barHeight
+        local x, y, width, height = 1, barHeight + 2, self.width - 2, self.height - barHeight - 5
+        local container = Interface( interfaceName, WindowContainer ).container
+        container.x = x
+        container.y = y
+        container.width = width
+        container.height = height
+        log(container)
+        self.container = self:insert( container )
+    else
+        self.container = self:insert( WindowContainer( { x = x, y = y, width = width, height = height } ) )
+    end
 end
 
 function Window:setHeight( height )
@@ -118,6 +155,24 @@ function Window:setIsEnabled( isEnabled )
         self:updateThemeStyle()
     end
 end
+
+--[[
+    @instance
+    @desc Centres the window relative to it's parent (which should be the application container)
+]]
+function Window:centre()
+    local parent = self.parent
+    if parent then
+        self.x = math.ceil( ( parent.width - self.width ) / 2)
+        self.y = math.ceil( ( parent.height - self.height ) / 2)
+    end
+end
+
+--[[
+    @instance
+    @desc Synonym for Window:centre
+]]
+Window.center = Window.centre
 
 --[[
     @instance
@@ -212,6 +267,7 @@ function Window:onGlobalMouseUp( event )
         self.isDragging = false
         self.isResizingX = false
         self.isResizingY = false
+        return true
     end
 end
 
