@@ -4,14 +4,14 @@ local setters, getters = {}, {}
 setmetatable( setters, {
 	__index = function( self, k )
 		local v = "set" .. k:sub( 1, 1 ):upper() .. k:sub( 2 )
-		rawset( self, k, v )
+		self[k] = v
 		return v
 	end;
 } )
 setmetatable( getters, {
 	__index = function( self, k )
 		local v = "get" .. k:sub( 1, 1 ):upper() .. k:sub( 2 )
-		rawset( self, k, v )
+		self[k] = v
 		return v
 	end;
 } )
@@ -41,7 +41,7 @@ local function uniqueTable( _class, raw )
 				if not keyFound then
 					raw[k] = {}
 				end
-	    	end
+			end
 		end
 	end
 end
@@ -112,13 +112,14 @@ function class:newSuper( instance, eq, ... )
 
 	local rawId = tostring( raw):sub(8 ) -- remove 'table: ' from the id
 	function raw.mt:__tostring()
-    	return 'instance of `' .. _class.className .. '` as super: ' .. rawId
-    end
+		return 'instance of `' .. _class.className .. '` as super: ' .. rawId
+	end
 
 	setmetatable( raw, raw.mt )
 
 	return raw
 end
+
 -- @static
 function class:new( ... )
 	local _class = self
@@ -139,7 +140,6 @@ function class:new( ... )
 	end
 
 	uniqueTable( _class, raw )
-
 
 	local _superClass = super and super.class or nil
 	local _superSuper = super and super.super or nil
@@ -289,19 +289,19 @@ function class:new( ... )
 		raw[k] = v -- use the passed value if not using a setter
 	end
 
-	local proxyId = tostring( proxy):sub(8 ) -- remove 'table: ' from the id
+	local proxyId = tostring( proxy):sub( 8 ) -- remove 'table: ' from the id
 	function proxy.mt:__tostring()
-    	return 'instance of `' .. _class.className .. '`: ' .. proxyId
-    end
+		return 'instance of `' .. _class.className .. '`: ' .. proxyId
+	end
 
 	setmetatable( proxy, proxy.mt )
 
 	for k, v in pairs( _class ) do
 		if type( v ) == "table" and v.typeOf and v:typeOf( InterfaceOutlet ) then
-    		-- link interface outlets, they set the class property to a share instance, so we need to generate a unique one
-    		proxy[k] = InterfaceOutlet( v.viewIdentifier or k, v.trackAll )
-    	end
-    end
+			-- link interface outlets, they set the class property to a share instance, so we need to generate a unique one
+			proxy[k] = InterfaceOutlet( v.viewIdentifier or k, v.trackAll )
+		end
+	end
 
 	-- use the setters with all the starting values
 	local prepared = {}
@@ -320,13 +320,13 @@ function class:new( ... )
 		end
 	end
 
-	prepare( raw )
+	-- prepare( raw )
 
-    -- once the class has been created, pass the arguments to the init function for handling
-    proxy.hasInit = true
-    if proxy.init and type( proxy.init ) == "function" then
-    	proxy:init( ... )
-    end
+	-- once the class has been created, pass the arguments to the init function for handling
+	if proxy.init and type( proxy.init ) == "function" then
+		proxy:init( ... )
+	end
+	proxy.hasInit = true
 
 	return proxy
 end
@@ -334,33 +334,33 @@ end
 -- constructs an actual class ( NOT instance )
 -- @static
 function class:construct( _, className )
-    local _class = {}
-    _class.className = className
+	local _class = {}
+	_class.className = className
 
-    local mt = { __index = self }
-    _class.mt = mt
+	local mt = { __index = self }
+	_class.mt = mt
 
-    function mt:__call( ... )
-        return self:new( ... )
-    end
+	function mt:__call( ... )
+		return self:new( ... )
+	end
 
-    -- function mt:__newindex( k, v )
-    -- 	rawset(_class, k, v)
-    -- end
+	-- function mt:__newindex( k, v )
+	-- 	rawset(_class, k, v)
+	-- end
 
- 	function mt:__tostring()
-    	return 'class: ' .. self.className
-    end
+	function mt:__tostring()
+		return 'class: ' .. self.className
+	end
 
-    setmetatable( _class, mt )
+	setmetatable( _class, mt )
 
-    classes[className] = _class
-    _G[className] = _class -- TODO: this is just temporary due to the temporary loading system in Silica
-    -- getfenv( 2 )[className] = _class
-    creating = _class
+	classes[className] = _class
+	_G[className] = _class -- TODO: this is just temporary due to the temporary loading system in Silica
+	-- getfenv( 2 )[className] = _class
+	creating = _class
 
-    return function( properties )
-    	creating = nil
+	return function( properties )
+		creating = nil
 		_class:properties( properties )
 		if _class.constructed then
 			_class:constructed()
@@ -369,15 +369,25 @@ function class:construct( _, className )
 	end
 end
 
+-- @erm, class instance?
+function class:alias( shorthand, property )
+	self[ setters[shorthand] ] = function( self, value )
+		self[property] = value
+	end
+	self[ getters[shorthand] ] = function( self )
+		return self[property]
+	end
+end
+
 -- @instance
 function class:properties( properties )
-    for k, v in pairs( properties ) do
-    	if type( self[k] ) == "number" then
-    		v = tonumber( v )
-    	end
-    	
-    	self[k] = v
-    end
+	for k, v in pairs( properties ) do
+		-- if type( self[k] ) == "number" then -- right?
+		-- 	v = tonumber( v )
+		-- end
+		
+		self[k] = v
+	end
 end
 
 -- @instance
@@ -411,24 +421,24 @@ function class:can( method )
 end
 
 setmetatable( class, {
-    __call = function( ... ) 
-    	return class:construct( ... )
-    end
+	__call = function( ... ) 
+		return class:construct( ... )
+	end
 } )
 
 local function extends( superName )
-    if not classes[superName] then
-    	-- try to load the class
-    	-- TODO: set this system up correctly
-    	local ourCreating = creating
-    	loadName( superName )
-    	creating = ourCreating
-    	if not classes[superName] then
-        	error( 'Super class for `' .. creating.className .. '` was not found: ' .. superName )
-        end
-    end
+	if not classes[superName] then
+		-- try to load the class
+		-- TODO: set this system up correctly
+		local ourCreating = creating
+		loadName( superName )
+		creating = ourCreating
+		if not classes[superName] then
+			error( 'Super class for `' .. creating.className .. '` was not found: ' .. superName )
+		end
+	end
 
-    creating._extends = classes[superName]
+	creating._extends = classes[superName]
 	for k, v in pairs( classes[superName].mt ) do
 		if not creating.mt[k] then
 			creating.mt[k] = v
@@ -451,17 +461,17 @@ local function extends( superName )
  --    	end
  --    end
 
-    setmetatable( creating, creating.mt )
+	setmetatable( creating, creating.mt )
 
-    return function( properties )
-    	local _class = creating
-        creating = nil
-        _class:properties( properties )
+	return function( properties )
+		local _class = creating
+		creating = nil
+		_class:properties( properties )
 		if _class.constructed then
 			_class:constructed()
 		end
-        return _class
-    end
+		return _class
+	end
 end
 
 if USE_GLOBALS then

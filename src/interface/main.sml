@@ -1,8 +1,22 @@
 <ApplicationContainer theme=red>
 
-	<Button identifier=okayButton x=100 y=10 text=Okay />
-	<TestView y=25/>
+	<TestView identifier=testview left="10%" right="100% - 10" top=20 height=100/>
 
+	<!-- <Button identifier=okayButton x=100 y=10 text=Okay /> -->
+	<!-- <Window x=50 y=100 width=100 height=60 >
+		<WindowContainer>
+			<ProgressBar x=6 y=35 />
+			<Button x=5 y=5 text=Okay />
+			<Checkbox identifier=agreeCheckbox x=5 y=25 isChecked=true />
+			<Container x=50 y=5 width=20 height=40>
+				<Radio y=1 isChecked=true />
+				<Radio y=11/>
+				<Radio y=21/>
+			</Container>
+		</WindowContainer>
+	</Window> -->
+<MenuButton x=20 y=10 text="Test" />
+<AlertWindow></AlertWindow>
 	<!-- <Button identifier=okayButton x=10 y=10 text=Okay />
 
 	<MenuButton x=60 y=10 text="Test" />
@@ -23,7 +37,7 @@
 		</ScrollContainer>
 	</ScrollView>
 
-	<AlertWindow></AlertWindow> -->
+	 -->
 
 
 	<!-- <ProgressBar  x=70 y=150 /> -->
@@ -37,22 +51,6 @@
 	<ProgressBar  x=70 y=80 />
 	<ProgressBar  x=70 y=60 /> -->
 
-	<!--<Window x=10 y=10 width=100 height=60 >
-		<FontWindowContainer>
-		</FontWindowContainer>
-	</Window>
-
-	<Window x=50 y=100 width=100 height=60 >
-		<WindowContainer>
-			<ProgressBar x=6 y=35 />
-			<Button x=5 y=5 text=Okay />
-			<Checkbox identifier=agreeCheckbox x=5 y=25 isChecked=true />
-			<Container x=50 y=5 width=20 height=40>
-				<Radio y=1 isChecked=true />
-				<Radio y=11/>
-				<Radio y=21/>
-			</Container>
-		</WindowContainer>
-	</Window> -->
+	
 
 </ApplicationContainer>

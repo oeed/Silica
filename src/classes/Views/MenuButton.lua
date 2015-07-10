@@ -131,9 +131,7 @@ end
 
 function MenuButton:setIsPressed( isPressed )
     self.super:setIsPressed( isPressed )
-    if self.hasInit then
-        self.needsArrowUpdate = true
-    end
+    self.needsArrowUpdate = true
 end
 
 --[[

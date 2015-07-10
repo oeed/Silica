@@ -14,14 +14,10 @@ end
 
 function WindowContainer:setHeight( height )
     self.super:setHeight( height )
-    if self.hasInit then
-    	self.backgroundObject.height = height
-    end
+	self.backgroundObject.height = height
 end
 
 function WindowContainer:setWidth( width )
     self.super:setWidth( width )
-    if self.hasInit then
-    	self.backgroundObject.width = width
-    end
+	self.backgroundObject.width = width
 end

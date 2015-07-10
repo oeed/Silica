@@ -5,6 +5,7 @@ class "Event" {
 	eventType = false;
 
 	isSentToChildren = true; -- whether the event will be passed to children
+	isSentToSender = true; -- whether the event will be handled by the sender
 
 	MOUSE_UP = "mouse_up";
 	MOUSE_DOWN = "mouse_click";
@@ -23,6 +24,8 @@ class "Event" {
 	SIBLING_ADDED = "interface_sibling_added";
 	SIBLING_REMOVED = "interface_sibling_removed";
 	PARENT_CHANGED = "interface_parent_changed";
+	PARENT_RESIZED = "interface_parent_resized";
+	READY = "interface_ready";
 
 }
 

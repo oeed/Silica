@@ -46,16 +46,12 @@ end
 
 function Scrollbar:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 function Scrollbar:setIsPressed( isPressed )
     self.isPressed = isPressed
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 --[[

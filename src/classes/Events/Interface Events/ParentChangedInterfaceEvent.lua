@@ -9,8 +9,8 @@ class "ParentChangedInterfaceEvent" extends "InterfaceEvent" {
 --[[
 	@constructor
 	@desc Creates a siblings changed event from the arguments
-	@param [View] newParent -- the new parent view
-	@param [View] oldParent -- the old parent view
+	@param [Container] newParent -- the new parent view
+	@param [Container] oldParent -- the old parent view
 ]]
 function ParentChangedInterfaceEvent:init( newParent, oldParent )
 	self.newParent = newParent

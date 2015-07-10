@@ -52,20 +52,31 @@ end
 
 --[[
 	@instance
-	@desc Draws the contents of the container and it's children. When overriding this self.super:draw must be called AFTER the custom drawing code.
-	@param [number] x -- the x cordinate to draw from
-	@param [number] y -- the y cordinate to draw from
+	@desc Fired after
+	@param [type] arg1 -- description
+	@param [type] arg2 -- description
+	@param [type] arg3 -- description
+	@return [type] returnedValue -- description
 ]]
--- function Container:draw( canvas, x, y )
--- 	for i, childView in ipairs( self.children ) do
--- 		childView:draw( self.canvas, childView.x + self.offsetX, childView.y + self.offsetY )
--- 	end
--- 	if x ~= self.canvas.x or y ~= self.canvas.y then
--- 		self.canvas.x = x
--- 		self.canvas.y = y
--- 	end
--- 	self.canvas:drawTo( target )
--- end
+function Container:onParentResizedConstraintUpdateAfter( arg1, arg2, arg3 )
+	return returnedValue
+end
+
+function Container:setWidth( width )
+	self.super:setWidth( width )
+	local event = self.event
+	if event then
+		event:handleEvent( ParentResizeInterfaceEvent( true, false, self ) )
+	end
+end
+
+function Container:setHeight( height )
+	self.super:setHeight( height )
+	local event = self.event
+	if event then
+		event:handleEvent( ParentResizeInterfaceEvent( false, true, self ) )
+	end
+end
 
 function Container:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
@@ -145,8 +156,16 @@ function Container:insert( childView, position )
 			_childView.event:handleEvent( SiblingAddedInterfaceEvent( childView ) )
 		end
 	end
-	for key, interfaceOutlet in pairs( self.interfaceOutlets ) do
-		interfaceOutlet:childAdded( childView )
+
+	local view = self
+	while view do
+		for key, interfaceOutlet in pairs( view.interfaceOutlets ) do
+			if interfaceOutlet:childAdded( childView, view == self ) then
+				view = false
+				break
+			end
+		end
+		view = view and view.parent
 	end
 	return childView
 end
@@ -177,8 +196,12 @@ function Container:remove( removingView )
 	removingView.parent = nil
 
 	if didRemove then
-		for key, interfaceOutlet in pairs( self.interfaceOutlets ) do
-			interfaceOutlet:childRemoved( removingView )
+		local view = self
+		while view do
+			for key, interfaceOutlet in pairs( view.interfaceOutlets ) do
+				interfaceOutlet:childRemoved( removingView )
+			end
+			view = view.parent
 		end
 	end
 

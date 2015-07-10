@@ -43,6 +43,7 @@ function Application:init()
 		self.container = ApplicationContainer()
 	end
 
+	self.event:handleEvent( ReadyInterfaceEvent( true ) )
 	self.event:connect( Event.TIMER, self.onTimer )
 
 end

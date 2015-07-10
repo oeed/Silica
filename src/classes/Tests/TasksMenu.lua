@@ -1,6 +1,6 @@
 
 class "TasksMenu" extends "Menu" {
-	greenItem = InterfaceOutlet( "greenItem" );
+	-- greenItem = InterfaceOutlet( "greenItem" );
 }
 
 function TasksMenu:init( ... )

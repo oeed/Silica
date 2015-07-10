@@ -42,17 +42,13 @@ end
 
 function Label:setText( text )
     self.text = text
-    if self.hasInit then
-        self.textObject.text = text
-        self.needsAutosize = true
-    end
+    self.textObject.text = text
+    self.needsAutosize = true
 end
 
 function Label:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 function Label:update()

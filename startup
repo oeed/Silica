@@ -18,6 +18,23 @@ function _G.log2( text )
 	h.close()	
 end
 
+function _G.logtraceback( level )
+	level = 2 + ( level or 1 )
+	local traceback, trace, source, line = {}
+	repeat
+		traceback[#traceback + 1] = trace
+		trace = select( 2, pcall( error, "@", level ) ):match "^(.+) @"
+		if trace and trace:find "^.+%.lua:%d+:$" then
+			trace = trace:match "^(.+)%.lua:%d+:$" .. " on line " .. trace:match "^.+%.lua:(%d+):$"
+		end
+		level = level + 1
+		if trace == "startup:55:" then
+			break
+		end
+	until not trace
+	log( "Start of traceback:\n" .. ("-"):rep( 20 ) .. "\nin " .. table.concat( traceback, "\nin ") .. "\n" .. ("-"):rep( 20 ) .. "\nEnd of traceback" )
+end
+
 -- if not fs.exists( "oeed" ) then
 -- 	shell.run "NewRendering/test.lua"
 -- 	read()
@@ -30,10 +47,10 @@ end
 
 os.loadAPI( 'src/Silica' )
 
-BitmapFont.convertFile( "font src/auckland", "src/fonts/Auckland.sfont", 32, 8, {
-	name = "Auckland";
-	author = "oeed";
-	version = 0.9;
-} )
+-- BitmapFont.convertFile( "font src/auckland", "src/fonts/Auckland.sfont", 32, 8, {
+-- 	name = "Auckland";
+-- 	author = "oeed";
+-- 	version = 0.9;
+-- } )
 
 TestApplication():run( ... )

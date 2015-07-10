@@ -34,7 +34,7 @@ end
 function TextInput:setText( text )
 	local oldText = self.text
 	self.text = text
-	if self.hasInit and self.owner then
+	if self.owner then
 		self.owner.event:handleEvent( TextChangedInterfaceEvent( text, oldText ) )
 	end
 end

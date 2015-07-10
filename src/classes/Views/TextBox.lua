@@ -67,19 +67,15 @@ end
 
 function TextBox:setHeight( height )
     self.super:setHeight( height )
-    if self.hasInit then
-        self.backgroundObject.height = height
-    end
+    self.backgroundObject.height = height
 end
 
 function TextBox:setWidth( width )
     self.super:setWidth( width )
-    if self.hasInit then
-        self.backgroundObject.width = width
-        local textObject = self.textObject
-        textObject.x = self.leftMargin + 1
-        textObject.width = width - self.leftMargin - self.rightMargin
-    end
+    self.backgroundObject.width = width
+    local textObject = self.textObject
+    textObject.x = self.leftMargin + 1
+    textObject.width = width - self.leftMargin - self.rightMargin
 end
 
 --[[
@@ -90,13 +86,11 @@ end
 ]]
 function TextBox:setText( text, isEvent )
     self.text = text
-    if self.hasInit then
-        self.textObject.text = text
-        if not isEvent then
-            local textInput = self.textInput
-            if textInput then
-                textInput.text = text
-            end
+    self.textObject.text = text
+    if not isEvent then
+        local textInput = self.textInput
+        if textInput then
+            textInput.text = text
         end
     end
 end
@@ -125,16 +119,12 @@ end
 
 function TextBox:setIsPressed( isPressed )
     self.isPressed = isPressed
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 function TextBox:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 --[[
@@ -147,9 +137,7 @@ function TextBox:setIsFocused( isFocused )
     if wasFocused ~= isFocused then
         self.isFocused = isFocused
         self.textInput.isEnabled = isFocused
-        if self.hasInit then
-            self:updateThemeStyle()
-        end
+        self:updateThemeStyle()
     end
 end
 

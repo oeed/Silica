@@ -8,9 +8,12 @@ class "ContainerEventManager" extends "EventManager" {}
 	@return [boolean] stopPropagation -- whether no further handles should recieve this event
 ]]
 function ContainerEventManager:handleEvent( event )
-	if self:handleEventPhase( event, self.phase.BEFORE ) then
+	local sender = event.sender
+	local isSentToSender = not sender or ( self ~= sender or event.isSentToSender )
+	if isSentToSender and self:handleEventPhase( event, self.phase.BEFORE ) then
 		return true
 	end
+
 
 	if event.isSentToChildren then
 		local owner = self.owner
@@ -29,7 +32,7 @@ function ContainerEventManager:handleEvent( event )
 		end
 	end
 		
-	if self:handleEventPhase( event, self.phase.AFTER ) then
+	if isSentToSender and self:handleEventPhase( event, self.phase.AFTER ) then
 		return true
 	end
 end

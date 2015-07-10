@@ -3,9 +3,9 @@
 		<cornerRadius type="number" default="8" />
 		<leftMargin type="number" default="7" />
 		<rightMargin type="number" default="7" />
-		<fillColour type="Graphics.colours" default="WHITE" pressed="BLUE" disabled="WHITE"/>
-		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
-		<outlineColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY" pressed="TRANSPARENT"/>
+		<fillColour type="Graphics.colours" default="WHITE" pressed="BLUE" focused="BLUE" disabled="WHITE"/>
+		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" focused="WHITE" disabled="LIGHT_GREY"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" focused="TRANSPARENT" disabled="LIGHT_GREY" pressed="TRANSPARENT"/>
 		<shadowColour type="Graphics.colours" default="GREY" disabled="TRANSPARENT"/>
 	</Button>
 

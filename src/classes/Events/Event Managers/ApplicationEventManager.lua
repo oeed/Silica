@@ -16,7 +16,8 @@ function ApplicationEventManager:handleEvent( event )
 	end
 
 	-- start trickling the event down
-	if self.owner.container.event:handleEvent( event ) then
+	local container = self.owner.container
+	if container and container.event:handleEvent( event ) then
 		return true
 	end
 

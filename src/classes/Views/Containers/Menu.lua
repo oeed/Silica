@@ -98,24 +98,20 @@ end
 
 function Menu:setHeight( height )
     self.super:setHeight( height )
-    if self.hasInit then
-        self.backgroundObject.height = height - self.shadowTopMargin
-        self.shadowObject.height = height - self.shadowTopMargin
-    end
+    self.backgroundObject.height = height - self.shadowTopMargin
+    self.shadowObject.height = height - self.shadowTopMargin
 end
 
 function Menu:setWidth( width )
     self.super:setWidth( width )
-    if self.hasInit then
-    	local _width = width - self.shadowRightMargin
-        self.backgroundObject.width = _width
-        self.shadowObject.width = _width
+	local _width = width - self.shadowRightMargin
+    self.backgroundObject.width = _width
+    self.shadowObject.width = _width
 
-		local height = self.topMargin
-		for i, childView in ipairs( self.children ) do
-			childView.width = _width
-		end
-    end
+	local height = self.topMargin
+	for i, childView in ipairs( self.children ) do
+		childView.width = _width
+	end
 end
 
 --[[
@@ -151,7 +147,7 @@ end
 
 function Menu:setIsVisible( isVisible )
 	self.super:setIsVisible( isVisible )
-	if isVisible and self.hasInit then
+	if isVisible then
 		self.needsLayoutUpdate = true
 	end
 end
@@ -220,7 +216,7 @@ end
 ]]
 function Menu:open()
 	self.isVisible = true
-	if self.hasInit and self.owner then
+	if self.owner then
 		self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
 	end
 end
@@ -231,13 +227,11 @@ end
 ]]
 function Menu:close()
 	self.isVisible = false
-	if self.hasInit then
-		if self.owner then
-			self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
-		end
-		if self.isSingleShot then
-			-- TODO: dispose menu if single shot
-			self.parent:remove( self )
-		end
+	if self.owner then
+		self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
+	end
+	if self.isSingleShot then
+		-- TODO: dispose menu if single shot
+		self.parent:remove( self )
 	end
 end

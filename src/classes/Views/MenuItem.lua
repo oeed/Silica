@@ -3,7 +3,7 @@ local TEXT_MARGIN = 12
 
 class "MenuItem" extends "View" {
 
-	height = 10;
+	height = 12;
 	width = 40;
 
     isPressed = false;
@@ -34,7 +34,7 @@ end
 function MenuItem:initCanvas()
     self.super:initCanvas()
     local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
-    local textObject = self.canvas:insert( Text( 7, 2, self.height, self.width - TEXT_MARGIN, self.text ) )
+    local textObject = self.canvas:insert( Text( 7, 3, self.height, self.width - TEXT_MARGIN, self.text ) )
 
     self.theme:connect( backgroundObject, "fillColour" )
     self.theme:connect( textObject, "textColour" )
@@ -77,17 +77,13 @@ end
 
 function MenuItem:setWidth( width )
     self.super:setWidth( width )
-    if self.hasInit then
-        self.backgroundObject.width = width
-        self.textObject.width = width - TEXT_MARGIN
-    end
+    self.backgroundObject.width = width
+    self.textObject.width = width - TEXT_MARGIN
 end
 
 function MenuItem:setHeight( height )
     self.super:setHeight( height )
-    if self.hasInit then
-        self.backgroundObject.height = height
-    end
+    self.backgroundObject.height = height
 end
 
 function MenuItem:updateThemeStyle()
@@ -96,16 +92,12 @@ end
 
 function MenuItem:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 function MenuItem:setIsPressed( isPressed )
     self.isPressed = isPressed
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 --[[

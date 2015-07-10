@@ -41,16 +41,12 @@ end
 
 function WindowButton:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 function WindowButton:setIsPressed( isPressed )
     self.isPressed = isPressed
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 --[[

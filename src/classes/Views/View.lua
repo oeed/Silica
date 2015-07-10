@@ -13,21 +13,38 @@ local function newAnimation( self, label, time, values, easing, onFinish )
 end
 
 class "View" {
-	x = 1;
-	y = 1;
-	width = 1;
-	height = 1;
-	index = nil;
-	parent = nil;
-	animations = nil;
-	event = nil;
-	siblings = nil;
-	identifier = nil;
-	canvas = nil;
+	x = false;
+	y = false;
+	width = false;
+	height = false;
+	index = false; -- its index in its parent
+	parent = false;
+	siblings = false;
+	identifier = false;
+
+	animations = { names = {} };
+
+	event = false;
+
+	canvas = false;
+	theme = false;
 	isCanvasHitTested = true;
 	isVisible = true;
-	theme = nil;
+
 	isEnabled = true;
+
+	stringConstraints = {}; -- the constraints strings
+	loadedConstraints = {}; -- the parsed constraints
+	constraintsNeedingUpdate = {}; -- the constraints that need to be refreshed next update
+	references = {};
+	--[[ format:
+		{
+			[property] = {
+				[reference1 (string)] = true;
+				[reference2 (string)] = true;
+			}
+		}
+	]]
 }
 
 --[[
@@ -36,26 +53,31 @@ class "View" {
 	@param [table] properties -- the properties for the view
 ]]
 function View:init( properties )
-	self.animations = { names = {} }
-	self.theme = ThemeOutlet( self )
+	self:initTheme()
 	self:initCanvas()
-	if not self.canvas then
-		error( "View not given a canvas: '" .. tostring( self ) .. "'")
-	end
+	self:initEventManager()
 
+	setmetatable( self.stringConstraints, {
+		__index = { parent = self }, __newindex = function( t, k, v )
+			if t.parent.identifier == "testview" then
+				-- log( "Setting " .. k .. " to " .. tostring( v ) )
+				-- logtraceback()
+			end
+			rawset( t, k, v )
+		end
+	} )
+	
 	if properties and type( properties ) == "table" then
 		self:properties( properties )
 	end
 
-	self:initEventManager()
-	if not self.event then
-		error( "View not given an event manager: '" .. tostring( self ) .. "'")
-	end
+    self:event( Event.PARENT_RESIZED, self.onParentResizedConstraintUpdate )
+    self:event( Event.PARENT_CHANGED, self.onParentChangedConstraintUpdate )
+    self:event( Event.READY, self.onReadyConstraintUpdate )
+end
 
-	self:initConstraint()
-	if not self.constraint then
-		error( "View not given a constraint: '" .. tostring( self ) .. "'")
-	end
+function View:initTheme()
+	self.theme = ThemeOutlet( self )
 end
 
 --[[
@@ -75,16 +97,6 @@ function View:initCanvas()
 end
 
 --[[
-    @instance
-    @desc Sets up the canvas and it's graphics objects
-]]
-function View:initConstraint()
-	if not self.constraint then
-    	self.constraint = Constraint( self, { left = self.x, top = self.y, width = self.width, height = self.height } )
-    end
-end
-
---[[
 	@instance
 	@desc Returns the view's siblings in it's container
 	@return [table] siblings -- an array of the siblings
@@ -95,7 +107,7 @@ function View:getSiblings()
 	if self.parent then
 		for i, child in ipairs( self.parent.children ) do
 			if child ~= self then
-				table.insert( siblings, child )
+				siblings[#siblings + 1] = child
 			end
 		end
 	end
@@ -153,6 +165,7 @@ function View:getIndex()
 			end
 		end
 	end
+	return 1
 end
 
 --[[
@@ -166,111 +179,298 @@ function View:siblingsOfType( _class )
 
 	for i, sibling in ipairs( self.siblings ) do
 		if sibling:typeOf( _class ) then
-			table.insert( siblings, sibling )
+			siblings[#siblings + 1] = sibling
 		end
 	end
 
 	return siblings
 end
 
+View:alias( "x", "left" )
+View:alias( "y", "top" )
+
+-- object.left is the raw left value (i.e. a number, or nil if not yet calculated)
+-- object.loadedConstraints.left is the parsed and simplified left value
+-- object.stringConstraints.left is the string constraint
+
 --[[
 	@instance
-	@desc Sets the view x coordinate
-	@param [type] x -- the x coordinate
-	@param [bool] isFromConstraint -- true if the view's constraint is the one setting the value. Don't ever call it with this true unless you really know what you're doing!
+	@desc Parses a constraint and simplifies it
+	@param [string] property - the constraint to parse and simplify
+	@return [table] parsed - the parsed and simplified constraint
 ]]
-function View:setX( x, isFromConstraint )
-	if self.hasInit then
-		self.canvas.x = x
-	end
-	self.x = x
+function View:parseConstraint( property )
+	local loaded = self.loadedConstraints
+	if loaded[property] then return loaded[property] end
 
-	if not isFromConstraint then
-		local constraint = self.constraint
-		if constraint then
-			constraint:manualValue( "x", x )
+	local constraints = self.stringConstraints
+	local constraintString = constraints[property]
+	
+	if not constraintString then
+		-- solve it based on other constraints
+		local left, right, top, bottom, width, height = constraints.left or "1", constraints.right or "1", constraints.top or "1", constraints.bottom or "1", constraints.width or "1", constraints.height or "1"
+
+		if property == "width" then
+			constraintString = "(" .. right .. ")-(" .. left .. ")+1"
+		elseif property == "height" then
+			constraintString = "(" .. bottom .. ")-(" .. top .. ")+1"
+		elseif property == "left" then
+			constraintString = "(" .. right .. ")-(" .. width .. ")+1"
+		elseif property == "right" then
+			constraintString = "(" .. width .. ")+(" .. left .. ")-1"
+		elseif property == "top" then
+			constraintString = "(" .. bottom .. ")-(" .. height .. ")+1"
+		elseif property == "bottom" then
+			constraintString = "(" .. top .. ")+(" .. height .. ")-1"
+		else
+			constraintString = "0"
+		end
+	end
+
+	local parsed = MathParser.parseString( tostring( constraintString ) )
+	MathParser.simplify( parsed )
+
+	loaded[property] = parsed
+	return parsed
+end
+
+--[[
+	@instance
+	@desc Evaluates the numerical value of a constraint
+	@param [string] property -- the name of the property (i.e. left, width, etc.)
+	@return [number] value -- the numerical value
+]]
+function View:evalConstraint( property )
+	local references = {}
+	local parsed = self:parseConstraint( property )
+	local resolved = MathParser.resolve( parsed, self, property, references )
+	local value = MathParser.eval( resolved )
+
+	self.raw[property] = value
+	self.references[property] = references
+
+	self:updateConstraint( property, value )
+
+	return value
+end
+
+function View:updateConstraint( property, value )
+	local stringConstraints = self.stringConstraints
+	local canvas = self.canvas
+	if property == "top" then
+		self.raw.y = value
+		if canvas then canvas.y = value end
+	elseif property == "bottom" then
+		if stringConstraints.height then
+			value = value - self.height + 1
+			self.raw.y = value
+			if canvas then canvas.y = value end
+		else
+			value = value - self.y + 1
+			self.raw.height = value
+			if canvas then canvas.height = value end
+		end
+	elseif property == "left" then
+		self.raw.x = value
+		if canvas then canvas.x = value end
+	elseif property == "right" then
+		if stringConstraints.width then
+			value = value - self.width + 1
+			self.raw.x = value
+			if canvas then canvas.x = value end
+		else
+			value = value - self.x + 1
+			self.raw.width = value
+			if canvas then canvas.width = value end
+		end
+	elseif property == "width" then
+		self.raw.width = value
+		if canvas then canvas.width = value end
+	elseif property == "height" then
+		self.raw.height = value
+		if canvas then canvas.height = value end
+	end
+end
+
+--[[
+	@instance
+	@desc Called when the parent changes. This updates constraints.
+	@param [ParentChangedInterfaceEvent] event -- the event
+]]
+function View:onParentChangedConstraintUpdate( event )
+	for k, v in pairs( self.stringConstraints ) do
+		self.constraintsNeedingUpdate[k] = true
+	end
+end
+
+--[[
+	@instance
+	@desc Called when the interface is loaded and ready. This updates constraints.
+	@param [ReadyInterfaceEvent] event -- the event
+]]
+function View:onReadyConstraintUpdate( event )
+	if event.isInit then
+		for k, v in pairs( self.stringConstraints ) do
+			self.constraintsNeedingUpdate[k] = true
 		end
 	end
 end
 
 --[[
 	@instance
-	@desc Sets the view y coordinate
-	@param [type] y -- the y coordinate
-	@param [bool] isFromConstraint -- true if the view's constraint is the one setting the value. Don't ever call it with this true unless you really know what you're doing!
+	@desc Called when the parent resizes. This updates constraints.
+	@param [ParentResizeInterfaceEvent] event -- the event
 ]]
-function View:setY( y, isFromConstraint )
-	if self.hasInit then
-		self.canvas.y = y
-	end
-	self.y = y
-
-	if not isFromConstraint then
-		local constraint = self.constraint
-		if constraint then
-			constraint:manualValue( "y", y )
+function View:onParentResizedConstraintUpdate( event )
+	local isHorizontal = event.isHorizontal
+	local isVertical = event.isVertical
+	local ident = self.identifier
+	for k, v in pairs( self.stringConstraints ) do
+		local isKHorizontal = ( k == "left" or k == "right" or k == "width" )
+		if isHorizontal and isKHorizontal then
+			self.constraintsNeedingUpdate[k] = true
+		elseif isVertical and not isKHorizontal then
+			self.constraintsNeedingUpdate[k] = true
 		end
 	end
 end
 
 --[[
 	@instance
-	@desc Sets the view width
-	@param [type] width -- the width
-	@param [bool] isFromConstraint -- true if the view's constraint is the one setting the value. Don't ever call it with this true unless you really know what you're doing!
-]]
-function View:setWidth( width, isFromConstraint )
-	if self.hasInit then
-		self.canvas.width = width
-	end
-	self.width = width
+	@desc Re-evaluates a constraint, reparsing if necessary.
+	@param [string] property -- the name of the property (i.e. left, width, etc.)
+	@param [boolean] isReferenceChange -- false if it should re-parse the constraint
+	@return [number] value
 
-	if not isFromConstraint then
-		local constraint = self.constraint
-		if constraint then
-			constraint:manualValue( "width", width )
-		end
+	@note - call when a reference changes with true
+	@note - call when the constraint changes with false
+]]
+function View:reloadConstraint( property, isReferenceChange )
+	if not isReferenceChange then
+		self.loadedConstraints[property] = nil
+	end
+	return self:evalConstraint( property )
+end
+
+-- @instance
+function View:getTop()
+	return self.top or self:evalConstraint "top"
+end
+
+-- @instance
+function View:setTop( top )
+	if top then
+		self.stringConstraints.top = top
+		self:reloadConstraint "top"
+	else
+		self.stringConstraints.top = nil
 	end
 end
 
---[[
-	@instance
-	@desc Sets the view height
-	@param [type] height -- the height
-	@param [bool] isFromConstraint -- true if the view's constraint is the one setting the value. Don't ever call it with this true unless you really know what you're doing!
-]]
-function View:setHeight( height, isFromConstraint )
-	if self.hasInit then
-		self.canvas.height = height
-	end
-	self.height = height
+-- @instance
+function View:getBottom()
+	return self.bottom or self:evalConstraint "bottom"
+end
 
-	if not isFromConstraint then
-		local constraint = self.constraint
-		if constraint then
-			constraint:manualValue( "height", height )
+-- @instance
+function View:setBottom( bottom )
+	if bottom then
+		local stringConstraints = self.stringConstraints
+		stringConstraints.bottom = bottom
+		self:reloadConstraint "bottom"
+		if stringConstraints.height then
+			stringConstraints.top = nil
+		elseif stringConstraints.top then
+			stringConstraints.height = nil
 		end
+	else
+		self.stringConstraints.top = nil
+	end
+end
+
+-- @instance
+function View:getLeft()
+	return self.left or self:evalConstraint "left"
+end
+
+-- @instance
+function View:setLeft( left )
+	if left then
+		local stringConstraints = self.stringConstraints
+		stringConstraints.left = left
+		self:reloadConstraint "left"
+		if stringConstraints.width then
+			stringConstraints.right = nil
+		elseif stringConstraints.right then
+			stringConstraints.width = nil
+		end
+	else
+		self.stringConstraints.left = nil
+	end
+end
+
+-- @instance 
+function View:getRight()
+	return self.right or self:evalConstraint "right"
+end
+
+-- @instance 
+function View:setRight( right )
+	if right then
+		local stringConstraints = self.stringConstraints
+		stringConstraints.right = right
+		self:reloadConstraint "right"
+		if stringConstraints.width then
+			stringConstraints.left = nil
+		elseif stringConstraints.left then
+			stringConstraints.width = nil
+		end
+	else
+		self.stringConstraints.right = nil
+	end
+end
+
+-- @instance 
+function View:getWidth()
+	return self.width or self:evalConstraint "width"
+end
+
+-- @instance 
+function View:setWidth( width )
+	if self.identifier == "testview" then
+		log( "Setting width to " .. tostring( width ) )
+	end
+	if width then
+		self.stringConstraints.width = width
+		self:reloadConstraint "width"
+	else
+		self.stringConstraints.width = nil
+	end
+end
+
+-- @instance 
+function View:getHeight()
+	return self.height or self:evalConstraint "height"
+end
+
+-- @instance 
+function View:setHeight( height )
+	if height then
+		self.stringConstraints.height = height
+		self:reloadConstraint "height"
+	else
+		self.stringConstraints.height = nil
 	end
 end
 
 function View:setIsVisible( isVisible )
-	if self.hasInit then
-		self.canvas.isVisible = isVisible
-	end
+	self.canvas.isVisible = isVisible
 	self.isVisible = isVisible
 end
 
 function View:getIsVisible()
-	-- if we don't have a parent we're effectively not visible
-	return self.parent and self.isVisible
+	return self.parent and self.isVisible -- if we don't have a parent we're effectively not visible
 end
-
---[[
-	@instance
-	@desc Draws the contents of the view
-	@param [number] x -- the x cordinate to draw from
-	@param [number] y -- the y cordinate to draw from
-]]
 
 --[[
 	@instance
@@ -380,6 +580,15 @@ function View:update( dt )
 				animation.onFinish( self )
 			end
 			table.remove( animations, i )
+		end
+	end
+
+	local constraintsNeedingUpdate = self.constraintsNeedingUpdate
+	local constraintOrder = { "width", "height", "left", "top", "bottom", "right" }
+	for i, v in ipairs( constraintOrder ) do
+		if constraintsNeedingUpdate[v] then
+			self:reloadConstraint( v, true )
+			constraintsNeedingUpdate[v] = nil
 		end
 	end
 end

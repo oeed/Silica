@@ -53,18 +53,14 @@ end
 
 function ScrollView:setWidth( width )
 	self.super:setWidth( width )
-	if self.hasInit then
-		local verticalScrollbar = self.verticalScrollbar
-		if verticalScrollbar then verticalScrollbar.x = width - verticalScrollbar.width + 1 end
-	end
+	local verticalScrollbar = self.verticalScrollbar
+	if verticalScrollbar then verticalScrollbar.x = width - verticalScrollbar.width + 1 end
 end
 
 function ScrollView:setHeight( height )
 	self.super:setHeight( height )
-	if self.hasInit then
-		local verticalScrollbar = self.verticalScrollbar
-		if verticalScrollbar then self.verticalScrollbar.height = height end
-	end
+	local verticalScrollbar = self.verticalScrollbar
+	if verticalScrollbar then self.verticalScrollbar.height = height end
 end
 
 --[[

@@ -51,16 +51,12 @@ end
 
 function Checkbox:setHeight( height )
     self.super:setHeight( height )
-    if self.hasInit then
-        self.backgroundObject.height = height
-    end
+    self.backgroundObject.height = height
 end
 
 function Checkbox:setWidth( width )
     self.super:setWidth( width )
-    if self.hasInit then
-        self.backgroundObject.width = width
-    end
+    self.backgroundObject.width = width
 end
 
 --[[
@@ -69,9 +65,7 @@ end
 ]]
 function Checkbox:setIsPressed( isPressed )
     self.isPressed = isPressed
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 --[[
@@ -80,9 +74,7 @@ end
 ]]
 function Checkbox:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 --[[
@@ -91,9 +83,7 @@ end
 ]]
 function Checkbox:setIsChecked( isChecked )
     self.isChecked = isChecked
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 --[[

@@ -6,6 +6,7 @@ class "Button" extends "View" {
     text = nil;
 
     isPressed = false;
+    isFocused = false;
     isAutosizing = true;
     font = nil;
 
@@ -27,6 +28,9 @@ function Button:init( ... )
     self.super:init( ... )
 
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
+    self:event( Event.KEY_DOWN, self.onKeyDown )
+    self:event( Event.KEY_UP, self.onKeyUp )
+    self:event( Event.FOCUS_CHANGED, self.onFocusChanged )
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
     if self.onMouseUp then self:event( Event.MOUSE_UP, self.onMouseUp ) end
 end
@@ -45,7 +49,7 @@ function Button:initCanvas()
     theme:connect( backgroundObject, "fillColour" )
     theme:connect( backgroundObject, "outlineColour" )
     theme:connect( backgroundObject, "radius", "cornerRadius" )
-    theme:connect( shadowObject, "shadowColour" )
+    theme:connect( shadowObject, "fillColour", "shadowColour" )
     theme:connect( shadowObject, "radius", "cornerRadius" )
     theme:connect( textObject, "textColour" )
     theme:connect( self, "leftMargin" )
@@ -62,31 +66,25 @@ end
 
 function Button:setHeight( height )
     self.super:setHeight( height )
-    if self.hasInit then
-        self.backgroundObject.height = height - 1
-        self.shadowObject.height = height - 1
-        self.needsAutosize = true
-    end
+    self.backgroundObject.height = height - 1
+    self.shadowObject.height = height - 1
+    self.needsAutosize = true
 end
 
 function Button:setWidth( width )
     self.super:setWidth( width )
-    if self.hasInit then
-        self.backgroundObject.width = width - 1
-        self.shadowObject.width = width - 1
-        local textObject = self.textObject
-        local leftMargin, rightMargin = self.leftMargin, self.rightMargin
-        textObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1
-        textObject.width = width - leftMargin - rightMargin
-    end
+    self.backgroundObject.width = width - 1
+    self.shadowObject.width = width - 1
+    local textObject = self.textObject
+    local leftMargin, rightMargin = self.leftMargin, self.rightMargin
+    textObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1
+    textObject.width = width - leftMargin - rightMargin
 end
 
 function Button:setText( text )
     self.text = text
-    if self.hasInit then
-        self.textObject.text = text
-        self.needsAutosize = true
-    end
+    self.textObject.text = text
+    self.needsAutosize = true
 end
 
 --[[
@@ -158,27 +156,62 @@ function Button:autosize()
 end
 
 function Button:updateThemeStyle()
-    self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
+    self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or ( self.isFocused and "focused" or "default" ) ) or "disabled"
 end
 
 function Button:setIsEnabled( isEnabled )
     self.isEnabled = isEnabled
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 function Button:setIsPressed( isPressed )
     self.isPressed = isPressed
-    if self.hasInit then
+    self:updateThemeStyle()
+    local backgroundObject = self.backgroundObject
+    backgroundObject.x = isPressed and 2 or 1
+    backgroundObject.y = isPressed and 2 or 1
+    local textObject = self.textObject
+    -- textObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1
+    textObject.y = isPressed and 6 or 5
+end
+
+--[[
+    @instance
+    @desc Sets whether the button is focused. DO NOT CALL/SET THIS DIRECTLY! Use :focus and :unfocus instead.
+    @param [bool] isFocused -- whether the button is focused
+]]
+function Button:setIsFocused( isFocused )
+    local wasFocused = self.isFocused
+    if wasFocused ~= isFocused then
+        self.isFocused = isFocused
         self:updateThemeStyle()
-        local backgroundObject = self.backgroundObject
-        backgroundObject.x = isPressed and 2 or 1
-        backgroundObject.y = isPressed and 2 or 1
-        local textObject = self.textObject
-        -- textObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1
-        textObject.y = isPressed and 6 or 5
     end
+end
+
+--[[
+    @instance
+    @desc Focuses the button, making it so when enter is pressed it is clicked.
+]]
+function Button:focus()
+    self.application.focus = self
+end
+
+--[[
+    @instance
+    @desc Unfocuses the button, making no other view focused
+]]
+function Button:unfocus()
+    self.application:clearFocus()
+end
+
+--[[
+    @instance
+    @desc Fired when the focused view changes
+    @param [FocusChangedInterfaceEvent] event -- the focus changed event
+    @return [bool] preventPropagation -- prevent anyone else using the event
+]]
+function Button:onFocusChanged( event )
+    self.isFocused = ( self == event.newFocus )
 end
 
 --[[
@@ -191,8 +224,7 @@ function Button:onGlobalMouseUp( event )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
-            -- TODO: remove!
-            self.x = math.floor( math.random(1,200 ) )
+            -- that runs/evaluates that constraint when you click the button
             return self.event:handleEvent( event )
         end
     end
@@ -207,6 +239,32 @@ end
 function Button:onMouseDown( event )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
+    end
+    return true
+end
+
+--[[
+    @instance
+    @desc Fired when a key is pressed down. Presses the button down if it isin focus and it was the enter key.
+    @param [KeyDownEvent] event -- the key down event
+    @return [bool] preventPropagation -- prevent anyone else using the event
+]]
+function Button:onKeyDown( event )
+    if self.isEnabled and self.isFocused and event.keyCode == keys.enter then
+        self.isPressed = true
+    end
+    return true
+end
+
+--[[
+    @instance
+    @desc Fired when a key is pressed released. Fires the button action if the button is pressed, in focus and it was the enter key.
+    @param [KeyUpEvent] event -- the key down event
+    @return [bool] preventPropagation -- prevent anyone else using the event
+]]
+function Button:onKeyUp( event )
+    if self.isEnabled and self.isPressed and self.isFocused and event.keyCode == keys.enter then
+        self.isPressed = false
     end
     return true
 end

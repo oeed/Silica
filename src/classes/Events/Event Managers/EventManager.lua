@@ -34,7 +34,7 @@ end
 	@param [function] func -- the function called when the event occurs
 ]]
 function EventManager:connect( eventType, func, phase, eventManager )
-	if not eventType then error( "No event type given to EventManager:connect!" ) end
+	if not eventType then error( "No event type given to EventManager:connect!", 2 ) end
 	
 	if func and type( func ) == "function" then
 		phase = phase or EventManager.phase.BEFORE
@@ -105,7 +105,7 @@ function EventManager:disconnectGlobal( eventType, func, phase )
 
 	if self.handlesGlobal[eventType] then
 		for i, handle in ipairs( self.handlesGlobal[eventType] ) do
-			if handle[1] == func and phase[2] == phase then
+			if handle[1] == func and handle[2] == phase then
 				self.handlesGlobal[eventType][i] = nil
 			end
 		end

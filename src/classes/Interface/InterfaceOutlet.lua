@@ -51,6 +51,8 @@ function InterfaceOutlet:connect( key, container )
 	else
 		self.views = container:findChild( self.identifier )
 	end
+	log("connected to "..tostring(self.views))
+	log("shoudl be "..key)
 	-- When you index the the outlet it will return tracked view( s )
 	self.container["get" .. self.key:sub( 1, 1 ):upper() .. self.key:sub( 2, -1 )] = function( container )
 		return self.views
@@ -78,15 +80,32 @@ end
 	@instance
 	@desc Called when a child was added to the container. If it's our identifier, track it (if we don't already have a view or we're tracking all)
 	@param [View] childView -- the view that was just added
+	@param [bool] lookInChildren -- whether the
+	@returns [bool] wasFound -- whether the view was found, only true if trackAll is false
 ]]
-function InterfaceOutlet:childAdded( childView )
-	if childView.identifier == self.viewIdentifier then
-		if self.trackAll then
-			table.insert( self.views, childView )
-		elseif not self.views then
-			self.views = childView
+function InterfaceOutlet:childAdded( childView, lookInChildren )
+	local viewIdentifier = self.viewIdentifier
+	local trackAll = self.trackAll
+	local views = self.views
+
+	local function search( view )
+		if view.identifier == viewIdentifier then
+			if trackAll then
+				table.insert( views, view )
+			elseif not views then
+				log('found '..tostring(view))
+				self.views = view
+				return true
+			end
+		end
+		if lookInChildren and view:typeOf( Container ) then
+			for i, v in ipairs( view.children ) do
+				if search( v ) then return true end
+			end
 		end
 	end
+
+	return search( childView ) or false
 end
 
 --[[

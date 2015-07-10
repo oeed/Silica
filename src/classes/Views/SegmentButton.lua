@@ -36,20 +36,18 @@ end
 
 function SegmentButton:setWidth( width )
     self.super.super:setWidth( width )
-    if self.hasInit then
-        local isFirst = self.isFirst
-        local isLast = self.isLast
-        self.backgroundObject.width = isLast and width - 1 or width - 1
-        self.shadowObject.width = (isLast or isFirst) and width - 1 or width
-        self.separatorObject.x = width
-        self.separatorBackgroundObject.x = width
-        
-        local textObject = self.textObject
-        local leftMargin, rightMargin = self.leftMargin, self.rightMargin
-        textObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1
-        textObject.width = width - leftMargin - rightMargin
-        self.parent.needsLayoutUpdate = true
-    end
+    local isFirst = self.isFirst
+    local isLast = self.isLast
+    self.backgroundObject.width = isLast and width - 1 or width - 1
+    self.shadowObject.width = (isLast or isFirst) and width - 1 or width
+    self.separatorObject.x = width
+    self.separatorBackgroundObject.x = width
+    
+    local textObject = self.textObject
+    local leftMargin, rightMargin = self.leftMargin, self.rightMargin
+    textObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1
+    textObject.width = width - leftMargin - rightMargin
+    self.parent.needsLayoutUpdate = true
 end
 
 function SegmentButton:getRightMargin()
@@ -62,15 +60,13 @@ end
 
 function SegmentButton:setIsPressed( isPressed )
     self.super:setIsPressed( isPressed )
-    if self.hasInit then
-        local isFirst = self.isFirst
-        local isLast = self.isLast
-        if isLast then
-            log('set pressed')
-            local width = self.width
-            self.backgroundObject.x = isPressed and 2 or 1
-            self.backgroundObject.width = isPressed and width - 2 or width - 1
-        end
+    local isFirst = self.isFirst
+    local isLast = self.isLast
+    if isLast then
+        log('set pressed')
+        local width = self.width
+        self.backgroundObject.x = isPressed and 2 or 1
+        self.backgroundObject.width = isPressed and width - 2 or width - 1
     end
 end
 

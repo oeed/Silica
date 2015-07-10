@@ -5,14 +5,14 @@ class "Window" extends "Container" {
 	-- barObject = nil;	
 	barHeight = 7;
 
-	container = nil;
-    closeButton = nil;
-    minimiseButton = nil;
-    maximiseButton = nil;
+	container = false;
+    closeButton = false;
+    minimiseButton = false;
+    maximiseButton = false;
     isEnabled = false;
 
-	dragX = nil;
-	dragY = nil;
+	dragX = false;
+	dragY = false;
     isDragging = false;
     isResizingX = false;
 	isResizingY = false;
@@ -33,9 +33,6 @@ class "Window" extends "Container" {
 ]]
 function Window:init( ... )
 	self.super:init( ... )
-
-    local width = self.width
-
     self.closeButton = self:insert( CloseWindowButton( { x = 1, y = 1, window = self } ))
     self.minimiseButton = self:insert( MinimiseWindowButton( { x = 9, y = 1, window = self } ))
     self.maximiseButton = self:insert( MaximiseWindowButton( { x = 17, y = 1, window = self } ))
@@ -101,7 +98,6 @@ function Window:loadInterface()
         container.y = y
         container.width = width
         container.height = height
-        log(container)
         self.container = self:insert( container )
     else
         self.container = self:insert( WindowContainer( { x = x, y = y, width = width, height = height } ) )
@@ -111,23 +107,19 @@ end
 function Window:setHeight( height )
     height = math.max( math.min( height, self.maxHeight ), self.minHeight )
     self.super:setHeight( height )
-    if self.hasInit then
-        self.shadowObject.height = height - 3
-        local container = self.container
-        if container then container.height = height - self.barHeight - 5 end
-    end
+    self.shadowObject.height = height - 3
+    local container = self.container
+    if container then container.height = height - self.barHeight - 5 end
 end
 
 function Window:setWidth( width )
     width = math.max( math.min( width, self.maxWidth ), self.minWidth )
     self.super:setWidth( width )
-    if self.hasInit then
-        self.shadowObject.width = width - 2
-        self.barObject.width = width - 2
-        self.separatorObject.width = width - 2
-        local container = self.container
-        if container then container.width = width - 2 end
-    end
+    self.shadowObject.width = width - 2
+    self.barObject.width = width - 2
+    self.separatorObject.width = width - 2
+    local container = self.container
+    if container then container.width = width - 2 end
 end
 
 function Window:onInterfaceLoaded( event )
@@ -151,9 +143,7 @@ end
 
 function Window:setIsEnabled( isEnabled )
     self.super:setIsEnabled( isEnabled )
-    if self.hasInit then
-        self:updateThemeStyle()
-    end
+    self:updateThemeStyle()
 end
 
 --[[

@@ -33,14 +33,10 @@ end
 
 function SeparatorMenuItem:setWidth( width )
     self.super.super:setWidth( width )
-    if self.hasInit then
-    	self.backgroundObject.width = width - 8
-    end
+	self.backgroundObject.width = width - 8
 end
 
 function SeparatorMenuItem:setHeight( height )
     self.height = height
-    if self.hasInit then
-    	self.backgroundObject.height = 1
-    end
+	self.backgroundObject.height = 1
 end
