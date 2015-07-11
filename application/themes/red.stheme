@@ -3,7 +3,7 @@
 		<cornerRadius type="number" default="8" />
 		<leftMargin type="number" default="7" />
 		<rightMargin type="number" default="7" />
-		<fillColour type="Graphics.colours" default="WHITE" pressed="BLUE" focused="BLUE" disabled="WHITE"/>
+		<fillColour type="Graphics.colours" default="WHITE" pressed="RED" focused="RED" disabled="WHITE"/>
 		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" focused="WHITE" disabled="LIGHT_GREY"/>
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" focused="TRANSPARENT" disabled="LIGHT_GREY" pressed="TRANSPARENT"/>
 		<shadowColour type="Graphics.colours" default="GREY" disabled="TRANSPARENT"/>
@@ -24,25 +24,25 @@
 	</Menu>
 	
 	<MenuButton>
-		<arrowColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
+		<arrowColour type="Graphics.colours" default="GREY" pressed="ORANGE" disabled="LIGHT_GREY"/>
 		<rightMargin type="number" default="15" />
 	</MenuButton>
 	
 	<MenuItem>
-		<fillColour type="Graphics.colours" default="TRANSPARENT" pressed="BLUE" disabled="TRANSPARENT"/>
+		<fillColour type="Graphics.colours" default="TRANSPARENT" pressed="RED" disabled="TRANSPARENT"/>
 		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
 	</MenuItem>
 
 	<Radio>
 		<cornerRadius type="number" default="4" pressed="4" />
-		<fillColour type="Graphics.colours" default="WHITE" pressed="LIGHT_BLUE" checked="BLUE" disabledChecked="GREY" disabled="WHITE"/>
-		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="BLUE" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
+		<fillColour type="Graphics.colours" default="WHITE" pressed="ORANGE" checked="RED" disabledChecked="GREY" disabled="WHITE"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="RED" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
 	</Radio>
 
 	<Checkbox>
 		<cornerRadius type="number" default="2" />
-		<fillColour type="Graphics.colours" default="WHITE" pressed="LIGHT_BLUE" checked="BLUE" disabledChecked="GREY" disabled="WHITE"/>
-		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="BLUE" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
+		<fillColour type="Graphics.colours" default="WHITE" pressed="ORANGE" checked="RED" disabledChecked="GREY" disabled="WHITE"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="RED" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
 		<checkColour type="Graphics.colours" default="TRANSPARENT" checked="WHITE" disabledChecked="WHITE" disabled="TRANSPARENT"/>
 	</Checkbox>
 
@@ -50,9 +50,9 @@
 		<cornerRadius type="number" default="4" />
 		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY"/>
-		<barColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
-		<stripeColour type="Graphics.colours" default="LIGHT_BLUE" disabled="LIGHT_GREY"/>
-		<barOutlineColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
+		<barColour type="Graphics.colours" default="RED" disabled="GREY"/>
+		<stripeColour type="Graphics.colours" default="ORANGE" disabled="LIGHT_GREY"/>
+		<barOutlineColour type="Graphics.colours" default="RED" disabled="GREY"/>
 	</ProgressBar>
 
 	<Window>
@@ -87,7 +87,7 @@
 
 	<Scrollbar>
 		<fillColour type="Graphics.colours" default="LIGHT_GREY" />
-		<scrollerColour type="Graphics.colours" default="WHITE" pressed="BLUE" disabled="WHITE" />
+		<scrollerColour type="Graphics.colours" default="WHITE" pressed="RED" disabled="WHITE" />
 		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="TRANSPARENT" />
 		<grabberColour type="Graphics.colours" default="GREY" pressed="WHITE" disabled="LIGHT_GREY" />
 		<cornerRadius type="number" default="2" />
@@ -104,7 +104,11 @@
 		<rightMargin type="number" default="7" />
 		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
 		<textColour type="Graphics.colours" default="BLACK" disabled="LIGHT_GREY"/>
-		<outlineColour type="Graphics.colours" default="LIGHT_GREY" focused="BLUE" pressed="GREY" />
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" focused="RED" pressed="GREY" />
 	</TextBox>
+
+	<ApplicationContainer>
+		<fillColour type="Graphics.colours" default="YELLOW"/>
+	</ApplicationContainer>
 
 </Theme>

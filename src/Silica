@@ -56,11 +56,16 @@ local function loadFirst()
 	h.close()
 end
 
+-- TODO: tidy the paths and allow the user to provide values
+local resourceDirectories = { 'src/', 'application/' }
+
 local function load()
 	loadClass( "src/class.lua" )
 	loadFirst()
-	loadDir( "src/classes" )
+	Application.resourceDirectories = resourceDirectories
+	for i, dir in ipairs( resourceDirectories ) do
+		loadDir( dir .. "classes" )
+	end
 end
-
 
 load()

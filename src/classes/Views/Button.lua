@@ -20,6 +20,9 @@ class "Button" extends "View" {
     rightMargin = 0;
 }
 
+-- action Button.buttonOne function( event )
+-- end
+
 --[[
     @constructor
     @desc Creates a button object and connects the event handlers
@@ -223,8 +226,8 @@ end
 function Button:onGlobalMouseUp( event )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
+        self.event:handleEvent( ActionInterfaceEvent( self ) )
         if self.isEnabled and self:hitTestEvent( event ) then
-            -- that runs/evaluates that constraint when you click the button
             return self.event:handleEvent( event )
         end
     end

@@ -14,8 +14,9 @@ function Theme:init( themeName )
 	self.name = themeName
 
 	-- TODO: dynamic path resolving for interfaces and other files
-	local path = "/src/interface/" .. themeName .. ".stheme"
-	if fs.exists( path ) then
+	local resource = Resource( "themes/" .. themeName, "stheme" )
+	local path = resource.path
+	if path then
 		local nodes, err = XML.fromFile( path )
 		if not nodes then
 			error( path .. err, 0 )

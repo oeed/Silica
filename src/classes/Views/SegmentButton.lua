@@ -63,7 +63,6 @@ function SegmentButton:setIsPressed( isPressed )
     local isFirst = self.isFirst
     local isLast = self.isLast
     if isLast then
-        log('set pressed')
         local width = self.width
         self.backgroundObject.x = isPressed and 2 or 1
         self.backgroundObject.width = isPressed and width - 2 or width - 1

@@ -1,15 +1,16 @@
 
-class "TestApplication" extends "Application" {
-	name = "A test application";
-	interfaceName = "main";
-	themeName = "default";
+class "ExampleApplication" extends "Application" {
+	name = "Example";
+	interfaceName = "first";
 }
+
+-- For the demo the below code isn't really needed, it's just for debug
 
 --[[
 	@constructor
 	@desc Initialise the custom application
 ]]
-function TestApplication:init()
+function ExampleApplication:init()
 	self.super:init()
 	self:event( Event.CHARACTER, self.onChar )
 end
@@ -20,7 +21,7 @@ end
 	@param [Event] event -- description
 	@return [boolean] stopPropagation
 ]]
-function TestApplication:onChar( event )
+function ExampleApplication:onChar( event )
 	if event.character == '\\' then
 		os.reboot()
 	end

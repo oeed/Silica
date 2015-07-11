@@ -26,6 +26,8 @@ class "Event" {
 	PARENT_CHANGED = "interface_parent_changed";
 	PARENT_RESIZED = "interface_parent_resized";
 	READY = "interface_ready";
+	INTERFACE_OUTLET_CHANGED = "interface_outlet_changed";
+	ACTION = "interface_action";
 
 }
 

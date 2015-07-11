@@ -12,9 +12,37 @@ class "Container" extends "View" {
 	@desc Initialises the container, linking up any InterfaceOutlets
 	@param ...
 ]]
--- function Container:init( ... )
--- 	self.super:init( ... )
--- end
+function Container:init( ... )
+	self.super:init( ... )
+
+	self:event( Event.INTERFACE_OUTLET_CHANGED, self.onInterfaceOutletChanged )
+	for name, func in pairs( self.interfaceOutletActions ) do
+
+	end
+end
+
+function Container:onInterfaceOutletChanged( event )
+	local interfaceOutlet = event.interfaceOutlet
+	local oldView = false
+	local newView = false
+	local interfaceOutletActions = false
+	local BEFORE = EventManager.phase.BEFORE
+	local ACTION = Event.ACTION
+
+	for k, outlet in pairs( self.interfaceOutlets ) do
+		if interfaceOutlet == outlet then
+			oldView = oldView == false and event.oldView or oldView
+			newView = newView == false and event.newView or newView
+			if oldView ~= newView then
+				interfaceOutletActions = interfaceOutletActions == false and self.interfaceOutletActions or interfaceOutletActions
+				local func = interfaceOutletActions[k]
+				if oldView and #oldView == 0 then oldView.event:disconnect( ACTION, func, BEFORE, nil, self ) end
+				if newView and #newView == 0 then newView:event( ACTION, func, BEFORE, nil, self ) end
+			end
+		end
+	end
+
+end
 
 --[[
 	@instance

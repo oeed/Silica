@@ -32,20 +32,21 @@ end
 	@param [Event.eventType] eventType -- the name of the event type
 	@param [EventManager] eventManager -- the handle manager 
 	@param [function] func -- the function called when the event occurs
+	@param [class] sender -- the value passed as self. defaults to eventManager.owner
 ]]
-function EventManager:connect( eventType, func, phase, eventManager )
+function EventManager:connect( eventType, func, phase, eventManager, sender )
 	if not eventType then error( "No event type given to EventManager:connect!", 2 ) end
 	
 	if func and type( func ) == "function" then
 		phase = phase or EventManager.phase.BEFORE
 		eventManager = eventManager or self
-		self:disconnect( eventType, func ) -- ensure duplicates won't be made
+		self:disconnect( eventType, func, phase, eventManager, sender ) -- ensure duplicates won't be made
 
 		if not self.handles[eventType] then
 			self.handles[eventType] = {}
 		end
 
-		table.insert( self.handles[eventType], { func, phase, eventManager } )
+		table.insert( self.handles[eventType], { func, phase, eventManager, sender or eventManager.owner } )
 	else
 		error( "Attempted to connect non-function to event: " .. eventType .. ' for class: ' .. tostring( self.owner or nil ))
 	end
@@ -56,14 +57,16 @@ end
 	@desc Unsubscribes a function to the given event
 	@param [Event.eventType] eventType -- the name of the event type
 	@param [function] func -- the function called when the event occurs
+	@param [class] sender -- the value passed as self. defaults to eventManager.owner
 ]]
-function EventManager:disconnect( eventType, func, phase, eventManager )
+function EventManager:disconnect( eventType, func, phase, eventManager, sender )
 	phase = phase or EventManager.phase.BEFORE
 	eventManager = eventManager or self
+	sender = sender or eventManager.owner
 
 	if self.handles[eventType] then
 		for i, handle in ipairs( self.handles[eventType] ) do
-			if handle[1] == func and handle[2] == phase and handle[3] == eventManager then
+			if handle[1] == func and handle[2] == phase and handle[3] == eventManager and handle[4] == sender then
 				self.handles[eventType][i] = nil
 			end
 		end
@@ -162,7 +165,7 @@ function EventManager:handleEventPhase( event, phase )
 				-- handle[1] is the handle function
 				-- handle[2] is the phase
 				-- handle[3] is the event manager
-				if handle[1]( handle[3].owner, event, handle[2] ) then
+				if handle[1]( handle[4], event, handle[2] ) then
 					return true
 				end
 			end

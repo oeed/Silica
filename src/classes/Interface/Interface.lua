@@ -14,8 +14,9 @@ function Interface:init( interfaceName, extend )
 	extend = extend or ApplicationContainer
 
 	-- TODO: dynamic path resolving for interfaces and other files
-	local path = "/src/interface/" .. interfaceName .. ".sml"
-	if fs.exists( path ) then
+	local resource = Resource( "interfaces/" .. interfaceName, "sml" )
+	local path = resource.path
+	if path then
 		local nodes, err = XML.fromFile( path )
 		if not nodes then
 			error( path .. err, 0 )

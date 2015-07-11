@@ -12,6 +12,7 @@ class "Application" {
 	container = nil;
 	event = nil;
 	schedules = {};
+	resourceDirectories = false; -- the folders in which the applications resources are
 	keyboardShortcutManager = nil;
 	focus = nil;
 
@@ -28,20 +29,20 @@ class "Application" {
 --[[
 	@constructor
 	@desc Creates the application runtime for the Silica program. Call :run() on this to start it.
+	@param [table] resourceDirectories -- a table of paths in which the applications resources are (classes, themes, etc.)
 ]]
 function Application:init()
+	if type( self.resourceDirectories ) ~= "table" then
+		error( "Application resource directories wasn't specified or invalid. Make sure you're not tampering with the value and/or you're supplying a valid value." )
+	end
+
 	self.event = ApplicationEventManager( self )
 	class.application = self
 	self.keyboardShortcutManager = KeyboardShortcutManager( self )
 	
-	Theme.active = Theme( self.themeName )
 	Font.initPresets()
 	
-	if self.interfaceName then
-		self.container = Interface( self.interfaceName ).container
-	else
-		self.container = ApplicationContainer()
-	end
+	self:reloadInterface()
 
 	self.event:handleEvent( ReadyInterfaceEvent( true ) )
 	self.event:connect( Event.TIMER, self.onTimer )
@@ -50,11 +51,36 @@ end
 
 --[[
 	@instance
-	@desc Returns the theme name, reverting to default if not defined
-	@return [string] themeName -- description
+	@desc Changes the interface name, reloading the interface
+	@param [string] interfaceName -- the name of the interface (the file name without extension)
 ]]
-function Application:getThemeName()
-	return self.themeName or "default"
+function Application:setInterfaceName( interfaceName )
+	self.interfaceName = interfaceName
+	self:reloadInterface()
+end
+
+--[[
+	@instance
+	@desc Loads the application container or changes it if there is one.
+]]
+function Application:reloadInterface()
+	local interfaceName = self.interfaceName
+
+	local oldContainer = self.container
+	if oldContainer then
+		self:clearFocus()
+	end
+
+	if interfaceName then
+		self.container = Interface( interfaceName ).container
+	else
+		self.container = ApplicationContainer()
+	end
+end
+
+function Application:setContainer( container )
+	self.container = container
+	-- Theme.active = Theme( container.themeName )
 end
 
 --[[

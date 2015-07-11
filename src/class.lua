@@ -299,28 +299,9 @@ function class:new( ... )
 	for k, v in pairs( _class ) do
 		if type( v ) == "table" and v.typeOf and v:typeOf( InterfaceOutlet ) then
 			-- link interface outlets, they set the class property to a share instance, so we need to generate a unique one
-			proxy[k] = InterfaceOutlet( v.viewIdentifier or k, v.trackAll )
+			proxy[k] = InterfaceOutlet( v.viewIdentifier or k, v.trackAll, proxy )
 		end
 	end
-
-	-- use the setters with all the starting values
-	local prepared = {}
-	local function prepare( obj )
-		local hasSet = type( obj.set ) == "function"
-		for k, _ in pairs( obj.class ) do
-			local v = obj[k] -- TODO: sometimes this is nil when it shouldn't be
-			if not prepared[k] and k ~= "class" and k ~= "mt" and  k ~= "super" and type( v ) ~= "function" and (hasSet or type( raw[setters[k]] ) == "function") then
-				prepared[k] = true
-				proxy[k] = v
-			end
-		end
-
-		if obj.super then
-			prepare( obj.super )
-		end
-	end
-
-	-- prepare( raw )
 
 	-- once the class has been created, pass the arguments to the init function for handling
 	if proxy.init and type( proxy.init ) == "function" then
@@ -336,6 +317,7 @@ end
 function class:construct( _, className )
 	local _class = {}
 	_class.className = className
+	_class.interfaceOutletActions = { 1 }
 
 	local mt = { __index = self }
 	_class.mt = mt
@@ -344,9 +326,20 @@ function class:construct( _, className )
 		return self:new( ... )
 	end
 
-	-- function mt:__newindex( k, v )
-	-- 	rawset(_class, k, v)
-	-- end
+	function mt:__newindex( k, v )
+		if type( v ) == "function" and #k >= 3 and k:sub( 1, 2 ) == "on" then
+			local firstLetter = k:sub( 3, 3 )
+			if firstLetter:upper() == firstLetter then
+				local property = firstLetter:lower() .. k:sub( 4 )
+				local existingValue = _class[property]
+				if existingValue and type( existingValue ) == "table" and existingValue:typeOf( InterfaceOutlet ) then
+					-- the value is being set to a function, but it's already an InterfaceOutlet. in this circumstance we treat it as an action
+					_class.interfaceOutletActions[property] = v
+				end
+			end
+		end
+		rawset(_class, k, v)
+	end
 
 	function mt:__tostring()
 		return 'class: ' .. self.className
@@ -382,10 +375,6 @@ end
 -- @instance
 function class:properties( properties )
 	for k, v in pairs( properties ) do
-		-- if type( self[k] ) == "number" then -- right?
-		-- 	v = tonumber( v )
-		-- end
-		
 		self[k] = v
 	end
 end

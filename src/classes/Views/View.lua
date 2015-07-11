@@ -437,12 +437,16 @@ end
 
 -- @instance 
 function View:setWidth( width )
-	if self.identifier == "testview" then
-		log( "Setting width to " .. tostring( width ) )
-	end
 	if width then
-		self.stringConstraints.width = width
+		local stringConstraints = self.stringConstraints
+		stringConstraints.width = width
+		-- if self:typeOf(Button) then log('setting width to ' .. width .. ' for: '..tostring(self)) log(textutils.serialize(stringConstraints)) end
 		self:reloadConstraint "width"
+		if stringConstraints.left then
+			stringConstraints.right = nil
+		elseif stringConstraints.right then
+			stringConstraints.left = nil
+		end
 	else
 		self.stringConstraints.width = nil
 	end

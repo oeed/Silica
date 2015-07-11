@@ -21,11 +21,13 @@ class "InterfaceOutlet" {
 	@desc Initialises the interface outlet
 	@param [string] viewIdentifier -- the identifier of the desire view
 	@param [boolean] trackAll -- whether to track all view with the identifier, or just one
+	@param [Container] owner -- the container that owns the outlet
 ]]
-function InterfaceOutlet:init( viewIdentifier, trackAll ) -- if you change this you need to change it in class.lua uniqueTable() too
+function InterfaceOutlet:init( viewIdentifier, trackAll, owner ) -- if you change this you need to change it in class.lua uniqueTable() too
 	trackAll = trackAll or false
 	self.viewIdentifier = viewIdentifier
 	self.trackAll = trackAll
+	self.owner = owner or false
 
 	if trackAll then
 		self.views = {}
@@ -51,12 +53,17 @@ function InterfaceOutlet:connect( key, container )
 	else
 		self.views = container:findChild( self.identifier )
 	end
-	log("connected to "..tostring(self.views))
-	log("shoudl be "..key)
 	-- When you index the the outlet it will return tracked view( s )
 	self.container["get" .. self.key:sub( 1, 1 ):upper() .. self.key:sub( 2, -1 )] = function( container )
 		return self.views
 	end
+end
+
+function InterfaceOutlet:setViews( views )
+	local oldViews = self.views
+	self.views = views
+	local event = self.owner.event
+	if event then event:handleEvent( InterfaceOutletChangedInterfaceEvent( self, views, oldViews ) ) end
 end
 
 --[[
@@ -87,14 +94,16 @@ function InterfaceOutlet:childAdded( childView, lookInChildren )
 	local viewIdentifier = self.viewIdentifier
 	local trackAll = self.trackAll
 	local views = self.views
+	local didAdd = false
 
 	local function search( view )
 		if view.identifier == viewIdentifier then
 			if trackAll then
+				didAdd = true
 				table.insert( views, view )
 			elseif not views then
-				log('found '..tostring(view))
 				self.views = view
+				self.owner.event:handleEvent( InterfaceOutletChangedInterfaceEvent( self, view, views ) )
 				return true
 			end
 		end
@@ -105,7 +114,13 @@ function InterfaceOutlet:childAdded( childView, lookInChildren )
 		end
 	end
 
-	return search( childView ) or false
+	local found = search( childView ) or false
+
+	if trackAll and didAdd then
+		self.owner.event:handleEvent( InterfaceOutletChangedInterfaceEvent( self, views, views ) )
+	end
+
+	return found
 end
 
 --[[
@@ -115,14 +130,19 @@ end
 ]]
 function InterfaceOutlet:childRemoved( childView )
 	if childView.identifier == self.viewIdentifier then
+		local views = self.views
 		if self.trackAll then
-			for i, trackedView in ipairs( self.views ) do
+			local didRemove = false
+			for i, trackedView in ipairs( views ) do
 				if trackedView == childView then
-					self.views[i] = nil
+					views[i] = nil
+					didRemove = true
 				end
 			end
-		elseif self.views then
-			self.views = nil
+			self.owner.event:handleEvent( InterfaceOutletChangedInterfaceEvent( self, views, views ) )
+		elseif views then
+			views = nil
+			self.owner.event:handleEvent( InterfaceOutletChangedInterfaceEvent( self, nil, views ) )
 		end
 	end
 end

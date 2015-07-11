@@ -15,6 +15,4 @@ end
 
 function TestView:setWidth( width )
 	self.super:setWidth( width )
-	log("width constraint: "..self.stringConstraints.width)
-	log("setting width to " .. width)
 end

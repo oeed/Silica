@@ -1,8 +1,9 @@
-<ApplicationContainer theme=red>
+<FirstApplicationContainer themeName=red>
 
-	<TestView identifier=testview left="10%" right="100% - 10" top=20 height=100/>
+	<Button identifier=firstButton x=100 y=10 text="Open Second" />
 
-	<!-- <Button identifier=okayButton x=100 y=10 text=Okay /> -->
+	<!-- <TestView identifier=testview left="10%" right="100% - 10" top=20 height=100/> -->
+
 	<!-- <Window x=50 y=100 width=100 height=60 >
 		<WindowContainer>
 			<ProgressBar x=6 y=35 />
@@ -15,8 +16,8 @@
 			</Container>
 		</WindowContainer>
 	</Window> -->
-<MenuButton x=20 y=10 text="Test" />
-<AlertWindow></AlertWindow>
+<!-- <MenuButton x=20 y=10 text="Test" /> -->
+<!-- <AlertWindow></AlertWindow> -->
 	<!-- <Button identifier=okayButton x=10 y=10 text=Okay />
 
 	<MenuButton x=60 y=10 text="Test" />
@@ -53,4 +54,4 @@
 
 	
 
-</ApplicationContainer>
+</FirstApplicationContainer>

@@ -1,0 +1,114 @@
+<Theme>
+	<Button>
+		<cornerRadius type="number" default="8" />
+		<leftMargin type="number" default="7" />
+		<rightMargin type="number" default="7" />
+		<fillColour type="Graphics.colours" default="WHITE" pressed="BLUE" focused="BLUE" disabled="WHITE"/>
+		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" focused="WHITE" disabled="LIGHT_GREY"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" focused="TRANSPARENT" disabled="LIGHT_GREY" pressed="TRANSPARENT"/>
+		<shadowColour type="Graphics.colours" default="GREY" disabled="TRANSPARENT"/>
+	</Button>
+
+	<SegmentButton>
+		<centerMargin type="number" default="4" />
+		<separatorDotColour type="Graphics.colours" default="LIGHT_GREY"/>
+		<separatorFillColour type="Graphics.colours" default="WHITE"/>
+		<separatorOutlineColour type="Graphics.colours" default="LIGHT_GREY"/>
+	</SegmentButton>
+
+	<Menu>
+		<cornerRadius type="number" default="4" />
+		<fillColour type="Graphics.colours" default="WHITE" />
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" />
+		<shadowColour type="Graphics.colours" default="GREY" />
+	</Menu>
+	
+	<MenuButton>
+		<arrowColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
+		<rightMargin type="number" default="15" />
+	</MenuButton>
+	
+	<MenuItem>
+		<fillColour type="Graphics.colours" default="TRANSPARENT" pressed="BLUE" disabled="TRANSPARENT"/>
+		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
+	</MenuItem>
+
+	<Radio>
+		<cornerRadius type="number" default="4" pressed="4" />
+		<fillColour type="Graphics.colours" default="WHITE" pressed="LIGHT_BLUE" checked="BLUE" disabledChecked="GREY" disabled="WHITE"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="BLUE" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
+	</Radio>
+
+	<Checkbox>
+		<cornerRadius type="number" default="2" />
+		<fillColour type="Graphics.colours" default="WHITE" pressed="LIGHT_BLUE" checked="BLUE" disabledChecked="GREY" disabled="WHITE"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="BLUE" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
+		<checkColour type="Graphics.colours" default="TRANSPARENT" checked="WHITE" disabledChecked="WHITE" disabled="TRANSPARENT"/>
+	</Checkbox>
+
+	<ProgressBar>
+		<cornerRadius type="number" default="4" />
+		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY"/>
+		<barColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
+		<stripeColour type="Graphics.colours" default="LIGHT_BLUE" disabled="LIGHT_GREY"/>
+		<barOutlineColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
+	</ProgressBar>
+
+	<Window>
+		<topCornerRadius type="number" default="4" />
+		<bottomCornerRadius type="number" default="2" />
+		<barColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY" />
+		<separatorColour type="Graphics.colours" default="GREY" disabled="LIGHT_GREY" />
+		<textColour type="Graphics.colours" default="BLACK" disabled="GREY"/>
+		<shadowColour type="Graphics.colours" default="GREY" />
+	</Window>
+	
+	<CloseWindowButton>
+		<fillColour type="Graphics.colours" default="RED" pressed="RED" disabled="TRANSPARENT"/>
+		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="GREY"/>
+		<symbolColour type="Graphics.colours" default="TRANSPARENT" pressed="WHITE" disabled="TRANSPARENT"/>
+		<cornerRadius type="number" default="4" />
+	</CloseWindowButton>
+	
+	<MinimiseWindowButton>
+		<fillColour type="Graphics.colours" default="ORANGE" pressed="ORANGE" disabled="TRANSPARENT"/>
+		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="GREY"/>
+		<symbolColour type="Graphics.colours" default="TRANSPARENT" pressed="WHITE" disabled="TRANSPARENT"/>
+		<cornerRadius type="number" default="4" />
+	</MinimiseWindowButton>
+	
+	<MaximiseWindowButton>
+		<fillColour type="Graphics.colours" default="LIME" pressed="LIME" disabled="TRANSPARENT"/>
+		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="GREY"/>
+		<symbolColour type="Graphics.colours" default="TRANSPARENT" pressed="WHITE" disabled="TRANSPARENT"/>
+		<cornerRadius type="number" default="4" />
+	</MaximiseWindowButton>
+
+	<Scrollbar>
+		<fillColour type="Graphics.colours" default="LIGHT_GREY" />
+		<scrollerColour type="Graphics.colours" default="WHITE" pressed="BLUE" disabled="WHITE" />
+		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="TRANSPARENT" />
+		<grabberColour type="Graphics.colours" default="GREY" pressed="WHITE" disabled="LIGHT_GREY" />
+		<cornerRadius type="number" default="2" />
+	</Scrollbar>
+
+	<Label>
+		<textColour type="Graphics.colours" default="BLACK" disabled="LIGHT_GREY"/>
+		<fillColour type="Graphics.colours" default="TRANSPARENT" disabled="TRANSPARENT"/>
+	</Label>
+
+	<TextBox>
+		<cornerRadius type="number" default="8" />
+		<leftMargin type="number" default="7" />
+		<rightMargin type="number" default="7" />
+		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
+		<textColour type="Graphics.colours" default="BLACK" disabled="LIGHT_GREY"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" focused="BLUE" pressed="GREY" />
+	</TextBox>
+
+	<ApplicationContainer>
+		<fillColour type="Graphics.colours" default="LIGHT_BLUE"/>
+	</ApplicationContainer>
+
+</Theme>
