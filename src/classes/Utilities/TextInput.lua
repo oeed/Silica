@@ -13,7 +13,7 @@ class "TextInput" {
     @desc Creates a text input and connects the event handlers
 	@param [class] owner -- the class to recieve the events
 	@param [string] text -- the starting text
-	@param [bool] isMultiline -- whether the text input supports multilines (TODO: unfocuses on enter by default if false)
+	@param [boolean] isMultiline -- whether the text input supports multilines (TODO: unfocuses on enter by default if false)
 ]]
 function TextInput:init( owner, text, isMultiline )
 	self.event = EventManager( self )
@@ -43,7 +43,7 @@ end
     @instance
     @desc Fired when a key is pressed down
     @param [KeyDownEvent] event -- the key down event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function TextInput:onKeyDown( event )
     if self.isEnabled then
@@ -61,7 +61,7 @@ end
     @instance
     @desc Fired when a key is released
     @param [KeyUpEvent] event -- the key up event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function TextInput:onKeyUp( event )
     if self.isEnabled then
@@ -73,7 +73,7 @@ end
     @instance
     @desc Fired when a key is released
     @param [CharacterEvent] event -- the key up event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function TextInput:onCharacter( event )
     if self.isEnabled then

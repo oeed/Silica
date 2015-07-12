@@ -87,8 +87,8 @@ end
 	@instance
 	@desc Called when a child was added to the container. If it's our identifier, track it (if we don't already have a view or we're tracking all)
 	@param [View] childView -- the view that was just added
-	@param [bool] lookInChildren -- whether the
-	@returns [bool] wasFound -- whether the view was found, only true if trackAll is false
+	@param [boolean] lookInChildren -- whether the
+	@return [boolean] wasFound -- whether the view was found, only true if trackAll is false
 ]]
 function InterfaceOutlet:childAdded( childView, lookInChildren )
 	local viewIdentifier = self.viewIdentifier

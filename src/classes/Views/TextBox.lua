@@ -80,7 +80,7 @@ end
     @instance
     @desc Set the text of the text box.
     @param [string] text -- the text of the text box
-    @param [bool] isEvent -- whether the text was set by it's text input (to prevent recursion)
+    @param [boolean] isEvent -- whether the text was set by it's text input (to prevent recursion)
 ]]
 function TextBox:setText( text, isEvent )
     self.text = text
@@ -128,7 +128,7 @@ end
 --[[
     @instance
     @desc Sets whether the text box is focused. DO NOT CALL/SET THIS DIRECTLY! Use :focus and :unfocus instead.
-    @param [bool] isFocused -- whether the text box is focused
+    @param [boolean] isFocused -- whether the text box is focused
 ]]
 function TextBox:setIsFocused( isFocused )
     local wasFocused = self.isFocused
@@ -159,7 +159,7 @@ end
     @instance
     @desc Fired when the focused view changes
     @param [FocusChangedInterfaceEvent] event -- the focus changed event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function TextBox:onFocusChanged( event )
     self.isFocused = ( self == event.newFocus )
@@ -169,7 +169,7 @@ end
     @instance
     @desc Fired when the text input's text changes
     @param [TextChangedInterfaceEvent] event -- the text changed event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function TextBox:onTextChanged( event )
     self:setText( event.text, true )
@@ -179,7 +179,7 @@ end
     @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function TextBox:onGlobalMouseUp( event )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
@@ -194,7 +194,7 @@ end
     @instance
     @desc Fired when the mouse is released. Focuses on the text box
     @param [MouseDownEvent] event -- the mouse down event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function TextBox:onMouseUp( event )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
@@ -207,7 +207,7 @@ end
     @instance
     @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
     @param [MouseDownEvent] event -- the mouse down event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function TextBox:onMouseDown( event )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
@@ -220,7 +220,7 @@ end
     @instance
     @desc Calked when any keyboard event is fired. Simply passes it to the text input.
     @param [Event] event -- the keyboard event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function TextBox:onKeyboardEvent( event )
     return self.textInput.event:handleEvent( event )

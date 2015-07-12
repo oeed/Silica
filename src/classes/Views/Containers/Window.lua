@@ -188,7 +188,7 @@ end
     @instance
     @desc Fired when the mouse is pushed on the window bar before children have recieved the event. Makes the window front most and active
     @param [MouseDownEvent] event -- the mouse down event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function Window:onMouseDownBefore( event )
     self:focus()
@@ -198,7 +198,7 @@ end
     @instance
     @desc Fired when the mouse is pushed on the window bar after children have recieved the event. Starts dragging.
     @param [MouseDownEvent] event -- the mouse down event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function Window:onMouseDownAfter( event )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
@@ -221,7 +221,7 @@ end
     @instance
     @desc Fired when the mouse is dragged anywhere on screen. Moves the window if dragging
     @param [Event] event -- the mouse drag event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function Window:onGlobalMouseDrag( event )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
@@ -248,7 +248,7 @@ end
     @instance
     @desc Fired when the mouse is released anywhere on screen. Stops dragging
     @param [Event] event -- the mouse up event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function Window:onGlobalMouseUp( event )
     if (self.isDragging or self.isResizingX or self.isResizingY ) and event.mouseButton == MouseEvent.mouseButtons.LEFT then

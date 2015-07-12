@@ -3,6 +3,7 @@ class "Text" extends "GraphicsObject" {
 	font = nil;
 	text = nil;
 	textColour = nil;
+	alignment = Font.alignments.LEFT
 }
 
 function Text:init( x, y, width, height, text, font, textColour )
@@ -44,14 +45,16 @@ function Text:drawTo( canvas )
 		local width = self.width
 
 		-- TODO: font alignment
-		-- local fontWidth = font:getWidth( self.text )
-		-- local x = 1
-		-- if self.alignment == Font.alignments.CENTRE then
-		-- 	x = math.floor( width / 2 - fontWidth / 2 + 1 )
-		-- elseif self.alignment == Font.alignments.RIGHT then
-		-- 	x = width - fontWidth + 1
-		-- end
-        font:render( canvas, self.text, self.x, self.y, self.textColour )
+		local fontWidth = font:getWidth( self.text )
+		local x = 1
+		local alignment = self.alignment
+		if alignment == Font.alignments.CENTRE then
+			error( "TODO: Font.alignments.CENTRE" )
+			-- x = math.floor( width / 2 - fontWidth / 2 + 1 )
+		elseif alignment == Font.alignments.RIGHT then
+			x = width - fontWidth + 1
+		end
+        font:render( canvas, self.text, self.x + x - 1, self.y, self.textColour )
 	end
 	return self
 end

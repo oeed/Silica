@@ -95,7 +95,7 @@ end
     @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function Scrollbar:onGlobalMouseUp( event )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
@@ -107,7 +107,7 @@ end
     @instance
     @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
     @param [MouseDownEvent] event -- the mouse down event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function Scrollbar:onMouseDown( event )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
@@ -122,7 +122,7 @@ end
     @instance
     @desc Fired when the mouse is dragged anywhere on screen. Moves the window if dragging
     @param [Event] event -- the mouse drag event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function Scrollbar:onGlobalMouseDrag( event )
     if self.isPressed and self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then

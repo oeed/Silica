@@ -291,7 +291,8 @@ function class:new( ... )
 
 	local proxyId = tostring( proxy):sub( 8 ) -- remove 'table: ' from the id
 	function proxy.mt:__tostring()
-		return 'instance of `' .. _class.className .. '`: ' .. proxyId
+		local identifier = proxy.identifier
+		return "instance of `" .. _class.className .. "`" .. (identifier and " ('" .. identifier .. "')" or "") .. ": " .. proxyId
 	end
 
 	setmetatable( proxy, proxy.mt )

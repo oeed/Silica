@@ -1,6 +1,7 @@
 
 class "KeyEvent" extends "Event" {
 	keyCode = false;
+	keyString = false;
 	isCharacter = false;
 }
 
@@ -11,6 +12,7 @@ class "KeyEvent" extends "Event" {
 ]]
 function KeyEvent:init( keyCode )
 	self.keyCode = keyCode
+	self.keyString = KeyboardShortcutManager.convert( keyCode ) or false
 	-- TODO: this needs testing
 	self.isCharacter = (2 <= keyCode and keyCode <= 13) or (16 <= keyCode and keyCode <= 27) or (30 <= keyCode and keyCode <= 41) or (44 <= keyCode and keyCode <= 53)
 end

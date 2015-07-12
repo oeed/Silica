@@ -58,7 +58,7 @@ end
 	@desc Creates an event with the arguments in a table from os.pullEvent or similar function
 	@param [Event.eventTypes] eventType -- the event type
 	@param ... -- the event arguments
-	@returns [Event] event
+	@return [Event] event
 ]]
 function Event.create( eventType, ... )
 	if not eventType then error( "No event type given to Event.create!", 0 ) end

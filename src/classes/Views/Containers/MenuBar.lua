@@ -32,8 +32,8 @@ function MenuBar:updateLayout()
 	self.needsLayoutUpdate = false
 end
 
-function MenuBar:update()
-    self.super:update()
+function MenuBar:update( deltaTime )
+    self.super:update( deltaTime )
     if self.needsLayoutUpdate then
         self:updateLayout()
     end

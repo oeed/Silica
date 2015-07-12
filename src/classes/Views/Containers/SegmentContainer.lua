@@ -25,8 +25,8 @@ function SegmentContainer:updateLayout()
 	end
 end
 
-function SegmentContainer:update()
-    self.super:update()
+function SegmentContainer:update( deltaTime )
+    self.super:update( deltaTime )
     if self.needsLayoutUpdate then
         self:updateLayout()
     end

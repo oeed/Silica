@@ -152,7 +152,7 @@ end
     @instance
     @desc Fired when the owned menu opens or closes
     @param [Event] event -- the menu changed event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function MenuButton:onMenuChanged( event )
     self:updateArrows()

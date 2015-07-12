@@ -40,7 +40,7 @@ end
 function ApplicationContainer:setThemeName( themeName )
 	self.themeName = themeName
 	-- TODO: there might be a need to do this within Application so it doesn't set the theme when a container is initiailsed
-	Theme.active = Theme( themeName )
+	Theme.active = Theme.named( themeName )
 end
 
 function ApplicationContainer:draw()
@@ -51,7 +51,7 @@ end
     @instance
     @desc Fired when the mouse is released and doesn't hit anything else. Unfocuses the focused view, if any.
     @param [MouseDownEvent] event -- the mouse up event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function ApplicationContainer:onMouseUp( event )
 	local application = self.application

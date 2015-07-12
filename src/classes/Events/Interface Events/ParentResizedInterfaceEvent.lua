@@ -10,8 +10,8 @@ class "ParentResizeInterfaceEvent" extends "InterfaceEvent" {
 --[[
 	@constructor
 	@desc Creates a parent resized event from the arguments
-	@param [bool] isHorizontal -- whether the change effected the width
-	@param [bool] isVertical -- whether the change effected the height
+	@param [boolean] isHorizontal -- whether the change effected the width
+	@param [boolean] isVertical -- whether the change effected the height
 	@param [Container] sender -- the parent that resized
 ]]
 function ParentResizeInterfaceEvent:init( isHorizontal, isVertical, sender )

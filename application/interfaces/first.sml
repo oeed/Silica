@@ -1,12 +1,12 @@
 <FirstApplicationContainer themeName=red>
 	<MenuBar width="100%" >
-		<MenuBarItem text=File menuName=menu />
-		<MenuBarItem text=Edit menuName=menu />
+		<MenuBarItem text=File menuName=file />
+		<MenuBarItem text=Edit menuName=edit />
 	</MenuBar>
 
 	<Button identifier=firstButton x=100 y=20 text="Open Second" />
 
-	<MenuButton x=190 y=20 text=Menu menuName=menu />
+	<!-- <MenuButton x=190 y=20 text=Menu menuName=file /> -->
 	
 	<TextBox width=130 x=100 y=50 text="I'm a text box!" />
 

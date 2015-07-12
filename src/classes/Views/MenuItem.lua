@@ -28,32 +28,61 @@ function MenuItem:init( ... )
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self:event( Event.KEYBOARD_SHORTCUT, self.onKeyboardShortcut )
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
-    if self.onActivated then self:event( Event.MOUSE_UP, self.onActivated ) end
 end
 
 function MenuItem:initCanvas()
     self.super:initCanvas()
     local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
     local textObject = self.canvas:insert( Text( 7, 3, self.height, self.width - TEXT_MARGIN, self.text ) )
-    log('made '..tostring(self))
+    local keyboardShortcut = self.keyboardShortcut
+    local shortcutObject = self.canvas:insert( Text( 1, 3, self.height, self.width - TEXT_MARGIN, keyboardShortcut and keyboardShortcut:symbols() or "" ) )
+    shortcutObject.alignment = Font.alignments.RIGHT
     self.theme:connect( backgroundObject, "fillColour" )
     self.theme:connect( textObject, "textColour" )
+    self.theme:connect( shortcutObject, "textColour", "shortcutColour" )
 
     self.backgroundObject = backgroundObject
     self.textObject = textObject
+    self.shortcutObject = shortcutObject
 
     if not self.font then
         self.font = Font.systemFont
     end
 end
 
+function MenuItem:setShortcut( shortcut )
+    if shortcut and #shortcut > 0 then
+        self.keyboardShortcut = KeyboardShortcut.fromString( shortcut ) or false
+    else
+        self.keyboardShortcut = false
+    end
+end
+
 function MenuItem:setFont( font )
     self.font = font
     local textObject = self.textObject
+    local shortcutObject = self.shortcutObject
     if textObject then
-        local fontWidth = self.font:getWidth( text )
-        self.width = fontWidth + TEXT_MARGIN
-        self.textObject.font = font
+        textObject.font = font
+        shortcutObject.font = font
+        self:updateText()
+    end
+end
+
+function MenuItem:updateText()
+    local text = self.text
+    local keyboardShortcut = self.keyboardShortcut
+    local symbols = keyboardShortcut and keyboardShortcut:symbols()
+    local textObject = self.textObject
+    local shortcutObject = self.shortcutObject
+
+    if textObject then
+        local textWidth = self.font:getWidth( text )
+        local shortcutWidth = symbols and self.font:getWidth( symbols ) or 0
+        local width = textWidth + TEXT_MARGIN + ( shortcutWidth ~= 0 and shortcutWidth + 8 or 0 )
+        self.width = width
+        textObject.text = text
+        shortcutObject.text = symbols
         local parent = self.parent
         if parent then
             parent.needsLayoutUpdate = true
@@ -61,23 +90,22 @@ function MenuItem:setFont( font )
     end
 end
 
+
 function MenuItem:setText( text )
     self.text = text
-    local textObject = self.textObject
-    if textObject then
-        local fontWidth = self.font:getWidth( text )
-        self.width = fontWidth + TEXT_MARGIN
-        self.textObject.text = text
-        local parent = self.parent
-        if parent then
-            parent.needsLayoutUpdate = true
-        end
-    end
+    self:updateText()
+end
+
+function MenuItem:setKeyboardShortcut( keyboardShortcut )
+    self.keyboardShortcut = keyboardShortcut
+    self:updateText()
 end
 
 function MenuItem:updateWidth( width )
     self.backgroundObject.width = width
     self.textObject.width = width - TEXT_MARGIN
+    local shortcutObject = self.shortcutObject
+    shortcutObject.width = width - 5
 end
 
 function MenuItem:updateHeight( height )
@@ -102,12 +130,13 @@ end
     @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function MenuItem:onGlobalMouseUp( event )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
+            if self.event:handleEvent( ActionInterfaceEvent( self ) ) then return true end
             self.parent:close()
             return self.event:handleEvent( event )
         end
@@ -119,7 +148,7 @@ end
     @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function MenuItem:onMouseDown( event )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
@@ -132,16 +161,17 @@ end
     @instance
     @desc Fired when the a keyboard shortcut is fired
     @param [Event] event -- the keyboard shortcut
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function MenuItem:onKeyboardShortcut( event )
     if self.isEnabled then
         local keyboardShortcut = self.keyboardShortcut
         if keyboardShortcut and keyboardShortcut:matchesEvent( event ) then
-            self.parent:close()
-            if self.onActivated then
-                self:onActivated( event )
-            end    
+            local parent = self.parent
+            local owner = parent.owner
+            if owner:typeOf( MenuBarItem ) then owner:flash() end
+            if self.event:handleEvent( ActionInterfaceEvent( self ) ) then return true end
+            parent:close()
             return true
         end
     end

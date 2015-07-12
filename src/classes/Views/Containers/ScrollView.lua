@@ -128,7 +128,7 @@ end
 	@instance
 	@desc Fired when the mouse is scrolled over the scroll view
 	@param [Event] event -- the mouse scroll event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function ScrollView:onMouseScroll( event )
 	if self.isEnabled then

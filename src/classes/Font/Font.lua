@@ -46,9 +46,9 @@ class "Font" {
 
 	alignments = {
 		LEFT = 0;
-		CENTER = 0;
-		RIGHT = 0;
-		JUSTIFIED = 0;
+		CENTER = 1;
+		RIGHT = 2;
+		JUSTIFIED = 3;
 	};
 }
 

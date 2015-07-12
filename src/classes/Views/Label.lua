@@ -51,8 +51,8 @@ function Label:setIsEnabled( isEnabled )
     self:updateThemeStyle()
 end
 
-function Label:update()
-    self.super:update()
+function Label:update( deltaTime )
+    self.super:update( deltaTime )
     if self.needsAutosize then
         self:autosize()
     end

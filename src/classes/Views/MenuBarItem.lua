@@ -12,6 +12,7 @@ class "MenuBarItem" extends "View" {
     backgroundObject = false;
     menu = false;
     menuName = false;
+    isFlashing = false;
 
 }
 
@@ -49,7 +50,6 @@ function MenuBarItem:onParentChanged( event )
         if parent then
             menu.x = self.x + parent.x - 6
             menu.y = self.y + parent.y + 7
-            log(menu.x)
             local parentParent = parent.parent
             if parentParent then
                 parentParent:insert( menu )
@@ -125,13 +125,38 @@ function MenuBarItem:updateHeight( height )
     self.backgroundObject.height = height
 end
 
+function MenuBarItem:update( deltaTime )
+    self.super:update( deltaTime )
+    local isFlashing = self.isFlashing
+    if isFlashing then
+        if isFlashing <= 0 then
+            self.isFlashing = false
+        else
+            self.isFlashing = isFlashing - deltaTime
+        end
+    end
+end
+
+--[[
+    @instance
+    @desc Make the menu bar item flash for a brief period of time
+]]
+function MenuBarItem:flash()
+    self.isFlashing = 0.3
+end
+
+function MenuBarItem:setIsFlashing( isFlashing )
+    self.isFlashing = isFlashing
+    self:updateThemeStyle()
+end
+
 --[[
     @instance
     @desc Whether the button is pressed or open
     @return [boolean] isActive -- whether the button is active
 ]]
 function MenuBarItem:getIsActive()
-    return self.isPressed or self.menu.isOpen
+    return self.isPressed or self.isFlashing or self.menu.isOpen
 end
 
 function MenuBarItem:updateThemeStyle()
@@ -152,7 +177,7 @@ end
     @instance
     @desc Fired when the mouse is released anywhere on screen. Toggles the menu if it hit tests.
     @param [Event] event -- the mouse up event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function MenuBarItem:onGlobalMouseUp( event )
     if self.isEnabled and self.isPressed then
@@ -167,7 +192,7 @@ end
     @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function MenuBarItem:onMouseDown( event )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
@@ -180,7 +205,7 @@ end
     @instance
     @desc Fired when the owned menu opens or closes
     @param [Event] event -- the menu changed event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function MenuBarItem:onMenuChanged( event )
     self:updateThemeStyle()

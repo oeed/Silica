@@ -80,7 +80,6 @@ end
 
 function Application:setContainer( container )
 	self.container = container
-	-- Theme.active = Theme( container.themeName )
 end
 
 --[[

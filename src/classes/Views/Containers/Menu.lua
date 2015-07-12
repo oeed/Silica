@@ -136,8 +136,8 @@ function Menu:updateLayout()
 	self.needsLayoutUpdate = false
 end
 
-function Menu:update()
-    self.super:update()
+function Menu:update( deltaTime )
+    self.super:update( deltaTime )
     if self.needsLayoutUpdate then
         self:updateLayout()
     end
@@ -228,7 +228,11 @@ function Menu:close()
 		self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
 	end
 	if self.isSingleShot then
-		-- TODO: dispose menu if single shot
-		self.parent:remove( self )
+		self:dispose()
 	end
+end
+
+function Menu:dispose()
+	self.super:dispose()
+	self.parent:remove( self )
 end

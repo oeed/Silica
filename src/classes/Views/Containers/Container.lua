@@ -16,9 +16,6 @@ function Container:init( ... )
 	self.super:init( ... )
 
 	self:event( Event.INTERFACE_OUTLET_CHANGED, self.onInterfaceOutletChanged )
-	for name, func in pairs( self.interfaceOutletActions ) do
-
-	end
 end
 
 function Container:onInterfaceOutletChanged( event )
@@ -36,8 +33,10 @@ function Container:onInterfaceOutletChanged( event )
 			if oldView ~= newView then
 				interfaceOutletActions = interfaceOutletActions == false and self.interfaceOutletActions or interfaceOutletActions
 				local func = interfaceOutletActions[k]
-				if oldView and #oldView == 0 then oldView.event:disconnect( ACTION, func, BEFORE, nil, self ) end
-				if newView and #newView == 0 then newView:event( ACTION, func, BEFORE, nil, self ) end
+				if func then
+					if oldView and #oldView == 0 then oldView.event:disconnect( ACTION, func, BEFORE, nil, self ) end
+					if newView and #newView == 0 then newView:event( ACTION, func, BEFORE, nil, self ) end
+				end
 			end
 		end
 	end
@@ -73,6 +72,7 @@ end
 ]]
 function Container:update( deltaTime )
 	self.super:update( deltaTime )
+	if not deltaTime then log(self) end
 	for i, childView in ipairs( self.children ) do
 		childView:update( deltaTime )
 	end

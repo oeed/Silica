@@ -119,8 +119,8 @@ function Button:setRightMargin( rightMargin )
     self.needsAutosize = true
 end
 
-function Button:update()
-    self.super:update()
+function Button:update( deltaTime )
+    self.super:update( deltaTime )
     if self.needsAutosize then
         self:autosize()
     end
@@ -180,7 +180,7 @@ end
 --[[
     @instance
     @desc Sets whether the button is focused. DO NOT CALL/SET THIS DIRECTLY! Use :focus and :unfocus instead.
-    @param [bool] isFocused -- whether the button is focused
+    @param [boolean] isFocused -- whether the button is focused
 ]]
 function Button:setIsFocused( isFocused )
     local wasFocused = self.isFocused
@@ -210,7 +210,7 @@ end
     @instance
     @desc Fired when the focused view changes
     @param [FocusChangedInterfaceEvent] event -- the focus changed event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function Button:onFocusChanged( event )
     self.isFocused = ( self == event.newFocus )
@@ -220,7 +220,7 @@ end
     @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function Button:onGlobalMouseUp( event )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
@@ -237,7 +237,7 @@ end
     @instance
     @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
     @param [MouseDownEvent] event -- the mouse down event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function Button:onMouseDown( event )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
@@ -250,7 +250,7 @@ end
     @instance
     @desc Fired when a key is pressed down. Presses the button down if it isin focus and it was the enter key.
     @param [KeyDownEvent] event -- the key down event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function Button:onKeyDown( event )
     if self.isEnabled and self.isFocused and event.keyCode == keys.enter then
@@ -263,7 +263,7 @@ end
     @instance
     @desc Fired when a key is pressed released. Fires the button action if the button is pressed, in focus and it was the enter key.
     @param [KeyUpEvent] event -- the key down event
-    @return [bool] preventPropagation -- prevent anyone else using the event
+    @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function Button:onKeyUp( event )
     if self.isEnabled and self.isPressed and self.isFocused and event.keyCode == keys.enter then
