@@ -14,7 +14,7 @@ end
     @return [table] fill -- the pixels to fill
 ]]
 function Rectangle:getFill()
-	-- if self.fill then return self.fill end
+	if self.fill then return self.fill end
 
 	local fill = {}
 	local height = self.height
@@ -25,5 +25,7 @@ function Rectangle:getFill()
 		end
 		fill[x] = fillX
 	end
+
+	self.fill = fill
 	return fill
 end

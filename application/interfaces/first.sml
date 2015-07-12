@@ -1,4 +1,4 @@
-<FirstApplicationContainer themeName=red>
+<FirstApplicationContainer>
 	<MenuBar width="100%" >
 		<MenuBarItem text=File menuName=file />
 		<MenuBarItem text=Edit menuName=edit />
@@ -9,6 +9,7 @@
 	<!-- <MenuButton x=190 y=20 text=Menu menuName=file /> -->
 	
 	<TextBox width=130 x=100 y=50 text="I'm a text box!" />
+	<MaskedTextBox width=130 x=100 y=80 placeholder="Password" />
 
 	<!-- <TestView identifier=testview left="10%" right="100% - 10" top=20 height=100/> -->
 

@@ -9,7 +9,7 @@ function FirstApplicationContainer:init( ... )
 end
 
 function FirstApplicationContainer:onReady( event )
-	self.firstButton:focus()
+	-- self.firstButton:focus()
 end
 
 function FirstApplicationContainer:onFirstButton( event )

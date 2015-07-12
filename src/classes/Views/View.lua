@@ -22,7 +22,7 @@ class "View" {
 	siblings = false;
 	identifier = false;
 
-	animations = { names = {} };
+	animations = {};
 
 	event = false;
 
@@ -54,6 +54,7 @@ class "View" {
 	@param [table] properties -- the properties for the view
 ]]
 function View:init( properties )
+	self.animations.names = {} 
 	self:initTheme()
 	self:initCanvas()
 	self:initEventManager()
@@ -629,6 +630,19 @@ function View:update( dt )
 			end
 		end
 	end
+end
+
+--[[
+	@instance
+	@desc Animate a change in a certain property
+	@param [string] propertyName -- the name of the property
+	@param [number] value -- the target value
+	@param [number] time -- the duration of the animation
+	@param [function] onFinish -- the function called on completion of the animation
+	@param [Animation.easing] easing -- the easing function of the animation
+]]
+function View:animate( propertyName, value, time, onFinish, easing )
+	newAnimation( self, propertyName, time or DEFAULT_TIME, { [propertyName] = value }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
 end
 
 --[[

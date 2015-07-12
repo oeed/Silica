@@ -115,8 +115,11 @@
 		<leftMargin type="number" default="7" />
 		<rightMargin type="number" default="7" />
 		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
+		<selectionColour type="Graphics.colours" default="LIGHT_BLUE" />
 		<textColour type="Graphics.colours" default="BLACK" disabled="LIGHT_GREY"/>
-		<outlineColour type="Graphics.colours" default="LIGHT_GREY" focused="BLUE" pressed="LIGHT_GREY" />
+		<cursorColour type="Graphics.colours" default="BLACK" />
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" focused="BLUE" pressed="BLUE" />
+		<placeholderColour type="Graphics.colours" default="LIGHT_GREY" />
 	</TextBox>
 
 	<ApplicationContainer>

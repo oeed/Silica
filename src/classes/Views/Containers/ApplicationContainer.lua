@@ -15,6 +15,11 @@ class "ApplicationContainer" extends "Container" {
 ]]
 function ApplicationContainer:init( ... )
 	self.super:init( ... )
+
+	if not self.themeName then
+		self.themeName = "default"
+	end
+
     self.theme:connect( self.canvas, "fillColour" )
     self:event( Event.MOUSE_DOWN, self.onMouseUp, EventManager.phase.AFTER )
 end
@@ -22,14 +27,6 @@ end
 function ApplicationContainer:initCanvas()
 	local canvas = ScreenCanvas( self.x, self.y, self.width, self.height )
     self.canvas = canvas
-end
-
---[[
-	@instance
-	@desc Returns the theme name, reverting to default if not defined
-]]
-function ApplicationContainer:getThemeName()
-	return self.themeName or "default"
 end
 
 --[[

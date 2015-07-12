@@ -6,6 +6,8 @@ class "FileMenu" extends "Menu" {
 }
 
 function FileMenu:onAlertMenuItem( event )
+	local path = "src/afgds/../a"
+	log( path:gsub( "[^/]+/%.%.", "" ):gsub( "/%.", "" ):gsub( "//+", "/" ) )
 end
 
 function FileMenu:onRebootMenuItem( event )

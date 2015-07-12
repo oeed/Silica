@@ -22,7 +22,7 @@ end
 	@return [boolean] stopPropagation
 ]]
 function ExampleApplication:onChar( event )
-	if event.character == '\\' then
+	if not self.focus and event.character == '\\' then
 		os.reboot()
 	end
 end

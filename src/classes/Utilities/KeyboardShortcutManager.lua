@@ -15,6 +15,7 @@ local keyStrings = {
 	"f3",	"f4",	"f5",	"f6",	"f7",
 	"f8",	"f9",	"f10",	[87] = "f11",
 	[88] = "f12",	[153] = "ctrl",
+	[199] = "home",	[207] = "end",
 	[184] = "alt",	[200] = "up",
 	[203] = "left",	[205] = "right",
 	[208] = "down",	[211] = "delete",				
@@ -46,11 +47,11 @@ end
 
 function KeyboardShortcutManager:onGlobalKeyDown( event )
 	local keyString = event.keyString
-	if keyString and not self.keysDown[keyString] then
+	if keyString then
 		self.keysDown[keyString] = true
-		self:sendEvent()
 		self.keysUpdates[keyString] = os.clock()
 		self.owner:schedule( self.onKeyTimeout, 10, self, keyString )
+		return self:sendEvent()
 	end
 end
 
@@ -101,7 +102,7 @@ end
 	@desc Send the keyboard shortcut event of the currently held keys
 ]]
 function KeyboardShortcutManager:sendEvent()
-	self.owner.event:handleEvent( KeyboardShortcutEvent( self.keysDown ) )
+	return self.owner.event:handleEvent( KeyboardShortcutEvent( self.keysDown ) )
 end
 
 --[[

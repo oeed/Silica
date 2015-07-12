@@ -164,7 +164,7 @@ function Font:getWidth( text )
 	local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing
 	for i = 1, #text do
 		local char = text:byte( i )
-		local bitmap
+		local scale, bitmap = scale -- localise scale so it can be changed if the character isn't defined
 		if characters[char] then
 			bitmap = characters[char]
 		else
@@ -173,7 +173,24 @@ function Font:getWidth( text )
 		end
 		width = width + bitmap.width * scale + spacing * scale
 	end
-	width = width - spacing -- remove the last undedded bit of spacing at the end
+	return width
+end
+
+function Font:getRawWidth( text )
+	if not text then return 0 end
+	local width = 0
+	local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing
+	for i = 1, #text do
+		local char = text:byte( i )
+		local scale, bitmap = scale -- localise scale so it can be changed if the character isn't defined
+		if characters[char] then
+			bitmap = characters[char]
+		else
+			bitmap = no_char_map
+			scale = desiredHeight / 6
+		end
+		width = width + bitmap.width * scale
+	end
 	return width
 end
 

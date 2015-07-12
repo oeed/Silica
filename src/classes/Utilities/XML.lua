@@ -1,4 +1,6 @@
 
+-- TODO: XML bug. backslashes in attributes don't work. A single "\" results in: expected '"' to close string. While "\\"" results in two backslashes being the parsed text
+
 local function fromXMLString( value )
 	value = string.gsub(value, "&#x( [%x]+ )%;",
 		function( h ) 

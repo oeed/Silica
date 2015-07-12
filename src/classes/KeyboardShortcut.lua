@@ -57,17 +57,5 @@ end
 	@return [boolean] isMatch -- whether the keyboard shortcut was a match (i.e. the keys are down)
 ]]
 function KeyboardShortcut:matchesEvent( event )
-	local eventKeys = event.keys
-	for i, keyString in ipairs( self.keys ) do
-		if not eventKeys[keyString] then
-			return false
-		end
-	end
-
-	local eventKeysLength = 0
-	for keyString, _ in pairs( eventKeys ) do
-		eventKeysLength = eventKeysLength + 1
-	end
-
-	return eventKeysLength == #self.keys
+	return event:matchesKeys( self.keys )
 end

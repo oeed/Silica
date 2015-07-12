@@ -169,8 +169,10 @@ function Menu:onGlobalMouseDown( event )
 	if self.isVisible then
 		if self.hitTestOwner and self.owner and self.owner:hitTestEvent( event ) then
 			self.owner.event:handleEvent( event )
+			return true
 		elseif self:hitTestEvent( event ) then
 			self.event:handleEvent( event )
+			return true
 		else
 			self:close()
 		end
