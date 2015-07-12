@@ -15,7 +15,7 @@ function MouseScrollEvent:init( direction, x, y )
 	self.direction = direction
 	self.x = x
 	self.y = y
-	self.globalX = globalX
-	self.globalY = globalY
+	self.globalX = x
+	self.globalY = y
 end
 

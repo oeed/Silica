@@ -25,7 +25,7 @@ class "Event" {
 	SIBLING_REMOVED = "interface_sibling_removed";
 	PARENT_CHANGED = "interface_parent_changed";
 	PARENT_RESIZED = "interface_parent_resized";
-	READY = "interface_ready";
+	INTERFACE_READY = "interface_ready";
 	INTERFACE_OUTLET_CHANGED = "interface_outlet_changed";
 	ACTION = "interface_action";
 
@@ -61,7 +61,7 @@ end
 	@returns [Event] event
 ]]
 function Event.create( eventType, ... )
-	if not eventType then error( "No event type given to Event.create!" ) end
+	if not eventType then error( "No event type given to Event.create!", 0 ) end
 
 	local eventClass = eventClasses[eventType]
 	if eventClass then

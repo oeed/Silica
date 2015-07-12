@@ -3,12 +3,12 @@ class "MenuButton" extends "Button" {
 
     width = 45;
 
-    menu = nil;
+    menu = false;
 
     menuMargin = 5;
 
-    closeArrowObject = nil;
-    openArrowObject = nil;
+    closeArrowObject = false;
+    openArrowObject = false;
 
     needsArrowUpdate = false;
 }
@@ -19,7 +19,9 @@ class "MenuButton" extends "Button" {
 ]]
 function MenuButton:init( ... )
     self.super:init( ... )
-    menu = Menu.fromInterface( "menu" )
+    local menuName = self.menuName
+    if not menuName then error( "MenuButtons must specify the property menuName (the name of the interface file to use).", 0 ) end
+    menu = Menu.fromInterface( menuName )
     menu.owner = self
     menu.isSingleShot = false
     menu.isVisible = false

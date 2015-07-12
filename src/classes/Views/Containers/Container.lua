@@ -286,3 +286,10 @@ function Container:findChildren( identifier, descendTree )
 	end
 	return children
 end
+
+function Container:dispose()
+	self.super:dispose()
+	for i, childView in ipairs( self.children ) do
+		childView:dispose()
+	end
+end

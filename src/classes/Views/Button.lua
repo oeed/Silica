@@ -12,6 +12,7 @@ class "Button" extends "View" {
 
     shadowObject = nil;
     backgroundObject = nil;
+    isFocusDismissable = false;
     textObject = nil;
 
     needsAutosize = false;
@@ -226,9 +227,10 @@ end
 function Button:onGlobalMouseUp( event )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
-        self.event:handleEvent( ActionInterfaceEvent( self ) )
         if self.isEnabled and self:hitTestEvent( event ) then
-            return self.event:handleEvent( event )
+            self.event:handleEvent( ActionInterfaceEvent( self ) )
+            local result = self.event:handleEvent( event )
+            return result == nil and true or result
         end
     end
 end
@@ -255,8 +257,8 @@ end
 function Button:onKeyDown( event )
     if self.isEnabled and self.isFocused and event.keyCode == keys.enter then
         self.isPressed = true
+        return true
     end
-    return true
 end
 
 --[[
@@ -268,6 +270,7 @@ end
 function Button:onKeyUp( event )
     if self.isEnabled and self.isPressed and self.isFocused and event.keyCode == keys.enter then
         self.isPressed = false
+        self.event:handleEvent( ActionInterfaceEvent( self ) )
+        return true
     end
-    return true
 end

@@ -14,7 +14,6 @@ function ContainerEventManager:handleEvent( event )
 		return true
 	end
 
-
 	if event.isSentToChildren then
 		local owner = self.owner
 		local children = owner.children

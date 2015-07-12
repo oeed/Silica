@@ -55,6 +55,7 @@ function Radio:setIsChecked( isChecked )
             sibling.isChecked = false
         end
     end
+    self.event:handleEvent( ActionInterfaceEvent( self ) )
     self:updateThemeStyle()
 end
 

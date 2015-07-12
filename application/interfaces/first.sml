@@ -1,12 +1,19 @@
 <FirstApplicationContainer themeName=red>
+	<Container x=30 width=200 height=50>
+		<Container x=50 width=200 height=50>
+			<Button identifier=firstButton x=10 y=10 text="Open Second" />
+		</Container>
+	</Container>
 
-	<Button identifier=firstButton x=100 y=10 text="Open Second" />
+	<MenuButton x=20 y=30 text=Menu menuName=menu />
+	
+	<TextBox width=130 x=10 y=50 text="I'm a text box!" />
 
 	<!-- <TestView identifier=testview left="10%" right="100% - 10" top=20 height=100/> -->
 
-	<!-- <Window x=50 y=100 width=100 height=60 >
+	<Window x=50 y=100 width=100 height=60 >
 		<WindowContainer>
-			<ProgressBar x=6 y=35 />
+			<!-- <ProgressBar x=6 y=35 /> -->
 			<Button x=5 y=5 text=Okay />
 			<Checkbox identifier=agreeCheckbox x=5 y=25 isChecked=true />
 			<Container x=50 y=5 width=20 height=40>
@@ -15,8 +22,8 @@
 				<Radio y=21/>
 			</Container>
 		</WindowContainer>
-	</Window> -->
-<!-- <MenuButton x=20 y=10 text="Test" /> -->
+	</Window>
+
 <!-- <AlertWindow></AlertWindow> -->
 	<!-- <Button identifier=okayButton x=10 y=10 text=Okay />
 

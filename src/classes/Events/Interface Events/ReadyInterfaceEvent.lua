@@ -1,6 +1,6 @@
 
 class "ReadyInterfaceEvent" extends "InterfaceEvent" {
-	eventType = Event.READY;
+	eventType = Event.INTERFACE_READY;
 	isInit = false; -- whether the event is the first one called in Application:init
 }
 

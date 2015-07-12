@@ -54,5 +54,14 @@ end
     @return [bool] preventPropagation -- prevent anyone else using the event
 ]]
 function ApplicationContainer:onMouseUp( event )
-    self.application:clearFocus()
+	local application = self.application
+	local focus = application.focus
+	if focus and focus.isFocusDismissable then
+	    application:clearFocus()
+	end
+end
+
+function ApplicationContainer:dispose()
+	self.super:dispose()
+	self.application:clearFocus()
 end

@@ -8,7 +8,7 @@ function AlertWindow:init( ... )
 	self.super:init( ... )
 
 	self:event( Event.INTERFACE_LOADED, self.onInterfaceLoaded )
-	self:event( Event.READY, self.onReady )
+	self:event( Event.INTERFACE_READY, self.onReady )
 
 	self.width = 100
 	self.height = 40

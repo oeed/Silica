@@ -3,20 +3,20 @@
 -- each one needs to have its own ID and return that ID
 
 class "Application" {
-	name = nil;
-	path = nil;
-	updateTimer = nil;
+	name = false;
+	path = false;
+	updateTimer = false;
 	lastUpdate = 0;
 	arguments = {};
 	isRunning = false;
-	container = nil;
-	event = nil;
+	container = false;
+	event = false;
 	schedules = {};
 	resourceDirectories = false; -- the folders in which the applications resources are
-	keyboardShortcutManager = nil;
-	focus = nil;
+	keyboardShortcutManager = false;
+	focus = false;
 
-	interfaceName = nil;
+	interfaceName = false;
 
 	-- TODO: exit codes
 	exitCode = {
@@ -33,7 +33,7 @@ class "Application" {
 ]]
 function Application:init()
 	if type( self.resourceDirectories ) ~= "table" then
-		error( "Application resource directories wasn't specified or invalid. Make sure you're not tampering with the value and/or you're supplying a valid value." )
+		error( "Application resource directories wasn't specified or invalid. Make sure you're not tampering with the value and/or you're supplying a valid value.", 0 )
 	end
 
 	self.event = ApplicationEventManager( self )
@@ -44,7 +44,6 @@ function Application:init()
 	
 	self:reloadInterface()
 
-	self.event:handleEvent( ReadyInterfaceEvent( true ) )
 	self.event:connect( Event.TIMER, self.onTimer )
 
 end
@@ -68,7 +67,7 @@ function Application:reloadInterface()
 
 	local oldContainer = self.container
 	if oldContainer then
-		self:clearFocus()
+		oldContainer:dispose()
 	end
 
 	if interfaceName then
@@ -76,6 +75,7 @@ function Application:reloadInterface()
 	else
 		self.container = ApplicationContainer()
 	end
+	self.event:handleEvent( ReadyInterfaceEvent( true ) )
 end
 
 function Application:setContainer( container )

@@ -279,7 +279,7 @@ end
 function XML.fromFile( filePath )
 	local h = fs.open( filePath, "r" )
 	if not h then
-		error( "Failed to open XML file: " .. filePath )
+		error( "Failed to open XML file: " .. filePath, 0 )
 	end
 
 	local text = h.readAll()

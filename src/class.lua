@@ -251,7 +251,7 @@ function class:new( ... )
 	local _rawSet = ( raw.set and type( raw.set ) == "function" ) and raw.set or nil
 	function proxy.mt:__newindex( k, v )
 		if k == "super" or k == "class" then
-			error( 'Cannot set reserved property: ' .. k)
+			error( 'Cannot set reserved property: ' .. k, 0 )
 		end
 
 		if not lockedSetters[k] then
@@ -373,6 +373,9 @@ function class:alias( shorthand, property )
 end
 
 -- @instance
+function class:dispose()end
+
+-- @instance
 function class:properties( properties )
 	for k, v in pairs( properties ) do
 		self[k] = v
@@ -423,7 +426,7 @@ local function extends( superName )
 		loadName( superName )
 		creating = ourCreating
 		if not classes[superName] then
-			error( 'Super class for `' .. creating.className .. '` was not found: ' .. superName )
+			error( 'Super class for `' .. creating.className .. '` was not found: ' .. superName, 0 )
 		end
 	end
 

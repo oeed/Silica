@@ -30,7 +30,7 @@ class "View" {
 	theme = false;
 	isCanvasHitTested = true;
 	isVisible = true;
-
+	isFocusDismissable = true; -- whether clicking away from the view when focused will unfocus it
 	isEnabled = true;
 
 	stringConstraints = {}; -- the constraints strings
@@ -73,7 +73,7 @@ function View:init( properties )
 
     self:event( Event.PARENT_RESIZED, self.onParentResizedConstraintUpdate )
     self:event( Event.PARENT_CHANGED, self.onParentChangedConstraintUpdate )
-    self:event( Event.READY, self.onReadyConstraintUpdate )
+    self:event( Event.INTERFACE_READY, self.onReadyConstraintUpdate )
 end
 
 function View:initTheme()
@@ -679,4 +679,8 @@ function View:resize( width, height, time, onFinish, easing )
 	end
 	self:animateWidth( width, time, type( onFinish ) == "function" and f, easing )
 	self:animateHeight( height, time, type( onFinish ) == "function" and f, easing )
+end
+
+function View:dispose()
+	self.event:dispose()
 end

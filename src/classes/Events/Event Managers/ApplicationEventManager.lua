@@ -26,9 +26,9 @@ function ApplicationEventManager:handleEvent( event )
 end
 
 function ApplicationEventManager:connectGlobal()
-	error( "Cannot connect global handle on ApplicationEventManager as it is the global handler. Use the class' own manager.")
+	error( "Cannot connect global handle on ApplicationEventManager as it is the global handler. Use the class' own manager.", 0 )
 end
 
 function ApplicationEventManager:disconnectGlobal()
-	error( "Cannot disconnect global handle on ApplicationEventManager as it is the global handler. Use the handler's own manager.")
+	error( "Cannot disconnect global handle on ApplicationEventManager as it is the global handler. Use the handler's own manager.", 0 )
 end

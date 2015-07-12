@@ -48,7 +48,7 @@ function EventManager:connect( eventType, func, phase, eventManager, sender )
 
 		table.insert( self.handles[eventType], { func, phase, eventManager, sender or eventManager.owner } )
 	else
-		error( "Attempted to connect non-function to event: " .. eventType .. ' for class: ' .. tostring( self.owner or nil ))
+		error( "Attempted to connect non-function to event: " .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )
 	end
 end
 
@@ -65,7 +65,7 @@ function EventManager:disconnect( eventType, func, phase, eventManager, sender )
 	sender = sender or eventManager.owner
 
 	if self.handles[eventType] then
-		for i, handle in ipairs( self.handles[eventType] ) do
+		for i, handle in pairs( self.handles[eventType] ) do
 			if handle[1] == func and handle[2] == phase and handle[3] == eventManager and handle[4] == sender then
 				self.handles[eventType][i] = nil
 			end
@@ -92,7 +92,7 @@ function EventManager:connectGlobal( eventType, func, phase )
 
 		self.application.event:connect( eventType, func, phase, self )
 	else
-		error( "Attempted to connect non-function to global event: " .. eventType .. ' for class: ' .. tostring( self.owner or nil ))
+		error( "Attempted to connect non-function to global event: " .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )
 	end
 end
 
@@ -107,10 +107,23 @@ function EventManager:disconnectGlobal( eventType, func, phase )
 	self.application.event:disconnect( eventType, func, phase, self )
 
 	if self.handlesGlobal[eventType] then
-		for i, handle in ipairs( self.handlesGlobal[eventType] ) do
+		for i, handle in pairs( self.handlesGlobal[eventType] ) do
 			if handle[1] == func and handle[2] == phase then
 				self.handlesGlobal[eventType][i] = nil
 			end
+		end
+	end
+end
+
+--[[
+	@instance
+	@desc Unsubscribes all global events
+]]
+function EventManager:disconnectAllGlobals()
+	for eventType, v in pairs( self.handlesGlobal ) do
+		for i, handle in pairs( v ) do
+			self.application.event:disconnect( eventType, handle[1], handle[2], self )
+			v[i] = nil
 		end
 	end
 end
@@ -160,8 +173,8 @@ end
 ]]
 function EventManager:handleEventPhase( event, phase )
 	if self.handles[event.eventType] then
-		for i, handle in ipairs( self.handles[event.eventType] ) do
-			if phase == handle[2] then
+		for i, handle in pairs( self.handles[event.eventType] ) do
+			if handle and phase == handle[2] then
 				-- handle[1] is the handle function
 				-- handle[2] is the phase
 				-- handle[3] is the event manager
@@ -171,4 +184,8 @@ function EventManager:handleEventPhase( event, phase )
 			end
 		end
 	end
+end
+
+function EventManager:dispose()
+	self:disconnectAllGlobals()
 end

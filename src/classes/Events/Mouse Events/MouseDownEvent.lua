@@ -15,6 +15,6 @@ function MouseDownEvent:init( mouseButton, x, y )
 	self.mouseButton = mouseButton
 	self.x = x
 	self.y = y
-	self.globalX = globalX
-	self.globalY = globalY
+	self.globalX = x
+	self.globalY = y
 end
