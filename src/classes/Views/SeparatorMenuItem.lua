@@ -31,12 +31,10 @@ function SeparatorMenuItem:setIsPressed( isPressed )
     self.isPressed = false
 end
 
-function SeparatorMenuItem:setWidth( width )
-    self.super.super:setWidth( width )
+function SeparatorMenuItem:updateWidth( width )
 	self.backgroundObject.width = width - 8
 end
 
-function SeparatorMenuItem:setHeight( height )
-    self.height = height
+function SeparatorMenuItem:updateHeight( height )
 	self.backgroundObject.height = 1
 end

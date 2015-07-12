@@ -56,9 +56,9 @@ function Interface:initContainer( nodes, extend )
 	local function insertTo( childNode, parentContainer )
 		local childClass = class.get( childNode.type )
 
-		if not containerClass then
+		if not childClass then
 			return "Class not found: " .. childNode.type
-		elseif not containerClass:typeOf( View ) then
+		elseif not childClass:typeOf( View ) then
 			return "Class does not extend 'View': " .. childNode.type
 		end
 
@@ -74,14 +74,16 @@ function Interface:initContainer( nodes, extend )
 				return "Class does not extend 'Container' but has children: " .. childNode.type
 			else
 				for i, _childNode in ipairs( childNode.body ) do
-					insertTo( _childNode, child )
+					local err = insertTo( _childNode, child )
+					if err then return err end
 				end
 			end
 		end
 	end
 
 	for i, childNode in ipairs( nodes.body ) do
-		insertTo( childNode, container )
+		local err = insertTo( childNode, container )
+		if err then return err end
 	end
 
 	self.container = container

@@ -37,14 +37,12 @@ function ProgressBar:initCanvas()
     self.stripesObject = stripesObject
 end
 
-function ProgressBar:setWidth( width )
-    self.super:setWidth( width )
+function ProgressBar:updateWidth( width )
     self.backgroundObject.width = width
     self.stripesObject.width = math.floor( ( self.value/self.maximum ) * width + 0.5 )
 end
 
-function ProgressBar:setHeight( height )
-    self.super:setHeight( height )
+function ProgressBar:updateHeight( height )
     self.backgroundObject.height = height
     self.stripesObject.height = height
 end

@@ -96,14 +96,12 @@ function Menu:showContext( owner, x, y )
 	self.isVisible = true
 end
 
-function Menu:setHeight( height )
-    self.super:setHeight( height )
+function Menu:updateHeight( height )
     self.backgroundObject.height = height - self.shadowTopMargin
     self.shadowObject.height = height - self.shadowTopMargin
 end
 
-function Menu:setWidth( width )
-    self.super:setWidth( width )
+function Menu:updateWidth( width )
 	local _width = width - self.shadowRightMargin
     self.backgroundObject.width = _width
     self.shadowObject.width = _width
@@ -154,12 +152,12 @@ end
 
 function Menu:insert( ... )
 	self.super:insert( ... )
-		self.needsLayoutUpdate = true
+	self.needsLayoutUpdate = true
 end
 
 function Menu:removeChild( ... )
 	self.super:removeChild( ... )
-		self.needsLayoutUpdate = true
+	self.needsLayoutUpdate = true
 end
 
 --[[
@@ -176,7 +174,6 @@ function Menu:onGlobalMouseDown( event )
 		else
 			self:close()
 		end
-		return true
 	end
 end
 

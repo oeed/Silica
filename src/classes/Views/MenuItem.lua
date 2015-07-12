@@ -35,7 +35,7 @@ function MenuItem:initCanvas()
     self.super:initCanvas()
     local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
     local textObject = self.canvas:insert( Text( 7, 3, self.height, self.width - TEXT_MARGIN, self.text ) )
-
+    log('made '..tostring(self))
     self.theme:connect( backgroundObject, "fillColour" )
     self.theme:connect( textObject, "textColour" )
 
@@ -75,14 +75,12 @@ function MenuItem:setText( text )
     end
 end
 
-function MenuItem:setWidth( width )
-    self.super:setWidth( width )
+function MenuItem:updateWidth( width )
     self.backgroundObject.width = width
     self.textObject.width = width - TEXT_MARGIN
 end
 
-function MenuItem:setHeight( height )
-    self.super:setHeight( height )
+function MenuItem:updateHeight( height )
     self.backgroundObject.height = height
 end
 

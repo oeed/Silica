@@ -15,4 +15,5 @@ end
 
 function TestView:setWidth( width )
 	self.super:setWidth( width )
+    width = self.width
 end

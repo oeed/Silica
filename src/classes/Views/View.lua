@@ -36,6 +36,7 @@ class "View" {
 	stringConstraints = {}; -- the constraints strings
 	loadedConstraints = {}; -- the parsed constraints
 	constraintsNeedingUpdate = {}; -- the constraints that need to be refreshed next update
+	needsConstraintUpdate = {}; -- whether the constraint values have changed and the view needs to be informed
 	references = {};
 	--[[ format:
 		{
@@ -248,9 +249,8 @@ function View:evalConstraint( property )
 
 	self.raw[property] = value
 	self.references[property] = references
-
-	self:updateConstraint( property, value )
-
+	
+	self.needsConstraintUpdate[self:updateConstraint( property, value )] = true
 	return value
 end
 
@@ -260,35 +260,43 @@ function View:updateConstraint( property, value )
 	if property == "top" then
 		self.raw.y = value
 		if canvas then canvas.y = value end
+		return "y"
 	elseif property == "bottom" then
 		if stringConstraints.height then
 			value = value - self.height + 1
 			self.raw.y = value
 			if canvas then canvas.y = value end
+			return "y"
 		else
 			value = value - self.y + 1
 			self.raw.height = value
 			if canvas then canvas.height = value end
+			return "height"
 		end
 	elseif property == "left" then
 		self.raw.x = value
 		if canvas then canvas.x = value end
+		return "x"
 	elseif property == "right" then
 		if stringConstraints.width then
 			value = value - self.width + 1
 			self.raw.x = value
 			if canvas then canvas.x = value end
+			return "x"
 		else
 			value = value - self.x + 1
 			self.raw.width = value
 			if canvas then canvas.width = value end
+			return "width"
 		end
 	elseif property == "width" then
 		self.raw.width = value
 		if canvas then canvas.width = value end
+		return "width"
 	elseif property == "height" then
 		self.raw.height = value
 		if canvas then canvas.height = value end
+		return "height"
 	end
 end
 
@@ -395,10 +403,11 @@ end
 
 -- @instance
 function View:setLeft( left )
+	local value
 	if left then
 		local stringConstraints = self.stringConstraints
 		stringConstraints.left = left
-		self:reloadConstraint "left"
+		value = self:reloadConstraint "left"
 		if stringConstraints.width then
 			stringConstraints.right = nil
 		elseif stringConstraints.right then
@@ -407,6 +416,7 @@ function View:setLeft( left )
 	else
 		self.stringConstraints.left = nil
 	end
+	return value
 end
 
 -- @instance 
@@ -416,10 +426,11 @@ end
 
 -- @instance 
 function View:setRight( right )
+	local value
 	if right then
 		local stringConstraints = self.stringConstraints
 		stringConstraints.right = right
-		self:reloadConstraint "right"
+		value = self:reloadConstraint "right"
 		if stringConstraints.width then
 			stringConstraints.left = nil
 		elseif stringConstraints.left then
@@ -428,6 +439,7 @@ function View:setRight( right )
 	else
 		self.stringConstraints.right = nil
 	end
+	return value
 end
 
 -- @instance 
@@ -437,11 +449,11 @@ end
 
 -- @instance 
 function View:setWidth( width )
+	local value
 	if width then
 		local stringConstraints = self.stringConstraints
 		stringConstraints.width = width
-		-- if self:typeOf(Button) then log('setting width to ' .. width .. ' for: '..tostring(self)) log(textutils.serialize(stringConstraints)) end
-		self:reloadConstraint "width"
+		value = self:reloadConstraint "width"
 		if stringConstraints.left then
 			stringConstraints.right = nil
 		elseif stringConstraints.right then
@@ -450,6 +462,7 @@ function View:setWidth( width )
 	else
 		self.stringConstraints.width = nil
 	end
+	return value
 end
 
 -- @instance 
@@ -459,12 +472,20 @@ end
 
 -- @instance 
 function View:setHeight( height )
+	local value
 	if height then
-		self.stringConstraints.height = height
-		self:reloadConstraint "height"
+		local stringConstraints = self.stringConstraints
+		stringConstraints.height = height
+		value = self:reloadConstraint "height"
+		if stringConstraints.top then
+			stringConstraints.bottom = nil
+		elseif stringConstraints.bottom then
+			stringConstraints.top = nil
+		end
 	else
 		self.stringConstraints.height = nil
 	end
+	return value
 end
 
 function View:setIsVisible( isVisible )
@@ -593,6 +614,19 @@ function View:update( dt )
 		if constraintsNeedingUpdate[v] then
 			self:reloadConstraint( v, true )
 			constraintsNeedingUpdate[v] = nil
+		end
+	end
+
+	if self.hasInit then
+		local needsConstraintUpdate = self.needsConstraintUpdate
+		for k, isChanged in pairs( needsConstraintUpdate ) do
+			if isChanged then
+				local constraintUpdate = self[k == "x" and "updateX" or k == "y" and "updateY" or k == "width" and "updateWidth" or k == "height" and "updateHeight"]
+				if constraintUpdate then
+					constraintUpdate( self, self.raw[k] )
+				end
+				needsConstraintUpdate[k] = false
+			end
 		end
 	end
 end

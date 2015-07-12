@@ -1,13 +1,14 @@
 <FirstApplicationContainer themeName=red>
-	<Container x=30 width=200 height=50>
-		<Container x=50 width=200 height=50>
-			<Button identifier=firstButton x=10 y=10 text="Open Second" />
-		</Container>
-	</Container>
+	<MenuBar width="100%" >
+		<MenuBarItem text=File menuName=menu />
+		<MenuBarItem text=Edit menuName=menu />
+	</MenuBar>
 
-	<MenuButton x=20 y=30 text=Menu menuName=menu />
+	<Button identifier=firstButton x=100 y=20 text="Open Second" />
+
+	<MenuButton x=190 y=20 text=Menu menuName=menu />
 	
-	<TextBox width=130 x=10 y=50 text="I'm a text box!" />
+	<TextBox width=130 x=100 y=50 text="I'm a text box!" />
 
 	<!-- <TestView identifier=testview left="10%" right="100% - 10" top=20 height=100/> -->
 

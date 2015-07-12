@@ -49,13 +49,11 @@ function Checkbox:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or (self.isChecked and "checked" or "default" ) ) or ( self.isChecked and "disabledChecked" or "disabled" )
 end
 
-function Checkbox:setHeight( height )
-    self.super:setHeight( height )
+function Checkbox:updateHeight( height )
     self.backgroundObject.height = height
 end
 
-function Checkbox:setWidth( width )
-    self.super:setWidth( width )
+function Checkbox:updateWidth( width )
     self.backgroundObject.width = width
 end
 

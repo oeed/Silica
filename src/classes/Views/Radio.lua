@@ -33,13 +33,11 @@ function Radio:initCanvas()
     self.backgroundObject = backgroundObject
 end
 
-function Radio:setHeight( height )
-    self.super:setHeight( height )
+function Radio:updateHeight( height )
     self.backgroundObject.height = height
 end
 
-function Radio:setWidth( width )
-    self.super:setWidth( width )
+function Radio:updateWidth( width )
     self.backgroundObject.width = width
 end
 

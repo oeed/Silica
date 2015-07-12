@@ -92,6 +92,7 @@ end
 
 function Container:setWidth( width )
 	self.super:setWidth( width )
+    width = self.width
 	local event = self.event
 	if event then
 		event:handleEvent( ParentResizeInterfaceEvent( true, false, self ) )
@@ -100,6 +101,7 @@ end
 
 function Container:setHeight( height )
 	self.super:setHeight( height )
+    height = self.height
 	local event = self.event
 	if event then
 		event:handleEvent( ParentResizeInterfaceEvent( false, true, self ) )

@@ -12,6 +12,10 @@
 		<fillColour type="Graphics.colours" pressed="RED"/>
 	</MenuItem>
 
+	<MenuBarItem>
+		<fillColour type="Graphics.colours" pressed="RED" />
+	</MenuBarItem>
+
 	<Radio>
 		<fillColour type="Graphics.colours" pressed="ORANGE" checked="RED"/>
 		<outlineColour type="Graphics.colours" pressed="RED"/>

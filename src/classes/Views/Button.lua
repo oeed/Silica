@@ -68,15 +68,13 @@ function Button:initCanvas()
     end
 end
 
-function Button:setHeight( height )
-    self.super:setHeight( height )
+function Button:updateHeight( height )
     self.backgroundObject.height = height - 1
     self.shadowObject.height = height - 1
     self.needsAutosize = true
 end
 
-function Button:setWidth( width )
-    self.super:setWidth( width )
+function Button:updateWidth( width )
     self.backgroundObject.width = width - 1
     self.shadowObject.width = width - 1
     local textObject = self.textObject

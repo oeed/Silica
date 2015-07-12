@@ -51,14 +51,14 @@ function ScrollView:onInterfaceLoaded( event )
     end
 end
 
-function ScrollView:setWidth( width )
-	self.super:setWidth( width )
+function ScrollView:updateWidth( width )
+    width = self.width
 	local verticalScrollbar = self.verticalScrollbar
 	if verticalScrollbar then verticalScrollbar.x = width - verticalScrollbar.width + 1 end
 end
 
-function ScrollView:setHeight( height )
-	self.super:setHeight( height )
+function ScrollView:updateHeight( height )
+    height = self.height
 	local verticalScrollbar = self.verticalScrollbar
 	if verticalScrollbar then self.verticalScrollbar.height = height end
 end

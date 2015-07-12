@@ -65,13 +65,11 @@ function TextBox:initCanvas()
     end
 end
 
-function TextBox:setHeight( height )
-    self.super:setHeight( height )
+function TextBox:updateHeight( height )
     self.backgroundObject.height = height
 end
 
-function TextBox:setWidth( width )
-    self.super:setWidth( width )
+function TextBox:updateWidth( width )
     self.backgroundObject.width = width
     local textObject = self.textObject
     textObject.x = self.leftMargin + 1

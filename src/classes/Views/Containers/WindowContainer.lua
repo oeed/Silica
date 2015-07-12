@@ -12,12 +12,10 @@ function WindowContainer:initCanvas()
 	self.backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, Graphics.colours.WHITE ) )
 end
 
-function WindowContainer:setHeight( height )
-    self.super:setHeight( height )
+function WindowContainer:updateHeight( height )
 	self.backgroundObject.height = height
 end
 
-function WindowContainer:setWidth( width )
-    self.super:setWidth( width )
+function WindowContainer:updateWidth( width )
 	self.backgroundObject.width = width
 end

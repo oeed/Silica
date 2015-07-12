@@ -34,6 +34,16 @@
 		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
 	</MenuItem>
 
+	<MenuBar>
+		<fillColour type="Graphics.colours" default="WHITE" disabled="LIGHT_GREY" />
+		<separatorColour type="Graphics.colours" default="GREY" disabled="LIGHT_GREY" />
+	</MenuBar>
+	
+	<MenuBarItem>
+		<fillColour type="Graphics.colours" default="TRANSPARENT" pressed="BLUE" disabled="TRANSPARENT"/>
+		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
+	</MenuBarItem>
+
 	<Radio>
 		<cornerRadius type="number" default="4" pressed="4" />
 		<fillColour type="Graphics.colours" default="WHITE" pressed="LIGHT_BLUE" checked="BLUE" disabledChecked="GREY" disabled="WHITE"/>

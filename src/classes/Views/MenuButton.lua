@@ -4,12 +4,12 @@ class "MenuButton" extends "Button" {
     width = 45;
 
     menu = false;
+    menuName = false;
 
     menuMargin = 5;
 
     closeArrowObject = false;
     openArrowObject = false;
-
     needsArrowUpdate = false;
 }
 
@@ -29,10 +29,10 @@ function MenuButton:init( ... )
     menu.topMargin = Menu.topMargin + 8
     self.menu = menu
     self:event( Event.MENU_CHANGED, self.onMenuChanged )
+    self:event( Event.PARENT_CHANGED, self.onParentChanged )
 end
 
-function MenuButton:setParent( parent )
-    self.parent = parent
+function MenuButton:onParentChanged( event )
     local menu = self.menu
     if menu then
         menu = self.menu
@@ -41,28 +41,25 @@ function MenuButton:setParent( parent )
         end
         menu.x = self.x - 5
         menu.y = self.y + 7
-        parent:insert( menu )
+        self.parent:insert( menu )
     end
 end
 
-function MenuButton:setX( x )
-    self.super:setX( x )
+function MenuButton:updateX( x )
     local menu = self.menu
     if menu then
         menu.x = self.x - 5
     end
 end
 
-function MenuButton:setY( y )
-    self.super:setY( y )
+function MenuButton:updateY( y )
     local menu = self.menu
     if menu then
         menu.y = self.y + 5
     end
 end
 
-function MenuButton:setHeight( height )
-    self.super:setHeight( height )
+function MenuButton:updateHeight( height )
     self.needsArrowUpdate = true
 end
 
@@ -148,7 +145,6 @@ function MenuButton:onGlobalMouseUp( event )
             self.menu:toggle()
             return self.event:handleEvent( event )
         end
-        self.isPressed = false
     end
 end
 
