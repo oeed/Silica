@@ -15,3 +15,5 @@ Extract the ZIP and copy the contents of the folder to either ```~/Library/Appli
 The '0' folder should have lots of files in it, including startup. It shouldn't contain a folder containing the files. It should look like this:
 
 ![](http://puu.sh/iXhS8/209686a3b1.png)
+
+If you're lost jump on the [Gitter chat](https://gitter.im/oeed/Silica) and we'll help you out.
