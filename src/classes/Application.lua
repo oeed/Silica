@@ -34,6 +34,8 @@ class "Application" {
 ]]
 function Application.load( path )
 	-- TODO: path tidying
+	path = path:gsub( "/$", "/" )
+
 	table.insert( Application.resourceDirectories, path )
 	local loaded = {}
 	local loadClass
