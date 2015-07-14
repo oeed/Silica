@@ -169,10 +169,13 @@ Window.center = Window.centre
     @desc Focus on the window, bringing it to the front and enabling controls whilst unfocusing other windows
 ]]
 function Window:focus()
-    self.isEnabled = true
-    self.parent:sendToFront( self )
-    for i, sibling in ipairs( self:siblingsOfType( Window ) ) do
-        sibling:unfocus()
+    if not self.isEnabled then
+        self.application:clearFocus()
+        self.isEnabled = true
+        self.parent:sendToFront( self )
+        for i, sibling in ipairs( self:siblingsOfType( Window ) ) do
+            sibling:unfocus()
+        end
     end
 end
 

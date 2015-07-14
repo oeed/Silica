@@ -22,17 +22,17 @@ function Theme:init( themeName, cantExtend )
 	self.name = themeName
 
 	-- TODO: dynamic path resolving for interfaces and other files
-	local resource = Resource( "themes/" .. themeName, "stheme" )
-	local path = resource.path
-	if path then
-		local nodes, err = XML.fromFile( path )
+	local resource = Resource( themeName .. ".stheme", "themes" )
+	local contents = resource.contents
+	if contents then
+		local nodes, err = XML.fromText( contents )
 		if not nodes then
-			error( path .. err, 0 )
+			error( "Theme XML invaid: " .. themeName .. ".stheme. Error: " .. err, 0 )
 		end
 		cantExtend[themeName] = true
 		local err = self:initTheme( nodes[1], cantExtend )
 		if err then
-			error( "Theme XML invaid: " .. self.name .. ".stheme. Error: " .. err, 0 )
+			error( "Theme XML invaid: " .. themeName .. ".stheme. Error: " .. err, 0 )
 		end
 	else
 		error( "Theme file not found: " .. themeName .. ".stheme", 0 )

@@ -1,0 +1,11 @@
+<SecondApplicationContainer themeName=redplus>
+
+	<Label x=10 y=15 text="Bezier curves, arcs and linear paths :D" />
+
+	<PathView x=20 y=30 />
+
+	<Button identifier=secondButton x=230 y=10 text="Open First" />
+
+	<Label x=10 y=125 text="All sörtß of mägical characters." />
+ 
+</SecondApplicationContainer>

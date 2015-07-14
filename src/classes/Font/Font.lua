@@ -52,15 +52,23 @@ class "Font" {
 	};
 }
 
-function Font:init( source, desiredHeight, reload )
+--[[
+	@constructor
+	@desc Create a font with the given name
+	@param [string] fontName -- the name of the desired font
+	@param [number] desiredHeight -- the height of the desired font
+	@param [boolean] reload -- default is false, whether the cache should be ignored and the font reloaded
+]]
+function Font:init( name, desiredHeight, reload )
 	local characters, height
 	desiredHeight = desiredHeight or 8
-	if cache[source] and cache[source][desiredHeight] and not reload then
-		characters, height = cache[source][desiredHeight][1], cache[source][desiredHeight][2]
+	if cache[name] and cache[name][desiredHeight] and not reload then
+		characters, height = cache[name][desiredHeight][1], cache[name][desiredHeight][2]
 	else
-		characters, height = BitmapFont.decodeFile( source )
-		cache[source] = cache[source] or {}
-		cache[source][desiredHeight] = { characters, height }
+		local resource = Resource( name .. ".sfont", "fonts" )
+		characters, height = BitmapFont.decodeResource( resource )
+		cache[name] = cache[name] or {}
+		cache[name][desiredHeight] = { characters, height }
 	end
 	self.characters = characters
 	self.height = height
@@ -70,7 +78,7 @@ end
 
 function Font.initPresets()
 	-- TODO: make this come from the theme
-	Font.systemFont = Font.named( "Auckland" )
+	Font.systemFont = Font( "Auckland" )
 end
 
 function Font.readMetadata( file )
@@ -114,8 +122,32 @@ function Font.encodeFile( file, characters, height, metadata )
 	end
 end
 
+function Font.decodeResource( resource )
+	local contents = resource.contents
+	if contents then
+		local i = 1
+		local contentsLen = #contents
+		local b = string.byte
+		local h = {}
+
+		function h.read()
+			if i <= contentsLen then
+				local value = b( contents:sub( i, i ) )
+				i = i + 1
+				return value
+			end
+		end
+
+		return Font.decodeHandle( h )
+	end
+end
+
 function Font.decodeFile( file )
 	local h = fs.open( file, "rb" )
+	return Font.decodeHandle( h )
+end
+
+function Font.decodeHandle( h )
 	if h then
 		local metadata = {}
 		local v = h.read()
@@ -133,25 +165,13 @@ function Font.decodeFile( file )
 		local fontType = metadata.fontType
 		local characters
 
-		if fontType == "vector" then
+		if fontType == "bitmap" then
 			characters = BitmapFont.decodeSet( bytes, height )
 		else
 			characters = VectorFont.decodeSet( bytes, height )
 		end
 		return characters, height, metadata
 	end
-end
-
---[[
-	@static
-	@desc Returns a font with the given name
-	@param [string] fontName -- the name of the desired font
-	@param [number] desiredHeight -- the height of the desired font
-	@return [Font] font -- the font
-]]
-function Font.named( fontName, desiredHeight )
-	-- TODO: real font locating
-	return Font( "src/fonts/" .. fontName .. ".sfont", desiredHeight )
 end
 
 function Font:getHeight()

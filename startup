@@ -45,13 +45,19 @@ end
 -- os.loadAPI( 'src/debug' )
 -- _G.debug = debug
 
-os.loadAPI( 'src/Silica' )
 
-BitmapFont.convertFile( "font src/auckland", "src/fonts/Auckland.sfont", 32, 8, {
-	name = "Auckland";
-	author = "oeed";
-	version = 0.9;
-} )
+shell.run( "package /src Silica" )
 
--- this is essentially what the startup file will look like
+dofile( "Silica" )
+
+Application.load( "/application" )
+
+-- BitmapFont.convertFile( "font src/auckland", "src/fonts/Auckland.sfont", 32, 8, {
+-- 	name = "Auckland";
+-- 	author = "oeed";
+-- 	version = 0.9;
+-- 	fontType = "bitmap";
+-- } )
+
+-- -- this is essentially what the startup file will look like
 ExampleApplication():run( ... )

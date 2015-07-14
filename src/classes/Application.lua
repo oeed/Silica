@@ -12,7 +12,8 @@ class "Application" {
 	container = false;
 	event = false;
 	schedules = {};
-	resourceDirectories = false; -- the folders in which the applications resources are
+	resourceDirectories = { _ = true }; -- the folders in which the applications resources are
+	resourceTables = false; -- the tables of files where resources are
 	keyboardShortcutManager = false;
 	focus = false;
 
@@ -27,17 +28,87 @@ class "Application" {
 }
 
 --[[
+	@static
+	@desc Adds the given directory to the resource listing and loads any classes
+	@param [string] path -- the path to the directory of resources
+]]
+function Application.load( path )
+	-- TODO: path tidying
+	table.insert( Application.resourceDirectories, path )
+	local loaded = {}
+	local loadClass
+	function _G.__loadClassNamed( name )
+		local function checkDir( _path )
+			if fs.exists( _path .. "/" .. name .. ".lua" ) then
+				loadClass( _path .. "/" .. name .. ".lua" )
+				return true
+			end
+
+			local list = fs.list( _path )
+			for i, v in ipairs( list ) do
+				if fs.isDir( _path .. '/' .. v ) then
+					if checkDir( _path .. '/' .. v) then return true end
+				end
+			end
+		end
+		checkDir( path .. "/classes" )
+	end
+
+	loadClass = function( _path, content )
+		local name = fs.getName( _path )
+		if not loaded[name] then
+			local f, err = loadfile( _path, name )
+			if err then error( err, 0 ) end
+			local ok, err = pcall( f )
+			if err then error( err, 0 ) end
+			loaded[name] = true
+		end
+	end
+
+	if fs.exists( path .. "/loadfirst.scfg") then
+		local f = fs.open( path .. "/loadfirst.scfg", "r" )
+		if not f then error( "Failed to read loadfirst.scfg", 2 ) end
+
+		local line
+		repeat
+			line = h.readLine()
+			if line and #line > 0 then
+				__loadClassNamed( line )
+			end
+		until not line
+		f.close()
+	end
+
+	local function loadDir( _path )
+		local list = fs.list( _path )
+		for i, v in ipairs( list ) do
+			if v ~= '.DS_Store' then
+				local fpath = _path .. '/' .. v
+				if fs.isDir( fpath ) then
+					loadDir( fpath )
+				else
+					loadClass( fpath )
+				end
+			end
+		end
+	end
+
+	loadDir( path .. "/classes" )
+
+	_G.__loadClassNamed = nil
+end
+
+--[[
 	@constructor
 	@desc Creates the application runtime for the Silica program. Call :run() on this to start it.
 	@param [table] resourceDirectories -- a table of paths in which the applications resources are (classes, themes, etc.)
 ]]
 function Application:init()
-	if type( self.resourceDirectories ) ~= "table" then
-		error( "Application resource directories wasn't specified or invalid. Make sure you're not tampering with the value and/or you're supplying a valid value.", 0 )
-	end
+	self.resourceTables = __resourceTables or {}
+	_G.__resourceTables = nil
+	class.application = self
 
 	self.event = ApplicationEventManager( self )
-	class.application = self
 	self.keyboardShortcutManager = KeyboardShortcutManager( self )
 	
 	Font.initPresets()
@@ -191,7 +262,7 @@ function Application:run( ... )
 	self:update()
 
 	while self.isRunning do
-		local event = Event.create( os.pullEvent() )
+		local event = Event.create( coroutine.yield() )
 		event.relativeView = self.container
 		self.event:handleEvent( event )
 	end

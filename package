@@ -1,0 +1,174 @@
+--[[
+	Silica Packager. (c) 2015 Oliver 'oeed' Cooper
+
+	Creates a package of Silica files.
+	
+	Usage: package /path/to/source path/to/package
+	
+	Once it's packaged simply do dofile( "path/to/package" ) in your startup file AFTER the Silica dofile.
+]]
+
+local args = { ... }
+
+if #args ~= 2 then
+	print( "Usage: package /path/to/source path/to/package" )
+	return
+end
+
+local sourcePath, destinationPath = args[1], args[2]
+
+if not fs.exists( sourcePath ) then
+	print( "Source path does not exist: " .. sourcePath )
+	return
+elseif not fs.isDir( sourcePath ) then
+	print( "Source path is not a directory: " .. sourcePath )
+	return
+end
+
+local fileTree = {}
+local char = string.char
+local start = os.clock()
+
+local function addFolder( path, tree, level )
+	if not fs.isDir( path ) then
+		error( "Path is not a directory: " .. path, 0 )
+	end
+
+	for i, fileName in ipairs( fs.list( path ) ) do
+		if fileName:sub( 1, 1 ) ~= "." then	
+			local filePath = path .. "/" .. fileName
+
+			if fs.isDir( filePath ) then
+				local subTree = level < 1 and {} or tree
+				addFolder( filePath, subTree, level + 1 )
+				if level < 1 then tree[fileName] = subTree end
+			else
+				local h = fs.open( filePath, "r" )
+				if not h then
+					error( "Failed to read file: " .. filePath, 0 )
+				end
+				tree[fileName] = h.readAll()
+				h.close()
+			end
+		end
+	end
+end
+
+addFolder( sourcePath, fileTree, 0 )
+
+local output = ""
+
+local g_tLuaKeywords = {
+    [ "and" ] = true,
+    [ "break" ] = true,
+    [ "do" ] = true,
+    [ "else" ] = true,
+    [ "elseif" ] = true,
+    [ "end" ] = true,
+    [ "false" ] = true,
+    [ "for" ] = true,
+    [ "function" ] = true,
+    [ "if" ] = true,
+    [ "in" ] = true,
+    [ "local" ] = true,
+    [ "nil" ] = true,
+    [ "not" ] = true,
+    [ "or" ] = true,
+    [ "repeat" ] = true,
+    [ "return" ] = true,
+    [ "then" ] = true,
+    [ "true" ] = true,
+    [ "until" ] = true,
+    [ "while" ] = true,
+}
+
+-- A modified textutils.serialise
+local function serialise( t, tTracking )
+    local sType = type(t)
+    if sType == "table" then
+        if tTracking[t] ~= nil then
+            error( "Cannot serialize table with recursive entries", 0 )
+        end
+        tTracking[t] = true
+
+        if next(t) == nil then
+            return "{}"
+        else
+            local sResult = "{"
+            local tSeen = {}
+            for k,v in ipairs(t) do
+                tSeen[k] = true
+                sResult = sResult .. serialise( v, tTracking ) .. ","
+            end
+            for k,v in pairs(t) do
+                if not tSeen[k] then
+                    local sEntry
+                    if type(k) == "string" and not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
+                        sEntry = k .. " = " .. serialise( v, tTracking ) .. ","
+                    else
+                        sEntry = "[" .. serialise( k, tTracking ) .. "] = " .. serialise( v, tTracking ) .. ","
+                    end
+                    sResult = sResult .. sEntry
+                end
+            end
+            sResult = sResult .. "}"
+            return sResult
+        end
+    elseif sType == "string" then
+        return string.format( "%q", t )
+    else
+        error( "Cannot serialize type "..sType, 0 )
+    end
+end
+
+
+local fileString = serialise( fileTree, {}, "" )
+
+local f = fs.open( destinationPath, "w" )
+if not f then
+	error( "Failed to write to source file: " .. sourcePath, 0 )
+end
+
+local template = 
+"local files = " .. fileString .. [[
+
+_G.__resourceTables = _G.__resourceTables or {}
+_G.__resourceTables[#_G.__resourceTables + 1] = files
+local loaded = {}
+local classes = files["classes"]
+local loadClass
+
+function _G.__loadClassNamed( name )
+	loadClass( name .. ".lua" )
+end
+
+loadClass = function( name, content )
+	if not loaded[name] then
+		content = content or classes[name]
+		local f, err = loadstring( content, name )
+		if err then error( err, 0 ) end
+		local ok, err = pcall( f )
+		if err then error( err, 0 ) end
+		loaded[name] = true
+	end
+end
+
+if classes then
+	local loadFirst = files["loadfirst.scfg"]
+	if loadFirst then
+		for name in loadFirst:gmatch( "[^\n]+" ) do
+			loadClass( name )
+		end
+	end
+
+	for name, contents in pairs( classes ) do
+		loadClass( name, content )
+	end
+end
+
+_G.__loadClassNamed = nil
+
+]]
+
+f.write( template )
+f.close()

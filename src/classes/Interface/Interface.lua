@@ -14,19 +14,19 @@ function Interface:init( interfaceName, extend )
 	extend = extend or ApplicationContainer
 
 	-- TODO: dynamic path resolving for interfaces and other files
-	local resource = Resource( "interfaces.+/?" .. interfaceName, "sml" )
-	local path = resource.path
-	if path then
-		local nodes, err = XML.fromFile( path )
+	local resource = Resource( interfaceName .. ".sinterface", "interfaces" )
+	local contents = resource.contents
+	if contents then
+		local nodes, err = XML.fromText( contents )
 		if not nodes then
-			error( path .. err, 0 )
+			error( "Interface XML invaid: " .. interfaceName .. ".sinterface. Error: " .. err, 0 )
 		end
 		local err = self:initContainer( nodes[1], extend )
 		if err then
-			error( "Interface XML invaid: " .. self.name .. ".sml. Error: " .. err, 0 )
+			error( "Interface XML invaid: " .. interfaceName .. ".sinterface. Error: " .. err, 0 )
 		end
 	else
-		error( "Interface file not found: " .. interfaceName .. ".sml", 0 )
+		error( "Interface file not found: " .. interfaceName .. ".sinterface", 0 )
 	end
 
 end

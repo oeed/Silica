@@ -6,8 +6,11 @@ class "FileMenu" extends "Menu" {
 }
 
 function FileMenu:onAlertMenuItem( event )
-	local path = "src/afgds/../a"
-	log( path:gsub( "[^/]+/%.%.", "" ):gsub( "/%.", "" ):gsub( "//+", "/" ) )
+	-- log( path:gsub( "[^/]+/%.%.", "" ):gsub( "/%.", "" ):gsub( "//+", "/" ) )
+	-- local alert = AlertWindow()
+	-- self.application.container:insert( alert )
+	-- alert:center()
+	-- alert:focus()
 end
 
 function FileMenu:onRebootMenuItem( event )

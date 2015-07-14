@@ -424,7 +424,7 @@ local function extends( superName )
 		-- try to load the class
 		-- TODO: set this system up correctly
 		local ourCreating = creating
-		loadName( superName )
+		__loadClassNamed( superName )
 		creating = ourCreating
 		if not classes[superName] then
 			error( 'Super class for `' .. creating.className .. '` was not found: ' .. superName, 0 )

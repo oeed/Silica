@@ -1,3 +1,6 @@
-Graphics
-Application
-InterfaceOutlet
+class.lua
+Graphics.lua
+Application.lua
+InterfaceOutlet.lua
+Animation.lua
+View.lua

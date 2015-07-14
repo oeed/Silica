@@ -20,6 +20,7 @@ end
     @return [table] fill -- the pixels to fill
 ]]
 function Circle:getFill()
+	-- TODO: why is this commented out?
 	-- if self.fill then return self.fill end
 
 	local fill = {}

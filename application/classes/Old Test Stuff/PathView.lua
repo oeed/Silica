@@ -1,7 +1,7 @@
 
 class "PathView" extends "View" {
 
-    height = 550; -- the default height
+    height = 100; -- the default height
     width = 100;
 
 }
@@ -30,7 +30,7 @@ end
 ]]
 function PathView:initCanvas()
 	self.super:initCanvas()
-	self.canvas.fillColour = Graphics.colours.LIGHT_GREY
+	self.canvas.fillColour = Graphics.colours.WHITE
 
 	local path = Path( 1, 1, self.width - 20, self.height - 20, 1, 1 )
 	path:curveTo( 20, 60, 50, 35 + 12.5, 0, 40 )
@@ -61,9 +61,9 @@ function PathView:initCanvas()
 	path3:close( false )
 	path3.outlineColour = Graphics.colours.BLACK
 
-	self.canvas:insert( Shader( 1, 1, self.canvas.width, self.canvas.height, function( x, y )
-		return ( math.ceil( x / size ) + math.ceil( y / size ) ) % 2 == 0 and Graphics.colours.LIGHT_GREY or Graphics.colours.WHITE
-	end ) )
+	-- self.canvas:insert( Shader( 1, 1, self.canvas.width, self.canvas.height, function( x, y )
+	-- 	return ( math.ceil( x / size ) + math.ceil( y / size ) ) % 2 == 0 and Graphics.colours.LIGHT_GREY or Graphics.colours.WHITE
+	-- end ) )
 
 	self.canvas:insert( path )
 	-- self.canvas:insert( path2 )
