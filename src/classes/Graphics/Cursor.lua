@@ -3,8 +3,8 @@ class "Cursor" extends "GraphicsObject" {
 	fillColour = Graphics.colours.BLACK;
 }
 
-function Cursor:init( x, y, height )
-	self.super:init( x, y, 1, height )
+function Cursor:initialise( x, y, height )
+	self.super:initialise( x, y, 1, height )
 end
 
 --[[

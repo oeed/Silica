@@ -3,8 +3,8 @@ class "CircleRenderer" extends "FilledRenderer" {
 	
 }
 
-function CircleRenderer:init( x, y, diameter )
-	self.super:init( x, y, diameter, diameter )
+function CircleRenderer:initialise( x, y, diameter )
+	self.super:initialise( x, y, diameter, diameter )
 end
 
 function CircleRenderer:getRenderer()

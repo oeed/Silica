@@ -48,8 +48,8 @@ class "RoundedRectangleRenderer" extends "FilledRenderer" {
 	@param [number] bottomLeftRadius -- the radius of the bottom left corner
 	@param [number] bottomRightRadius -- the radius of the bottom right corner
 ]]
-function RoundedRectangleRenderer:init( x, y, width, height, tlRadius, trRadius, blRadius, brRadius )
-	self.super:init( x, y, width, height )
+function RoundedRectangleRenderer:initialise( x, y, width, height, tlRadius, trRadius, blRadius, brRadius )
+	self.super:initialise( x, y, width, height )
 	topLeftRadius = topLeftRadius or 0
 	self.topLeftRadius = tlRadius
 	self.topRightRadius = trRadius or tlRadius

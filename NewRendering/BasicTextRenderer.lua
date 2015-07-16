@@ -6,8 +6,8 @@ class "BasicTextRenderer" extends "GenericRenderer" {
 	alignment = Font.alignments.LEFT
 }
 
-function BasicTextRenderer:init( x, y, width, height, text, font )
-	self.super:init( x, y, width, height )
+function BasicTextRenderer:initialise( x, y, width, height, text, font )
+	self.super:initialise( x, y, width, height )
 	self.text = text
 	self.font = font
 end

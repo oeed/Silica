@@ -44,8 +44,8 @@ class "RoundedRectangle" extends "GraphicsObject" {
 	@param [number] bottomLeftRadius -- the radius of the bottom left corner
 	@param [number] bottomRightRadius -- the radius of the bottom right corner
 ]]
-function RoundedRectangle:init( x, y, width, height, fillColour, outlineColour, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius )
-	self.super:init( x, y, width, height )
+function RoundedRectangle:initialise( x, y, width, height, fillColour, outlineColour, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius )
+	self.super:initialise( x, y, width, height )
 	self.fillColour = fillColour or Graphics.colours.TRANSPARENT
 	self.outlineColour = outlineColour or Graphics.colours.TRANSPARENT
 	topLeftRadius = topLeftRadius or 0

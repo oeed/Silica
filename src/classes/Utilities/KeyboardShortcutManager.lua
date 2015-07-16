@@ -38,7 +38,7 @@ class "KeyboardShortcutManager" {
 	event = nil;
 }
 
-function KeyboardShortcutManager:init( owner )
+function KeyboardShortcutManager:initialise( owner )
 	self.owner = owner
 	self.event = EventManager( self )
 	self.event:connectGlobal( Event.KEY_DOWN, self.onGlobalKeyDown )

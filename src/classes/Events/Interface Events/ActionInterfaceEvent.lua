@@ -9,7 +9,7 @@ class "ActionInterfaceEvent" extends "InterfaceEvent" {
 	@desc Creates a focus event from the arguments
 	@param [View] sender -- the view whose action it is
 ]]
-function ActionInterfaceEvent:init( sender )
+function ActionInterfaceEvent:initialise( sender )
 	self.sender = sender
 end
 

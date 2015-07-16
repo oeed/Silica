@@ -53,11 +53,11 @@ class "View" {
 	@desc Initialise a view instance
 	@param [table] properties -- the properties for the view
 ]]
-function View:init( properties )
+function View:initialise( properties )
 	self.animations.names = {} 
-	self:initTheme()
-	self:initCanvas()
-	self:initEventManager()
+	self:initialiseTheme()
+	self:initialiseCanvas()
+	self:initialiseEventManager()
 
 	setmetatable( self.stringConstraints, {
 		__index = { parent = self }, __newindex = function( t, k, v )
@@ -78,7 +78,7 @@ function View:init( properties )
     self:event( Event.INTERFACE_READY, self.onReadyConstraintUpdate )
 end
 
-function View:initTheme()
+function View:initialiseTheme()
 	self.theme = ThemeOutlet( self )
 end
 
@@ -86,7 +86,7 @@ end
 	@instance
 	@desc Initialises the view's event manager (used for overriding)
 ]]
-function View:initEventManager()
+function View:initialiseEventManager()
 	self.event = EventManager( self )
 end
 
@@ -94,7 +94,7 @@ end
     @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
-function View:initCanvas()
+function View:initialiseCanvas()
 	self.canvas = Canvas( self.x, self.y, self.width, self.height )
 end
 

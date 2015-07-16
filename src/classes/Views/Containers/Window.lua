@@ -31,8 +31,8 @@ class "Window" extends "Container" {
 	@desc Initialise a application container instance
 	@param [table] properties -- the properties for the view
 ]]
-function Window:init( ... )
-	self.super:init( ... )
+function Window:initialise( ... )
+	self.super:initialise( ... )
     self.closeButton = self:insert( CloseWindowButton( { x = 1, y = 1, window = self } ))
     self.minimiseButton = self:insert( MinimiseWindowButton( { x = 9, y = 1, window = self } ))
     self.maximiseButton = self:insert( MaximiseWindowButton( { x = 17, y = 1, window = self } ))
@@ -65,8 +65,8 @@ end
     @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
-function Window:initCanvas()
-    self.super:initCanvas()
+function Window:initialiseCanvas()
+    self.super:initialiseCanvas()
     -- self.canvas.fillColour = Graphics.colours.GREEN
 	local barHeight = self.barHeight
     local shadowObject = self.canvas:insert( RoundedRectangle( 3, 4, self.width - 2, self.height - 3 ) )

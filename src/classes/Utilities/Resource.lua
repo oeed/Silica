@@ -11,7 +11,7 @@ class "Resource" {
 	@param [string] category -- the category (folder, such as classes, interfaces) to look in
 	@param [boolean] allowDirectories -- default false, whether directories are able to be matched
 ]]
-function Resource:init( name, category, allowDirectories )
+function Resource:initialise( name, category, allowDirectories )
 	-- TODO: path tidying
 	-- TODO: maybe do this backwards? so you can override files in other libraries
 	-- search the resource tables

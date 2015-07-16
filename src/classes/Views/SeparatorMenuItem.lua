@@ -18,12 +18,12 @@ class "SeparatorMenuItem" extends "MenuItem" {
 	@desc Initialise a application container instance
 	@param [table] properties -- the properties for the view
 ]]
-function SeparatorMenuItem:init( ... )
-	self.super.super:init( ... )
+function SeparatorMenuItem:initialise( ... )
+	self.super.super:initialise( ... )
 end
 
-function SeparatorMenuItem:initCanvas()
-	self.super.super:initCanvas()
+function SeparatorMenuItem:initialiseCanvas()
+	self.super.super:initialiseCanvas()
     self.backgroundObject = self.canvas:insert( Separator( 5, 2, self.width - 8, 1 ) )
 end
 

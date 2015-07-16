@@ -66,7 +66,7 @@ function class:newSuper( instance, eq, ... )
 	-- Super needs to be able to act like it's own instance in that it has all of it's own methods and properties, yet the subclass needs to be able to use super as if it were itself
 	-- So, for example, setting a value in a super method would actually set the value in the subclass
 	-- Likewise, indexing a value that's present 
-	-- super:init is not automatically called, that's up to the subclass (although, one init will always be called, which might reach in to super)
+	-- super:initialise is not automatically called, that's up to the subclass (although, one init will always be called, which might reach in to super)
 
 	raw.mt.__eq = eq
 
@@ -79,7 +79,7 @@ function class:newSuper( instance, eq, ... )
 
 		local _classValue = _class[k]
 		if _classValue and type( _classValue ) == "function" then
-			-- we want super functions to be callable and not overwritten when accessed directly (e.g. self.super:init( ) )
+			-- we want super functions to be callable and not overwritten when accessed directly (e.g. self.super:initialise( ) )
 			local f = _classValue
 			return function(_self, ...)
 				if _self == raw then
@@ -305,8 +305,8 @@ function class:new( ... )
 	end
 
 	-- once the class has been created, pass the arguments to the init function for handling
-	if proxy.init and type( proxy.init ) == "function" then
-		proxy:init( ... )
+	if proxy.initialise and type( proxy.initialise ) == "function" then
+		proxy:initialise( ... )
 	end
 	proxy.hasInit = true
 

@@ -21,8 +21,8 @@ class "MenuBarItem" extends "View" {
 	@desc Initialise a menu item instance
 	@param [table] properties -- the properties for the view
 ]]
-function MenuBarItem:init( ... )
-	self.super:init( ... )
+function MenuBarItem:initialise( ... )
+	self.super:initialise( ... )
 
     local menuName = self.menuName
     if not menuName then error( "MenuBarItems must specify the property menuName (the name of the interface file to use).", 0 ) end
@@ -58,8 +58,8 @@ function MenuBarItem:onParentChanged( event )
     end
 end
 
-function MenuBarItem:initCanvas()
-    self.super:initCanvas()
+function MenuBarItem:initialiseCanvas()
+    self.super:initialiseCanvas()
     local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
     local textObject = self.canvas:insert( Text( TEXT_MARGIN / 2 + 1, 3, self.height, self.width - TEXT_MARGIN, self.text ) )
 

@@ -16,8 +16,8 @@ class "Checkbox" extends "View" {
     @constructor
     @desc Creates a button object and connects the event handlers
 ]]
-function Checkbox:init( ... )
-	self.super:init( ... )
+function Checkbox:initialise( ... )
+	self.super:initialise( ... )
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 end
@@ -26,8 +26,8 @@ end
     @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
-function Checkbox:initCanvas()
-    self.super:initCanvas()
+function Checkbox:initialiseCanvas()
+    self.super:initialiseCanvas()
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
     
     local checkObject = Path( 2, 2, self.width - 2, self.height - 2, 1, 4 )

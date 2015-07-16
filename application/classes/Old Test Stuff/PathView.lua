@@ -10,8 +10,8 @@ class "PathView" extends "View" {
     @constructor
     @desc Creates a button object and connects the event handlers
 ]]
-function PathView:init( ... )
-    self.super:init( ... )
+function PathView:initialise( ... )
+    self.super:initialise( ... )
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
 end
 
@@ -28,8 +28,8 @@ end
     @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
-function PathView:initCanvas()
-	self.super:initCanvas()
+function PathView:initialiseCanvas()
+	self.super:initialiseCanvas()
 	self.canvas.fillColour = Graphics.colours.WHITE
 
 	local path = Path( 1, 1, self.width - 20, self.height - 20, 1, 1 )

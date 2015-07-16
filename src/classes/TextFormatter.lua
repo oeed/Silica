@@ -28,7 +28,7 @@ class "TextFormatter" {
 	wrappedStream = nil;
 }
 
-function TextFormatter:init( text, width, height )
+function TextFormatter:initialise( text, width, height )
 	self.text = text
 	self.width = width
 	self.height = height

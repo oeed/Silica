@@ -59,7 +59,7 @@ class "Font" {
 	@param [number] desiredHeight -- the height of the desired font
 	@param [boolean] reload -- default is false, whether the cache should be ignored and the font reloaded
 ]]
-function Font:init( name, desiredHeight, reload )
+function Font:initialise( name, desiredHeight, reload )
 	local characters, height
 	desiredHeight = desiredHeight or 8
 	if cache[name] and cache[name][desiredHeight] and not reload then
@@ -76,7 +76,7 @@ function Font:init( name, desiredHeight, reload )
 	self.scale = ( desiredHeight or height ) / height
 end
 
-function Font.initPresets()
+function Font.initialisePresets()
 	-- TODO: make this come from the theme
 	Font.systemFont = Font( "Auckland" )
 end

@@ -13,8 +13,8 @@ class "ApplicationContainer" extends "Container" {
 	@desc Initialise a application container instance
 	@param [table] properties -- the properties for the view
 ]]
-function ApplicationContainer:init( ... )
-	self.super:init( ... )
+function ApplicationContainer:initialise( ... )
+	self.super:initialise( ... )
 
 	if not self.themeName then
 		self.themeName = "default"
@@ -24,7 +24,7 @@ function ApplicationContainer:init( ... )
     self:event( Event.MOUSE_DOWN, self.onMouseUp, EventManager.phase.AFTER )
 end
 
-function ApplicationContainer:initCanvas()
+function ApplicationContainer:initialiseCanvas()
 	local canvas = ScreenCanvas( self.x, self.y, self.width, self.height )
     self.canvas = canvas
 end

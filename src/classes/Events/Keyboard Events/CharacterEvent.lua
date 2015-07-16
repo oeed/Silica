@@ -9,6 +9,6 @@ class "CharacterEvent" extends "Event" {
 	@desc Creates a char event from the arguments
 	@param [string] character -- the event character
 ]]
-function CharacterEvent:init( character )
+function CharacterEvent:initialise( character )
 	self.character = character
 end

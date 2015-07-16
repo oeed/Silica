@@ -3,8 +3,8 @@ class "FirstApplicationContainer" extends "ApplicationContainer" {
 	firstButton = InterfaceOutlet( "firstButton" )
 }
 
-function FirstApplicationContainer:init( ... )
-	self.super:init( ... )
+function FirstApplicationContainer:initialise( ... )
+	self.super:initialise( ... )
 	self:event( Event.INTERFACE_READY, self.onReady)
 end
 

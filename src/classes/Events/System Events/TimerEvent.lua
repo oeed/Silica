@@ -9,6 +9,6 @@ class "TimerEvent" extends "Event" {
 	@desc Creates a timer event from the arguments
 	@param [number] time -- the ID of the timer
 ]]
-function TimerEvent:init( timer )
+function TimerEvent:initialise( timer )
 	self.timer = timer
 end

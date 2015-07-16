@@ -10,7 +10,7 @@ class "KeyEvent" extends "Event" {
 	@desc Creates a key event from the arguments
 	@param [number] keyCode -- the key's numerical key code
 ]]
-function KeyEvent:init( keyCode )
+function KeyEvent:initialise( keyCode )
 	self.keyCode = keyCode
 	self.keyString = KeyboardShortcutManager.convert( keyCode ) or false
 	-- TODO: this needs testing

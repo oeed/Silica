@@ -4,8 +4,8 @@ class "MenuBar" extends "Container" {
     separatorObject = false;
 }
 
-function MenuBar:initCanvas()
-    self.super:initCanvas()
+function MenuBar:initialiseCanvas()
+    self.super:initialiseCanvas()
     local separatorObject = self.canvas:insert( Rectangle( 1, self.height, self.width, 1 ) )
     self.theme:connect( separatorObject, "fillColour", "separatorColour" )
     self.theme:connect( self.canvas, "fillColour" )

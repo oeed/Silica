@@ -11,7 +11,7 @@ class "TextChangedInterfaceEvent" extends "InterfaceEvent" {
 	@param text -- the new text value
 	@param oldText -- the old text value
 ]]
-function TextChangedInterfaceEvent:init( text, oldText )
+function TextChangedInterfaceEvent:initialise( text, oldText )
 	self.text = text
 	self.oldText = oldText
 end

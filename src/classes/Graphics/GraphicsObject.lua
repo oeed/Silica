@@ -23,7 +23,7 @@ class "GraphicsObject" {
 	@param [number] width -- the width of the graphics object
 	@param [number] height -- the height of the graphics object
 ]]
-function GraphicsObject:init( x, y, width, height )
+function GraphicsObject:initialise( x, y, width, height )
 	self.x = x
 	self.y = y
 	self.width = width

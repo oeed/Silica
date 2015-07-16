@@ -105,7 +105,7 @@ end
 	@desc Creates the application runtime for the Silica program. Call :run() on this to start it.
 	@param [table] resourceDirectories -- a table of paths in which the applications resources are (classes, themes, etc.)
 ]]
-function Application:init()
+function Application:initialise()
 	self.resourceTables = __resourceTables or {}
 	_G.__resourceTables = nil
 	class.application = self
@@ -113,7 +113,7 @@ function Application:init()
 	self.event = ApplicationEventManager( self )
 	self.keyboardShortcutManager = KeyboardShortcutManager( self )
 	
-	Font.initPresets()
+	Font.initialisePresets()
 	
 	self:reloadInterface()
 

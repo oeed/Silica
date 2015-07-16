@@ -11,7 +11,7 @@ class "Canvas" extends "GraphicsObject" {
     @param [number] width -- the width of the canvas
     @param [number] height -- the height of the canvas
 ]]
--- function Canvas:init( width, height )
+-- function Canvas:initialise( width, height )
 --     self.buffer = {}
 --     self.children = {}
 --     self.width = width

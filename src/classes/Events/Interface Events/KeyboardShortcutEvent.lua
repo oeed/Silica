@@ -9,7 +9,7 @@ class "KeyboardShortcutEvent" extends "Event" {
 	@desc Creates a key event from the arguments
 	@param [table] arguments -- the event arguments
 ]]
-function KeyboardShortcutEvent:init( keys )
+function KeyboardShortcutEvent:initialise( keys )
 	self.keys = keys
 end
 

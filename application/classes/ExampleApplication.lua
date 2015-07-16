@@ -10,8 +10,8 @@ class "ExampleApplication" extends "Application" {
 	@constructor
 	@desc Initialise the custom application
 ]]
-function ExampleApplication:init()
-	self.super:init()
+function ExampleApplication:initialise()
+	self.super:initialise()
 	self:event( Event.CHARACTER, self.onChar )
 end
 

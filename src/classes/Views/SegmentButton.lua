@@ -7,8 +7,8 @@ class "SegmentButton" extends "Button" {
 
 }
 
-function SegmentButton:init( ... )
-    self.super:init( ... )
+function SegmentButton:initialise( ... )
+    self.super:initialise( ... )
     self:event( Event.PARENT_CHANGED, self.onSiblingOrParentChanged )
     self:event( Event.SIBLING_ADDED, self.onSiblingOrParentChanged )
     self:event( Event.SIBLING_ADDED, self.onSiblingOrParentChanged )
@@ -18,8 +18,8 @@ end
     @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
-function SegmentButton:initCanvas()
-	self.super:initCanvas()
+function SegmentButton:initialiseCanvas()
+	self.super:initialiseCanvas()
     local separatorBackgroundObject = self.canvas:insert( Rectangle( self.width, 1, 1, self.height -1 ) )
     self.separatorObject = self.canvas:insert( Separator( self.width, 3, 1, self.height - 4 ) )
     separatorBackgroundObject.leftOutlineWidth = 0

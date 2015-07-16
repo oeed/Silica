@@ -3,8 +3,8 @@ class "Shader" extends "GraphicsObject" {
 	fillColour = Graphics.colours.LIGHT_GREY;
 }
 
-function Shader:init( x, y, width, height, shader )
-	self.super:init( x, y, width, height )
+function Shader:initialise( x, y, width, height, shader )
+	self.super:initialise( x, y, width, height )
 	self.shader = shader
 end
 --[[

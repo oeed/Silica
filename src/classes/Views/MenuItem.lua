@@ -22,16 +22,16 @@ class "MenuItem" extends "View" {
 	@desc Initialise a menu item instance
 	@param [table] properties -- the properties for the view
 ]]
-function MenuItem:init( ... )
-	self.super:init( ... )
+function MenuItem:initialise( ... )
+	self.super:initialise( ... )
 
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self:event( Event.KEYBOARD_SHORTCUT, self.onKeyboardShortcut )
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 end
 
-function MenuItem:initCanvas()
-    self.super:initCanvas()
+function MenuItem:initialiseCanvas()
+    self.super:initialiseCanvas()
     local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
     local textObject = self.canvas:insert( Text( 7, 3, self.height, self.width - TEXT_MARGIN, self.text ) )
     local keyboardShortcut = self.keyboardShortcut

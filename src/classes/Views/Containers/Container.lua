@@ -12,8 +12,8 @@ class "Container" extends "View" {
 	@desc Initialises the container, linking up any InterfaceOutlets
 	@param ...
 ]]
-function Container:init( ... )
-	self.super:init( ... )
+function Container:initialise( ... )
+	self.super:initialise( ... )
 
 	self:event( Event.INTERFACE_OUTLET_CHANGED, self.onInterfaceOutletChanged )
 end
@@ -61,7 +61,7 @@ end
 	@instance
 	@desc Initialises the custom container event manger
 ]]
-function Container:initEventManager()
+function Container:initialiseEventManager()
 	self.event = ContainerEventManager( self )
 end
 

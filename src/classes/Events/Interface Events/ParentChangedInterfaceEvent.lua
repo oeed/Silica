@@ -12,7 +12,7 @@ class "ParentChangedInterfaceEvent" extends "InterfaceEvent" {
 	@param [Container] newParent -- the new parent view
 	@param [Container] oldParent -- the old parent view
 ]]
-function ParentChangedInterfaceEvent:init( newParent, oldParent )
+function ParentChangedInterfaceEvent:initialise( newParent, oldParent )
 	self.newParent = newParent
 	self.oldParent = oldParent
 end

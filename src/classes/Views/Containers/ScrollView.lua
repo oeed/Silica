@@ -21,8 +21,8 @@ class "ScrollView" extends "Container" {
 	@desc Initialise a application container instance
 	@param [table] properties -- the properties for the view
 ]]
-function ScrollView:init( ... )
-	self.super:init( ... )
+function ScrollView:initialise( ... )
+	self.super:initialise( ... )
 	self.canvas.fillColour = Graphics.colours.WHITE
 
 	local width, height = self.width, self.height

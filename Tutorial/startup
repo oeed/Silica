@@ -1,0 +1,12 @@
+fs.open( "log", "w" ).close()
+function _G.print( ... )
+	local h = fs.open( "log", "a" )
+	h.write( tostring( ... or "" ) .. "\n" )
+	h.close()
+end
+
+dofile( "Silica" )
+
+Application.load( "" )
+
+ExampleApplication():run( ... )

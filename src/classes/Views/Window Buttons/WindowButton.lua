@@ -12,16 +12,16 @@ class "WindowButton" extends "View" {
     @constructor
     @desc Creates a button object and connects the event handlers
 ]]
-function WindowButton:init( ... )
-    self.super:init( ... )
+function WindowButton:initialise( ... )
+    self.super:initialise( ... )
     
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
     if self.onMouseUp then self:event( Event.MOUSE_UP, self.onMouseUp ) end
 end
 
-function WindowButton:initCanvas()
-	self.super:initCanvas()
+function WindowButton:initialiseCanvas()
+	self.super:initialiseCanvas()
 
     local backgroundObject = self.canvas:insert( Circle( 3, 2, 5, 5 ) )
     self.theme:connect( backgroundObject, "fillColour" )

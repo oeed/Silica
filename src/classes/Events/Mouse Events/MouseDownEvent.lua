@@ -11,7 +11,7 @@ class "MouseDownEvent" extends "MouseEvent" {
 	@param [number] x -- the x screen coordinate
 	@param [number] y -- the y screen coordinate
 ]]
-function MouseDownEvent:init( mouseButton, x, y )
+function MouseDownEvent:initialise( mouseButton, x, y )
 	self.mouseButton = mouseButton
 	self.x = x
 	self.y = y

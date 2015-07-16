@@ -1,8 +1,8 @@
 
 class "CloseWindowButton" extends "WindowButton" {}
 
-function CloseWindowButton:initCanvas()
-	self.super:initCanvas()
+function CloseWindowButton:initialiseCanvas()
+	self.super:initialiseCanvas()
 
 	local symbolObject = Path( 4, 3, 3, 3 )
     symbolObject:lineTo( 3, 3 )

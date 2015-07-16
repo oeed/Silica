@@ -10,6 +10,6 @@ class "SiblingRemovedInterfaceEvent" extends "InterfaceEvent" {
 	@desc Creates a siblings changed event from the arguments
 	@param [View] view -- the removed sibling view
 ]]
-function SiblingRemovedInterfaceEvent:init( view )
+function SiblingRemovedInterfaceEvent:initialise( view )
 	self.view = view
 end

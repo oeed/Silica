@@ -23,7 +23,7 @@ class "InterfaceOutlet" {
 	@param [boolean] trackAll -- whether to track all view with the identifier, or just one
 	@param [Container] owner -- the container that owns the outlet
 ]]
-function InterfaceOutlet:init( viewIdentifier, trackAll, owner ) -- if you change this you need to change it in class.lua uniqueTable() too
+function InterfaceOutlet:initialise( viewIdentifier, trackAll, owner ) -- if you change this you need to change it in class.lua uniqueTable() too
 	trackAll = trackAll or false
 	self.viewIdentifier = viewIdentifier
 	self.trackAll = trackAll

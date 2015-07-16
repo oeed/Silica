@@ -7,8 +7,8 @@ class "Scrollbar" extends "View" {
     dragPoint = nil;
 }
 
-function Scrollbar:init( ... )
-	self.super:init( ... )
+function Scrollbar:initialise( ... )
+	self.super:initialise( ... )
     -- self:event( Event.MOUSE_SCROLL, self.onMouseScroll )
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self.event:connectGlobal( Event.MOUSE_DRAG, self.onGlobalMouseDrag )
@@ -19,8 +19,8 @@ end
     @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
-function Scrollbar:initCanvas()
-    self.super:initCanvas()
+function Scrollbar:initialiseCanvas()
+    self.super:initialiseCanvas()
 
     self.theme:connect( self.canvas, "fillColour" )
 

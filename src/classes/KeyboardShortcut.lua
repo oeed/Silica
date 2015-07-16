@@ -8,7 +8,7 @@ class "KeyboardShortcut" {
 	@desc Creates a keyboard shortcut
 	@param ... -- all the keys for the shortcut
 ]]
-function KeyboardShortcut:init( ... )
+function KeyboardShortcut:initialise( ... )
 	self.keys = { ... }
 end
 

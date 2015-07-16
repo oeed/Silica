@@ -4,12 +4,12 @@ class "TestView" extends "View" {
 	height = nil;
 }
 
-function TestView:init( ... )
-	self.super:init( ... )
+function TestView:initialise( ... )
+	self.super:initialise( ... )
 end
 
-function TestView:initCanvas( ... )
-	self.super:initCanvas( ... )
+function TestView:initialiseCanvas( ... )
+	self.super:initialiseCanvas( ... )
 	self.canvas.fillColour = Graphics.colours.RED
 end
 

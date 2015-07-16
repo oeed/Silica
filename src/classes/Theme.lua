@@ -13,7 +13,7 @@ class "Theme" {
 	@param [string] themeName -- the name of the theme
 	@table [table] cantExtend -- a table of the theme names that the theme can't extend (as they are currently extending, which would cause recussursion)
 ]]
-function Theme:init( themeName, cantExtend )
+function Theme:initialise( themeName, cantExtend )
 	cantExtend = cantExtend or {}
 	if cantExtend[themeName] then
 		error( "Unabled to extend with theme: " .. themeName .. ". It is already extended higher up, which would cause recussursion.", 0 )
@@ -30,7 +30,7 @@ function Theme:init( themeName, cantExtend )
 			error( "Theme XML invaid: " .. themeName .. ".stheme. Error: " .. err, 0 )
 		end
 		cantExtend[themeName] = true
-		local err = self:initTheme( nodes[1], cantExtend )
+		local err = self:initialiseTheme( nodes[1], cantExtend )
 		if err then
 			error( "Theme XML invaid: " .. themeName .. ".stheme. Error: " .. err, 0 )
 		end
@@ -58,7 +58,7 @@ end
 	@param [table] nodes -- the nodes from the XML file
 	@table [table] cantExtend -- a table of the theme names that the theme can't extend (as they are currently extending, which would cause recussursion)
 ]]
-function Theme:initTheme( nodes, cantExtend )
+function Theme:initialiseTheme( nodes, cantExtend )
 	if not nodes then
 		return "Format invalid."
 	elseif nodes.type ~= "Theme" then

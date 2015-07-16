@@ -5,8 +5,8 @@ class "ProgressBarStripes" extends "RoundedRectangle" {
 	stripeWidth = 9;
 }
 
-function ProgressBarStripes:init( x, y, width, height, fillColour, outlineColour, stripeColour, radius ) -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )
-	self.super:init( x, y, width, height, fillColour, outlineColour, radius, 0, radius, 0 )
+function ProgressBarStripes:initialise( x, y, width, height, fillColour, outlineColour, stripeColour, radius ) -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )
+	self.super:initialise( x, y, width, height, fillColour, outlineColour, radius, 0, radius, 0 )
 	self.fillColour = fillColour
 	self.outlineColour = fillColour
 	self.stripeColour = stripeColour

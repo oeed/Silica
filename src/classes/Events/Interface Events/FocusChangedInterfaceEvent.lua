@@ -9,7 +9,7 @@ class "FocusChangedInterfaceEvent" extends "InterfaceEvent" {
 	@desc Creates a focus event from the arguments
 	@param newFocus -- the newFocus view (if any)
 ]]
-function FocusChangedInterfaceEvent:init( newFocus )
+function FocusChangedInterfaceEvent:initialise( newFocus )
 	self.newFocus = newFocus
 end
 

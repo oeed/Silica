@@ -11,7 +11,7 @@ class "MouseUpEvent" extends "MouseEvent" {
 	@param [number] x -- the x screen coordinate
 	@param [number] y -- the y screen coordinate
 ]]
-function MouseUpEvent:init( mouseButton, x, y )
+function MouseUpEvent:initialise( mouseButton, x, y )
 	self.mouseButton = mouseButton
 	self.x = x
 	self.y = y

@@ -9,7 +9,7 @@ class "Interface" {
 	@desc Creates and loads an interface with the given name
 	@param [string] interfaceName -- the file name of the interface
 ]]
-function Interface:init( interfaceName, extend )
+function Interface:initialise( interfaceName, extend )
 	self.name = interfaceName
 	extend = extend or ApplicationContainer
 
@@ -21,7 +21,7 @@ function Interface:init( interfaceName, extend )
 		if not nodes then
 			error( "Interface XML invaid: " .. interfaceName .. ".sinterface. Error: " .. err, 0 )
 		end
-		local err = self:initContainer( nodes[1], extend )
+		local err = self:initialiseContainer( nodes[1], extend )
 		if err then
 			error( "Interface XML invaid: " .. interfaceName .. ".sinterface. Error: " .. err, 0 )
 		end
@@ -35,7 +35,7 @@ end
 	@instance
 	@desc Creates the container from the interface file
 ]]
-function Interface:initContainer( nodes, extend )
+function Interface:initialiseContainer( nodes, extend )
 	if not nodes then
 		return "Format invalid."
 	end

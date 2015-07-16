@@ -8,7 +8,7 @@ class "String" {
 	@desc Creates a string object
 	@param [string] str -- the string to use
 ]]
-function String:init( str )
+function String:initialise( str )
 	self.str = str
 end
 

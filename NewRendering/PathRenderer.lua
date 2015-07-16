@@ -173,8 +173,8 @@ class "PathRenderer" extends "FilledRenderer" {
 	outlinePoints = {};
 }
 
-function PathRenderer:init( x, y, width, height, currentX, currentY )
-	self.super:init( x, y, width, height )
+function PathRenderer:initialise( x, y, width, height, currentX, currentY )
+	self.super:initialise( x, y, width, height )
 	self.currentX = currentX or 1
 	self.currentY = currentY or 1
 end

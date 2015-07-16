@@ -10,8 +10,8 @@ class "Circle" extends "GraphicsObject" {}
 	@param [number] height -- the height of the rectangle
 	@param [number] radius -- the radius of the corners. of the top of the next parameter is defined, or top left if all 4 are
 ]]
-function Circle:init( x, y, diameter )
-	self.super:init( x, y, diameter, diameter )
+function Circle:initialise( x, y, diameter )
+	self.super:initialise( x, y, diameter, diameter )
 end
 
 --[[

@@ -3,8 +3,8 @@ class "Canvas" extends "GenericRenderer" {
 	
 }
 
-function Canvas:init( x, y, width, height )
-	self.super:init( x, y, width, height )
+function Canvas:initialise( x, y, width, height )
+	self.super:initialise( x, y, width, height )
 	self.children = {}
 end
 

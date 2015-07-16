@@ -190,8 +190,8 @@ class "Path" extends "GraphicsObject" {
 	@param [number] currentX -- the starting x coordinate
 	@param [number] currentY -- the starting y coordinate
 ]]
-function Path:init( x, y, width, height, currentX, currentY )
-	self.super:init( x, y, width, height )
+function Path:initialise( x, y, width, height, currentX, currentY )
+	self.super:initialise( x, y, width, height )
 	self.fillColour = fillColour
 	self.currentX = currentX or 1
 	self.currentY = currentY or 1

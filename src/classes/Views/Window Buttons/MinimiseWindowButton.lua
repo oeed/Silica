@@ -1,8 +1,8 @@
 
 class "MinimiseWindowButton" extends "WindowButton" {}
 
-function MinimiseWindowButton:initCanvas()
-	self.super:initCanvas()
+function MinimiseWindowButton:initialiseCanvas()
+	self.super:initialiseCanvas()
 
 	local symbolObject = Path( 4, 4, 3, 1, 1, 1 )
     symbolObject:lineTo( 3, 1 )

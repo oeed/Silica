@@ -3,8 +3,8 @@ class "Separator" extends "GraphicsObject" {
 	fillColour = Graphics.colours.LIGHT_GREY;
 }
 
-function Separator:init( x, y, width, height )
-	self.super:init( x, y, width, height )
+function Separator:initialise( x, y, width, height )
+	self.super:initialise( x, y, width, height )
 end
 
 --[[

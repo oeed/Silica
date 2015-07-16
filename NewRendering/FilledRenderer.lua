@@ -3,8 +3,8 @@ class "FilledRenderer" extends "GenericRenderer" {
 	fillColour = 1;
 }
 
-function FilledRenderer:init( ... )
-	return self.super:init( ... )
+function FilledRenderer:initialise( ... )
+	return self.super:initialise( ... )
 end
 
 function FilledRenderer:getRenderer()

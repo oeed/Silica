@@ -16,7 +16,7 @@ class "GenericRenderer" {
 	outlineColour = 1;
 }
 
-function GenericRenderer:init( x, y, width, height )
+function GenericRenderer:initialise( x, y, width, height )
 	self.buffer = {}
 	self.x = x
 	self.y = y

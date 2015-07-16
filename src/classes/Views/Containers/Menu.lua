@@ -36,8 +36,8 @@ class "Menu" extends "Container" {
 	@desc Initialise a application container instance
 	@param [table] properties -- the properties for the view
 ]]
-function Menu:init( ... )
-	self.super:init( ... )
+function Menu:initialise( ... )
+	self.super:initialise( ... )
 
     self.event:connectGlobal( Event.MOUSE_DOWN, self.onGlobalMouseDown, EventManager.phase.BEFORE )
 end
@@ -46,8 +46,8 @@ end
     @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
-function Menu:initCanvas()
-	self.super:initCanvas()
+function Menu:initialiseCanvas()
+	self.super:initialiseCanvas()
     local cornerRadius = self.cornerRadius
     local shadowObject = self.canvas:insert( RoundedRectangle( 1 + self.shadowRightMargin, 1 + self.shadowTopMargin, self.width - 1, self.height - 2 ) )
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 2 ) )

@@ -6,8 +6,8 @@ class "Text" extends "GraphicsObject" {
 	alignment = Font.alignments.LEFT
 }
 
-function Text:init( x, y, width, height, text, font, textColour )
-	self.super:init( x, y, width, height )
+function Text:initialise( x, y, width, height, text, font, textColour )
+	self.super:initialise( x, y, width, height )
 	self.text = text
 	self.font = font
 	self.textColour = textColour

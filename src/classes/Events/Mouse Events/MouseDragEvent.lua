@@ -11,7 +11,7 @@ class "MouseDragEvent" extends "MouseEvent" {
 	@param [number] x -- the x screen coordinate
 	@param [number] y -- the y screen coordinate
 ]]
-function MouseDragEvent:init( mouseButton, x, y )
+function MouseDragEvent:initialise( mouseButton, x, y )
 	self.mouseButton = mouseButton
 	self.x = x
 	self.y = y

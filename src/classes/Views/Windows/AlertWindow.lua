@@ -4,8 +4,8 @@ class "AlertWindow" extends "Window" {
 	okayButton = InterfaceOutlet( "okayButton" );
 }
 
-function AlertWindow:init( ... )
-	self.super:init( ... )
+function AlertWindow:initialise( ... )
+	self.super:initialise( ... )
 
 	self:event( Event.INTERFACE_LOADED, self.onInterfaceLoaded )
 	self:event( Event.INTERFACE_READY, self.onReady )

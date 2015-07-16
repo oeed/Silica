@@ -3,11 +3,11 @@ class "WindowContainer" extends "Container" {
 	backgroundObject = nil;
 }
 
-function WindowContainer:init( ... )
-	self.super:init( ... )
+function WindowContainer:initialise( ... )
+	self.super:initialise( ... )
 end
 
-function WindowContainer:initCanvas()
+function WindowContainer:initialiseCanvas()
 	self.canvas = WindowCanvas( self.x, self.y, self.width, self.height )
 	self.backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, Graphics.colours.WHITE ) )
 end

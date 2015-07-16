@@ -8,6 +8,6 @@ class "InterfaceEvent" extends "Event" {
 	@desc Creates an interface event from the arguments
 	@param [class] owner -- the owner view
 ]]
-function InterfaceEvent:init( owner )
+function InterfaceEvent:initialise( owner )
 	self.owner = owner
 end

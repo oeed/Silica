@@ -3,8 +3,8 @@ class "Rectangle" extends "GraphicsObject" {
 	fillColour = Graphics.colours.LIGHT_GREY;
 }
 
-function Rectangle:init( x, y, width, height, fillColour ) -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )
-	self.super:init( x, y, width, height )
+function Rectangle:initialise( x, y, width, height, fillColour ) -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )
+	self.super:initialise( x, y, width, height )
 	self.fillColour = fillColour
 end
 

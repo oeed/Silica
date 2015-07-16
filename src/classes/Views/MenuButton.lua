@@ -17,8 +17,8 @@ class "MenuButton" extends "Button" {
     @constructor
     @desc Creates a MenuButton object and connects the event handlers
 ]]
-function MenuButton:init( ... )
-    self.super:init( ... )
+function MenuButton:initialise( ... )
+    self.super:initialise( ... )
     local menuName = self.menuName
     if not menuName then error( "MenuButtons must specify the property menuName (the name of the interface file to use).", 0 ) end
     menu = Menu.fromInterface( menuName )
@@ -63,8 +63,8 @@ function MenuButton:updateHeight( height )
     self.needsArrowUpdate = true
 end
 
-function MenuButton:initCanvas()
-    self.super:initCanvas()
+function MenuButton:initialiseCanvas()
+    self.super:initialiseCanvas()
     local arrowX, arrowY = self.width - 12, math.ceil( ( self.height - 4 ) / 2 )
 
     local closeArrowObject = Path( 1, 1, 7, 4, 1, 4 )

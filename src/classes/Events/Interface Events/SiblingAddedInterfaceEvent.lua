@@ -10,6 +10,6 @@ class "SiblingAddedInterfaceEvent" extends "InterfaceEvent" {
 	@desc Creates a siblings changed event from the arguments
 	@param [View] view -- the new sibling view
 ]]
-function SiblingAddedInterfaceEvent:init( view )
+function SiblingAddedInterfaceEvent:initialise( view )
 	self.view = view
 end

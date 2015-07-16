@@ -15,7 +15,7 @@ class "InterfaceOutletChangedInterfaceEvent" extends "InterfaceEvent" {
 	@param newView -- the new view the outlet is bound to
 	@param oldView -- the old view the outlet was bound to
 ]]
-function InterfaceOutletChangedInterfaceEvent:init( interfaceOutlet, newView, oldView )
+function InterfaceOutletChangedInterfaceEvent:initialise( interfaceOutlet, newView, oldView )
 	self.interfaceOutlet = interfaceOutlet
 	self.newView = newView
 	self.oldView = oldView

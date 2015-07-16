@@ -11,7 +11,7 @@ class "MouseScrollEvent" extends "MouseEvent" {
 	@param [number] x -- the x screen coordinate
 	@param [number] y -- the y screen coordinate
 ]]
-function MouseScrollEvent:init( direction, x, y )
+function MouseScrollEvent:initialise( direction, x, y )
 	self.direction = direction
 	self.x = x
 	self.y = y

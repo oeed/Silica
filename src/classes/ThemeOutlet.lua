@@ -11,7 +11,7 @@ class "ThemeOutlet" {
 	@desc Creates a ThemeOutlet
 	@param [class] owner -- the outlet owner
 ]]
-function ThemeOutlet:init( owner )
+function ThemeOutlet:initialise( owner )
 	self.owner = owner
 	self.ownerClass = owner.class
 end

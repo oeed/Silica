@@ -1,4 +1,4 @@
-local files = {interfaces = {["alert.sinterface"] = "<WindowContainer>\
+local files = {interfaces = {["alert.sml"] = "<WindowContainer>\
 \
 \9<Label x=6  width=\"100%-6\" y=5 text=\"Self-destruct?\" />\
 \9<Button identifier=okayButton right=\"100%-6\" bottom=\"100%-5\" text=Okay />\
@@ -405,8 +405,8 @@ class \"Window\" extends \"Container\" {\
 \9@desc Initialise a application container instance\
 \9@param [table] properties -- the properties for the view\
 ]]\
-function Window:initialise( ... )\
-\9self.super:initialise( ... )\
+function Window:init( ... )\
+\9self.super:init( ... )\
     self.closeButton = self:insert( CloseWindowButton( { x = 1, y = 1, window = self } ))\
     self.minimiseButton = self:insert( MinimiseWindowButton( { x = 9, y = 1, window = self } ))\
     self.maximiseButton = self:insert( MaximiseWindowButton( { x = 17, y = 1, window = self } ))\
@@ -439,8 +439,8 @@ end\
     @instance\
     @desc Sets up the canvas and it's graphics objects\
 ]]\
-function Window:initialiseCanvas()\
-    self.super:initialiseCanvas()\
+function Window:initCanvas()\
+    self.super:initCanvas()\
     -- self.canvas.fillColour = Graphics.colours.GREEN\
 \9local barHeight = self.barHeight\
     local shadowObject = self.canvas:insert( RoundedRectangle( 3, 4, self.width - 2, self.height - 3 ) )\
@@ -670,7 +670,7 @@ class \"InterfaceOutlet\" {\
 \9@param [boolean] trackAll -- whether to track all view with the identifier, or just one\
 \9@param [Container] owner -- the container that owns the outlet\
 ]]\
-function InterfaceOutlet:initialise( viewIdentifier, trackAll, owner ) -- if you change this you need to change it in class.lua uniqueTable() too\
+function InterfaceOutlet:init( viewIdentifier, trackAll, owner ) -- if you change this you need to change it in class.lua uniqueTable() too\
 \9trackAll = trackAll or false\
 \9self.viewIdentifier = viewIdentifier\
 \9self.trackAll = trackAll\
@@ -811,8 +811,8 @@ class \"MenuButton\" extends \"Button\" {\
     @constructor\
     @desc Creates a MenuButton object and connects the event handlers\
 ]]\
-function MenuButton:initialise( ... )\
-    self.super:initialise( ... )\
+function MenuButton:init( ... )\
+    self.super:init( ... )\
     local menuName = self.menuName\
     if not menuName then error( \"MenuButtons must specify the property menuName (the name of the interface file to use).\", 0 ) end\
     menu = Menu.fromInterface( menuName )\
@@ -857,8 +857,8 @@ function MenuButton:updateHeight( height )\
     self.needsArrowUpdate = true\
 end\
 \
-function MenuButton:initialiseCanvas()\
-    self.super:initialiseCanvas()\
+function MenuButton:initCanvas()\
+    self.super:initCanvas()\
     local arrowX, arrowY = self.width - 12, math.ceil( ( self.height - 4 ) / 2 )\
 \
     local closeArrowObject = Path( 1, 1, 7, 4, 1, 4 )\
@@ -963,8 +963,8 @@ class \"MenuBar\" extends \"Container\" {\
     separatorObject = false;\
 }\
 \
-function MenuBar:initialiseCanvas()\
-    self.super:initialiseCanvas()\
+function MenuBar:initCanvas()\
+    self.super:initCanvas()\
     local separatorObject = self.canvas:insert( Rectangle( 1, self.height, self.width, 1 ) )\
     self.theme:connect( separatorObject, \"fillColour\", \"separatorColour\" )\
     self.theme:connect( self.canvas, \"fillColour\" )\
@@ -1037,7 +1037,7 @@ class \"TimerEvent\" extends \"Event\" {\
 \9@desc Creates a timer event from the arguments\
 \9@param [number] time -- the ID of the timer\
 ]]\
-function TimerEvent:initialise( timer )\
+function TimerEvent:init( timer )\
 \9self.timer = timer\
 end",["SegmentContainer.lua"] = "\
 class \"SegmentContainer\" extends \"Container\" {\
@@ -1092,7 +1092,7 @@ class \"Interface\" {\
 \9@desc Creates and loads an interface with the given name\
 \9@param [string] interfaceName -- the file name of the interface\
 ]]\
-function Interface:initialise( interfaceName, extend )\
+function Interface:init( interfaceName, extend )\
 \9self.name = interfaceName\
 \9extend = extend or ApplicationContainer\
 \
@@ -1104,7 +1104,7 @@ function Interface:initialise( interfaceName, extend )\
 \9\9if not nodes then\
 \9\9\9error( \"Interface XML invaid: \" .. interfaceName .. \".sinterface. Error: \" .. err, 0 )\
 \9\9end\
-\9\9local err = self:initialiseContainer( nodes[1], extend )\
+\9\9local err = self:initContainer( nodes[1], extend )\
 \9\9if err then\
 \9\9\9error( \"Interface XML invaid: \" .. interfaceName .. \".sinterface. Error: \" .. err, 0 )\
 \9\9end\
@@ -1118,7 +1118,7 @@ end\
 \9@instance\
 \9@desc Creates the container from the interface file\
 ]]\
-function Interface:initialiseContainer( nodes, extend )\
+function Interface:initContainer( nodes, extend )\
 \9if not nodes then\
 \9\9return \"Format invalid.\"\
 \9end\
@@ -1207,8 +1207,6 @@ class \"Application\" {\
 ]]\
 function Application.load( path )\
 \9-- TODO: path tidying\
-\9path = path:gsub( \"/$\", \"/\" )\
-\
 \9table.insert( Application.resourceDirectories, path )\
 \9local loaded = {}\
 \9local loadClass\
@@ -1278,7 +1276,7 @@ end\
 \9@desc Creates the application runtime for the Silica program. Call :run() on this to start it.\
 \9@param [table] resourceDirectories -- a table of paths in which the applications resources are (classes, themes, etc.)\
 ]]\
-function Application:initialise()\
+function Application:init()\
 \9self.resourceTables = __resourceTables or {}\
 \9_G.__resourceTables = nil\
 \9class.application = self\
@@ -1286,7 +1284,7 @@ function Application:initialise()\
 \9self.event = ApplicationEventManager( self )\
 \9self.keyboardShortcutManager = KeyboardShortcutManager( self )\
 \9\
-\9Font.initialisePresets()\
+\9Font.initPresets()\
 \9\
 \9self:reloadInterface()\
 \
@@ -1456,7 +1454,7 @@ class \"Theme\" {\
 \9@param [string] themeName -- the name of the theme\
 \9@table [table] cantExtend -- a table of the theme names that the theme can't extend (as they are currently extending, which would cause recussursion)\
 ]]\
-function Theme:initialise( themeName, cantExtend )\
+function Theme:init( themeName, cantExtend )\
 \9cantExtend = cantExtend or {}\
 \9if cantExtend[themeName] then\
 \9\9error( \"Unabled to extend with theme: \" .. themeName .. \". It is already extended higher up, which would cause recussursion.\", 0 )\
@@ -1473,7 +1471,7 @@ function Theme:initialise( themeName, cantExtend )\
 \9\9\9error( \"Theme XML invaid: \" .. themeName .. \".stheme. Error: \" .. err, 0 )\
 \9\9end\
 \9\9cantExtend[themeName] = true\
-\9\9local err = self:initialiseTheme( nodes[1], cantExtend )\
+\9\9local err = self:initTheme( nodes[1], cantExtend )\
 \9\9if err then\
 \9\9\9error( \"Theme XML invaid: \" .. themeName .. \".stheme. Error: \" .. err, 0 )\
 \9\9end\
@@ -1501,7 +1499,7 @@ end\
 \9@param [table] nodes -- the nodes from the XML file\
 \9@table [table] cantExtend -- a table of the theme names that the theme can't extend (as they are currently extending, which would cause recussursion)\
 ]]\
-function Theme:initialiseTheme( nodes, cantExtend )\
+function Theme:initTheme( nodes, cantExtend )\
 \9if not nodes then\
 \9\9return \"Format invalid.\"\
 \9elseif nodes.type ~= \"Theme\" then\
@@ -1603,15 +1601,15 @@ function Theme:value( _class, propertyName, styleName, noError )\
 end",["ReadyInterfaceEvent.lua"] = "\
 class \"ReadyInterfaceEvent\" extends \"InterfaceEvent\" {\
 \9eventType = Event.INTERFACE_READY;\
-\9isInit = false; -- whether the event is the first one called in Application:initialise\
+\9isInit = false; -- whether the event is the first one called in Application:init\
 }\
 \
 --[[\
 \9@constructor\
 \9@desc Creates a ready event from the arguments\
-\9@param isInit -- whether the event is the first one called in Application:initialise\
+\9@param isInit -- whether the event is the first one called in Application:init\
 ]]\
-function ReadyInterfaceEvent:initialise( isInit )\
+function ReadyInterfaceEvent:init( isInit )\
 \9self.isInit = isInit or false\
 end\
 ",["View.lua"] = "\
@@ -1669,11 +1667,11 @@ class \"View\" {\
 \9@desc Initialise a view instance\
 \9@param [table] properties -- the properties for the view\
 ]]\
-function View:initialise( properties )\
+function View:init( properties )\
 \9self.animations.names = {} \
-\9self:initialiseTheme()\
-\9self:initialiseCanvas()\
-\9self:initialiseEventManager()\
+\9self:initTheme()\
+\9self:initCanvas()\
+\9self:initEventManager()\
 \
 \9setmetatable( self.stringConstraints, {\
 \9\9__index = { parent = self }, __newindex = function( t, k, v )\
@@ -1694,7 +1692,7 @@ function View:initialise( properties )\
     self:event( Event.INTERFACE_READY, self.onReadyConstraintUpdate )\
 end\
 \
-function View:initialiseTheme()\
+function View:initTheme()\
 \9self.theme = ThemeOutlet( self )\
 end\
 \
@@ -1702,7 +1700,7 @@ end\
 \9@instance\
 \9@desc Initialises the view's event manager (used for overriding)\
 ]]\
-function View:initialiseEventManager()\
+function View:initEventManager()\
 \9self.event = EventManager( self )\
 end\
 \
@@ -1710,7 +1708,7 @@ end\
     @instance\
     @desc Sets up the canvas and it's graphics objects\
 ]]\
-function View:initialiseCanvas()\
+function View:initCanvas()\
 \9self.canvas = Canvas( self.x, self.y, self.width, self.height )\
 end\
 \
@@ -2357,7 +2355,7 @@ class \"KeyboardShortcut\" {\
 \9@desc Creates a keyboard shortcut\
 \9@param ... -- all the keys for the shortcut\
 ]]\
-function KeyboardShortcut:initialise( ... )\
+function KeyboardShortcut:init( ... )\
 \9self.keys = { ... }\
 end\
 \
@@ -2419,14 +2417,14 @@ class \"SiblingAddedInterfaceEvent\" extends \"InterfaceEvent\" {\
 \9@desc Creates a siblings changed event from the arguments\
 \9@param [View] view -- the new sibling view\
 ]]\
-function SiblingAddedInterfaceEvent:initialise( view )\
+function SiblingAddedInterfaceEvent:init( view )\
 \9self.view = view\
 end",["FontWindowContainer.lua"] = "\
 class \"FontWindowContainer\" extends \"WindowContainer\" {\
 \9backgroundObject = nil;\
 }\
 \
-function FontWindowContainer:initialiseCanvas()\
+function FontWindowContainer:initCanvas()\
 \9self.canvas = FontWindowCanvas( self.x, self.y, self.width, self.height )\
 \9self.backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, Graphics.colours.WHITE ) )\
 end",["String.lua"] = "\
@@ -2439,7 +2437,7 @@ class \"String\" {\
 \9@desc Creates a string object\
 \9@param [string] str -- the string to use\
 ]]\
-function String:initialise( str )\
+function String:init( str )\
 \9self.str = str\
 end\
 \
@@ -2478,7 +2476,7 @@ class \"CharacterEvent\" extends \"Event\" {\
 \9@desc Creates a char event from the arguments\
 \9@param [string] character -- the event character\
 ]]\
-function CharacterEvent:initialise( character )\
+function CharacterEvent:init( character )\
 \9self.character = character\
 end",["WindowCanvas.lua"] = "\
 class \"WindowCanvas\" extends \"Canvas\" { }\
@@ -2521,7 +2519,7 @@ class \"ThemeOutlet\" {\
 \9@desc Creates a ThemeOutlet\
 \9@param [class] owner -- the outlet owner\
 ]]\
-function ThemeOutlet:initialise( owner )\
+function ThemeOutlet:init( owner )\
 \9self.owner = owner\
 \9self.ownerClass = owner.class\
 end\
@@ -2646,7 +2644,7 @@ class \"MouseDragEvent\" extends \"MouseEvent\" {\
 \9@param [number] x -- the x screen coordinate\
 \9@param [number] y -- the y screen coordinate\
 ]]\
-function MouseDragEvent:initialise( mouseButton, x, y )\
+function MouseDragEvent:init( mouseButton, x, y )\
 \9self.mouseButton = mouseButton\
 \9self.x = x\
 \9self.y = y\
@@ -2667,16 +2665,16 @@ class \"WindowButton\" extends \"View\" {\
     @constructor\
     @desc Creates a button object and connects the event handlers\
 ]]\
-function WindowButton:initialise( ... )\
-    self.super:initialise( ... )\
+function WindowButton:init( ... )\
+    self.super:init( ... )\
     \
     self:event( Event.MOUSE_DOWN, self.onMouseDown )\
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
     if self.onMouseUp then self:event( Event.MOUSE_UP, self.onMouseUp ) end\
 end\
 \
-function WindowButton:initialiseCanvas()\
-\9self.super:initialiseCanvas()\
+function WindowButton:initCanvas()\
+\9self.super:initCanvas()\
 \
     local backgroundObject = self.canvas:insert( Circle( 3, 2, 5, 5 ) )\
     self.theme:connect( backgroundObject, \"fillColour\" )\
@@ -2742,8 +2740,8 @@ class \"Circle\" extends \"GraphicsObject\" {}\
 \9@param [number] height -- the height of the rectangle\
 \9@param [number] radius -- the radius of the corners. of the top of the next parameter is defined, or top left if all 4 are\
 ]]\
-function Circle:initialise( x, y, diameter )\
-\9self.super:initialise( x, y, diameter, diameter )\
+function Circle:init( x, y, diameter )\
+\9self.super:init( x, y, diameter, diameter )\
 end\
 \
 --[[\
@@ -2782,7 +2780,7 @@ class \"ActionInterfaceEvent\" extends \"InterfaceEvent\" {\
 \9@desc Creates a focus event from the arguments\
 \9@param [View] sender -- the view whose action it is\
 ]]\
-function ActionInterfaceEvent:initialise( sender )\
+function ActionInterfaceEvent:init( sender )\
 \9self.sender = sender\
 end\
 ",["Rectangle.lua"] = "\
@@ -2790,8 +2788,8 @@ class \"Rectangle\" extends \"GraphicsObject\" {\
 \9fillColour = Graphics.colours.LIGHT_GREY;\
 }\
 \
-function Rectangle:initialise( x, y, width, height, fillColour ) -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )\
-\9self.super:initialise( x, y, width, height )\
+function Rectangle:init( x, y, width, height, fillColour ) -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )\
+\9self.super:init( x, y, width, height )\
 \9self.fillColour = fillColour\
 end\
 \
@@ -2834,7 +2832,7 @@ class \"EventManager\" {\
 \9@desc Creates an EventManager for the provided owner, with owner reverting to the EventManager instance\
 \9@param [class] owner -- the owner of the EventManger (i.e. what self will be on function calls)\
 ]]\
-function EventManager:initialise( owner )\
+function EventManager:init( owner )\
 \9self.owner = owner or self\
 \9self.owner = self.owner\
 \
@@ -3051,8 +3049,8 @@ class \"RoundedRectangle\" extends \"GraphicsObject\" {\
 \9@param [number] bottomLeftRadius -- the radius of the bottom left corner\
 \9@param [number] bottomRightRadius -- the radius of the bottom right corner\
 ]]\
-function RoundedRectangle:initialise( x, y, width, height, fillColour, outlineColour, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius )\
-\9self.super:initialise( x, y, width, height )\
+function RoundedRectangle:init( x, y, width, height, fillColour, outlineColour, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius )\
+\9self.super:init( x, y, width, height )\
 \9self.fillColour = fillColour or Graphics.colours.TRANSPARENT\
 \9self.outlineColour = outlineColour or Graphics.colours.TRANSPARENT\
 \9topLeftRadius = topLeftRadius or 0\
@@ -3731,8 +3729,8 @@ class \"Scrollbar\" extends \"View\" {\
     dragPoint = nil;\
 }\
 \
-function Scrollbar:initialise( ... )\
-\9self.super:initialise( ... )\
+function Scrollbar:init( ... )\
+\9self.super:init( ... )\
     -- self:event( Event.MOUSE_SCROLL, self.onMouseScroll )\
     self:event( Event.MOUSE_DOWN, self.onMouseDown )\
     self.event:connectGlobal( Event.MOUSE_DRAG, self.onGlobalMouseDrag )\
@@ -3743,8 +3741,8 @@ end\
     @instance\
     @desc Sets up the canvas and it's graphics objects\
 ]]\
-function Scrollbar:initialiseCanvas()\
-    self.super:initialiseCanvas()\
+function Scrollbar:initCanvas()\
+    self.super:initCanvas()\
 \
     self.theme:connect( self.canvas, \"fillColour\" )\
 \
@@ -3880,7 +3878,7 @@ class \"KeyboardShortcutEvent\" extends \"Event\" {\
 \9@desc Creates a key event from the arguments\
 \9@param [table] arguments -- the event arguments\
 ]]\
-function KeyboardShortcutEvent:initialise( keys )\
+function KeyboardShortcutEvent:init( keys )\
 \9self.keys = keys\
 end\
 \
@@ -3911,8 +3909,8 @@ class \"Shader\" extends \"GraphicsObject\" {\
 \9fillColour = Graphics.colours.LIGHT_GREY;\
 }\
 \
-function Shader:initialise( x, y, width, height, shader )\
-\9self.super:initialise( x, y, width, height )\
+function Shader:init( x, y, width, height, shader )\
+\9self.super:init( x, y, width, height )\
 \9self.shader = shader\
 end\
 --[[\
@@ -3967,7 +3965,7 @@ class \"KeyboardShortcutManager\" {\
 \9event = nil;\
 }\
 \
-function KeyboardShortcutManager:initialise( owner )\
+function KeyboardShortcutManager:init( owner )\
 \9self.owner = owner\
 \9self.event = EventManager( self )\
 \9self.event:connectGlobal( Event.KEY_DOWN, self.onGlobalKeyDown )\
@@ -4239,8 +4237,8 @@ class \"Path\" extends \"GraphicsObject\" {\
 \9@param [number] currentX -- the starting x coordinate\
 \9@param [number] currentY -- the starting y coordinate\
 ]]\
-function Path:initialise( x, y, width, height, currentX, currentY )\
-\9self.super:initialise( x, y, width, height )\
+function Path:init( x, y, width, height, currentX, currentY )\
+\9self.super:init( x, y, width, height )\
 \9self.fillColour = fillColour\
 \9self.currentX = currentX or 1\
 \9self.currentY = currentY or 1\
@@ -4563,8 +4561,8 @@ class \"ApplicationContainer\" extends \"Container\" {\
 \9@desc Initialise a application container instance\
 \9@param [table] properties -- the properties for the view\
 ]]\
-function ApplicationContainer:initialise( ... )\
-\9self.super:initialise( ... )\
+function ApplicationContainer:init( ... )\
+\9self.super:init( ... )\
 \
 \9if not self.themeName then\
 \9\9self.themeName = \"default\"\
@@ -4574,7 +4572,7 @@ function ApplicationContainer:initialise( ... )\
     self:event( Event.MOUSE_DOWN, self.onMouseUp, EventManager.phase.AFTER )\
 end\
 \
-function ApplicationContainer:initialiseCanvas()\
+function ApplicationContainer:initCanvas()\
 \9local canvas = ScreenCanvas( self.x, self.y, self.width, self.height )\
     self.canvas = canvas\
 end\
@@ -4697,12 +4695,12 @@ class \"SeparatorMenuItem\" extends \"MenuItem\" {\
 \9@desc Initialise a application container instance\
 \9@param [table] properties -- the properties for the view\
 ]]\
-function SeparatorMenuItem:initialise( ... )\
-\9self.super.super:initialise( ... )\
+function SeparatorMenuItem:init( ... )\
+\9self.super.super:init( ... )\
 end\
 \
-function SeparatorMenuItem:initialiseCanvas()\
-\9self.super.super:initialiseCanvas()\
+function SeparatorMenuItem:initCanvas()\
+\9self.super.super:initCanvas()\
     self.backgroundObject = self.canvas:insert( Separator( 5, 2, self.width - 8, 1 ) )\
 end\
 \
@@ -4726,7 +4724,7 @@ class \"InterfaceEvent\" extends \"Event\" {\
 \9@desc Creates an interface event from the arguments\
 \9@param [class] owner -- the owner view\
 ]]\
-function InterfaceEvent:initialise( owner )\
+function InterfaceEvent:init( owner )\
 \9self.owner = owner\
 end",["class.lua"] = "\
 -- cache the names of the property getter/setter functions\
@@ -4796,7 +4794,7 @@ function class:newSuper( instance, eq, ... )\
 \9-- Super needs to be able to act like it's own instance in that it has all of it's own methods and properties, yet the subclass needs to be able to use super as if it were itself\
 \9-- So, for example, setting a value in a super method would actually set the value in the subclass\
 \9-- Likewise, indexing a value that's present \
-\9-- super:initialise is not automatically called, that's up to the subclass (although, one init will always be called, which might reach in to super)\
+\9-- super:init is not automatically called, that's up to the subclass (although, one init will always be called, which might reach in to super)\
 \
 \9raw.mt.__eq = eq\
 \
@@ -4809,7 +4807,7 @@ function class:newSuper( instance, eq, ... )\
 \
 \9\9local _classValue = _class[k]\
 \9\9if _classValue and type( _classValue ) == \"function\" then\
-\9\9\9-- we want super functions to be callable and not overwritten when accessed directly (e.g. self.super:initialise( ) )\
+\9\9\9-- we want super functions to be callable and not overwritten when accessed directly (e.g. self.super:init( ) )\
 \9\9\9local f = _classValue\
 \9\9\9return function(_self, ...)\
 \9\9\9\9if _self == raw then\
@@ -5035,8 +5033,8 @@ function class:new( ... )\
 \9end\
 \
 \9-- once the class has been created, pass the arguments to the init function for handling\
-\9if proxy.initialise and type( proxy.initialise ) == \"function\" then\
-\9\9proxy:initialise( ... )\
+\9if proxy.init and type( proxy.init ) == \"function\" then\
+\9\9proxy:init( ... )\
 \9end\
 \9proxy.hasInit = true\
 \
@@ -5286,8 +5284,8 @@ function Event:makeRelative( view )\
 end",["MinimiseWindowButton.lua"] = "\
 class \"MinimiseWindowButton\" extends \"WindowButton\" {}\
 \
-function MinimiseWindowButton:initialiseCanvas()\
-\9self.super:initialiseCanvas()\
+function MinimiseWindowButton:initCanvas()\
+\9self.super:initCanvas()\
 \
 \9local symbolObject = Path( 4, 4, 3, 1, 1, 1 )\
     symbolObject:lineTo( 3, 1 )\
@@ -5304,8 +5302,8 @@ function MinimiseWindowButton:onMouseUp( event )    \
 end",["MaximiseWindowButton.lua"] = "\
 class \"MaximiseWindowButton\" extends \"WindowButton\" {}\
 \
-function MaximiseWindowButton:initialiseCanvas()\
-\9self.super:initialiseCanvas()\
+function MaximiseWindowButton:initCanvas()\
+\9self.super:initCanvas()\
 \
 \9local symbolObject = Path( 4, 3, 3, 3, 2, 1 )\
     symbolObject:lineTo( 2, 3 )\
@@ -5339,8 +5337,8 @@ class \"Checkbox\" extends \"View\" {\
     @constructor\
     @desc Creates a button object and connects the event handlers\
 ]]\
-function Checkbox:initialise( ... )\
-\9self.super:initialise( ... )\
+function Checkbox:init( ... )\
+\9self.super:init( ... )\
     self:event( Event.MOUSE_DOWN, self.onMouseDown )\
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
 end\
@@ -5349,8 +5347,8 @@ end\
     @instance\
     @desc Sets up the canvas and it's graphics objects\
 ]]\
-function Checkbox:initialiseCanvas()\
-    self.super:initialiseCanvas()\
+function Checkbox:initCanvas()\
+    self.super:initCanvas()\
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )\
     \
     local checkObject = Path( 2, 2, self.width - 2, self.height - 2, 1, 4 )\
@@ -5450,7 +5448,7 @@ class \"ParentChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
 \9@param [Container] newParent -- the new parent view\
 \9@param [Container] oldParent -- the old parent view\
 ]]\
-function ParentChangedInterfaceEvent:initialise( newParent, oldParent )\
+function ParentChangedInterfaceEvent:init( newParent, oldParent )\
 \9self.newParent = newParent\
 \9self.oldParent = oldParent\
 end",["TextChangedInterfaceEvent.lua"] = "\
@@ -5466,7 +5464,7 @@ class \"TextChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
 \9@param text -- the new text value\
 \9@param oldText -- the old text value\
 ]]\
-function TextChangedInterfaceEvent:initialise( text, oldText )\
+function TextChangedInterfaceEvent:init( text, oldText )\
 \9self.text = text\
 \9self.oldText = oldText\
 end\
@@ -5656,7 +5654,7 @@ class \"ParentResizeInterfaceEvent\" extends \"InterfaceEvent\" {\
 \9@param [boolean] isVertical -- whether the change effected the height\
 \9@param [Container] sender -- the parent that resized\
 ]]\
-function ParentResizeInterfaceEvent:initialise( isHorizontal, isVertical, sender )\
+function ParentResizeInterfaceEvent:init( isHorizontal, isVertical, sender )\
 \9self.isHorizontal = isHorizontal\
 \9self.isVertical = isVertical\
 \9self.sender = sender\
@@ -5664,8 +5662,8 @@ end\
 ",["CloseWindowButton.lua"] = "\
 class \"CloseWindowButton\" extends \"WindowButton\" {}\
 \
-function CloseWindowButton:initialiseCanvas()\
-\9self.super:initialiseCanvas()\
+function CloseWindowButton:initCanvas()\
+\9self.super:initCanvas()\
 \
 \9local symbolObject = Path( 4, 3, 3, 3 )\
     symbolObject:lineTo( 3, 3 )\
@@ -5730,8 +5728,8 @@ class \"TextBox\" extends \"View\" {\
 \9@constructor\
 \9@desc Creates a text box view and connects the event handlers\
 ]]\
-function TextBox:initialise( ... )\
-\9self.super:initialise( ... )\
+function TextBox:init( ... )\
+\9self.super:init( ... )\
 \9\
 \9self:event( Event.KEY_UP, self.onKeyUp )\
 \9self:event( Event.KEY_DOWN, self.onKeyDown )\
@@ -5748,8 +5746,8 @@ end\
 \9@instance\
 \9@desc Sets up the canvas and it's graphics objects\
 ]]\
-function TextBox:initialiseCanvas()\
-\9self.super:initialiseCanvas()\
+function TextBox:initCanvas()\
+\9self.super:initCanvas()\
 \9local width, height, theme = self.width, self.height, self.theme\
 \9local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, width, height, theme.fillColour, theme.outlineColour, cornerRadius ) )\
 \9local selectionObject = self.canvas:insert( Rectangle( 0, 4, 1, self.height - 6 ) )\
@@ -6284,8 +6282,8 @@ class \"SegmentButton\" extends \"Button\" {\
 \
 }\
 \
-function SegmentButton:initialise( ... )\
-    self.super:initialise( ... )\
+function SegmentButton:init( ... )\
+    self.super:init( ... )\
     self:event( Event.PARENT_CHANGED, self.onSiblingOrParentChanged )\
     self:event( Event.SIBLING_ADDED, self.onSiblingOrParentChanged )\
     self:event( Event.SIBLING_ADDED, self.onSiblingOrParentChanged )\
@@ -6295,8 +6293,8 @@ end\
     @instance\
     @desc Sets up the canvas and it's graphics objects\
 ]]\
-function SegmentButton:initialiseCanvas()\
-\9self.super:initialiseCanvas()\
+function SegmentButton:initCanvas()\
+\9self.super:initCanvas()\
     local separatorBackgroundObject = self.canvas:insert( Rectangle( self.width, 1, 1, self.height -1 ) )\
     self.separatorObject = self.canvas:insert( Separator( self.width, 3, 1, self.height - 4 ) )\
     separatorBackgroundObject.leftOutlineWidth = 0\
@@ -6402,8 +6400,8 @@ class \"Radio\" extends \"View\" {\
     @constructor\
     @desc Creates a button object and connects the event handlers\
 ]]\
-function Radio:initialise( ... )\
-\9self.super:initialise( ... )\
+function Radio:init( ... )\
+\9self.super:init( ... )\
     self:event( Event.MOUSE_DOWN, self.onMouseDown )\
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
 end\
@@ -6412,8 +6410,8 @@ end\
     @instance\
     @desc Sets up the canvas and it's graphics objects\
 ]]\
-function Radio:initialiseCanvas()\
-    self.super:initialiseCanvas()\
+function Radio:initCanvas()\
+    self.super:initCanvas()\
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )\
     self.theme:connect( backgroundObject, \"fillColour\" )\
     self.theme:connect( backgroundObject, \"outlineColour\" )\
@@ -6514,8 +6512,8 @@ class \"ProgressBar\" extends \"View\" {\
     @instance\
     @desc Sets up the canvas and it's graphics objects\
 ]]\
-function ProgressBar:initialiseCanvas()\
-    self.super:initialiseCanvas()\
+function ProgressBar:initCanvas()\
+    self.super:initCanvas()\
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )\
     local stripesObject = self.canvas:insert( ProgressBarStripes( 1, 1, math.floor( ( self.value/self.maximum ) * self.width + 0.5 ), self.height, self.theme.barColour, self.theme.barColour, self.theme.stripeColour, self.theme.cornerRadius ) )\
     self.theme:connect( backgroundObject, \"fillColour\" )\
@@ -6598,16 +6596,16 @@ class \"MenuItem\" extends \"View\" {\
 \9@desc Initialise a menu item instance\
 \9@param [table] properties -- the properties for the view\
 ]]\
-function MenuItem:initialise( ... )\
-\9self.super:initialise( ... )\
+function MenuItem:init( ... )\
+\9self.super:init( ... )\
 \
     self:event( Event.MOUSE_DOWN, self.onMouseDown )\
     self:event( Event.KEYBOARD_SHORTCUT, self.onKeyboardShortcut )\
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
 end\
 \
-function MenuItem:initialiseCanvas()\
-    self.super:initialiseCanvas()\
+function MenuItem:initCanvas()\
+    self.super:initCanvas()\
     local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )\
     local textObject = self.canvas:insert( Text( 7, 3, self.height, self.width - TEXT_MARGIN, self.text ) )\
     local keyboardShortcut = self.keyboardShortcut\
@@ -7063,8 +7061,8 @@ class \"MenuBarItem\" extends \"View\" {\
 \9@desc Initialise a menu item instance\
 \9@param [table] properties -- the properties for the view\
 ]]\
-function MenuBarItem:initialise( ... )\
-\9self.super:initialise( ... )\
+function MenuBarItem:init( ... )\
+\9self.super:init( ... )\
 \
     local menuName = self.menuName\
     if not menuName then error( \"MenuBarItems must specify the property menuName (the name of the interface file to use).\", 0 ) end\
@@ -7100,8 +7098,8 @@ function MenuBarItem:onParentChanged( event )\
     end\
 end\
 \
-function MenuBarItem:initialiseCanvas()\
-    self.super:initialiseCanvas()\
+function MenuBarItem:initCanvas()\
+    self.super:initCanvas()\
     local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )\
     local textObject = self.canvas:insert( Text( TEXT_MARGIN / 2 + 1, 3, self.height, self.width - TEXT_MARGIN, self.text ) )\
 \
@@ -7278,8 +7276,8 @@ class \"Label\" extends \"View\" {\
     @instance\
     @desc Sets up the canvas and it's graphics objects\
 ]]\
-function Label:initialiseCanvas()\
-    self.super:initialiseCanvas()\
+function Label:initCanvas()\
+    self.super:initCanvas()\
     local width, height, theme = self.width, self.height, self.theme\
     local textObject = self.canvas:insert( Text( 1, 1, self.width, self.height, self.text ) )\
 \
@@ -7342,11 +7340,11 @@ class \"WindowContainer\" extends \"Container\" {\
 \9backgroundObject = nil;\
 }\
 \
-function WindowContainer:initialise( ... )\
-\9self.super:initialise( ... )\
+function WindowContainer:init( ... )\
+\9self.super:init( ... )\
 end\
 \
-function WindowContainer:initialiseCanvas()\
+function WindowContainer:initCanvas()\
 \9self.canvas = WindowCanvas( self.x, self.y, self.width, self.height )\
 \9self.backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, Graphics.colours.WHITE ) )\
 end\
@@ -7380,8 +7378,8 @@ class \"ScrollView\" extends \"Container\" {\
 \9@desc Initialise a application container instance\
 \9@param [table] properties -- the properties for the view\
 ]]\
-function ScrollView:initialise( ... )\
-\9self.super:initialise( ... )\
+function ScrollView:init( ... )\
+\9self.super:init( ... )\
 \9self.canvas.fillColour = Graphics.colours.WHITE\
 \
 \9local width, height = self.width, self.height\
@@ -7549,7 +7547,7 @@ class \"Resource\" {\
 \9@param [string] category -- the category (folder, such as classes, interfaces) to look in\
 \9@param [boolean] allowDirectories -- default false, whether directories are able to be matched\
 ]]\
-function Resource:initialise( name, category, allowDirectories )\
+function Resource:init( name, category, allowDirectories )\
 \9-- TODO: path tidying\
 \9-- TODO: maybe do this backwards? so you can override files in other libraries\
 \9-- search the resource tables\
@@ -7616,7 +7614,7 @@ class \"MouseUpEvent\" extends \"MouseEvent\" {\
 \9@param [number] x -- the x screen coordinate\
 \9@param [number] y -- the y screen coordinate\
 ]]\
-function MouseUpEvent:initialise( mouseButton, x, y )\
+function MouseUpEvent:init( mouseButton, x, y )\
 \9self.mouseButton = mouseButton\
 \9self.x = x\
 \9self.y = y\
@@ -7636,7 +7634,7 @@ class \"MouseDownEvent\" extends \"MouseEvent\" {\
 \9@param [number] x -- the x screen coordinate\
 \9@param [number] y -- the y screen coordinate\
 ]]\
-function MouseDownEvent:initialise( mouseButton, x, y )\
+function MouseDownEvent:init( mouseButton, x, y )\
 \9self.mouseButton = mouseButton\
 \9self.x = x\
 \9self.y = y\
@@ -7654,7 +7652,7 @@ class \"KeyEvent\" extends \"Event\" {\
 \9@desc Creates a key event from the arguments\
 \9@param [number] keyCode -- the key's numerical key code\
 ]]\
-function KeyEvent:initialise( keyCode )\
+function KeyEvent:init( keyCode )\
 \9self.keyCode = keyCode\
 \9self.keyString = KeyboardShortcutManager.convert( keyCode ) or false\
 \9-- TODO: this needs testing\
@@ -7664,8 +7662,8 @@ class \"Separator\" extends \"GraphicsObject\" {\
 \9fillColour = Graphics.colours.LIGHT_GREY;\
 }\
 \
-function Separator:initialise( x, y, width, height )\
-\9self.super:initialise( x, y, width, height )\
+function Separator:init( x, y, width, height )\
+\9self.super:init( x, y, width, height )\
 end\
 \
 --[[\
@@ -7700,8 +7698,8 @@ class \"Text\" extends \"GraphicsObject\" {\
 \9alignment = Font.alignments.LEFT\
 }\
 \
-function Text:initialise( x, y, width, height, text, font, textColour )\
-\9self.super:initialise( x, y, width, height )\
+function Text:init( x, y, width, height, text, font, textColour )\
+\9self.super:init( x, y, width, height )\
 \9self.text = text\
 \9self.font = font\
 \9self.textColour = textColour\
@@ -7805,7 +7803,7 @@ class \"Animation\" {\
     @param [class] targetValues -- the targetValues of the animation\
     @param [Animation.easing] easingFunc -- the easing function of the animation\
 ]]\
-function Animation:initialise( duration, subject, targetValues, easingFunc, round )\
+function Animation:init( duration, subject, targetValues, easingFunc, round )\
     self.duration = duration\
     self.subject = subject\
     self.targetValues = targetValues\
@@ -8117,7 +8115,7 @@ class \"FocusChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
 \9@desc Creates a focus event from the arguments\
 \9@param newFocus -- the newFocus view (if any)\
 ]]\
-function FocusChangedInterfaceEvent:initialise( newFocus )\
+function FocusChangedInterfaceEvent:init( newFocus )\
 \9self.newFocus = newFocus\
 end\
 ",["SiblingRemovedInterfaceEvent.lua"] = "\
@@ -8132,7 +8130,7 @@ class \"SiblingRemovedInterfaceEvent\" extends \"InterfaceEvent\" {\
 \9@desc Creates a siblings changed event from the arguments\
 \9@param [View] view -- the removed sibling view\
 ]]\
-function SiblingRemovedInterfaceEvent:initialise( view )\
+function SiblingRemovedInterfaceEvent:init( view )\
 \9self.view = view\
 end",["GraphicsObject.lua"] = "\
 class \"GraphicsObject\" {\
@@ -8159,7 +8157,7 @@ class \"GraphicsObject\" {\
 \9@param [number] width -- the width of the graphics object\
 \9@param [number] height -- the height of the graphics object\
 ]]\
-function GraphicsObject:initialise( x, y, width, height )\
+function GraphicsObject:init( x, y, width, height )\
 \9self.x = x\
 \9self.y = y\
 \9self.width = width\
@@ -8437,7 +8435,7 @@ class \"InterfaceOutletChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
 \9@param newView -- the new view the outlet is bound to\
 \9@param oldView -- the old view the outlet was bound to\
 ]]\
-function InterfaceOutletChangedInterfaceEvent:initialise( interfaceOutlet, newView, oldView )\
+function InterfaceOutletChangedInterfaceEvent:init( interfaceOutlet, newView, oldView )\
 \9self.interfaceOutlet = interfaceOutlet\
 \9self.newView = newView\
 \9self.oldView = oldView\
@@ -8455,8 +8453,8 @@ class \"Container\" extends \"View\" {\
 \9@desc Initialises the container, linking up any InterfaceOutlets\
 \9@param ...\
 ]]\
-function Container:initialise( ... )\
-\9self.super:initialise( ... )\
+function Container:init( ... )\
+\9self.super:init( ... )\
 \
 \9self:event( Event.INTERFACE_OUTLET_CHANGED, self.onInterfaceOutletChanged )\
 end\
@@ -8504,7 +8502,7 @@ end\
 \9@instance\
 \9@desc Initialises the custom container event manger\
 ]]\
-function Container:initialiseEventManager()\
+function Container:initEventManager()\
 \9self.event = ContainerEventManager( self )\
 end\
 \
@@ -8883,8 +8881,8 @@ class \"AlertWindow\" extends \"Window\" {\
 \9okayButton = InterfaceOutlet( \"okayButton\" );\
 }\
 \
-function AlertWindow:initialise( ... )\
-\9self.super:initialise( ... )\
+function AlertWindow:init( ... )\
+\9self.super:init( ... )\
 \
 \9self:event( Event.INTERFACE_LOADED, self.onInterfaceLoaded )\
 \9self:event( Event.INTERFACE_READY, self.onReady )\
@@ -8958,7 +8956,7 @@ class \"Font\" {\
 \9@param [number] desiredHeight -- the height of the desired font\
 \9@param [boolean] reload -- default is false, whether the cache should be ignored and the font reloaded\
 ]]\
-function Font:initialise( name, desiredHeight, reload )\
+function Font:init( name, desiredHeight, reload )\
 \9local characters, height\
 \9desiredHeight = desiredHeight or 8\
 \9if cache[name] and cache[name][desiredHeight] and not reload then\
@@ -8975,7 +8973,7 @@ function Font:initialise( name, desiredHeight, reload )\
 \9self.scale = ( desiredHeight or height ) / height\
 end\
 \
-function Font.initialisePresets()\
+function Font.initPresets()\
 \9-- TODO: make this come from the theme\
 \9Font.systemFont = Font( \"Auckland\" )\
 end\
@@ -9164,7 +9162,7 @@ class \"Canvas\" extends \"GraphicsObject\" {\
     @param [number] width -- the width of the canvas\
     @param [number] height -- the height of the canvas\
 ]]\
--- function Canvas:initialise( width, height )\
+-- function Canvas:init( width, height )\
 --     self.buffer = {}\
 --     self.children = {}\
 --     self.width = width\
@@ -9359,8 +9357,8 @@ class \"Cursor\" extends \"GraphicsObject\" {\
 \9fillColour = Graphics.colours.BLACK;\
 }\
 \
-function Cursor:initialise( x, y, height )\
-\9self.super:initialise( x, y, 1, height )\
+function Cursor:init( x, y, height )\
+\9self.super:init( x, y, 1, height )\
 end\
 \
 --[[\
@@ -9436,7 +9434,7 @@ class \"TextFormatter\" {\
 \9wrappedStream = nil;\
 }\
 \
-function TextFormatter:initialise( text, width, height )\
+function TextFormatter:init( text, width, height )\
 \9self.text = text\
 \9self.width = width\
 \9self.height = height\
@@ -9466,8 +9464,8 @@ class \"ProgressBarStripes\" extends \"RoundedRectangle\" {\
 \9stripeWidth = 9;\
 }\
 \
-function ProgressBarStripes:initialise( x, y, width, height, fillColour, outlineColour, stripeColour, radius ) -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )\
-\9self.super:initialise( x, y, width, height, fillColour, outlineColour, radius, 0, radius, 0 )\
+function ProgressBarStripes:init( x, y, width, height, fillColour, outlineColour, stripeColour, radius ) -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )\
+\9self.super:init( x, y, width, height, fillColour, outlineColour, radius, 0, radius, 0 )\
 \9self.fillColour = fillColour\
 \9self.outlineColour = fillColour\
 \9self.stripeColour = stripeColour\
@@ -9535,7 +9533,7 @@ class \"MouseScrollEvent\" extends \"MouseEvent\" {\
 \9@param [number] x -- the x screen coordinate\
 \9@param [number] y -- the y screen coordinate\
 ]]\
-function MouseScrollEvent:initialise( direction, x, y )\
+function MouseScrollEvent:init( direction, x, y )\
 \9self.direction = direction\
 \9self.x = x\
 \9self.y = y\
@@ -9572,8 +9570,8 @@ class \"Button\" extends \"View\" {\
     @constructor\
     @desc Creates a button object and connects the event handlers\
 ]]\
-function Button:initialise( ... )\
-    self.super:initialise( ... )\
+function Button:init( ... )\
+    self.super:init( ... )\
 \
     self:event( Event.MOUSE_DOWN, self.onMouseDown )\
     self:event( Event.KEY_DOWN, self.onKeyDown )\
@@ -9587,8 +9585,8 @@ end\
     @instance\
     @desc Sets up the canvas and it's graphics objects\
 ]]\
-function Button:initialiseCanvas()\
-    self.super:initialiseCanvas()\
+function Button:initCanvas()\
+    self.super:initCanvas()\
     local width, height, theme = self.width, self.height, self.theme\
     local shadowObject = self.canvas:insert( RoundedRectangle( 2, 2, width - 1, height - 1, theme.shadowColour ) )\
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, width - 1, height - 1, theme.fillColour, theme.outlineColour, cornerRadius ) )\
@@ -9853,8 +9851,8 @@ class \"Menu\" extends \"Container\" {\
 \9@desc Initialise a application container instance\
 \9@param [table] properties -- the properties for the view\
 ]]\
-function Menu:initialise( ... )\
-\9self.super:initialise( ... )\
+function Menu:init( ... )\
+\9self.super:init( ... )\
 \
     self.event:connectGlobal( Event.MOUSE_DOWN, self.onGlobalMouseDown, EventManager.phase.BEFORE )\
 end\
@@ -9863,8 +9861,8 @@ end\
     @instance\
     @desc Sets up the canvas and it's graphics objects\
 ]]\
-function Menu:initialiseCanvas()\
-\9self.super:initialiseCanvas()\
+function Menu:initCanvas()\
+\9self.super:initCanvas()\
     local cornerRadius = self.cornerRadius\
     local shadowObject = self.canvas:insert( RoundedRectangle( 1 + self.shadowRightMargin, 1 + self.shadowTopMargin, self.width - 1, self.height - 2 ) )\
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 2 ) )\

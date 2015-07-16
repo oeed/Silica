@@ -28,8 +28,8 @@ class "Button" extends "View" {
     @constructor
     @desc Creates a button object and connects the event handlers
 ]]
-function Button:init( ... )
-    self.super:init( ... )
+function Button:initialise( ... )
+    self.super:initialise( ... )
 
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self:event( Event.KEY_DOWN, self.onKeyDown )
@@ -43,8 +43,8 @@ end
     @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
-function Button:initCanvas()
-    self.super:initCanvas()
+function Button:initialiseCanvas()
+    self.super:initialiseCanvas()
     local width, height, theme = self.width, self.height, self.theme
     local shadowObject = self.canvas:insert( RoundedRectangle( 2, 2, width - 1, height - 1, theme.shadowColour ) )
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, width - 1, height - 1, theme.fillColour, theme.outlineColour, cornerRadius ) )

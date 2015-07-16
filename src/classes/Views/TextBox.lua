@@ -46,8 +46,8 @@ class "TextBox" extends "View" {
 	@constructor
 	@desc Creates a text box view and connects the event handlers
 ]]
-function TextBox:init( ... )
-	self.super:init( ... )
+function TextBox:initialise( ... )
+	self.super:initialise( ... )
 	
 	self:event( Event.KEY_UP, self.onKeyUp )
 	self:event( Event.KEY_DOWN, self.onKeyDown )
@@ -64,8 +64,8 @@ end
 	@instance
 	@desc Sets up the canvas and it's graphics objects
 ]]
-function TextBox:initCanvas()
-	self.super:initCanvas()
+function TextBox:initialiseCanvas()
+	self.super:initialiseCanvas()
 	local width, height, theme = self.width, self.height, self.theme
 	local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, width, height, theme.fillColour, theme.outlineColour, cornerRadius ) )
 	local selectionObject = self.canvas:insert( Rectangle( 0, 4, 1, self.height - 6 ) )

@@ -52,7 +52,7 @@ class "Animation" {
     @param [class] targetValues -- the targetValues of the animation
     @param [Animation.easing] easingFunc -- the easing function of the animation
 ]]
-function Animation:init( duration, subject, targetValues, easingFunc, round )
+function Animation:initialise( duration, subject, targetValues, easingFunc, round )
     self.duration = duration
     self.subject = subject
     self.targetValues = targetValues

@@ -13,8 +13,8 @@ class "Label" extends "View" {
     @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
-function Label:initCanvas()
-    self.super:initCanvas()
+function Label:initialiseCanvas()
+    self.super:initialiseCanvas()
     local width, height, theme = self.width, self.height, self.theme
     local textObject = self.canvas:insert( Text( 1, 1, self.width, self.height, self.text ) )
 
