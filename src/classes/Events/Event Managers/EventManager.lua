@@ -1,6 +1,6 @@
 
 class "EventManager" {
-	owner = nil;
+	owner = false;
 	handles = {};
 	handlesGlobal = {};
 
@@ -79,18 +79,18 @@ end
 	@param [Event.eventType] eventType -- the name of the event type
 	@param [function] func -- the function called when the event occurs
 ]]
-function EventManager:connectGlobal( eventType, func, phase )
+function EventManager:connectGlobal( eventType, func, phase, sender )
 	if func and type( func ) == "function" then
 		phase = phase or EventManager.phase.BEFORE
-		self:disconnectGlobal( eventType, func ) -- ensure duplicates won't be made
+		sender = sender or self.owner
+		self:disconnectGlobal( eventType, func, phase, sender ) -- ensure duplicates won't be made
 
 		if not self.handlesGlobal[eventType] then
 			self.handlesGlobal[eventType] = {}
 		end
 
-		table.insert( self.handlesGlobal[eventType], { func, phase } )
-
-		self.application.event:connect( eventType, func, phase, self )
+		table.insert( self.handlesGlobal[eventType], { func, phase, sender } )
+		self.application.event:connect( eventType, func, phase, self, sender )
 	else
 		error( "Attempted to connect non-function to global event: " .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )
 	end
@@ -102,13 +102,14 @@ end
 	@param [Event.eventType] eventType -- the name of the event type
 	@param [function] func -- the function called when the event occurs
 ]]
-function EventManager:disconnectGlobal( eventType, func, phase )
-	phase = phase or EventManager.phase.AFTER
-	self.application.event:disconnect( eventType, func, phase, self )
+function EventManager:disconnectGlobal( eventType, func, phase, sender, eventManager )
+	phase = phase or EventManager.phase.BEFORE
+	sender = sender or self.owner
+	self.application.event:disconnect( eventType, func, phase, self, sender )
 
 	if self.handlesGlobal[eventType] then
 		for i, handle in pairs( self.handlesGlobal[eventType] ) do
-			if handle[1] == func and handle[2] == phase then
+			if handle[1] == func and handle[2] == phase and handle[3] == eventManager and handle[4] == sender then
 				self.handlesGlobal[eventType][i] = nil
 			end
 		end
@@ -122,7 +123,7 @@ end
 function EventManager:disconnectAllGlobals()
 	for eventType, v in pairs( self.handlesGlobal ) do
 		for i, handle in pairs( v ) do
-			self.application.event:disconnect( eventType, handle[1], handle[2], self )
+			self.application.event:disconnect( eventType, handle[1], handle[2], handle[3], self)
 			v[i] = nil
 		end
 	end
@@ -178,6 +179,7 @@ function EventManager:handleEventPhase( event, phase )
 				-- handle[1] is the handle function
 				-- handle[2] is the phase
 				-- handle[3] is the event manager
+				-- handle[4] is the sender
 				if handle[1]( handle[4], event, handle[2] ) then
 					return true
 				end

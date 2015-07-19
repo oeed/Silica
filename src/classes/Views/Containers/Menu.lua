@@ -63,21 +63,6 @@ function Menu:initialiseCanvas()
 end
 
 --[[
-	@static
-	@desc Creates a menu from interface file
-	@param [string] interfaceName -- the name of the interface file
-	@return [Menu] menu -- the menu
-]]
-function Menu.fromInterface( interfaceName )
-	local interface = Interface( interfaceName, Menu )
-	if interface then
-		local menu = interface.container
-		menu.interface = interface
-		return menu
-	end
-end
-
---[[
 	@instance
 	@desc Show the menu as a context menu (sets it as a single shot)
 	@param [View] owner -- the object that invoked the context menu (usually the thing right clicked)

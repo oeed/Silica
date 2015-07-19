@@ -421,21 +421,6 @@ function Window:initialise( ... )\
 end\
 \
 --[[\
-    @static\
-    @desc Creates a menu from interface file\
-    @param [string] interfaceName -- the name of the interface file\
-    @return [Menu] menu -- the menu\
-]]\
-function Window.fromInterface( interfaceName )\
-    local interface = Interface( interfaceName, Menu )\
-    if interface then\
-        local window = interface.container\
-        window.interface = interface\
-        return window\
-    end\
-end\
-\
---[[\
     @instance\
     @desc Sets up the canvas and it's graphics objects\
 ]]\
@@ -460,10 +445,10 @@ end\
 \
 --[[\
     @instance\
-    @desc Loads the interface specified by the self.interface interface name\
+    @desc Loads the interface specified by the self.interfaceName interface name\
 ]]\
 function Window:loadInterface()\
-    local interfaceName = self.interface\
+    local interfaceName = self.interfaceName\
     if interfaceName then\
         local barHeight = self.barHeight\
         local x, y, width, height = 1, barHeight + 2, self.width - 2, self.height - barHeight - 5\
@@ -1083,8 +1068,12 @@ function SegmentContainer:removeChild( ... )\
 \9self.needsLayoutUpdate = true\
 end",["Interface.lua"] = "\
 class \"Interface\" {\
-\9name = nil;\
-\9container = nil;\
+\9name = false; -- the name of the interface (the file name without the extension)\
+\9container = false; -- if you want to generate a container based on the interface (i.e. not use the properties and children for an already made interface) you can use the value\
+\9properties = false; -- the properties given to the root element\
+\9children = false; -- the children of the interface\
+\9containerClass = false; -- the class type of the interface\
+\9childNodes = false; -- the nodes from the root elements XML\
 }\
 \
 --[[\
@@ -1101,41 +1090,65 @@ function Interface:initialise( interfaceName, extend )\
 \9local contents = resource.contents\
 \9if contents then\
 \9\9local nodes, err = XML.fromText( contents )\
-\9\9if not nodes then\
-\9\9\9error( \"Interface XML invaid: \" .. interfaceName .. \".sinterface. Error: \" .. err, 0 )\
+\9\9if not err and #nodes ~= 1 then err = \"Interfaces must only have 1 root element.\" end\
+\9\9if not nodes or err then\
+\9\9\9error( \"Interface XML invaid: \" .. interfaceName .. \".sinterface. Error: \" .. tostring( err ), 0 )\
 \9\9end\
-\9\9local err = self:initialiseContainer( nodes[1], extend )\
+\
+\9\9local rootNode = nodes[1]\
+\9\9local containerClass = class.get( rootNode.type )\
+\9\9local err\
+\
+\9\9if not containerClass then\
+\9\9\9err = \"Container class not found: \" .. rootNode.type\
+\9\9elseif not containerClass:typeOf( extend ) then\
+\9\9\9err = \"Container class does not extend '\" .. extend.className .. \"': \" .. rootNode.type\
+\9\9else\
+\9\9\9self.containerClass = containerClass\
+\9\9\9self.properties = rootNode.attributes\
+\9\9\9self.childNodes = rootNode.body\
+\9\9end\
+\
 \9\9if err then\
 \9\9\9error( \"Interface XML invaid: \" .. interfaceName .. \".sinterface. Error: \" .. err, 0 )\
 \9\9end\
 \9else\
 \9\9error( \"Interface file not found: \" .. interfaceName .. \".sinterface\", 0 )\
 \9end\
-\
 end\
 \
 --[[\
 \9@instance\
-\9@desc Creates the container from the interface file\
+\9@desc Returns and generates if needed a container from the interface.\
+\9@return [Container] container -- the container\
 ]]\
-function Interface:initialiseContainer( nodes, extend )\
-\9if not nodes then\
-\9\9return \"Format invalid.\"\
-\9end\
+function Interface:getContainer()\
+\9local container = self.container\
+\9if container then return container end\
 \
-\9local containerClass = class.get( nodes.type )\
-\
-\9if not containerClass then\
-\9\9return \"Container class not found: \" .. nodes.type\
-\9elseif not containerClass:typeOf( extend ) then\
-\9\9return \"Container class does not extend '\" .. extend.className .. \"': \" .. nodes.type\
-\9end\
-\
-\9local container = containerClass( nodes.attributes )\
+\9local properties = self.properties\
+\9container = self.containerClass( properties )\
+\9container.interfaceProperties = properties\
 \9if not container then\
-\9\9return \"Failed to initialise \" .. nodes.type .. \". Identifier: \" .. tostring( nodes.attributes.identifier )\
+\9\9error( \"Interface XML invaid: \" .. self.name .. \".sinterface. Error: Failed to initialise Container class: \" .. tostring( self.class ) .. \". Identifier: \" .. tostring( properties.identifier ), 0 )\
 \9end\
 \
+\9local children = self.children\
+\9for i, childView in ipairs( children ) do\
+\9\9container:insert( childView )\
+\9end\
+\
+\9self.container = container\
+\9self.container.event:handleEvent( LoadedInterfaceEvent( self.container ) )\
+\9return container\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Creates a table of children from the interface file\
+\9@return [table] children -- the table of child views\
+]]\
+function Interface:getChildren()\
 \9local function insertTo( childNode, parentContainer )\
 \9\9local childClass = class.get( childNode.type )\
 \
@@ -1145,32 +1158,40 @@ function Interface:initialiseContainer( nodes, extend )\
 \9\9\9return \"Class does not extend 'View': \" .. childNode.type\
 \9\9end\
 \
-\9\9local child = childClass( childNode.attributes )\
-\9\9if not child then\
+\9\9local interfaceProperties = {}\
+\9\9for k, v in pairs( childNode.attributes ) do\
+\9\9\9interfaceProperties[k] = v\
+\9\9end\
+\9\9childNode.attributes.interfaceProperties = interfaceProperties\
+\9\9local childView = childClass( childNode.attributes )\
+\
+\9\9if not childView then\
 \9\9\9return \"Failed to initialise \" .. childNode.type .. \". Identifier: \" .. tostring( childNode.attributes.identifier )\
 \9\9end\
 \
-\9\9parentContainer:insert( child )\
 \
 \9\9if childNode.body and #childNode.body > 0 then\
-\9\9\9if not containerClass:typeOf( Container ) then\
+\9\9\9if not childClass:typeOf( Container ) then\
 \9\9\9\9return \"Class does not extend 'Container' but has children: \" .. childNode.type\
 \9\9\9else\
 \9\9\9\9for i, _childNode in ipairs( childNode.body ) do\
-\9\9\9\9\9local err = insertTo( _childNode, child )\
-\9\9\9\9\9if err then return err end\
+\9\9\9\9\9local child, err = insertTo( _childNode, childView )\
+\9\9\9\9\9if err then return nil, err end\
+\9\9\9\9\9if child then childView:insert( child ) end\
 \9\9\9\9end\
 \9\9\9end\
 \9\9end\
+\
+\9\9return childView\
 \9end\
 \
-\9for i, childNode in ipairs( nodes.body ) do\
-\9\9local err = insertTo( childNode, container )\
-\9\9if err then return err end\
+\9local children = {}\
+\9for i, childNode in ipairs( self.childNodes ) do\
+\9\9local childView, err = insertTo( childNode )\
+\9\9if err then error( \"Interface XML invaid: \" .. self.name .. \".sinterface. Error: \" .. err, 0 ) end\
+\9\9if childView then table.insert( children, childView ) end\
 \9end\
-\
-\9self.container = container\
-\9self.container.event:handleEvent( LoadedInterfaceEvent( self.container ) )\
+\9return children\
 end",["Application.lua"] = "\
 -- need to fix scheduling ... cancelling them won't work right now\
 -- each one needs to have its own ID and return that ID\
@@ -1183,6 +1204,7 @@ class \"Application\" {\
 \9arguments = {};\
 \9isRunning = false;\
 \9container = false;\
+\9document = false;\
 \9event = false;\
 \9schedules = {};\
 \9resourceDirectories = { _ = true }; -- the folders in which the applications resources are\
@@ -1637,11 +1659,11 @@ class \"View\" {\
 \9parent = false;\
 \9siblings = false;\
 \9identifier = false;\
+\9interfaceProperties = false; -- the properties the view was given in the interface XML file\
 \
 \9animations = {};\
 \
 \9event = false;\
-\
 \9canvas = false;\
 \9theme = false;\
 \9isCanvasHitTested = true;\
@@ -1665,15 +1687,15 @@ class \"View\" {\
 }\
 \
 --[[\
-\9@instance\
+\9@constructor\
 \9@desc Initialise a view instance\
 \9@param [table] properties -- the properties for the view\
 ]]\
 function View:initialise( properties )\
 \9self.animations.names = {} \
+\9self:initialiseEventManager()\
 \9self:initialiseTheme()\
 \9self:initialiseCanvas()\
-\9self:initialiseEventManager()\
 \
 \9setmetatable( self.stringConstraints, {\
 \9\9__index = { parent = self }, __newindex = function( t, k, v )\
@@ -2234,7 +2256,7 @@ function View:update( dt )\
 \9\9end\
 \9end\
 \
-\9if self.hasInit then\
+\9if self.hasInitialised then\
 \9\9local needsConstraintUpdate = self.needsConstraintUpdate\
 \9\9for k, isChanged in pairs( needsConstraintUpdate ) do\
 \9\9\9if isChanged then\
@@ -2353,7 +2375,7 @@ class \"KeyboardShortcut\" {\
 }\
 \
 --[[\
-\9@instance\
+\9@constructor\
 \9@desc Creates a keyboard shortcut\
 \9@param ... -- all the keys for the shortcut\
 ]]\
@@ -2511,8 +2533,8 @@ function WindowCanvas:draw( ... )\
 end",["ThemeOutlet.lua"] = "\
 class \"ThemeOutlet\" {\
 \9style = \"default\";\
-\9owner = nil;\
-\9ownerClass = nil;\
+\9owner = false;\
+\9ownerClass = false;\
 \9connections = {};\
 }\
 \
@@ -2524,6 +2546,7 @@ class \"ThemeOutlet\" {\
 function ThemeOutlet:initialise( owner )\
 \9self.owner = owner\
 \9self.ownerClass = owner.class\
+\9owner.event:connectGlobal( Event.THEME_CHANGED, self.onThemeChange, nil, self )\
 end\
 \
 --[[\
@@ -2533,7 +2556,7 @@ end\
 \9@return value -- the value\
 ]]\
 function ThemeOutlet:get( key )\
-\9if key == \"themeValue\" or self[key] or key == \"instance\" then return false end\
+\9if key == \"themeValue\" or key == \"identifier\" or key == \"instance\" or key == \"style\" or self[key] then return false end\
 \9return true, self:themeValue( key, self.style )\
 end\
 \
@@ -2566,6 +2589,18 @@ function ThemeOutlet:disconnect( _class, classKey, key )\
 \9\9\9_class[classKey] = connection[4]\
 \9\9\9return\
 \9\9end\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Fired when the theme changes, updates the value\
+\9@param [string] style -- the style name\
+]]\
+function ThemeOutlet:onThemeChange( event )\
+\9local style = self.style\
+\9for i, connection in pairs( self.connections ) do\
+\9\9connection[1][connection[2]] = self:themeValue( connection[3], style )\
 \9end\
 end\
 \
@@ -2815,196 +2850,211 @@ function Rectangle:getFill()\
 \
 \9self.fill = fill\
 \9return fill\
-end",["EventManager.lua"] = "\
-class \"EventManager\" {\
-\9owner = nil;\
-\9handles = {};\
-\9handlesGlobal = {};\
-\
-\9-- functions can be called either before or after tickle down\
-\9phase = {\
-\9\9BEFORE = 1;\
-\9\9AFTER = 2;\
-\9};\
+end",["Document.lua"] = "\
+class \"Document\" {\
+\9path = false;\
+\9contents = false;\
+\9readMode = \"r\";\
+\9writeMode = \"w\";\
+\9isModified = false;\
 }\
-\
 \
 --[[\
 \9@constructor\
-\9@desc Creates an EventManager for the provided owner, with owner reverting to the EventManager instance\
-\9@param [class] owner -- the owner of the EventManger (i.e. what self will be on function calls)\
+\9@desc Creates a document from the given path\
+\9@param [string] path -- the path of the document\
 ]]\
-function EventManager:initialise( owner )\
-\9self.owner = owner or self\
-\9self.owner = self.owner\
+function Document:initialise( path )\
+\9self.path = path\
 \
-\9-- allow the class to be called as a shorthand for :connect\
-\9self.mt.__call = function(self, _, ...) return self:connect( ... ) end\
-\9setmetatable( self, self.mt )\
+\9local rawContents, err = self:read()\
+\9if rawContents then\
+\9\9local contents, err = self:parse( rawContents )\
+\9\9if contents then\
+\9\9\9self.contents = contents\
+\9\9end\
+\9end\
+\
+\9if err then\
+\9\9self:onError( err )\
+\9end\
+end\
+\
+--[[\
+\9@static\
+\9@desc Opens a file and sets it as the application's active document, opening a file dialouge if neccesary. If there was an error the application's active document will not be changed. Simply use Document( path ) if you want to open a document but not set it as active.\
+\9@param [string] path -- the path of the document\
+\9@return [Document] document -- the opened document\
+]]\
+function Document.open( path )\
+\9local function f( path )\
+\9\9local document = Document( path )\
+\9\9if document.contents then\
+\9\9\9local oldDocument = Document.application.document\
+\9\9\9if oldDocument then\
+\9\9\9\9oldDocument:close( function( isClosed )\
+\9\9\9\9\9if isClosed then Document.application.document = document end\
+\9\9\9\9end )\
+\9\9\9else\
+\9\9\9\9Document.application.document = document\
+\9\9\9end\
+\9\9end\
+\9end\
+\
+\9if path then\
+\9\9f( path )\
+\9else \
+\9\9-- TODO: open file dialouge\
+\9\9f( \"test.txt\" )\
+\9end\
 end\
 \
 --[[\
 \9@instance\
-\9@desc Subscribes a function to the given event\
-\9@param [Event.eventType] eventType -- the name of the event type\
-\9@param [EventManager] eventManager -- the handle manager \
-\9@param [function] func -- the function called when the event occurs\
-\9@param [class] sender -- the value passed as self. defaults to eventManager.owner\
+\9@desc Reads the raw contents from the path.\
+\9@return [string] rawContents -- the raw contents. return false if there was an error.\
+\9@return [string] err -- the error message if rawContents is false.\
 ]]\
-function EventManager:connect( eventType, func, phase, eventManager, sender )\
-\9if not eventType then error( \"No event type given to EventManager:connect!\", 2 ) end\
-\9\
-\9if func and type( func ) == \"function\" then\
-\9\9phase = phase or EventManager.phase.BEFORE\
-\9\9eventManager = eventManager or self\
-\9\9self:disconnect( eventType, func, phase, eventManager, sender ) -- ensure duplicates won't be made\
+function Document:read()\
+\9local path = self.path\
+\9if not fs.exists( path ) then return false, \"Document path does not exist.\" end\
+\9if fs.isDir( path ) then return false, \"Document path is a folder.\" end\
 \
-\9\9if not self.handles[eventType] then\
-\9\9\9self.handles[eventType] = {}\
-\9\9end\
+\9local h = fs.open( path, self.readMode )\
+\9if not h then return false, \"Document path unreadable.\" end\
+\9if not h.readAll then return false, \"Invalid read mode (doesn't support readAll).\" end\
 \
-\9\9table.insert( self.handles[eventType], { func, phase, eventManager, sender or eventManager.owner } )\
+\9local rawContents = h.readAll()\
+\9if not rawContents then return false, \"Document has nil contents.\" end\
+\9h.close()\
+\
+\9return rawContents\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Parses the raw string from the document. When subclassing you MUST override this! (what's the point of subclassing otherwise?)\
+\9@param [string] rawContents -- the contents of the document\
+\9@return contents -- the parsed contents. return false if rawContents is invalid.\
+\9@return [string] err -- the error message if rawContents is invalid. this is REQUIRED if contents is returned as false, be helpful to your users.\
+]]\
+function Document:parse( rawContents )\
+\9return rawContents\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Called when there was an error reading or writing the document. By default makes the application show an alert box. Override this if you want to change that.\
+\9@param [string] err -- a description of the error encountered\
+]]\
+function Document:onError( err )\
+\9-- TODO: alert window\
+\9error( err )\
+end\
+\
+function Document:setContents( contents )\
+\9self.contents = contents\
+\9if self.hasInitialised then\
+\9\9self.isModified = true\
+\9end\
+end\
+\
+\
+--[[\
+\9@instance\
+\9@desc Saves the document's contents to it's path. Calls :write with self.path\
+\9@return [string/nil] err -- the error message if there was an issue with saving, nil otherwise.\
+]]\
+function Document:save()\
+\9local err = self:write( self.path )\
+\9if not err then\
+\9\9self.isModified = false\
+\9end\
+\9return err\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Saves the document's contents to the given path.\
+\9@param [string] path -- the path to save to\
+\9@return [string/nil] err -- the error message if there was an issue with saving, nil otherwise.\
+]]\
+function Document:saveAs( path )\
+\9return self:write( path )\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Serialises the document's contents to it's raw form for saving. When subclassing you MUST override this! (what's the point of subclassing otherwise?)\
+\9@param [string] contents -- the contents to serialise (don't asume it's equal to self.contents)\
+\9@return serialisedContents -- the serialised contents. return false if there was an eror.\
+\9@return [string] err -- the error message if there was an issue in serialising. this is REQUIRED if contents is returned as false, be helpful to your users.\
+]]\
+function Document:serialise( contents )\
+\9return contents\
+end\
+\
+Document:alias( \"serialize\", \"serialise\" )\
+\
+--[[\
+\9@instance\
+\9@desc Writes the document's serialised contents to the given path.\
+\9@param [string] path -- the path to save to\
+\9@return [string/nil] err -- the error message if there was an issue with saving, nil otherwise.\
+]]\
+function Document:write( path )\
+\9if fs.exists( path ) then\
+\9\9if fs.isReadOnly( path ) then return \"Document path is read only.\" end\
+\9\9if self.path ~= path and not self:onOverwrite( path ) then return end\
+\9\9if fs.isDir( path ) then fs.delete( path ) end\
+\9end\
+\
+\9local h = fs.open( path, self.writeMode )\
+\9if not h then return \"Document path unwritable.\" end\
+\9if not h.write then return false, \"Invalid read mode (doesn't support write).\" end\
+\
+\9local serialisedContents, err = self:serialise( self.contents )\
+\9if not serialisedContents then return err end\
+\
+\9h.write(serialisedContents)\
+\9h.close()\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Called when the path being written to already exists (but not when it's the document's own path). By default makes the application show an alert box. Override this if you want to change that.\
+\9@param [string] path -- the path being overwritten\
+]]\
+function Document:onOverwrite( path )\
+\9-- TODO: alert window\
+\9error( \"Already exists: \" .. path )\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Tries to close the document, prompting the user (calling :onClose) if it's been modified\
+\9@param [function( [boolean] isClosed )] callback -- the callback to call either after it was closed or the user cancelled. the argument is true if the document was closed, false it's still open\
+]]\
+function Document:close( callback )\
+\9if not self.isModified then\
+\9\9self.application.document = false\
+\9\9callback( true )\
 \9else\
-\9\9error( \"Attempted to connect non-function to event: \" .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )\
+\9\9self:onClose( function( isClosed ) \
+\9\9\9if isClosed then self.application.document = false end\
+\9\9\9callback( isClosed )\
+\9\9end )\
 \9end\
 end\
 \
 --[[\
 \9@instance\
-\9@desc Unsubscribes a function to the given event\
-\9@param [Event.eventType] eventType -- the name of the event type\
-\9@param [function] func -- the function called when the event occurs\
-\9@param [class] sender -- the value passed as self. defaults to eventManager.owner\
+\9@desc Called when the user is asked whether they want to close and save their document. By default makes the application show an alert box. Override this if you want to change that.\
+\9@param [function( [boolean] isClosed )] callback -- the callback to call either after it was closed or the user cancelled. the argument is true if the document was closed, false it's still open\
 ]]\
-function EventManager:disconnect( eventType, func, phase, eventManager, sender )\
-\9phase = phase or EventManager.phase.BEFORE\
-\9eventManager = eventManager or self\
-\9sender = sender or eventManager.owner\
-\
-\9if self.handles[eventType] then\
-\9\9for i, handle in pairs( self.handles[eventType] ) do\
-\9\9\9if handle[1] == func and handle[2] == phase and handle[3] == eventManager and handle[4] == sender then\
-\9\9\9\9self.handles[eventType][i] = nil\
-\9\9\9end\
-\9\9end\
-\9end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Subscribes a function globally to the given event\
-\9@param [Event.eventType] eventType -- the name of the event type\
-\9@param [function] func -- the function called when the event occurs\
-]]\
-function EventManager:connectGlobal( eventType, func, phase )\
-\9if func and type( func ) == \"function\" then\
-\9\9phase = phase or EventManager.phase.BEFORE\
-\9\9self:disconnectGlobal( eventType, func ) -- ensure duplicates won't be made\
-\
-\9\9if not self.handlesGlobal[eventType] then\
-\9\9\9self.handlesGlobal[eventType] = {}\
-\9\9end\
-\
-\9\9table.insert( self.handlesGlobal[eventType], { func, phase } )\
-\
-\9\9self.application.event:connect( eventType, func, phase, self )\
-\9else\
-\9\9error( \"Attempted to connect non-function to global event: \" .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )\
-\9end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Unsubscribes a function to globally the given event\
-\9@param [Event.eventType] eventType -- the name of the event type\
-\9@param [function] func -- the function called when the event occurs\
-]]\
-function EventManager:disconnectGlobal( eventType, func, phase )\
-\9phase = phase or EventManager.phase.AFTER\
-\9self.application.event:disconnect( eventType, func, phase, self )\
-\
-\9if self.handlesGlobal[eventType] then\
-\9\9for i, handle in pairs( self.handlesGlobal[eventType] ) do\
-\9\9\9if handle[1] == func and handle[2] == phase then\
-\9\9\9\9self.handlesGlobal[eventType][i] = nil\
-\9\9\9end\
-\9\9end\
-\9end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Unsubscribes all global events\
-]]\
-function EventManager:disconnectAllGlobals()\
-\9for eventType, v in pairs( self.handlesGlobal ) do\
-\9\9for i, handle in pairs( v ) do\
-\9\9\9self.application.event:disconnect( eventType, handle[1], handle[2], self )\
-\9\9\9v[i] = nil\
-\9\9end\
-\9end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Returns true if the EventManager has any handles for the given type\
-\9@param [Event.eventType] eventType -- the name of the even type\
-\9@return [boolean] hasConnections\
-]]\
-function EventManager:hasConnections( eventType )\
-\9return self.handles[eventType] and #self.handles[eventType] >= 1\
-end\
-\
---[[\
-\9@instance\
-\9@desc Returns true if the EventManager has any global handles for the given type\
-\9@param [Event.eventType] eventType -- the name of the even type\
-\9@return [boolean] hasConnections\
-]]\
-function EventManager:hasConnectionsGlobal( eventType )\
-\9return self.handlesGlobal[eventType] and #self.handlesGlobal[eventType] >= 1\
-end\
-\
---[[\
-\9@instance\
-\9@desc Perfoms the appropriate handles for the given event\
-\9@param [Event] event -- the event to handle\
-\9@return [boolean] stopPropagation -- whether no further handles should recieve this event\
-]]\
-function EventManager:handleEvent( event )\
-\9if self:handleEventPhase( event, self.phase.BEFORE ) then\
-\9\9return true\
-\9end\
-\
-\9if self:handleEventPhase( event, self.phase.AFTER ) then\
-\9\9return true\
-\9end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Performs the handles for a specific phase\
-\9@param [Event] event -- the event to handle\
-\9@param [EventManager.phase] phase -- the phase desired\
-\9@return [boolean] stopPropagation -- whether no further handles should recieve this event\
-]]\
-function EventManager:handleEventPhase( event, phase )\
-\9if self.handles[event.eventType] then\
-\9\9for i, handle in pairs( self.handles[event.eventType] ) do\
-\9\9\9if handle and phase == handle[2] then\
-\9\9\9\9-- handle[1] is the handle function\
-\9\9\9\9-- handle[2] is the phase\
-\9\9\9\9-- handle[3] is the event manager\
-\9\9\9\9if handle[1]( handle[4], event, handle[2] ) then\
-\9\9\9\9\9return true\
-\9\9\9\9end\
-\9\9\9end\
-\9\9end\
-\9end\
-end\
-\
-function EventManager:dispose()\
-\9self:disconnectAllGlobals()\
+function Document:onClose( callback )\
+\9-- self:save()\
+\9callback( false )\
 end",["RoundedRectangle.lua"] = "\
 -- draws a corner with the given radius for the corner given\
 local function corner( fill, width, height, radius, position ) -- position is a byte. first bit is 0 if top, second bit is 0 if left\
@@ -3187,7 +3237,24 @@ function RoundedRectangle:getFill()\
 \
 \9self.fill = fill\
 \9return fill\
-end",["MathParser.lua"] = "\
+end",["ThemeChangedInterfaceEvent.lua"] = "\
+class \"ThemeChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
+\9eventType = Event.THEME_CHANGED;\
+\9newThemeName = false;\
+\9oldThemeName = false;\
+}\
+\
+--[[\
+\9@constructor\
+\9@desc Creates a theme changed event from the arguments\
+\9@param newThemeName -- the theme that is now active\
+\9@param oldThemeName -- the theme that was previously active\
+]]\
+function ThemeChangedInterfaceEvent:initialise( newThemeName, oldThemeName )\
+\9self.newThemeName = newThemeName\
+\9self.oldThemeName = oldThemeName\
+end\
+",["MathParser.lua"] = "\
 local symbols = {\
 \9[\"+\"] = true;\
 \9[\"-\"] = true;\
@@ -4579,15 +4646,21 @@ function ApplicationContainer:initialiseCanvas()\
     self.canvas = canvas\
 end\
 \
+function ApplicationContainer:setTheme( theme )\
+\9if type( theme ) == \"string\" then error( \"Use .themeName, not .theme, to set a theme with it's name.\", 0 ) end\
+\9self.theme = theme\
+end\
+\
 --[[\
 \9@instance\
 \9@desc Sets the container's theme based upon it's name\
 \9@return [string] themeName -- the name of the theme\
 ]]\
 function ApplicationContainer:setThemeName( themeName )\
+\9local oldThemeName = self.themeName\
 \9self.themeName = themeName\
-\9-- TODO: there might be a need to do this within Application so it doesn't set the theme when a container is initiailsed\
 \9Theme.active = Theme.named( themeName )\
+\9self.application.event:handleEvent( ThemeChangedInterfaceEvent( themeName, oldThemeName ) )\
 end\
 \
 function ApplicationContainer:draw()\
@@ -4854,7 +4927,7 @@ end\
 function class:new( ... )\
 \9local _class = self\
 \9local raw = {}\
-\9local proxy = { hasInit = false } -- the proxy. \"self\" always needs to be this, NOT raw\
+\9local proxy = { hasInitialised = false } -- the proxy. \"self\" always needs to be this, NOT raw\
 \9local super\
 \9proxy.mt = {}\
 \
@@ -5038,7 +5111,7 @@ function class:new( ... )\
 \9if proxy.initialise and type( proxy.initialise ) == \"function\" then\
 \9\9proxy:initialise( ... )\
 \9end\
-\9proxy.hasInit = true\
+\9proxy.hasInitialised = true\
 \
 \9return proxy\
 end\
@@ -5203,87 +5276,27 @@ if USE_GLOBALS then\
 else\
 \9class.extends = extends\
 \9return class\
-end",["Event.lua"] = "\
-class \"Event\" {\
-\9\
-\9relativeView = false; -- the view that the event is relative of\
-\9eventType = false;\
-\
-\9isSentToChildren = true; -- whether the event will be passed to children\
-\9isSentToSender = true; -- whether the event will be handled by the sender\
-\
-\9MOUSE_UP = \"mouse_up\";\
-\9MOUSE_DOWN = \"mouse_click\";\
-\9MOUSE_DRAG = \"mouse_drag\";\
-\9MOUSE_SCROLL = \"mouse_scroll\";\
-\9KEY_DOWN = \"key\";\
-\9KEY_UP = \"key_up\";\
-\9CHARACTER = \"char\";\
-\9TIMER = \"timer\";\
-\9TERMINATE = \"terminate\";\
-\9MENU_CHANGED = \"interface_menu_changed\";\
-\9INTERFACE_LOADED = \"interface_loaded\";\
-\9KEYBOARD_SHORTCUT = \"interface_keyboard_shortcut\";\
-\9FOCUS_CHANGED = \"interface_focus\";\
-\9TEXT_CHANGED = \"interface_text\";\
-\9SIBLING_ADDED = \"interface_sibling_added\";\
-\9SIBLING_REMOVED = \"interface_sibling_removed\";\
-\9PARENT_CHANGED = \"interface_parent_changed\";\
-\9PARENT_RESIZED = \"interface_parent_resized\";\
-\9INTERFACE_READY = \"interface_ready\";\
-\9INTERFACE_OUTLET_CHANGED = \"interface_outlet_changed\";\
-\9ACTION = \"interface_action\";\
-\
+end",["MouseUpEvent.lua"] = "\
+class \"MouseUpEvent\" extends \"MouseEvent\" {\
+\9eventType = Event.MOUSE_UP;\
+\9mouseButton = false;\
 }\
 \
-local eventClasses = {}\
-\
 --[[\
-\9@static\
-\9@desc Registers an Event subclass to a event type name (e.g. MouseDownEvent links with \"mouse_down\")\
-\9@param [class] _class -- the class that was constructed\
+\9@constructor\
+\9@desc Creates a click mouse event from the arguments\
+\9@param [MouseEvent.mouseButtons] mouseButton -- the mouse button (left, right, etc.)\
+\9@param [number] x -- the x screen coordinate\
+\9@param [number] y -- the y screen coordinate\
 ]]\
-function Event.register( eventType, subclass )\
-\9eventClasses[eventType] = subclass\
+function MouseUpEvent:initialise( mouseButton, x, y )\
+\9self.mouseButton = mouseButton\
+\9self.x = x\
+\9self.y = y\
+\9self.globalX = x\
+\9self.globalY = y\
 end\
-\
---[[\
-\9@static\
-\9@desc Registers an Event subclass after it has just been constructed\
-\9@param [class] _class -- the class that was constructed\
-]]\
-function Event.constructed( _class )\
-\9if _class.eventType then\
-\9\9Event.register( _class.eventType, _class )\
-\9end\
-end\
-\
---[[\
-\9@static\
-\9@desc Creates an event with the arguments in a table from os.pullEvent or similar function\
-\9@param [Event.eventTypes] eventType -- the event type\
-\9@param ... -- the event arguments\
-\9@return [Event] event\
-]]\
-function Event.create( eventType, ... )\
-\9if not eventType then error( \"No event type given to Event.create!\", 0 ) end\
-\
-\9local eventClass = eventClasses[eventType]\
-\9if eventClass then\
-\9\9return eventClass( ... )\
-\9else\
-\9\9return Event()\
-\9end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Make the event relative to the supplied view\
-\9@param [View] view -- the view to be relative to\
-]]\
-function Event:makeRelative( view )\
-\9self.relativeView = view\
-end",["MinimiseWindowButton.lua"] = "\
+",["MinimiseWindowButton.lua"] = "\
 class \"MinimiseWindowButton\" extends \"WindowButton\" {}\
 \
 function MinimiseWindowButton:initialiseCanvas()\
@@ -5317,6 +5330,27 @@ function MaximiseWindowButton:initialiseCanvas()\
 end\
 \
 function MaximiseWindowButton:onMouseUp( event )    \
+    if self.window then\
+        self.window:close()\
+        return true\
+    end\
+end",["CloseWindowButton.lua"] = "\
+class \"CloseWindowButton\" extends \"WindowButton\" {}\
+\
+function CloseWindowButton:initialiseCanvas()\
+\9self.super:initialiseCanvas()\
+\
+\9local symbolObject = Path( 4, 3, 3, 3 )\
+    symbolObject:lineTo( 3, 3 )\
+    symbolObject:moveTo( 3, 1 )\
+    symbolObject:lineTo( 1, 3 )\
+    symbolObject:close( false )\
+\
+    self.theme:connect( symbolObject, \"outlineColour\", \"symbolColour\" )\
+    self.symbolObject = self.canvas:insert( symbolObject )\
+end\
+\
+function CloseWindowButton:onMouseUp( event )    \
     if self.window then\
         self.window:close()\
         return true\
@@ -5661,28 +5695,7 @@ function ParentResizeInterfaceEvent:initialise( isHorizontal, isVertical, sender
 \9self.isVertical = isVertical\
 \9self.sender = sender\
 end\
-",["CloseWindowButton.lua"] = "\
-class \"CloseWindowButton\" extends \"WindowButton\" {}\
-\
-function CloseWindowButton:initialiseCanvas()\
-\9self.super:initialiseCanvas()\
-\
-\9local symbolObject = Path( 4, 3, 3, 3 )\
-    symbolObject:lineTo( 3, 3 )\
-    symbolObject:moveTo( 3, 1 )\
-    symbolObject:lineTo( 1, 3 )\
-    symbolObject:close( false )\
-\
-    self.theme:connect( symbolObject, \"outlineColour\", \"symbolColour\" )\
-    self.symbolObject = self.canvas:insert( symbolObject )\
-end\
-\
-function CloseWindowButton:onMouseUp( event )    \
-    if self.window then\
-        self.window:close()\
-        return true\
-    end\
-end",["TextBox.lua"] = "\
+",["TextBox.lua"] = "\
 --[[\
 \9TODO\
 \9\9Shift clicking\
@@ -5741,7 +5754,7 @@ function TextBox:initialise( ... )\
 \9self:event( Event.MOUSE_DRAG, self.onMouseDrag )\
     self:event( Event.KEYBOARD_SHORTCUT, self.onKeyboardShortcut )\
 \9self:event( Event.FOCUS_CHANGED, self.onFocusChanged )\
-\9self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
+    \9self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
 end\
 \
 --[[\
@@ -6406,7 +6419,7 @@ function Radio:initialise( ... )\
 \9self.super:initialise( ... )\
     self:event( Event.MOUSE_DOWN, self.onMouseDown )\
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
-end\
+    end\
 \
 --[[\
     @instance\
@@ -6751,6 +6764,224 @@ function MenuItem:onKeyboardShortcut( event )\
             return true\
         end\
     end\
+end",["MenuBarItem.lua"] = "\
+local TEXT_MARGIN = 12\
+\
+class \"MenuBarItem\" extends \"View\" {\
+\
+\9height = 12;\
+    isPressed = false;\
+    isEnabled = true;\
+\9isCanvasHitTested = false;\
+    text = false;\
+    font = false;\
+    backgroundObject = false;\
+    menu = false;\
+    menuName = false;\
+    isFlashing = false;\
+\
+}\
+\
+--[[\
+\9@constructor\
+\9@desc Initialise a menu item instance\
+\9@param [table] properties -- the properties for the view\
+]]\
+function MenuBarItem:initialise( ... )\
+\9self.super:initialise( ... )\
+\
+    local menuName = self.menuName\
+    if not menuName then error( \"MenuBarItems must specify the property menuName (the name of the interface file to use).\", 0 ) end\
+    menu = Menu.fromInterface( menuName, Menu )\
+    menu.owner = self\
+    menu.isSingleShot = false\
+    menu.isVisible = false\
+    menu.hitTestOwner = true\
+    menu.topMargin = Menu.topMargin + 4\
+    self.menu = menu\
+    self:event( Event.MENU_CHANGED, self.onMenuChanged )\
+    self:event( Event.MOUSE_DOWN, self.onMouseDown )\
+    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
+    self:event( Event.INTERFACE_READY, self.onInterfaceReady )\
+end\
+\
+function MenuBarItem:onInterfaceReady( event )\
+    local menu = self.menu\
+    if menu then\
+        menu = self.menu\
+        if menu.parent then\
+            menu.parent:removeChild( menu )\
+        end\
+        local parent = self.parent\
+        if parent then\
+            menu.x = self.x + parent.x - 6\
+            menu.y = self.y + parent.y + 7\
+            local parentParent = parent.parent\
+            if parentParent then\
+                parentParent:insert( menu )\
+            end\
+        end\
+    end\
+end\
+\
+function MenuBarItem:initialiseCanvas()\
+    self.super:initialiseCanvas()\
+    local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )\
+    local textObject = self.canvas:insert( Text( TEXT_MARGIN / 2 + 1, 3, self.height, self.width - TEXT_MARGIN, self.text ) )\
+\
+    self.theme:connect( backgroundObject, \"fillColour\" )\
+    self.theme:connect( textObject, \"textColour\" )\
+\
+    self.backgroundObject = backgroundObject\
+    self.textObject = textObject\
+\
+    if not self.font then\
+        self.font = Font.systemFont\
+    end\
+end\
+\
+function MenuBarItem:setFont( font )\
+    self.font = font\
+    local textObject = self.textObject\
+    if textObject then\
+        local fontWidth = self.font:getWidth( text )\
+        self.width = fontWidth + TEXT_MARGIN\
+        self.textObject.font = font\
+        local parent = self.parent\
+        if parent then\
+            parent.needsLayoutUpdate = true\
+        end\
+    end\
+end\
+\
+function MenuBarItem:setText( text )\
+    self.text = text\
+    local textObject = self.textObject\
+    if textObject then\
+        local fontWidth = self.font:getWidth( text )\
+        self.width = fontWidth + TEXT_MARGIN\
+        self.textObject.text = text\
+        local parent = self.parent\
+        if parent then\
+            parent.needsLayoutUpdate = true\
+        end\
+    end\
+end\
+\
+function MenuBarItem:updateX( x )\
+    local menu = self.menu\
+    if menu then\
+        menu.x = self.x + ( parent and parent.x or 0 ) -- 4\
+    end\
+end\
+\
+function MenuBarItem:updateY( y )\
+    local menu = self.menu\
+    if menu then\
+        menu.y = self.y + ( parent and parent.y or 0 ) + 7\
+    end\
+end\
+\
+function MenuBarItem:updateWidth( width )\
+    self.backgroundObject.width = width\
+    self.textObject.width = width - TEXT_MARGIN\
+end\
+\
+function MenuBarItem:updateHeight( height )\
+    self.backgroundObject.height = height\
+end\
+\
+function MenuBarItem:update( deltaTime )\
+    self.super:update( deltaTime )\
+    local isFlashing = self.isFlashing\
+    if isFlashing then\
+        if isFlashing <= 0 then\
+            self.isFlashing = false\
+        else\
+            self.isFlashing = isFlashing - deltaTime\
+        end\
+    end\
+end\
+\
+--[[\
+    @instance\
+    @desc Make the menu bar item flash for a brief period of time\
+]]\
+function MenuBarItem:flash()\
+    self.isFlashing = 0.2\
+end\
+\
+function MenuBarItem:setIsFlashing( isFlashing )\
+    self.isFlashing = isFlashing\
+    self:updateThemeStyle()\
+end\
+\
+--[[\
+    @instance\
+    @desc Whether the button is pressed or open\
+    @return [boolean] isActive -- whether the button is active\
+]]\
+function MenuBarItem:getIsActive()\
+    return self.isPressed or self.isFlashing or self.menu.isOpen\
+end\
+\
+function MenuBarItem:updateThemeStyle()\
+    self.theme.style = self.isEnabled and ( self.isActive and \"pressed\" or \"default\" ) or \"disabled\"\
+end\
+\
+function MenuBarItem:setIsEnabled( isEnabled )\
+    self.isEnabled = isEnabled\
+    self:updateThemeStyle()\
+end\
+\
+function MenuBarItem:setIsPressed( isPressed )\
+    self.isPressed = isPressed\
+    self:updateThemeStyle()\
+end\
+\
+--[[\
+    @instance\
+    @desc Fired when the mouse is released anywhere on screen. Toggles the menu if it hit tests.\
+    @param [Event] event -- the mouse up event\
+    @return [boolean] preventPropagation -- prevent anyone else using the event\
+]]\
+function MenuBarItem:onGlobalMouseUp( event )\
+    if self.isEnabled and self.isPressed then\
+        self.isPressed = false\
+        if self:hitTestEvent( event ) then\
+            self.menu:toggle()\
+            return self.event:handleEvent( event )\
+        end\
+    end\
+end\
+--[[\
+    @instance\
+    @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.\
+    @param [Event] event -- the mouse up event\
+    @return [boolean] preventPropagation -- prevent anyone else using the event\
+]]\
+function MenuBarItem:onMouseDown( event )\
+    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
+        self.isPressed = true\
+    end\
+    return true\
+end\
+\
+--[[\
+    @instance\
+    @desc Fired when the owned menu opens or closes\
+    @param [Event] event -- the menu changed event\
+    @return [boolean] preventPropagation -- prevent anyone else using the event\
+]]\
+function MenuBarItem:onMenuChanged( event )\
+    self:updateThemeStyle()\
+    \
+    local menu = self.menu\
+    if menu.isOpen then\
+        menu.parent:sendToFront( menu )\
+        menu.parent:sendToFront( self.parent )\
+    end\
+    return true\
 end",["XML.lua"] = "\
 -- TODO: XML bug. backslashes in attributes don't work. A single \"\\\" results in: expected '\"' to close string. While \"\\\\\"\" results in two backslashes being the parsed text\
 \
@@ -7040,224 +7271,6 @@ function XML.fromFile( filePath )\
 \9local text = h.readAll()\
 \9h.close()\
 \9return XML.fromText( text )\
-end",["MenuBarItem.lua"] = "\
-local TEXT_MARGIN = 12\
-\
-class \"MenuBarItem\" extends \"View\" {\
-\
-\9height = 12;\
-    isPressed = false;\
-    isEnabled = true;\
-\9isCanvasHitTested = false;\
-    text = false;\
-    font = false;\
-    backgroundObject = false;\
-    menu = false;\
-    menuName = false;\
-    isFlashing = false;\
-\
-}\
-\
---[[\
-\9@constructor\
-\9@desc Initialise a menu item instance\
-\9@param [table] properties -- the properties for the view\
-]]\
-function MenuBarItem:initialise( ... )\
-\9self.super:initialise( ... )\
-\
-    local menuName = self.menuName\
-    if not menuName then error( \"MenuBarItems must specify the property menuName (the name of the interface file to use).\", 0 ) end\
-    menu = Menu.fromInterface( menuName )\
-    menu.owner = self\
-    menu.isSingleShot = false\
-    menu.isVisible = false\
-    menu.hitTestOwner = true\
-    menu.topMargin = Menu.topMargin + 4\
-    self.menu = menu\
-    self:event( Event.MENU_CHANGED, self.onMenuChanged )\
-    self:event( Event.MOUSE_DOWN, self.onMouseDown )\
-    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
-    self:event( Event.PARENT_CHANGED, self.onParentChanged )\
-end\
-\
-function MenuBarItem:onParentChanged( event )\
-    local menu = self.menu\
-    if menu then\
-        menu = self.menu\
-        if menu.parent then\
-            menu.parent:removeChild( menu )\
-        end\
-        local parent = self.parent\
-        if parent then\
-            menu.x = self.x + parent.x - 6\
-            menu.y = self.y + parent.y + 7\
-            local parentParent = parent.parent\
-            if parentParent then\
-                parentParent:insert( menu )\
-            end\
-        end\
-    end\
-end\
-\
-function MenuBarItem:initialiseCanvas()\
-    self.super:initialiseCanvas()\
-    local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )\
-    local textObject = self.canvas:insert( Text( TEXT_MARGIN / 2 + 1, 3, self.height, self.width - TEXT_MARGIN, self.text ) )\
-\
-    self.theme:connect( backgroundObject, \"fillColour\" )\
-    self.theme:connect( textObject, \"textColour\" )\
-\
-    self.backgroundObject = backgroundObject\
-    self.textObject = textObject\
-\
-    if not self.font then\
-        self.font = Font.systemFont\
-    end\
-end\
-\
-function MenuBarItem:setFont( font )\
-    self.font = font\
-    local textObject = self.textObject\
-    if textObject then\
-        local fontWidth = self.font:getWidth( text )\
-        self.width = fontWidth + TEXT_MARGIN\
-        self.textObject.font = font\
-        local parent = self.parent\
-        if parent then\
-            parent.needsLayoutUpdate = true\
-        end\
-    end\
-end\
-\
-function MenuBarItem:setText( text )\
-    self.text = text\
-    local textObject = self.textObject\
-    if textObject then\
-        local fontWidth = self.font:getWidth( text )\
-        self.width = fontWidth + TEXT_MARGIN\
-        self.textObject.text = text\
-        local parent = self.parent\
-        if parent then\
-            parent.needsLayoutUpdate = true\
-        end\
-    end\
-end\
-\
-function MenuBarItem:updateX( x )\
-    local menu = self.menu\
-    if menu then\
-        menu.x = self.x + ( parent and parent.x or 0 ) -- 4\
-    end\
-end\
-\
-function MenuBarItem:updateY( y )\
-    local menu = self.menu\
-    if menu then\
-        menu.y = self.y + ( parent and parent.y or 0 ) + 7\
-    end\
-end\
-\
-function MenuBarItem:updateWidth( width )\
-    self.backgroundObject.width = width\
-    self.textObject.width = width - TEXT_MARGIN\
-end\
-\
-function MenuBarItem:updateHeight( height )\
-    self.backgroundObject.height = height\
-end\
-\
-function MenuBarItem:update( deltaTime )\
-    self.super:update( deltaTime )\
-    local isFlashing = self.isFlashing\
-    if isFlashing then\
-        if isFlashing <= 0 then\
-            self.isFlashing = false\
-        else\
-            self.isFlashing = isFlashing - deltaTime\
-        end\
-    end\
-end\
-\
---[[\
-    @instance\
-    @desc Make the menu bar item flash for a brief period of time\
-]]\
-function MenuBarItem:flash()\
-    self.isFlashing = 0.3\
-end\
-\
-function MenuBarItem:setIsFlashing( isFlashing )\
-    self.isFlashing = isFlashing\
-    self:updateThemeStyle()\
-end\
-\
---[[\
-    @instance\
-    @desc Whether the button is pressed or open\
-    @return [boolean] isActive -- whether the button is active\
-]]\
-function MenuBarItem:getIsActive()\
-    return self.isPressed or self.isFlashing or self.menu.isOpen\
-end\
-\
-function MenuBarItem:updateThemeStyle()\
-    self.theme.style = self.isEnabled and ( self.isActive and \"pressed\" or \"default\" ) or \"disabled\"\
-end\
-\
-function MenuBarItem:setIsEnabled( isEnabled )\
-    self.isEnabled = isEnabled\
-    self:updateThemeStyle()\
-end\
-\
-function MenuBarItem:setIsPressed( isPressed )\
-    self.isPressed = isPressed\
-    self:updateThemeStyle()\
-end\
-\
---[[\
-    @instance\
-    @desc Fired when the mouse is released anywhere on screen. Toggles the menu if it hit tests.\
-    @param [Event] event -- the mouse up event\
-    @return [boolean] preventPropagation -- prevent anyone else using the event\
-]]\
-function MenuBarItem:onGlobalMouseUp( event )\
-    if self.isEnabled and self.isPressed then\
-        self.isPressed = false\
-        if self:hitTestEvent( event ) then\
-            self.menu:toggle()\
-            return self.event:handleEvent( event )\
-        end\
-    end\
-end\
---[[\
-    @instance\
-    @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.\
-    @param [Event] event -- the mouse up event\
-    @return [boolean] preventPropagation -- prevent anyone else using the event\
-]]\
-function MenuBarItem:onMouseDown( event )\
-    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
-        self.isPressed = true\
-    end\
-    return true\
-end\
-\
---[[\
-    @instance\
-    @desc Fired when the owned menu opens or closes\
-    @param [Event] event -- the menu changed event\
-    @return [boolean] preventPropagation -- prevent anyone else using the event\
-]]\
-function MenuBarItem:onMenuChanged( event )\
-    self:updateThemeStyle()\
-    \
-    local menu = self.menu\
-    if menu.isOpen then\
-        menu.parent:sendToFront( menu )\
-        menu.parent:sendToFront( self.parent )\
-    end\
-    return true\
 end",["MaskedTextBox.lua"] = "\
 class \"MaskedTextBox\" extends \"TextBox\" {\
     \
@@ -7273,6 +7286,10 @@ class \"Label\" extends \"View\" {\
     needsAutosize = false;\
 \9\
 }\
+\
+function Label:initialise( ... )\
+    self.super:initialise( ... )\
+    end\
 \
 --[[\
     @instance\
@@ -7328,7 +7345,7 @@ end\
     @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text\
 ]]\
 function Label:autosize()\
-    -- TODO: support self.isAutosizing\
+    -- TODO: support self.isAutosizingc\
     local font, text, textObject = self.font, self.text, self.textObject\
 \
     if font and text then\
@@ -7503,7 +7520,10 @@ function ScrollView:onMouseScroll( event )\
 \9\9-- self:scroll( event.direction * SCROLL_SPEED )\
 \9end\
 \9return true\
-end",["ApplicationEventManager.lua"] = "\
+end",["LoadedInterfaceEvent.lua"] = "\
+class \"LoadedInterfaceEvent\" extends \"InterfaceEvent\" {\
+\9eventType = Event.INTERFACE_LOADED;\
+}",["ApplicationEventManager.lua"] = "\
 class \"ApplicationEventManager\" extends \"EventManager\" {\
 \9handlesGlobal = nil;\
 }\
@@ -7552,6 +7572,7 @@ class \"Resource\" {\
 function Resource:initialise( name, category, allowDirectories )\
 \9-- TODO: path tidying\
 \9-- TODO: maybe do this backwards? so you can override files in other libraries\
+\9\
 \9-- search the resource tables\
 \9local resourceTables = self.application.resourceTables\
 \9if #resourceTables > 0 then\
@@ -7603,27 +7624,88 @@ function Resource:initialise( name, category, allowDirectories )\
 \9\9\9f.close()\
 \9\9end\
 \9end\
-end",["MouseUpEvent.lua"] = "\
-class \"MouseUpEvent\" extends \"MouseEvent\" {\
-\9eventType = Event.MOUSE_UP;\
-\9mouseButton = false;\
+end",["Event.lua"] = "\
+class \"Event\" {\
+\9\
+\9relativeView = false; -- the view that the event is relative of\
+\9eventType = false;\
+\
+\9isSentToChildren = true; -- whether the event will be passed to children\
+\9isSentToSender = true; -- whether the event will be handled by the sender\
+\
+\9MOUSE_UP = \"mouse_up\";\
+\9MOUSE_DOWN = \"mouse_click\";\
+\9MOUSE_DRAG = \"mouse_drag\";\
+\9MOUSE_SCROLL = \"mouse_scroll\";\
+\9KEY_DOWN = \"key\";\
+\9KEY_UP = \"key_up\";\
+\9CHARACTER = \"char\";\
+\9TIMER = \"timer\";\
+\9TERMINATE = \"terminate\";\
+\9MENU_CHANGED = \"interface_menu_changed\";\
+\9INTERFACE_LOADED = \"interface_loaded\";\
+\9KEYBOARD_SHORTCUT = \"interface_keyboard_shortcut\";\
+\9FOCUS_CHANGED = \"interface_focus\";\
+\9TEXT_CHANGED = \"interface_text\";\
+\9SIBLING_ADDED = \"interface_sibling_added\";\
+\9SIBLING_REMOVED = \"interface_sibling_removed\";\
+\9PARENT_CHANGED = \"interface_parent_changed\";\
+\9PARENT_RESIZED = \"interface_parent_resized\";\
+\9INTERFACE_READY = \"interface_ready\";\
+\9INTERFACE_OUTLET_CHANGED = \"interface_outlet_changed\";\
+\9ACTION = \"interface_action\";\
+\9THEME_CHANGED = \"interface_theme_changed\";\
+\
 }\
 \
+local eventClasses = {}\
+\
 --[[\
-\9@constructor\
-\9@desc Creates a click mouse event from the arguments\
-\9@param [MouseEvent.mouseButtons] mouseButton -- the mouse button (left, right, etc.)\
-\9@param [number] x -- the x screen coordinate\
-\9@param [number] y -- the y screen coordinate\
+\9@static\
+\9@desc Registers an Event subclass to a event type name (e.g. MouseDownEvent links with \"mouse_down\")\
+\9@param [class] _class -- the class that was constructed\
 ]]\
-function MouseUpEvent:initialise( mouseButton, x, y )\
-\9self.mouseButton = mouseButton\
-\9self.x = x\
-\9self.y = y\
-\9self.globalX = x\
-\9self.globalY = y\
+function Event.register( eventType, subclass )\
+\9eventClasses[eventType] = subclass\
 end\
-",["MouseDownEvent.lua"] = "\
+\
+--[[\
+\9@static\
+\9@desc Registers an Event subclass after it has just been constructed\
+\9@param [class] _class -- the class that was constructed\
+]]\
+function Event.constructed( _class )\
+\9if _class.eventType then\
+\9\9Event.register( _class.eventType, _class )\
+\9end\
+end\
+\
+--[[\
+\9@static\
+\9@desc Creates an event with the arguments in a table from os.pullEvent or similar function\
+\9@param [Event.eventTypes] eventType -- the event type\
+\9@param ... -- the event arguments\
+\9@return [Event] event\
+]]\
+function Event.create( eventType, ... )\
+\9if not eventType then error( \"No event type given to Event.create!\", 0 ) end\
+\
+\9local eventClass = eventClasses[eventType]\
+\9if eventClass then\
+\9\9return eventClass( ... )\
+\9else\
+\9\9return Event()\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Make the event relative to the supplied view\
+\9@param [View] view -- the view to be relative to\
+]]\
+function Event:makeRelative( view )\
+\9self.relativeView = view\
+end",["MouseDownEvent.lua"] = "\
 class \"MouseDownEvent\" extends \"MouseEvent\" {\
 \9eventType = Event.MOUSE_DOWN;\
 \9mouseButton = false;\
@@ -7692,65 +7774,339 @@ function Separator:getFill()\
 \
 \9self.fill = fill\
 \9return fill\
-end",["Text.lua"] = "\
-class \"Text\" extends \"GraphicsObject\" {\
-\9font = nil;\
-\9text = nil;\
-\9textColour = nil;\
-\9alignment = Font.alignments.LEFT\
+end",["Container.lua"] = "\
+class \"Container\" extends \"View\" {\
+\9children = {};\
+\9interfaceOutlets = {};\
+\9interfaceName = false;\
+\9offsetX = 0;\
+\9offsetY = 0;\
 }\
 \
-function Text:initialise( x, y, width, height, text, font, textColour )\
-\9self.super:initialise( x, y, width, height )\
-\9self.text = text\
-\9self.font = font\
-\9self.textColour = textColour\
+--[[\
+\9@constructor\
+\9@desc Initialises the container, linking up any InterfaceOutlets\
+\9@param ...\
+]]\
+function Container:initialise( ... )\
+\9self.super:initialise( ... )\
+\9self:loadInterface()\
+\9self:event( Event.INTERFACE_OUTLET_CHANGED, self.onInterfaceOutletChanged )\
 end\
 \
 --[[\
-\9@instance\
-\9@desc Sets the font of the text object\
-\9@param [number] font -- the font of the text object\
+\9@static\
+\9@desc Creates a container from interface file\
+\9@param [string] interfaceName -- the name of the interface file\
+\9@param [class] _class -- the class that the container must extend (e.g. ApplicationContainer). If this is being called on a subclass you MUST pass in the class.\
+\9@return [Container or _class] container -- the container\
 ]]\
-function GraphicsObject:setFont( font )\
-\9self.hasChanged = true\
-\9self.font = font\
-end\
-\
---[[\
-\9@instance\
-\9@desc Sets the text of the text object\
-\9@param [number] text -- the text of the text object\
-]]\
-function GraphicsObject:setText( text )\
-\9self.hasChanged = true\
-\9self.text = text\
-end\
-\
---[[\
-\9@instance\
-\9@desc Draws a the text to the canvas\
-\9@param [Canvas] canvas -- the canvas to draw to\
-\9@return self\
-]]\
-function Text:drawTo( canvas )\
-\9if self.isVisible then\
-\9\9local font = self.font\
-\9\9local width = self.width\
-\
-\9\9-- TODO: font alignment\
-\9\9local fontWidth = font:getWidth( self.text )\
-\9\9local x = 1\
-\9\9local alignment = self.alignment\
-\9\9if alignment == Font.alignments.CENTRE then\
-\9\9\9error( \"TODO: Font.alignments.CENTRE\" )\
-\9\9\9-- x = math.floor( width / 2 - fontWidth / 2 + 1 )\
-\9\9elseif alignment == Font.alignments.RIGHT then\
-\9\9\9x = width - fontWidth + 1\
-\9\9end\
-        font:render( canvas, self.text, self.x + x - 1, self.y, self.textColour )\
+function Container.fromInterface( interfaceName, _class )\
+\9local interface = Interface( interfaceName, _class or Container )\
+\9if interface then\
+\9\9local container = interface.container\
+\9\9container.interface = interface\
+\9\9return container\
 \9end\
-\9return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Loads the children and properties of the interface specified by the self.interfaceName interface name. Called automatically during Container:init, do not call this yourself.\
+]]\
+function Container:loadInterface()\
+    local interfaceName = self.interfaceName\
+    if interfaceName then\
+        local interface = Interface( interfaceName, self.class )\
+        \
+        local containerInterfaceProperties = self.interfaceProperties\
+        for k, v in pairs( interface.properties ) do\
+        \9if not containerInterfaceProperties or not containerInterfaceProperties[k] then -- if the interface defining THIS container specified this property then don't set it\
+        \9\9self[k] = v\
+        \9end\
+        end\
+\
+        for i, childView in ipairs( interface.children ) do\
+        \9self:insert( childView )\
+        end\
+    end\
+end\
+\
+function Container:onInterfaceOutletChanged( event )\
+\9local interfaceOutlet = event.interfaceOutlet\
+\9local oldView = false\
+\9local newView = false\
+\9local interfaceOutletActions = false\
+\9local BEFORE = EventManager.phase.BEFORE\
+\9local ACTION = Event.ACTION\
+\
+\9for k, outlet in pairs( self.interfaceOutlets ) do\
+\9\9if interfaceOutlet == outlet then\
+\9\9\9oldView = oldView == false and event.oldView or oldView\
+\9\9\9newView = newView == false and event.newView or newView\
+\9\9\9if oldView ~= newView then\
+\9\9\9\9interfaceOutletActions = interfaceOutletActions == false and self.interfaceOutletActions or interfaceOutletActions\
+\9\9\9\9local func = interfaceOutletActions[k]\
+\9\9\9\9if func then\
+\9\9\9\9\9if oldView and #oldView == 0 then oldView.event:disconnect( ACTION, func, BEFORE, nil, self ) end\
+\9\9\9\9\9if newView and #newView == 0 then newView:event( ACTION, func, BEFORE, nil, self ) end\
+\9\9\9\9end\
+\9\9\9end\
+\9\9end\
+\9end\
+\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Called when a value is set. Connects InterfaceOutlets to the Container.\
+\9@param [string] key -- the key of the set value\
+    @param value -- the value\
+]]\
+function Container:set( key, value )\
+\9if value and type( value ) == \"table\" and value.typeOf and value:typeOf( InterfaceOutlet ) then\
+\9\9value:connect( key, self )\
+\9elseif self.interfaceOutlets[key] and not value then\
+\9\9self.interfaceOutlets[key]:disconnect()\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Initialises the custom container event manger\
+]]\
+function Container:initialiseEventManager()\
+\9self.event = ContainerEventManager( self )\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Updates the view and it's children When overriding this self.super:update must be called AFTER the custom drawing code.\
+\9@param [number] deltaTime -- the time since last update\
+]]\
+function Container:update( deltaTime )\
+\9self.super:update( deltaTime )\
+\9for i, childView in ipairs( self.children ) do\
+\9\9childView:update( deltaTime )\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Fired after\
+\9@param [type] arg1 -- description\
+\9@param [type] arg2 -- description\
+\9@param [type] arg3 -- description\
+\9@return [type] returnedValue -- description\
+]]\
+function Container:onParentResizedConstraintUpdateAfter( arg1, arg2, arg3 )\
+\9return returnedValue\
+end\
+\
+function Container:setWidth( width )\
+\9self.super:setWidth( width )\
+    width = self.width\
+\9local event = self.event\
+\9if event then\
+\9\9event:handleEvent( ParentResizeInterfaceEvent( true, false, self ) )\
+\9end\
+end\
+\
+function Container:setHeight( height )\
+\9self.super:setHeight( height )\
+    height = self.height\
+\9local event = self.event\
+\9if event then\
+\9\9event:handleEvent( ParentResizeInterfaceEvent( false, true, self ) )\
+\9end\
+end\
+\
+function Container:setIsEnabled( isEnabled )\
+    self.isEnabled = isEnabled\
+    for i, childView in ipairs( self.children ) do\
+    \9-- we need to update the isEnabled value for all children, the best way is just to send the current value\
+    \9childView.isEnabled = childView.raw.isEnabled\
+    end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Moves the view to be the top of it's siblings\
+\9@param [View] childView -- the view to make front most\
+]]\
+function Container:sendToFront( frontView, position )\
+\9local children = self.children\
+\9for i, childView in ipairs( children ) do\
+\9\9if childView == frontView then\
+\9\9\9table.remove( children, i )\
+\9\9\9if position then table.insert( children, position, childView )\
+\9\9\9else table.insert( children, childView ) end\
+\9\9end\
+\9end\
+\9local frontCanvas = frontView.canvas\
+\9local canvasChildren = self.canvas.children\
+\9for i, childCanvas in ipairs( canvasChildren ) do\
+\9\9if childCanvas == frontCanvas then\
+\9\9\9table.remove( canvasChildren, i )\
+\9\9\9if position then table.insert( canvasChildren, position, childCanvas )\
+\9\9\9else table.insert( canvasChildren, childCanvas ) end\
+\9\9end\
+\9end\
+\9\
+\9-- TODO: screen order changed events?\
+\9-- for i, childView in ipairs( self.children ) do\
+\9-- \9local onSiblingsChanged = childView.onSiblingsChanged\
+\9-- \9if onSiblingsChanged then onSiblingsChanged( childView ) end\
+\9-- end\
+\
+\9self.canvas.hasChanged = true\
+\9frontView.canvas.hasChanged = true\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Moves the view to be the bottom of it's siblings\
+\9@param [View] childView -- the view to make botom most\
+]]\
+function Container:sendToBack( childView )\
+\9self:sendToFront( childView, 1 )\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Adds a child view to the container (on the top by default)\
+\9@param [View] childView -- the view to add to the container\
+\9@param [number] position -- the z-position of the child (top by default). higher number means further back\
+\9@return [View] childView -- the sent child view\
+]]\
+function Container:insert( childView, position )\
+\9if position then\
+\9\9table.insert( self.children, position, childView )\
+\9else\
+\9\9self.children[#self.children + 1] = childView\
+\9end\
+\
+\9local oldParent = childView.parent \
+\9childView.parent = self\
+\9self.canvas:insert( childView.canvas )\
+\9-- we need to update the isEnabled value\
+\9childView.isEnabled = childView.raw.isEnabled\
+\
+\9for i, _childView in ipairs( self.children ) do\
+\9\9if _childView == childView then\
+\9\9\9_childView.event:handleEvent( ParentChangedInterfaceEvent( self, oldParent ) )\
+\9\9else\
+\9\9\9_childView.event:handleEvent( SiblingAddedInterfaceEvent( childView ) )\
+\9\9end\
+\9end\
+\
+\9local view = self\
+\9while view do\
+\9\9for key, interfaceOutlet in pairs( view.interfaceOutlets ) do\
+\9\9\9if interfaceOutlet:childAdded( childView, view == self ) then\
+\9\9\9\9view = false\
+\9\9\9\9break\
+\9\9\9end\
+\9\9end\
+\9\9view = view and view.parent\
+\9end\
+\9return childView\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Removes the first instance of the child view from the container\
+\9@param [View] childView -- the view to add to the container\
+\9@return [boolean] didRemove -- whether a child was removed\
+]]\
+function Container:remove( removingView )\
+\9local didRemove = false\
+\
+\9for i, childView in ipairs( self.children ) do\
+\9\9if childView == removingView then\
+\9\9\9self.canvas:remove( removingView.canvas )\
+\9\9\9table.remove( self.children, i )\
+\9\9\9didRemove = true\
+\9\9\9break\
+\9\9end\
+\9end\
+\
+\9for i, childView in ipairs( self.children ) do\
+\9\9local onSiblingsChanged = childView.onSiblingsChanged\
+\9\9if onSiblingsChanged then onSiblingsChanged( childView ) end\
+\9end\
+\
+\9removingView.parent = nil\
+\
+\9if didRemove then\
+\9\9local view = self\
+\9\9while view do\
+\9\9\9for key, interfaceOutlet in pairs( view.interfaceOutlets ) do\
+\9\9\9\9interfaceOutlet:childRemoved( removingView )\
+\9\9\9end\
+\9\9\9view = view.parent\
+\9\9end\
+\9end\
+\
+\9return didRemove\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Returns the ( first ) child with the given identifier\
+\9@param [string] identifier -- the identifier of the child view\
+\9@param [boolean] descendTree -- true by default. whether child Containers should be looked through\
+\9@return [View] childView -- the found child view\
+]]\
+function Container:findChild( identifier, descendTree )\
+\9descendTree = (descendTree == nil and true or descendTree)\
+\9for i, childView in ipairs( self.children ) do\
+\9\9if childView.identifier == identifier then\
+\9\9\9return childView\
+\9\9end\
+\
+\9\9-- look in child Containers \
+\9\9if descendTree and childView:typeOf( Container ) then\
+\9\9\9local child = childView:findChild( identifier )\
+\9\9\9if child then\
+\9\9\9\9return child\
+\9\9\9end\
+\9\9end\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Returns all children with the given identifier\
+\9@param [string] identifier -- the identifier of the child view\
+\9@param [boolean] descendTree -- true by default. whether child Containers should be looked through\
+\9@return [table] childrenViews -- the table of the found found children views\
+]]\
+function Container:findChildren( identifier, descendTree )\
+\9descendTree = (descendTree == nil and true or descendTree)\
+\9\
+\9local children = {}\
+\9for i, childView in ipairs( self.children ) do\
+\9\9if childView.identifier == identifier then\
+\9\9\9table.insert( children, childView )\
+\9\9end\
+\
+\9\9-- look in child Containers \
+\9\9if descendTree and childView:typeOf( Container ) then\
+\9\9\9local childChildren = childView:findChildren( identifier )\
+\9\9\9for i2, childChild in ipairs( childChildren ) do\
+\9\9\9\9table.insert( children, childChild )\
+\9\9\9end\
+\9\9end\
+\9end\
+\9return children\
+end\
+\
+function Container:dispose()\
+\9self.super:dispose()\
+\9for i, childView in ipairs( self.children ) do\
+\9\9childView:dispose()\
+\9end\
 end",["Animation.lua"] = "\
 local math, assert, tostring, type = math, assert, tostring, type\
 local pow, sin, cos, pi, sqrt, abs, asin = math.pow, math.sin, math.cos, math.pi, math.sqrt, math.abs, math.asin\
@@ -8441,393 +8797,93 @@ function InterfaceOutletChangedInterfaceEvent:initialise( interfaceOutlet, newVi
 \9self.interfaceOutlet = interfaceOutlet\
 \9self.newView = newView\
 \9self.oldView = oldView\
-end",["Container.lua"] = "\
-class \"Container\" extends \"View\" {\
-\9children = {};\
-\9interfaceOutlets = {};\
-\
-\9offsetX = 0;\
-\9offsetY = 0;\
+end",["Text.lua"] = "\
+class \"Text\" extends \"GraphicsObject\" {\
+\9font = nil;\
+\9text = nil;\
+\9textColour = nil;\
+\9alignment = Font.alignments.LEFT\
 }\
 \
---[[\
-\9@constructor\
-\9@desc Initialises the container, linking up any InterfaceOutlets\
-\9@param ...\
-]]\
-function Container:initialise( ... )\
-\9self.super:initialise( ... )\
-\
-\9self:event( Event.INTERFACE_OUTLET_CHANGED, self.onInterfaceOutletChanged )\
-end\
-\
-function Container:onInterfaceOutletChanged( event )\
-\9local interfaceOutlet = event.interfaceOutlet\
-\9local oldView = false\
-\9local newView = false\
-\9local interfaceOutletActions = false\
-\9local BEFORE = EventManager.phase.BEFORE\
-\9local ACTION = Event.ACTION\
-\
-\9for k, outlet in pairs( self.interfaceOutlets ) do\
-\9\9if interfaceOutlet == outlet then\
-\9\9\9oldView = oldView == false and event.oldView or oldView\
-\9\9\9newView = newView == false and event.newView or newView\
-\9\9\9if oldView ~= newView then\
-\9\9\9\9interfaceOutletActions = interfaceOutletActions == false and self.interfaceOutletActions or interfaceOutletActions\
-\9\9\9\9local func = interfaceOutletActions[k]\
-\9\9\9\9if func then\
-\9\9\9\9\9if oldView and #oldView == 0 then oldView.event:disconnect( ACTION, func, BEFORE, nil, self ) end\
-\9\9\9\9\9if newView and #newView == 0 then newView:event( ACTION, func, BEFORE, nil, self ) end\
-\9\9\9\9end\
-\9\9\9end\
-\9\9end\
-\9end\
-\
+function Text:initialise( x, y, width, height, text, font, textColour )\
+\9self.super:initialise( x, y, width, height )\
+\9self.text = text\
+\9self.font = font\
+\9self.textColour = textColour\
 end\
 \
 --[[\
 \9@instance\
-\9@desc Called when a value is set. Connects InterfaceOutlets to the Container.\
-\9@param [string] key -- the key of the set value\
-    @param value -- the value\
+\9@desc Sets the font of the text object\
+\9@param [number] font -- the font of the text object\
 ]]\
-function Container:set( key, value )\
-\9if value and type( value ) == \"table\" and value.typeOf and value:typeOf( InterfaceOutlet ) then\
-\9\9value:connect( key, self )\
-\9elseif self.interfaceOutlets[key] and not value then\
-\9\9self.interfaceOutlets[key]:disconnect()\
-\9end\
+function GraphicsObject:setFont( font )\
+\9self.hasChanged = true\
+\9self.font = font\
 end\
 \
 --[[\
 \9@instance\
-\9@desc Initialises the custom container event manger\
+\9@desc Sets the text of the text object\
+\9@param [number] text -- the text of the text object\
 ]]\
-function Container:initialiseEventManager()\
-\9self.event = ContainerEventManager( self )\
+function GraphicsObject:setText( text )\
+\9self.hasChanged = true\
+\9self.text = text\
 end\
 \
 --[[\
 \9@instance\
-\9@desc Updates the view and it's children When overriding this self.super:update must be called AFTER the custom drawing code.\
-\9@param [number] deltaTime -- the time since last update\
+\9@desc Draws a the text to the canvas\
+\9@param [Canvas] canvas -- the canvas to draw to\
+\9@return self\
 ]]\
-function Container:update( deltaTime )\
-\9self.super:update( deltaTime )\
-\9if not deltaTime then log(self) end\
-\9for i, childView in ipairs( self.children ) do\
-\9\9childView:update( deltaTime )\
-\9end\
-end\
+function Text:drawTo( canvas )\
+\9if self.isVisible then\
+\9\9local font = self.font\
+\9\9local width = self.width\
 \
---[[\
-\9@instance\
-\9@desc Fired after\
-\9@param [type] arg1 -- description\
-\9@param [type] arg2 -- description\
-\9@param [type] arg3 -- description\
-\9@return [type] returnedValue -- description\
-]]\
-function Container:onParentResizedConstraintUpdateAfter( arg1, arg2, arg3 )\
-\9return returnedValue\
-end\
-\
-function Container:setWidth( width )\
-\9self.super:setWidth( width )\
-    width = self.width\
-\9local event = self.event\
-\9if event then\
-\9\9event:handleEvent( ParentResizeInterfaceEvent( true, false, self ) )\
-\9end\
-end\
-\
-function Container:setHeight( height )\
-\9self.super:setHeight( height )\
-    height = self.height\
-\9local event = self.event\
-\9if event then\
-\9\9event:handleEvent( ParentResizeInterfaceEvent( false, true, self ) )\
-\9end\
-end\
-\
-function Container:setIsEnabled( isEnabled )\
-    self.isEnabled = isEnabled\
-    for i, childView in ipairs( self.children ) do\
-    \9-- we need to update the isEnabled value for all children, the best way is just to send the current value\
-    \9childView.isEnabled = childView.raw.isEnabled\
-    end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Moves the view to be the top of it's siblings\
-\9@param [View] childView -- the view to make front most\
-]]\
-function Container:sendToFront( frontView, position )\
-\9local children = self.children\
-\9for i, childView in ipairs( children ) do\
-\9\9if childView == frontView then\
-\9\9\9table.remove( children, i )\
-\9\9\9if position then table.insert( children, position, childView )\
-\9\9\9else table.insert( children, childView ) end\
+\9\9-- TODO: font alignment\
+\9\9local fontWidth = font:getWidth( self.text )\
+\9\9local x = 1\
+\9\9local alignment = self.alignment\
+\9\9if alignment == Font.alignments.CENTRE then\
+\9\9\9error( \"TODO: Font.alignments.CENTRE\" )\
+\9\9\9-- x = math.floor( width / 2 - fontWidth / 2 + 1 )\
+\9\9elseif alignment == Font.alignments.RIGHT then\
+\9\9\9x = width - fontWidth + 1\
 \9\9end\
+        font:render( canvas, self.text, self.x + x - 1, self.y, self.textColour )\
 \9end\
-\9local frontCanvas = frontView.canvas\
-\9local canvasChildren = self.canvas.children\
-\9for i, childCanvas in ipairs( canvasChildren ) do\
-\9\9if childCanvas == frontCanvas then\
-\9\9\9table.remove( canvasChildren, i )\
-\9\9\9if position then table.insert( canvasChildren, position, childCanvas )\
-\9\9\9else table.insert( canvasChildren, childCanvas ) end\
-\9\9end\
-\9end\
-\9\
-\9-- TODO: screen order changed events?\
-\9-- for i, childView in ipairs( self.children ) do\
-\9-- \9local onSiblingsChanged = childView.onSiblingsChanged\
-\9-- \9if onSiblingsChanged then onSiblingsChanged( childView ) end\
-\9-- end\
-\
-\9self.canvas.hasChanged = true\
-\9frontView.canvas.hasChanged = true\
-end\
-\
---[[\
-\9@instance\
-\9@desc Moves the view to be the bottom of it's siblings\
-\9@param [View] childView -- the view to make botom most\
-]]\
-function Container:sendToBack( childView )\
-\9self:sendToFront( childView, 1 )\
-end\
-\
---[[\
-\9@instance\
-\9@desc Adds a child view to the container (on the top by default)\
-\9@param [View] childView -- the view to add to the container\
-\9@param [number] position -- the z-position of the child (top by default). higher number means further back\
-\9@return [View] childView -- the sent child view\
-]]\
-function Container:insert( childView, position )\
-\9if position then\
-\9\9table.insert( self.children, position, childView )\
-\9else\
-\9\9self.children[#self.children + 1] = childView\
-\9end\
-\
-\9local oldParent = childView.parent \
-\9childView.parent = self\
-\9self.canvas:insert( childView.canvas )\
-\9-- we need to update the isEnabled value\
-\9childView.isEnabled = childView.raw.isEnabled\
-\
-\9for i, _childView in ipairs( self.children ) do\
-\9\9if _childView == childView then\
-\9\9\9_childView.event:handleEvent( ParentChangedInterfaceEvent( self, oldParent ) )\
-\9\9else\
-\9\9\9_childView.event:handleEvent( SiblingAddedInterfaceEvent( childView ) )\
-\9\9end\
-\9end\
-\
-\9local view = self\
-\9while view do\
-\9\9for key, interfaceOutlet in pairs( view.interfaceOutlets ) do\
-\9\9\9if interfaceOutlet:childAdded( childView, view == self ) then\
-\9\9\9\9view = false\
-\9\9\9\9break\
-\9\9\9end\
-\9\9end\
-\9\9view = view and view.parent\
-\9end\
-\9return childView\
-end\
-\
---[[\
-\9@instance\
-\9@desc Removes the first instance of the child view from the container\
-\9@param [View] childView -- the view to add to the container\
-\9@return [boolean] didRemove -- whether a child was removed\
-]]\
-function Container:remove( removingView )\
-\9local didRemove = false\
-\
-\9for i, childView in ipairs( self.children ) do\
-\9\9if childView == removingView then\
-\9\9\9self.canvas:remove( removingView.canvas )\
-\9\9\9table.remove( self.children, i )\
-\9\9\9didRemove = true\
-\9\9\9break\
-\9\9end\
-\9end\
-\
-\9for i, childView in ipairs( self.children ) do\
-\9\9local onSiblingsChanged = childView.onSiblingsChanged\
-\9\9if onSiblingsChanged then onSiblingsChanged( childView ) end\
-\9end\
-\
-\9removingView.parent = nil\
-\
-\9if didRemove then\
-\9\9local view = self\
-\9\9while view do\
-\9\9\9for key, interfaceOutlet in pairs( view.interfaceOutlets ) do\
-\9\9\9\9interfaceOutlet:childRemoved( removingView )\
-\9\9\9end\
-\9\9\9view = view.parent\
-\9\9end\
-\9end\
-\
-\9return didRemove\
-end\
-\
---[[\
-\9@instance\
-\9@desc Returns the ( first ) child with the given identifier\
-\9@param [string] identifier -- the identifier of the child view\
-\9@param [boolean] descendTree -- true by default. whether child Containers should be looked through\
-\9@return [View] childView -- the found child view\
-]]\
-function Container:findChild( identifier, descendTree )\
-\9descendTree = (descendTree == nil and true or descendTree)\
-\9for i, childView in ipairs( self.children ) do\
-\9\9if childView.identifier == identifier then\
-\9\9\9return childView\
-\9\9end\
-\
-\9\9-- look in child Containers \
-\9\9if descendTree and childView:typeOf( Container ) then\
-\9\9\9local child = childView:findChild( identifier )\
-\9\9\9if child then\
-\9\9\9\9return child\
-\9\9\9end\
-\9\9end\
-\9end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Returns all children with the given identifier\
-\9@param [string] identifier -- the identifier of the child view\
-\9@param [boolean] descendTree -- true by default. whether child Containers should be looked through\
-\9@return [table] childrenViews -- the table of the found found children views\
-]]\
-function Container:findChildren( identifier, descendTree )\
-\9descendTree = (descendTree == nil and true or descendTree)\
-\9\
-\9local children = {}\
-\9for i, childView in ipairs( self.children ) do\
-\9\9if childView.identifier == identifier then\
-\9\9\9table.insert( children, childView )\
-\9\9end\
-\
-\9\9-- look in child Containers \
-\9\9if descendTree and childView:typeOf( Container ) then\
-\9\9\9local childChildren = childView:findChildren( identifier )\
-\9\9\9for i2, childChild in ipairs( childChildren ) do\
-\9\9\9\9table.insert( children, childChild )\
-\9\9\9end\
-\9\9end\
-\9end\
-\9return children\
-end\
-\
-function Container:dispose()\
-\9self.super:dispose()\
-\9for i, childView in ipairs( self.children ) do\
-\9\9childView:dispose()\
-\9end\
+\9return self\
 end",["ScrollContainer.lua"] = "\
 class \"ScrollContainer\" extends \"Container\" {\
 \9\
-}",["ScreenCanvas.lua"] = "\
-class \"ScreenCanvas\" extends \"Canvas\" {\
-\9fillColour = Graphics.colours.LIGHT_BLUE;\
-\9drawn = {};\
+}",["ScrollbarGrabber.lua"] = "\
+class \"ScrollbarGrabber\" extends \"GraphicsObject\" {\
+\9lines = 4;\
 }\
 \
 --[[\
-\9@instance\
-\9@desc Draws the canvas to the terminal/screen provided\
-\9@param [term] terminal -- the terminal object to draw to\
-\9@return self\
+    @instance\
+    @desc Gets the pixes to be filled\
+    @return [table] fill -- the pixels to fill\
 ]]\
-function ScreenCanvas:drawToTerminal( terminal )\9\
-    if self.isVisible then\
-\9\9if self.hasChanged then\
-\9\9\9local startScr = os.clock()\
-        \9-- log( 'Starting ScreenCanvas:draw() at ' .. startScr )\
+function ScrollbarGrabber:getFill()\
+\9local height = self.height\
+\9local width = self.width\
+\9local lines = self.lines\
 \
-\9\9\9self:draw()\
-        \9-- log( 'Finished ScreenCanvas:draw() dt: ' .. os.clock() - startScr )\
-\
-        \9-- log( 'Starting render to screen at ' .. os.clock() )\
-\
-\9\9\9terminal = terminal or term\
-\
-\9\9\9local currentLength, currentX, currentY, currentColour\
-\9\9\9local function draw()\
-\9\9\9\9if currentLength == 0 then return end\
-\9\9\9\9term.setBackgroundColour( currentColour )\
-\9\9\9\9term.setCursorPos( currentX, currentY )\
-\9\9\9\9term.write( (\" \"):rep( currentLength ) )\
-\9\9\9end\
-\
-\9\9\9local buffer = self.buffer\
-\9\9\9local colour = self.fillColour or 1\
-\9\9\9local width = self.width\
-\9\9\9local height = self.height\
-\9\9\9local drawn = self.drawn\
-\9\9\9-- the blacked out corners. if theres a faster way to do this then feel free to change it\
-\9\9\9local corner = { \
-\9\9\9\9[1]={ [1]=true, [2]=true, [3]=true, [4]=true, [height - 3]=true, [height - 2]=true, [height - 1]=true, [height]=true },\
-\9\9\9\9[2]={ [1]=true, [2]=true, [height - 1]=true, [height]=true },\
-\9\9\9\9[3]={ [1]=true, [height]=true },\
-\9\9\9\9[4]={ [1]=true, [height]=true },\
-\9\9\9\9[width - 3]={ [1]=true, [height]=true },\
-\9\9\9\9[width - 2]={ [1]=true, [height]=true },\
-\9\9\9\9[width - 1]={ [1]=true, [2]=true, [height - 1]=true, [height]=true },\
-\9\9\9\9[width]={ [1]=true, [2]=true, [3]=true, [4]=true, [height - 3]=true, [height - 2]=true, [height - 1]=true, [height]=true },\
-\9\9\9}\
-\9\9\9local cornerColour = Graphics.colours.BLACK\
-\9\9\9for x, v in pairs( corner ) do -- ipairs won't do the [height-3] indexes, for example\
-\9\9\9\9for y, v in pairs( v ) do\
-\9\9\9\9\9buffer[ ( y - 1 ) * width + x ] = cornerColour\
-\9\9\9\9end\
-\9\9\9end\
-\9\9\9for y = 1, self.height do\
-\9\9\9\9currentY = y\
-\9\9\9\9currentLength = 0\
-\9\9\9\9currentColour = nil\
-\9\9\9\9for x = 1, width do\
-\9\9\9\9\9local p = ( y - 1 ) * width + x\
-\9\9\9\9\9local c = buffer[p] or colour\
-\9\9\9\9\9if c ~= drawn[p] then\
-\9\9\9\9\9\9drawn[p] = c\
-\9\9\9\9\9\9if currentColour == c then\
-\9\9\9\9\9\9\9currentLength = currentLength + 1\
-\9\9\9\9\9\9else\
-\9\9\9\9\9\9\9draw()\
-\9\9\9\9\9\9\9currentLength = 1\
-\9\9\9\9\9\9\9currentX = x\
-\9\9\9\9\9\9\9currentColour = c\
-\9\9\9\9\9\9end\
-\9\9\9\9\9elseif currentLength ~= 0 then\
-\9\9\9\9\9\9draw()\
-\9\9\9\9\9\9currentLength = 0\
-\9\9\9\9\9\9currentColour = nil\
-\9\9\9\9\9else\
-\9\9\9\9\9\9currentColour = nil\
-\9\9\9\9\9end\
-\9\9\9\9end\
-\9\9\9\9draw()\
-\9\9\9end\
-\
-        \9-- log( 'Finished render to screen at ' .. os.clock() )\
-\
+\9local fill = {}\
+\9local startY = math.ceil( ( height - 2 * lines + 1 ) / 2 )\
+\9for x = 1, width do\
+\9\9fill[x] = fill[x] or {}\
+\9\9for y = startY, startY + 2 * lines - 1, 2 do\
+\9\9\9fill[x][y] = true\
 \9\9end\
 \9end\
-\9return self\
+\
+\9return fill\
 end",["MouseEvent.lua"] = "\
 class \"MouseEvent\" extends \"Event\" {\
 \9x = 0;\
@@ -8879,7 +8935,7 @@ function MouseEvent:makeRelative( view )\
 \9self.y = y\
 end",["AlertWindow.lua"] = "\
 class \"AlertWindow\" extends \"Window\" {\
-\9interface = \"alert\";\
+\9interfaceName = \"alert\";\
 \9okayButton = InterfaceOutlet( \"okayButton\" );\
 }\
 \
@@ -8897,7 +8953,210 @@ function AlertWindow:onReady( event )\
 \9self:centre()\
 \9self:focus()\
 \9self.okayButton:focus()\
-end",["Font.lua"] = "\
+end",["Canvas.lua"] = "\
+class \"Canvas\" extends \"GraphicsObject\" {\
+    fillColour = Graphics.colours.TRANSPARENT; -- The colour of the Canvas when it clears\
+    buffer = {};\
+    children = {};\
+}\
+\
+--[[\
+    @constructor\
+    @desc Creates a canvas\
+    @param [number] width -- the width of the canvas\
+    @param [number] height -- the height of the canvas\
+]]\
+-- function Canvas:initialise( width, height )\
+--     self.buffer = {}\
+--     self.children = {}\
+--     self.width = width\
+--     self.height = height\
+-- end\
+\
+--[[\
+    @instance\
+    @desc Sets the pixel colour and the given coordinates\
+    @param [number] x -- the x coordinate of the pixel\
+    @param [number] y -- the y coordinate of the pixel\
+    @param [colour] colour -- the colour coordinate of the pixel\
+]]\
+function Canvas:setPixel( x, y, colour )\
+    if colour ~= Graphics.colours.TRANSPARENT and x >= 1 and y >= 1 and x <= self.width and y <= self.height then\
+        self.buffer[ ( y - 1 ) * self.width + x ] = colour\
+    end\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Gets the pixel colour and the given coordinates\
+    @param [number] x -- the x coordinate of the pixel\
+    @param [number] y -- the y coordinate of the pixel\
+    @return [colour] colour -- the colour of the pixel\
+]]\
+function Canvas:getPixel( x, y )\
+    return self.buffer[ ( y - 1 ) * self.width + x ] or self.fillColour\
+end\
+\
+--[[\
+    @instance\
+    @desc Clears the buffer\
+    @return self\
+]]\
+function Canvas:clear()\
+    self.buffer = {}\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Adds a shader to screen area\
+    @param [Canvas.shader] shader -- the shader to use\
+    @param [number] x -- default 1, the x coordinate of the area\
+    @param [number] y -- default 1, the y coordinate of the area\
+    @param [number] width -- default canvas width, the width of the area\
+    @param [number] height -- default canvas height, the height of the area\
+    @return self\
+]]\
+function Canvas:map( shader, x, y, width, height )\
+    local changes = {}\
+    for _x = x or 1, ( x or 1 ) + ( width or self.width ) - 1 do\
+        for _y = y or 1, ( x or 1 ) + ( height or self.height ) - 1 do\
+            local colour = shader( _x, _y, self:getPixel( _x, _y ) )\
+            if colour and colour ~= 0 then\
+                changes[#changes + 1] = { _x, _y, colour }\
+            end\
+        end\
+    end\
+    local buffer = self.buffer\
+    local width, height = self.width, self.height\
+    local TRANSPARENT = Graphics.colours.TRANSPARENT\
+    local function setPixel( x, y, colour )\
+        if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then\
+            buffer[ ( y - 1 ) * width + x ] = colour\
+        end\
+        return self\
+    end\
+    for i = 1, #changes do\
+        setPixel( unpack( changes[i] ) )\
+    end\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Adds a graphics object to the canvas\
+    @param [GraphicsObject] graphicsObject -- the graphics object to add\
+    @return self\
+]]\
+function Canvas:insert( graphicsObject )\
+    graphicsObject = graphicsObject\
+    self.hasChanged = true\
+    if graphicsObject.parent then\
+        graphicsObject.parent:remove( graphicsObject )\
+    end\
+    graphicsObject.parent = self\
+    self.children[#self.children + 1] = graphicsObject\
+    return graphicsObject\
+end\
+\
+--[[\
+    @instance\
+    @desc Removes a graphics object from the canvas\
+    @param [GraphicsObject] graphicsObject -- the graphics object to remove\
+    @return self\
+]]\
+function Canvas:remove( graphicsObject )\
+    graphicsObject = graphicsObject\
+    local c = false\
+    for i = #self.children, 1, -1 do\
+        if self.children[i] == graphicsObject then\
+            graphicsObject.parent = nil\
+            table.remove( self.children, i )\
+            c = true\
+        end\
+    end\
+    if c then\
+        self.hasChanged = true\
+    end\
+    return graphicsObject\
+end\
+\
+--[[\
+    @instance\
+    @desc Clears the buffer then draws the objects of the canvas\
+    @return self\
+]]\
+function Canvas:draw()\
+    if self.isVisible then\
+        self.buffer = {}\
+        local children = self.children\
+        for i = 1, #children do\
+            children[i]:drawTo( self )\
+        end\
+        self.hasChanged = false\
+    end\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Draws the canvas to another canvas\
+    @param [Canvas] canvas -- the canvas to draw to\
+    @return self\
+]]\
+function Canvas:drawTo( canvas )\
+    if self.isVisible then\
+        if self.hasChanged then\
+            local drawdt = os.clock()\
+            self:draw()\
+            -- log( tostring( self ) .. 'is rerendering dt ' .. os.clock() - drawdt )\
+        end\
+        \
+        local width = self.width\
+        local height = self.height\
+        local fillColour = self.fillColour\
+        local buffer = self.buffer\
+        local _x = self.x - 1\
+        local _y = self.y\
+        \
+\
+        local start = os.clock()\
+        -- log( tostring( self ) .. 'is drawing to parent at ' .. os.clock() )\
+\
+        local canvasWidth = canvas.width\
+        local canvasHeight = canvas.height\
+        local canvasBuffer = canvas.buffer\
+        local TRANSPARENT = Graphics.colours.TRANSPARENT\
+        for x = 1, width do\
+            for y = 0, height - 1 do -- just so there's no need for y-1 below\
+                local colour = buffer[y * width + x] or fillColour\
+                local nx, ny = x + _x, y + _y\
+                if colour ~= TRANSPARENT and nx >= 1 and ny >= 1 and nx <= canvasWidth and ny <= canvasHeight then\
+                    canvasBuffer[( ny - 1 ) * canvasWidth + nx] = colour\
+                end\
+            end\
+        end\
+\
+        -- log( tostring( self ) .. 'is done drawing to parent dt ' .. os.clock() - start )\
+\
+    end\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Hit tests the canvas' buffer to see if the colour is set (return false if transparent)\
+    @param [number] x -- the x coordinate to hit test\
+    @param [number] y -- the y coordinate to hit test\
+    @return [boolean] didHit -- whether the colour was set/not transparent\
+]]\
+function Canvas:hitTest( x, y )\
+    return self:getPixel( x, y ) ~= 0\
+end",["KeyUpEvent.lua"] = "\
+class \"KeyUpEvent\" extends \"KeyEvent\" {\
+\9eventType = Event.KEY_UP;\
+}",["Font.lua"] = "\
 local floor, ceil = math.floor, math.ceil\
 local cache = {}\
 \
@@ -9151,210 +9410,7 @@ function Font:render( canvas, text, x, y, colour )\
 \9\9end\
 \9\9x = x + cwidth + spacing * scale\
 \9end\
-end",["Canvas.lua"] = "\
-class \"Canvas\" extends \"GraphicsObject\" {\
-    fillColour = Graphics.colours.TRANSPARENT; -- The colour of the Canvas when it clears\
-    buffer = {};\
-    children = {};\
-}\
-\
---[[\
-    @constructor\
-    @desc Creates a canvas\
-    @param [number] width -- the width of the canvas\
-    @param [number] height -- the height of the canvas\
-]]\
--- function Canvas:initialise( width, height )\
---     self.buffer = {}\
---     self.children = {}\
---     self.width = width\
---     self.height = height\
--- end\
-\
---[[\
-    @instance\
-    @desc Sets the pixel colour and the given coordinates\
-    @param [number] x -- the x coordinate of the pixel\
-    @param [number] y -- the y coordinate of the pixel\
-    @param [colour] colour -- the colour coordinate of the pixel\
-]]\
-function Canvas:setPixel( x, y, colour )\
-    if colour ~= Graphics.colours.TRANSPARENT and x >= 1 and y >= 1 and x <= self.width and y <= self.height then\
-        self.buffer[ ( y - 1 ) * self.width + x ] = colour\
-    end\
-    return self\
-end\
-\
---[[\
-    @instance\
-    @desc Gets the pixel colour and the given coordinates\
-    @param [number] x -- the x coordinate of the pixel\
-    @param [number] y -- the y coordinate of the pixel\
-    @return [colour] colour -- the colour of the pixel\
-]]\
-function Canvas:getPixel( x, y )\
-    return self.buffer[ ( y - 1 ) * self.width + x ] or self.fillColour\
-end\
-\
---[[\
-    @instance\
-    @desc Clears the buffer\
-    @return self\
-]]\
-function Canvas:clear()\
-    self.buffer = {}\
-    return self\
-end\
-\
---[[\
-    @instance\
-    @desc Adds a shader to screen area\
-    @param [Canvas.shader] shader -- the shader to use\
-    @param [number] x -- default 1, the x coordinate of the area\
-    @param [number] y -- default 1, the y coordinate of the area\
-    @param [number] width -- default canvas width, the width of the area\
-    @param [number] height -- default canvas height, the height of the area\
-    @return self\
-]]\
-function Canvas:map( shader, x, y, width, height )\
-    local changes = {}\
-    for _x = x or 1, ( x or 1 ) + ( width or self.width ) - 1 do\
-        for _y = y or 1, ( x or 1 ) + ( height or self.height ) - 1 do\
-            local colour = shader( _x, _y, self:getPixel( _x, _y ) )\
-            if colour and colour ~= 0 then\
-                changes[#changes + 1] = { _x, _y, colour }\
-            end\
-        end\
-    end\
-    local buffer = self.buffer\
-    local width, height = self.width, self.height\
-    local TRANSPARENT = Graphics.colours.TRANSPARENT\
-    local function setPixel( x, y, colour )\
-        if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then\
-            buffer[ ( y - 1 ) * width + x ] = colour\
-        end\
-        return self\
-    end\
-    for i = 1, #changes do\
-        setPixel( unpack( changes[i] ) )\
-    end\
-    return self\
-end\
-\
---[[\
-    @instance\
-    @desc Adds a graphics object to the canvas\
-    @param [GraphicsObject] graphicsObject -- the graphics object to add\
-    @return self\
-]]\
-function Canvas:insert( graphicsObject )\
-    graphicsObject = graphicsObject\
-    self.hasChanged = true\
-    if graphicsObject.parent then\
-        graphicsObject.parent:remove( graphicsObject )\
-    end\
-    graphicsObject.parent = self\
-    self.children[#self.children + 1] = graphicsObject\
-    return graphicsObject\
-end\
-\
---[[\
-    @instance\
-    @desc Removes a graphics object from the canvas\
-    @param [GraphicsObject] graphicsObject -- the graphics object to remove\
-    @return self\
-]]\
-function Canvas:remove( graphicsObject )\
-    graphicsObject = graphicsObject\
-    local c = false\
-    for i = #self.children, 1, -1 do\
-        if self.children[i] == graphicsObject then\
-            graphicsObject.parent = nil\
-            table.remove( self.children, i )\
-            c = true\
-        end\
-    end\
-    if c then\
-        self.hasChanged = true\
-    end\
-    return graphicsObject\
-end\
-\
---[[\
-    @instance\
-    @desc Clears the buffer then draws the objects of the canvas\
-    @return self\
-]]\
-function Canvas:draw()\
-    if self.isVisible then\
-        self.buffer = {}\
-        local children = self.children\
-        for i = 1, #children do\
-            children[i]:drawTo( self )\
-        end\
-        self.hasChanged = false\
-    end\
-    return self\
-end\
-\
---[[\
-    @instance\
-    @desc Draws the canvas to another canvas\
-    @param [Canvas] canvas -- the canvas to draw to\
-    @return self\
-]]\
-function Canvas:drawTo( canvas )\
-    if self.isVisible then\
-        if self.hasChanged then\
-            local drawdt = os.clock()\
-            self:draw()\
-            -- log( tostring( self ) .. 'is rerendering dt ' .. os.clock() - drawdt )\
-        end\
-        \
-        local width = self.width\
-        local height = self.height\
-        local fillColour = self.fillColour\
-        local buffer = self.buffer\
-        local _x = self.x - 1\
-        local _y = self.y\
-        \
-\
-        local start = os.clock()\
-        -- log( tostring( self ) .. 'is drawing to parent at ' .. os.clock() )\
-\
-        local canvasWidth = canvas.width\
-        local canvasHeight = canvas.height\
-        local canvasBuffer = canvas.buffer\
-        local TRANSPARENT = Graphics.colours.TRANSPARENT\
-        for x = 1, width do\
-            for y = 0, height - 1 do -- just so there's no need for y-1 below\
-                local colour = buffer[y * width + x] or fillColour\
-                local nx, ny = x + _x, y + _y\
-                if colour ~= TRANSPARENT and nx >= 1 and ny >= 1 and nx <= canvasWidth and ny <= canvasHeight then\
-                    canvasBuffer[( ny - 1 ) * canvasWidth + nx] = colour\
-                end\
-            end\
-        end\
-\
-        -- log( tostring( self ) .. 'is done drawing to parent dt ' .. os.clock() - start )\
-\
-    end\
-    return self\
-end\
-\
---[[\
-    @instance\
-    @desc Hit tests the canvas' buffer to see if the colour is set (return false if transparent)\
-    @param [number] x -- the x coordinate to hit test\
-    @param [number] y -- the y coordinate to hit test\
-    @return [boolean] didHit -- whether the colour was set/not transparent\
-]]\
-function Canvas:hitTest( x, y )\
-    return self:getPixel( x, y ) ~= 0\
-end",["KeyUpEvent.lua"] = "\
-class \"KeyUpEvent\" extends \"KeyEvent\" {\
-\9eventType = Event.KEY_UP;\
-}",["Cursor.lua"] = "\
+end",["Cursor.lua"] = "\
 class \"Cursor\" extends \"GraphicsObject\" {\
 \9fillColour = Graphics.colours.BLACK;\
 }\
@@ -9377,89 +9433,291 @@ function Cursor:getFill()\
 \9end\
 \9fill[1] = fillX\
 \9return fill\
+end",["EventManager.lua"] = "\
+class \"EventManager\" {\
+\9owner = false;\
+\9handles = {};\
+\9handlesGlobal = {};\
+\
+\9-- functions can be called either before or after tickle down\
+\9phase = {\
+\9\9BEFORE = 1;\
+\9\9AFTER = 2;\
+\9};\
+}\
+\
+\
+--[[\
+\9@constructor\
+\9@desc Creates an EventManager for the provided owner, with owner reverting to the EventManager instance\
+\9@param [class] owner -- the owner of the EventManger (i.e. what self will be on function calls)\
+]]\
+function EventManager:initialise( owner )\
+\9self.owner = owner or self\
+\9self.owner = self.owner\
+\
+\9-- allow the class to be called as a shorthand for :connect\
+\9self.mt.__call = function(self, _, ...) return self:connect( ... ) end\
+\9setmetatable( self, self.mt )\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Subscribes a function to the given event\
+\9@param [Event.eventType] eventType -- the name of the event type\
+\9@param [EventManager] eventManager -- the handle manager \
+\9@param [function] func -- the function called when the event occurs\
+\9@param [class] sender -- the value passed as self. defaults to eventManager.owner\
+]]\
+function EventManager:connect( eventType, func, phase, eventManager, sender )\
+\9if not eventType then error( \"No event type given to EventManager:connect!\", 2 ) end\
+\9\
+\9if func and type( func ) == \"function\" then\
+\9\9phase = phase or EventManager.phase.BEFORE\
+\9\9eventManager = eventManager or self\
+\9\9self:disconnect( eventType, func, phase, eventManager, sender ) -- ensure duplicates won't be made\
+\
+\9\9if not self.handles[eventType] then\
+\9\9\9self.handles[eventType] = {}\
+\9\9end\
+\
+\9\9table.insert( self.handles[eventType], { func, phase, eventManager, sender or eventManager.owner } )\
+\9else\
+\9\9error( \"Attempted to connect non-function to event: \" .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Unsubscribes a function to the given event\
+\9@param [Event.eventType] eventType -- the name of the event type\
+\9@param [function] func -- the function called when the event occurs\
+\9@param [class] sender -- the value passed as self. defaults to eventManager.owner\
+]]\
+function EventManager:disconnect( eventType, func, phase, eventManager, sender )\
+\9phase = phase or EventManager.phase.BEFORE\
+\9eventManager = eventManager or self\
+\9sender = sender or eventManager.owner\
+\
+\9if self.handles[eventType] then\
+\9\9for i, handle in pairs( self.handles[eventType] ) do\
+\9\9\9if handle[1] == func and handle[2] == phase and handle[3] == eventManager and handle[4] == sender then\
+\9\9\9\9self.handles[eventType][i] = nil\
+\9\9\9end\
+\9\9end\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Subscribes a function globally to the given event\
+\9@param [Event.eventType] eventType -- the name of the event type\
+\9@param [function] func -- the function called when the event occurs\
+]]\
+function EventManager:connectGlobal( eventType, func, phase, sender )\
+\9if func and type( func ) == \"function\" then\
+\9\9phase = phase or EventManager.phase.BEFORE\
+\9\9sender = sender or self.owner\
+\9\9self:disconnectGlobal( eventType, func, phase, sender ) -- ensure duplicates won't be made\
+\
+\9\9if not self.handlesGlobal[eventType] then\
+\9\9\9self.handlesGlobal[eventType] = {}\
+\9\9end\
+\
+\9\9table.insert( self.handlesGlobal[eventType], { func, phase, sender } )\
+\9\9self.application.event:connect( eventType, func, phase, self, sender )\
+\9else\
+\9\9error( \"Attempted to connect non-function to global event: \" .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Unsubscribes a function to globally the given event\
+\9@param [Event.eventType] eventType -- the name of the event type\
+\9@param [function] func -- the function called when the event occurs\
+]]\
+function EventManager:disconnectGlobal( eventType, func, phase, sender, eventManager )\
+\9phase = phase or EventManager.phase.BEFORE\
+\9sender = sender or self.owner\
+\9self.application.event:disconnect( eventType, func, phase, self, sender )\
+\
+\9if self.handlesGlobal[eventType] then\
+\9\9for i, handle in pairs( self.handlesGlobal[eventType] ) do\
+\9\9\9if handle[1] == func and handle[2] == phase and handle[3] == eventManager and handle[4] == sender then\
+\9\9\9\9self.handlesGlobal[eventType][i] = nil\
+\9\9\9end\
+\9\9end\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Unsubscribes all global events\
+]]\
+function EventManager:disconnectAllGlobals()\
+\9for eventType, v in pairs( self.handlesGlobal ) do\
+\9\9for i, handle in pairs( v ) do\
+\9\9\9self.application.event:disconnect( eventType, handle[1], handle[2], handle[3], self)\
+\9\9\9v[i] = nil\
+\9\9end\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Returns true if the EventManager has any handles for the given type\
+\9@param [Event.eventType] eventType -- the name of the even type\
+\9@return [boolean] hasConnections\
+]]\
+function EventManager:hasConnections( eventType )\
+\9return self.handles[eventType] and #self.handles[eventType] >= 1\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Returns true if the EventManager has any global handles for the given type\
+\9@param [Event.eventType] eventType -- the name of the even type\
+\9@return [boolean] hasConnections\
+]]\
+function EventManager:hasConnectionsGlobal( eventType )\
+\9return self.handlesGlobal[eventType] and #self.handlesGlobal[eventType] >= 1\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Perfoms the appropriate handles for the given event\
+\9@param [Event] event -- the event to handle\
+\9@return [boolean] stopPropagation -- whether no further handles should recieve this event\
+]]\
+function EventManager:handleEvent( event )\
+\9if self:handleEventPhase( event, self.phase.BEFORE ) then\
+\9\9return true\
+\9end\
+\
+\9if self:handleEventPhase( event, self.phase.AFTER ) then\
+\9\9return true\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Performs the handles for a specific phase\
+\9@param [Event] event -- the event to handle\
+\9@param [EventManager.phase] phase -- the phase desired\
+\9@return [boolean] stopPropagation -- whether no further handles should recieve this event\
+]]\
+function EventManager:handleEventPhase( event, phase )\
+\9if self.handles[event.eventType] then\
+\9\9for i, handle in pairs( self.handles[event.eventType] ) do\
+\9\9\9if handle and phase == handle[2] then\
+\9\9\9\9-- handle[1] is the handle function\
+\9\9\9\9-- handle[2] is the phase\
+\9\9\9\9-- handle[3] is the event manager\
+\9\9\9\9-- handle[4] is the sender\
+\9\9\9\9if handle[1]( handle[4], event, handle[2] ) then\
+\9\9\9\9\9return true\
+\9\9\9\9end\
+\9\9\9end\
+\9\9end\
+\9end\
+end\
+\
+function EventManager:dispose()\
+\9self:disconnectAllGlobals()\
+end",["ScreenCanvas.lua"] = "\
+class \"ScreenCanvas\" extends \"Canvas\" {\
+\9fillColour = Graphics.colours.LIGHT_BLUE;\
+\9drawn = {};\
+}\
+\
+--[[\
+\9@instance\
+\9@desc Draws the canvas to the terminal/screen provided\
+\9@param [term] terminal -- the terminal object to draw to\
+\9@return self\
+]]\
+function ScreenCanvas:drawToTerminal( terminal )\9\
+    if self.isVisible then\
+\9\9if self.hasChanged then\
+\9\9\9local startScr = os.clock()\
+        \9-- log( 'Starting ScreenCanvas:draw() at ' .. startScr )\
+\
+\9\9\9self:draw()\
+        \9-- log( 'Finished ScreenCanvas:draw() dt: ' .. os.clock() - startScr )\
+\
+        \9-- log( 'Starting render to screen at ' .. os.clock() )\
+\
+\9\9\9terminal = terminal or term\
+\
+\9\9\9local currentLength, currentX, currentY, currentColour\
+\9\9\9local function draw()\
+\9\9\9\9if currentLength == 0 then return end\
+\9\9\9\9term.setBackgroundColour( currentColour )\
+\9\9\9\9term.setCursorPos( currentX, currentY )\
+\9\9\9\9term.write( (\" \"):rep( currentLength ) )\
+\9\9\9end\
+\
+\9\9\9local buffer = self.buffer\
+\9\9\9local colour = self.fillColour or 1\
+\9\9\9local width = self.width\
+\9\9\9local height = self.height\
+\9\9\9local drawn = self.drawn\
+\9\9\9-- the blacked out corners. if theres a faster way to do this then feel free to change it\
+\9\9\9local corner = { \
+\9\9\9\9[1]={ [1]=true, [2]=true, [3]=true, [4]=true, [height - 3]=true, [height - 2]=true, [height - 1]=true, [height]=true },\
+\9\9\9\9[2]={ [1]=true, [2]=true, [height - 1]=true, [height]=true },\
+\9\9\9\9[3]={ [1]=true, [height]=true },\
+\9\9\9\9[4]={ [1]=true, [height]=true },\
+\9\9\9\9[width - 3]={ [1]=true, [height]=true },\
+\9\9\9\9[width - 2]={ [1]=true, [height]=true },\
+\9\9\9\9[width - 1]={ [1]=true, [2]=true, [height - 1]=true, [height]=true },\
+\9\9\9\9[width]={ [1]=true, [2]=true, [3]=true, [4]=true, [height - 3]=true, [height - 2]=true, [height - 1]=true, [height]=true },\
+\9\9\9}\
+\9\9\9local cornerColour = Graphics.colours.BLACK\
+\9\9\9for x, v in pairs( corner ) do -- ipairs won't do the [height-3] indexes, for example\
+\9\9\9\9for y, v in pairs( v ) do\
+\9\9\9\9\9buffer[ ( y - 1 ) * width + x ] = cornerColour\
+\9\9\9\9end\
+\9\9\9end\
+\9\9\9for y = 1, self.height do\
+\9\9\9\9currentY = y\
+\9\9\9\9currentLength = 0\
+\9\9\9\9currentColour = nil\
+\9\9\9\9for x = 1, width do\
+\9\9\9\9\9local p = ( y - 1 ) * width + x\
+\9\9\9\9\9local c = buffer[p] or colour\
+\9\9\9\9\9if c ~= drawn[p] then\
+\9\9\9\9\9\9drawn[p] = c\
+\9\9\9\9\9\9if currentColour == c then\
+\9\9\9\9\9\9\9currentLength = currentLength + 1\
+\9\9\9\9\9\9else\
+\9\9\9\9\9\9\9draw()\
+\9\9\9\9\9\9\9currentLength = 1\
+\9\9\9\9\9\9\9currentX = x\
+\9\9\9\9\9\9\9currentColour = c\
+\9\9\9\9\9\9end\
+\9\9\9\9\9elseif currentLength ~= 0 then\
+\9\9\9\9\9\9draw()\
+\9\9\9\9\9\9currentLength = 0\
+\9\9\9\9\9\9currentColour = nil\
+\9\9\9\9\9else\
+\9\9\9\9\9\9currentColour = nil\
+\9\9\9\9\9end\
+\9\9\9\9end\
+\9\9\9\9draw()\
+\9\9\9end\
+\
+        \9-- log( 'Finished render to screen at ' .. os.clock() )\
+\
+\9\9end\
+\9end\
+\9return self\
 end",["MenuChangedInterfaceEvent.lua"] = "\
 class \"MenuChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
 \9eventType = Event.MENU_CHANGED;\
 \9isSentToChildren = false;\
-}",["ScrollbarGrabber.lua"] = "\
-class \"ScrollbarGrabber\" extends \"GraphicsObject\" {\
-\9lines = 4;\
-}\
-\
---[[\
-    @instance\
-    @desc Gets the pixes to be filled\
-    @return [table] fill -- the pixels to fill\
-]]\
-function ScrollbarGrabber:getFill()\
-\9local height = self.height\
-\9local width = self.width\
-\9local lines = self.lines\
-\
-\9local fill = {}\
-\9local startY = math.ceil( ( height - 2 * lines + 1 ) / 2 )\
-\9for x = 1, width do\
-\9\9fill[x] = fill[x] or {}\
-\9\9for y = startY, startY + 2 * lines - 1, 2 do\
-\9\9\9fill[x][y] = true\
-\9\9end\
-\9end\
-\
-\9return fill\
-end",["TextFormatter.lua"] = "\
--- written in love2d so I'll port it over at some point\
-\
-class \"TextFormatter\" {\
-\9width = 0;\
-\9height = 0;\
-\
-\9text = \"\";\
-\
-\9-- this stuff is actually controlled by the Font class\
-\9-- might be better to make it a table of fonts and the range of the string\
-\9-- but up to you, i'm not really sure how it works\
-\
-\9-- these are defaults, since they can change\
-\9colour = Graphics.colours.GREY;\
-\9underline = false;\
-\9strikethrough = false;\
-\
-\9font_name = \"default\";\
-\9font_size = 5;\
-\9font_mode = \"default\"; -- italic, bold, bolditalic\
-\
-\9xAlignment = \"left\"; -- alignment.LEFT ?\
-\9yAlignment = \"top\"; -- alignment.TOP?\
-\
-\9changed = false;\
-\9stream = nil;\
-\9wrappedStream = nil;\
-}\
-\
-function TextFormatter:initialise( text, width, height )\
-\9self.text = text\
-\9self.width = width\
-\9self.height = height\
-end\
-\
-function TextFormatter:set() -- this is called when a variable is set right?:  Yes, arguments are key, value if you want them\
-\9self.changed = true\
-end\
-\
-function TextFormatter:tostream()\
-\9if not self.changed and self.stream then\
-\9\9return self.stream\
-\9end\
-\9-- convert text into a formatted stream of characters\
-end\
-\
-function TextFormatter:wrapstream( display_width, display_height, stream )\
-\9if not self.changed and self.wrappedStream then\
-\9\9return self.wrappedStream\
-\9end\
-\9stream = stream or self:tostream()\
-\9-- wordwrap the stream and sort out alignment\
-end",["ProgressBarStripes.lua"] = "\
+}",["ProgressBarStripes.lua"] = "\
 class \"ProgressBarStripes\" extends \"RoundedRectangle\" {\
 \9stripeColour = nil;\
 \9animationStep = 0;\
@@ -9519,10 +9777,60 @@ function ProgressBarStripes:drawTo( canvas )\
 \9end\
 \9\
     return self\
-end",["LoadedInterfaceEvent.lua"] = "\
-class \"LoadedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = Event.INTERFACE_LOADED;\
-}",["MouseScrollEvent.lua"] = "\
+end",["TextFormatter.lua"] = "\
+-- written in love2d so I'll port it over at some point\
+\
+class \"TextFormatter\" {\
+\9width = 0;\
+\9height = 0;\
+\
+\9text = \"\";\
+\
+\9-- this stuff is actually controlled by the Font class\
+\9-- might be better to make it a table of fonts and the range of the string\
+\9-- but up to you, i'm not really sure how it works\
+\
+\9-- these are defaults, since they can change\
+\9colour = Graphics.colours.GREY;\
+\9underline = false;\
+\9strikethrough = false;\
+\
+\9font_name = \"default\";\
+\9font_size = 5;\
+\9font_mode = \"default\"; -- italic, bold, bolditalic\
+\
+\9xAlignment = \"left\"; -- alignment.LEFT ?\
+\9yAlignment = \"top\"; -- alignment.TOP?\
+\
+\9changed = false;\
+\9stream = nil;\
+\9wrappedStream = nil;\
+}\
+\
+function TextFormatter:initialise( text, width, height )\
+\9self.text = text\
+\9self.width = width\
+\9self.height = height\
+end\
+\
+function TextFormatter:set() -- this is called when a variable is set right?:  Yes, arguments are key, value if you want them\
+\9self.changed = true\
+end\
+\
+function TextFormatter:tostream()\
+\9if not self.changed and self.stream then\
+\9\9return self.stream\
+\9end\
+\9-- convert text into a formatted stream of characters\
+end\
+\
+function TextFormatter:wrapstream( display_width, display_height, stream )\
+\9if not self.changed and self.wrappedStream then\
+\9\9return self.wrappedStream\
+\9end\
+\9stream = stream or self:tostream()\
+\9-- wordwrap the stream and sort out alignment\
+end",["MouseScrollEvent.lua"] = "\
 class \"MouseScrollEvent\" extends \"MouseEvent\" {\
 \9eventType = Event.MOUSE_SCROLL;\
 \9direction = false;\
@@ -9770,7 +10078,7 @@ function Button:onGlobalMouseUp( event )\
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = false\
         if self.isEnabled and self:hitTestEvent( event ) then\
-            self.event:handleEvent( ActionInterfaceEvent( self ) )\
+        self.event:handleEvent( ActionInterfaceEvent( self ) )\
             local result = self.event:handleEvent( event )\
             return result == nil and true or result\
         end\
@@ -9812,7 +10120,7 @@ end\
 function Button:onKeyUp( event )\
     if self.isEnabled and self.isPressed and self.isFocused and event.keyCode == keys.enter then\
         self.isPressed = false\
-        self.event:handleEvent( ActionInterfaceEvent( self ) )\
+    self.event:handleEvent( ActionInterfaceEvent( self ) )\
         return true\
     end\
 end",["Menu.lua"] = "\
@@ -9877,21 +10185,6 @@ function Menu:initialiseCanvas()\
 \
 \9self.shadowObject = shadowObject\
 \9self.backgroundObject = backgroundObject\
-end\
-\
---[[\
-\9@static\
-\9@desc Creates a menu from interface file\
-\9@param [string] interfaceName -- the name of the interface file\
-\9@return [Menu] menu -- the menu\
-]]\
-function Menu.fromInterface( interfaceName )\
-\9local interface = Interface( interfaceName, Menu )\
-\9if interface then\
-\9\9local menu = interface.container\
-\9\9menu.interface = interface\
-\9\9return menu\
-\9end\
 end\
 \
 --[[\

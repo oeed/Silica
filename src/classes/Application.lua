@@ -10,6 +10,7 @@ class "Application" {
 	arguments = {};
 	isRunning = false;
 	container = false;
+	document = false;
 	event = false;
 	schedules = {};
 	resourceDirectories = { _ = true }; -- the folders in which the applications resources are

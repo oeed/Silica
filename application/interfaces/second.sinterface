@@ -2,7 +2,9 @@
 
 	<Label x=10 y=15 text="Bezier curves, arcs and linear paths :D" />
 
-	<PathView x=20 y=30 />
+	<Container width=200 height=300 y=30 >
+		<PathView x=20 top="0%" />
+	</Container>
 
 	<Button identifier=secondButton x=230 y=10 text="Open First" />
 

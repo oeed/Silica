@@ -26,7 +26,7 @@ function MenuBarItem:initialise( ... )
 
     local menuName = self.menuName
     if not menuName then error( "MenuBarItems must specify the property menuName (the name of the interface file to use).", 0 ) end
-    menu = Menu.fromInterface( menuName )
+    menu = Menu.fromInterface( menuName, Menu )
     menu.owner = self
     menu.isSingleShot = false
     menu.isVisible = false
@@ -36,10 +36,10 @@ function MenuBarItem:initialise( ... )
     self:event( Event.MENU_CHANGED, self.onMenuChanged )
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
-    self:event( Event.PARENT_CHANGED, self.onParentChanged )
+    self:event( Event.INTERFACE_READY, self.onInterfaceReady )
 end
 
-function MenuBarItem:onParentChanged( event )
+function MenuBarItem:onInterfaceReady( event )
     local menu = self.menu
     if menu then
         menu = self.menu
@@ -142,7 +142,7 @@ end
     @desc Make the menu bar item flash for a brief period of time
 ]]
 function MenuBarItem:flash()
-    self.isFlashing = 0.3
+    self.isFlashing = 0.2
 end
 
 function MenuBarItem:setIsFlashing( isFlashing )

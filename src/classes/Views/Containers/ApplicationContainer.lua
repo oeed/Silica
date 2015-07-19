@@ -29,15 +29,21 @@ function ApplicationContainer:initialiseCanvas()
     self.canvas = canvas
 end
 
+function ApplicationContainer:setTheme( theme )
+	if type( theme ) == "string" then error( "Use .themeName, not .theme, to set a theme with it's name.", 0 ) end
+	self.theme = theme
+end
+
 --[[
 	@instance
 	@desc Sets the container's theme based upon it's name
 	@return [string] themeName -- the name of the theme
 ]]
 function ApplicationContainer:setThemeName( themeName )
+	local oldThemeName = self.themeName
 	self.themeName = themeName
-	-- TODO: there might be a need to do this within Application so it doesn't set the theme when a container is initiailsed
 	Theme.active = Theme.named( themeName )
+	self.application.event:handleEvent( ThemeChangedInterfaceEvent( themeName, oldThemeName ) )
 end
 
 function ApplicationContainer:draw()

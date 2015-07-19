@@ -4,7 +4,7 @@ class "KeyboardShortcut" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Creates a keyboard shortcut
 	@param ... -- all the keys for the shortcut
 ]]

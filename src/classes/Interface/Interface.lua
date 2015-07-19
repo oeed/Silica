@@ -1,7 +1,11 @@
 
 class "Interface" {
-	name = nil;
-	container = nil;
+	name = false; -- the name of the interface (the file name without the extension)
+	container = false; -- if you want to generate a container based on the interface (i.e. not use the properties and children for an already made interface) you can use the value
+	properties = false; -- the properties given to the root element
+	children = false; -- the children of the interface
+	containerClass = false; -- the class type of the interface
+	childNodes = false; -- the nodes from the root elements XML
 }
 
 --[[
@@ -18,41 +22,65 @@ function Interface:initialise( interfaceName, extend )
 	local contents = resource.contents
 	if contents then
 		local nodes, err = XML.fromText( contents )
-		if not nodes then
-			error( "Interface XML invaid: " .. interfaceName .. ".sinterface. Error: " .. err, 0 )
+		if not err and #nodes ~= 1 then err = "Interfaces must only have 1 root element." end
+		if not nodes or err then
+			error( "Interface XML invaid: " .. interfaceName .. ".sinterface. Error: " .. tostring( err ), 0 )
 		end
-		local err = self:initialiseContainer( nodes[1], extend )
+
+		local rootNode = nodes[1]
+		local containerClass = class.get( rootNode.type )
+		local err
+
+		if not containerClass then
+			err = "Container class not found: " .. rootNode.type
+		elseif not containerClass:typeOf( extend ) then
+			err = "Container class does not extend '" .. extend.className .. "': " .. rootNode.type
+		else
+			self.containerClass = containerClass
+			self.properties = rootNode.attributes
+			self.childNodes = rootNode.body
+		end
+
 		if err then
 			error( "Interface XML invaid: " .. interfaceName .. ".sinterface. Error: " .. err, 0 )
 		end
 	else
 		error( "Interface file not found: " .. interfaceName .. ".sinterface", 0 )
 	end
-
 end
 
 --[[
 	@instance
-	@desc Creates the container from the interface file
+	@desc Returns and generates if needed a container from the interface.
+	@return [Container] container -- the container
 ]]
-function Interface:initialiseContainer( nodes, extend )
-	if not nodes then
-		return "Format invalid."
-	end
+function Interface:getContainer()
+	local container = self.container
+	if container then return container end
 
-	local containerClass = class.get( nodes.type )
-
-	if not containerClass then
-		return "Container class not found: " .. nodes.type
-	elseif not containerClass:typeOf( extend ) then
-		return "Container class does not extend '" .. extend.className .. "': " .. nodes.type
-	end
-
-	local container = containerClass( nodes.attributes )
+	local properties = self.properties
+	container = self.containerClass( properties )
+	container.interfaceProperties = properties
 	if not container then
-		return "Failed to initialise " .. nodes.type .. ". Identifier: " .. tostring( nodes.attributes.identifier )
+		error( "Interface XML invaid: " .. self.name .. ".sinterface. Error: Failed to initialise Container class: " .. tostring( self.class ) .. ". Identifier: " .. tostring( properties.identifier ), 0 )
 	end
 
+	local children = self.children
+	for i, childView in ipairs( children ) do
+		container:insert( childView )
+	end
+
+	self.container = container
+	self.container.event:handleEvent( LoadedInterfaceEvent( self.container ) )
+	return container
+end
+
+--[[
+	@instance
+	@desc Creates a table of children from the interface file
+	@return [table] children -- the table of child views
+]]
+function Interface:getChildren()
 	local function insertTo( childNode, parentContainer )
 		local childClass = class.get( childNode.type )
 
@@ -62,30 +90,38 @@ function Interface:initialiseContainer( nodes, extend )
 			return "Class does not extend 'View': " .. childNode.type
 		end
 
-		local child = childClass( childNode.attributes )
-		if not child then
+		local interfaceProperties = {}
+		for k, v in pairs( childNode.attributes ) do
+			interfaceProperties[k] = v
+		end
+		childNode.attributes.interfaceProperties = interfaceProperties
+		local childView = childClass( childNode.attributes )
+
+		if not childView then
 			return "Failed to initialise " .. childNode.type .. ". Identifier: " .. tostring( childNode.attributes.identifier )
 		end
 
-		parentContainer:insert( child )
 
 		if childNode.body and #childNode.body > 0 then
-			if not containerClass:typeOf( Container ) then
+			if not childClass:typeOf( Container ) then
 				return "Class does not extend 'Container' but has children: " .. childNode.type
 			else
 				for i, _childNode in ipairs( childNode.body ) do
-					local err = insertTo( _childNode, child )
-					if err then return err end
+					local child, err = insertTo( _childNode, childView )
+					if err then return nil, err end
+					if child then childView:insert( child ) end
 				end
 			end
 		end
+
+		return childView
 	end
 
-	for i, childNode in ipairs( nodes.body ) do
-		local err = insertTo( childNode, container )
-		if err then return err end
+	local children = {}
+	for i, childNode in ipairs( self.childNodes ) do
+		local childView, err = insertTo( childNode )
+		if err then error( "Interface XML invaid: " .. self.name .. ".sinterface. Error: " .. err, 0 ) end
+		if childView then table.insert( children, childView ) end
 	end
-
-	self.container = container
-	self.container.event:handleEvent( LoadedInterfaceEvent( self.container ) )
+	return children
 end

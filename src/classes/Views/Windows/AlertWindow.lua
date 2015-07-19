@@ -1,6 +1,6 @@
 
 class "AlertWindow" extends "Window" {
-	interface = "alert";
+	interfaceName = "alert";
 	okayButton = InterfaceOutlet( "okayButton" );
 }
 

@@ -28,6 +28,7 @@ class "Event" {
 	INTERFACE_READY = "interface_ready";
 	INTERFACE_OUTLET_CHANGED = "interface_outlet_changed";
 	ACTION = "interface_action";
+	THEME_CHANGED = "interface_theme_changed";
 
 }
 

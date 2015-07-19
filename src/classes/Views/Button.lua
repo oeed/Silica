@@ -226,7 +226,7 @@ function Button:onGlobalMouseUp( event )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
-            self.event:handleEvent( ActionInterfaceEvent( self ) )
+        self.event:handleEvent( ActionInterfaceEvent( self ) )
             local result = self.event:handleEvent( event )
             return result == nil and true or result
         end
@@ -268,7 +268,7 @@ end
 function Button:onKeyUp( event )
     if self.isEnabled and self.isPressed and self.isFocused and event.keyCode == keys.enter then
         self.isPressed = false
-        self.event:handleEvent( ActionInterfaceEvent( self ) )
+    self.event:handleEvent( ActionInterfaceEvent( self ) )
         return true
     end
 end

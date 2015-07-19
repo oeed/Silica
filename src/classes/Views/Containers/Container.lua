@@ -2,7 +2,7 @@
 class "Container" extends "View" {
 	children = {};
 	interfaceOutlets = {};
-
+	interfaceName = false;
 	offsetX = 0;
 	offsetY = 0;
 }
@@ -14,8 +14,46 @@ class "Container" extends "View" {
 ]]
 function Container:initialise( ... )
 	self.super:initialise( ... )
-
+	self:loadInterface()
 	self:event( Event.INTERFACE_OUTLET_CHANGED, self.onInterfaceOutletChanged )
+end
+
+--[[
+	@static
+	@desc Creates a container from interface file
+	@param [string] interfaceName -- the name of the interface file
+	@param [class] _class -- the class that the container must extend (e.g. ApplicationContainer). If this is being called on a subclass you MUST pass in the class.
+	@return [Container or _class] container -- the container
+]]
+function Container.fromInterface( interfaceName, _class )
+	local interface = Interface( interfaceName, _class or Container )
+	if interface then
+		local container = interface.container
+		container.interface = interface
+		return container
+	end
+end
+
+--[[
+    @instance
+    @desc Loads the children and properties of the interface specified by the self.interfaceName interface name. Called automatically during Container:init, do not call this yourself.
+]]
+function Container:loadInterface()
+    local interfaceName = self.interfaceName
+    if interfaceName then
+        local interface = Interface( interfaceName, self.class )
+        
+        local containerInterfaceProperties = self.interfaceProperties
+        for k, v in pairs( interface.properties ) do
+        	if not containerInterfaceProperties or not containerInterfaceProperties[k] then -- if the interface defining THIS container specified this property then don't set it
+        		self[k] = v
+        	end
+        end
+
+        for i, childView in ipairs( interface.children ) do
+        	self:insert( childView )
+        end
+    end
 end
 
 function Container:onInterfaceOutletChanged( event )
@@ -72,7 +110,6 @@ end
 ]]
 function Container:update( deltaTime )
 	self.super:update( deltaTime )
-	if not deltaTime then log(self) end
 	for i, childView in ipairs( self.children ) do
 		childView:update( deltaTime )
 	end

@@ -124,7 +124,7 @@ end
 function class:new( ... )
 	local _class = self
 	local raw = {}
-	local proxy = { hasInit = false } -- the proxy. "self" always needs to be this, NOT raw
+	local proxy = { hasInitialised = false } -- the proxy. "self" always needs to be this, NOT raw
 	local super
 	proxy.mt = {}
 
@@ -308,7 +308,7 @@ function class:new( ... )
 	if proxy.initialise and type( proxy.initialise ) == "function" then
 		proxy:initialise( ... )
 	end
-	proxy.hasInit = true
+	proxy.hasInitialised = true
 
 	return proxy
 end

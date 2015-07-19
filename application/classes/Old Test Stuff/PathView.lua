@@ -16,11 +16,7 @@ function PathView:initialise( ... )
 end
 
 function PathView:onMouseDown( event )
-    if event.mouseButton == MouseEvent.mouseButtons.RIGHT then
-    	local menu = Menu.fromInterface( "menu" )
-    	menu:showContext( self, event.x, event.y )
-    end
-    return true
+	log(event.y)	
 end
 
 
@@ -61,9 +57,9 @@ function PathView:initialiseCanvas()
 	path3:close( false )
 	path3.outlineColour = Graphics.colours.BLACK
 
-	-- self.canvas:insert( Shader( 1, 1, self.canvas.width, self.canvas.height, function( x, y )
-	-- 	return ( math.ceil( x / size ) + math.ceil( y / size ) ) % 2 == 0 and Graphics.colours.LIGHT_GREY or Graphics.colours.WHITE
-	-- end ) )
+	self.canvas:insert( Shader( 1, 1, self.canvas.width, self.canvas.height, function( x, y )
+		return ( math.ceil( x / size ) + math.ceil( y / size ) ) % 2 == 0 and Graphics.colours.LIGHT_GREY or Graphics.colours.WHITE
+	end ) )
 
 	self.canvas:insert( path )
 	-- self.canvas:insert( path2 )

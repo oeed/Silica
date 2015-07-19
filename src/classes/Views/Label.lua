@@ -9,6 +9,10 @@ class "Label" extends "View" {
 	
 }
 
+function Label:initialise( ... )
+    self.super:initialise( ... )
+    end
+
 --[[
     @instance
     @desc Sets up the canvas and it's graphics objects
@@ -63,7 +67,7 @@ end
     @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text
 ]]
 function Label:autosize()
-    -- TODO: support self.isAutosizing
+    -- TODO: support self.isAutosizingc
     local font, text, textObject = self.font, self.text, self.textObject
 
     if font and text then

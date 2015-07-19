@@ -1,3 +1,0 @@
-<ApplicationContainer>
-    <Button x=10 y=10 text="Hello there!" />
-</ApplicationContainer>

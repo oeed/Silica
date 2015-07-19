@@ -14,6 +14,7 @@ class "Resource" {
 function Resource:initialise( name, category, allowDirectories )
 	-- TODO: path tidying
 	-- TODO: maybe do this backwards? so you can override files in other libraries
+	
 	-- search the resource tables
 	local resourceTables = self.application.resourceTables
 	if #resourceTables > 0 then

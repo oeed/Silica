@@ -21,11 +21,11 @@ class "View" {
 	parent = false;
 	siblings = false;
 	identifier = false;
+	interfaceProperties = false; -- the properties the view was given in the interface XML file
 
 	animations = {};
 
 	event = false;
-
 	canvas = false;
 	theme = false;
 	isCanvasHitTested = true;
@@ -49,15 +49,15 @@ class "View" {
 }
 
 --[[
-	@instance
+	@constructor
 	@desc Initialise a view instance
 	@param [table] properties -- the properties for the view
 ]]
 function View:initialise( properties )
 	self.animations.names = {} 
+	self:initialiseEventManager()
 	self:initialiseTheme()
 	self:initialiseCanvas()
-	self:initialiseEventManager()
 
 	setmetatable( self.stringConstraints, {
 		__index = { parent = self }, __newindex = function( t, k, v )
@@ -618,7 +618,7 @@ function View:update( dt )
 		end
 	end
 
-	if self.hasInit then
+	if self.hasInitialised then
 		local needsConstraintUpdate = self.needsConstraintUpdate
 		for k, isChanged in pairs( needsConstraintUpdate ) do
 			if isChanged then

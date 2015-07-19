@@ -47,21 +47,6 @@ function Window:initialise( ... )
 end
 
 --[[
-    @static
-    @desc Creates a menu from interface file
-    @param [string] interfaceName -- the name of the interface file
-    @return [Menu] menu -- the menu
-]]
-function Window.fromInterface( interfaceName )
-    local interface = Interface( interfaceName, Menu )
-    if interface then
-        local window = interface.container
-        window.interface = interface
-        return window
-    end
-end
-
---[[
     @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
@@ -86,10 +71,10 @@ end
 
 --[[
     @instance
-    @desc Loads the interface specified by the self.interface interface name
+    @desc Loads the interface specified by the self.interfaceName interface name
 ]]
 function Window:loadInterface()
-    local interfaceName = self.interface
+    local interfaceName = self.interfaceName
     if interfaceName then
         local barHeight = self.barHeight
         local x, y, width, height = 1, barHeight + 2, self.width - 2, self.height - barHeight - 5

@@ -57,7 +57,7 @@ function TextBox:initialise( ... )
 	self:event( Event.MOUSE_DRAG, self.onMouseDrag )
     self:event( Event.KEYBOARD_SHORTCUT, self.onKeyboardShortcut )
 	self:event( Event.FOCUS_CHANGED, self.onFocusChanged )
-	self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    	self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 end
 
 --[[

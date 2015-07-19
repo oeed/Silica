@@ -1,8 +1,8 @@
 
 class "ThemeOutlet" {
 	style = "default";
-	owner = nil;
-	ownerClass = nil;
+	owner = false;
+	ownerClass = false;
 	connections = {};
 }
 
@@ -14,6 +14,7 @@ class "ThemeOutlet" {
 function ThemeOutlet:initialise( owner )
 	self.owner = owner
 	self.ownerClass = owner.class
+	owner.event:connectGlobal( Event.THEME_CHANGED, self.onThemeChange, nil, self )
 end
 
 --[[
@@ -23,7 +24,7 @@ end
 	@return value -- the value
 ]]
 function ThemeOutlet:get( key )
-	if key == "themeValue" or self[key] or key == "instance" then return false end
+	if key == "themeValue" or key == "identifier" or key == "instance" or key == "style" or self[key] then return false end
 	return true, self:themeValue( key, self.style )
 end
 
@@ -56,6 +57,18 @@ function ThemeOutlet:disconnect( _class, classKey, key )
 			_class[classKey] = connection[4]
 			return
 		end
+	end
+end
+
+--[[
+	@instance
+	@desc Fired when the theme changes, updates the value
+	@param [string] style -- the style name
+]]
+function ThemeOutlet:onThemeChange( event )
+	local style = self.style
+	for i, connection in pairs( self.connections ) do
+		connection[1][connection[2]] = self:themeValue( connection[3], style )
 	end
 end
 

@@ -6,6 +6,7 @@
 
 	<Button identifier=firstButton x=100 y=20 text="Open Second" />
 
+
 	<!-- <MenuButton x=190 y=20 text=Menu menuName=file /> -->
 	
 	<TextBox width=130 x=100 y=50 text="I'm a text box!" />
@@ -13,9 +14,9 @@
 
 	<!-- <TestView identifier=testview left="10%" right="100% - 10" top=20 height=100/> -->
 
-	<Window x=50 y=100 width=100 height=60 >
+	<!-- <Window x=50 y=100 width=100 height=60 >
 		<WindowContainer>
-			<!-- <ProgressBar x=6 y=35 /> -->
+			<ProgressBar x=6 y=35 />
 			<Button x=5 y=5 text=Okay />
 			<Checkbox identifier=agreeCheckbox x=5 y=25 isChecked=true />
 			<Container x=50 y=5 width=20 height=40>
@@ -24,7 +25,7 @@
 				<Radio y=21/>
 			</Container>
 		</WindowContainer>
-	</Window>
+	</Window> -->
 
 <!-- <AlertWindow></AlertWindow> -->
 	<!-- <Button identifier=okayButton x=10 y=10 text=Okay />
