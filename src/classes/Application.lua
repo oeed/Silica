@@ -59,7 +59,7 @@ function Application.load( path )
 	loadClass = function( _path, content )
 		local name = fs.getName( _path )
 		if not loaded[name] then
-			local f, err = loadfile( _path, name )
+			local f, err = loadfile( _path )
 			if err then error( err, 0 ) end
 			local ok, err = pcall( f )
 			if err then error( err, 0 ) end
