@@ -1,8 +1,8 @@
 
 class "Window" extends "Container" {
-	-- separatorObject = nil;	
-	-- shadowObject = nil;
-	-- barObject = nil;	
+	-- separatorObject = false;	
+	-- shadowObject = false;
+	-- barObject = false;	
 	barHeight = 7;
 
 	container = false;
@@ -240,8 +240,8 @@ end
 ]]
 function Window:onGlobalMouseUp( event )
     if (self.isDragging or self.isResizingX or self.isResizingY ) and event.mouseButton == MouseEvent.mouseButtons.LEFT then
-        self.dragX = nil
-        self.dragY = nil
+        self.dragX = false
+        self.dragY = false
         self.isDragging = false
         self.isResizingX = false
         self.isResizingY = false

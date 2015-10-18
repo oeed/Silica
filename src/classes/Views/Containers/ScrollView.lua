@@ -1,3 +1,5 @@
+-- TODO: scrolling quickly then the opposite way reverses speed (not stops it)
+
 
 local exp = math.exp
 
@@ -7,9 +9,9 @@ local SCROLL_ACCELERATION = 1.2--0.97
 local SPEED_CUTOFF = 0.2
 
 class "ScrollView" extends "Container" {
-	contents = nil;
-	horizontalScrollbar = nil;
-	verticalScrollbar = nil;
+	contents = false;
+	horizontalScrollbar = false;
+	verticalScrollbar = false;
 
 	verticalStartTime = 0;
 	verticalVelocity = 0;

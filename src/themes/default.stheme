@@ -122,8 +122,17 @@
 		<placeholderColour type="Graphics.colours" default="LIGHT_GREY" />
 	</TextBox>
 
+	<Container>
+		<fillColour type="Graphics.colours" default="TRANSPARENT"/>
+	</Container>
+
 	<ApplicationContainer>
 		<fillColour type="Graphics.colours" default="LIGHT_BLUE"/>
 	</ApplicationContainer>
+
+	<SeparatorView>
+		<fillColour type="Graphics.colours" default="LIGHT_GREY"/>
+        <isDashed type="boolean" default="true"/>
+	</SeparatorView>
 
 </Theme>

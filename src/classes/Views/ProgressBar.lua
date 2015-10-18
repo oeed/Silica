@@ -12,8 +12,8 @@ class "ProgressBar" extends "View" {
     value = 0.3;
     maximum = 1;
 
-    backgroundObject = nil;
-    stripesObject = nil;
+    backgroundObject = false;
+    stripesObject = false;
 
 }
 

@@ -12,12 +12,12 @@ function FirstApplicationContainer:onReady( event )
 	-- self.firstButton:focus()
 
 
-	Document.open()
+	-- Document.open()
 
-	local document = self.application.document--Document( "test.txt" )
-	log(document.contents)
-	document.contents = "Hello!"
-	document:save()
+	-- local document = self.application.document--Document( "test.txt" )
+	-- log(document.contents)
+	-- document.contents = "Hello!"
+	-- document:save()
 end
 
 function FirstApplicationContainer:onFirstButton( event )

@@ -1,6 +1,6 @@
 
 class "ProgressBarStripes" extends "RoundedRectangle" {
-	stripeColour = nil;
+	stripeColour = false;
 	animationStep = 0;
 	stripeWidth = 9;
 }

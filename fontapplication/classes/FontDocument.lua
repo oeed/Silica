@@ -1,0 +1,85 @@
+
+class "FontDocument" extends "Document" {
+    
+    readMode = "rb";
+    writeMode = "wb";
+
+}
+
+function FontDocument:blank()
+   self.contents = { characters = {}, height = 8, metadata = { fontType = "bitmap"; generator = self.application.name } } 
+end
+
+function FontDocument:parseHandle( handle )
+    local characters, height, metadata = Font.decodeHandle( handle )
+    return { characters = characters; height = height; metadata = metadata }
+end
+
+function FontDocument:serialiseHandle( handle )
+    local contents = self.contents
+    return Font.encodeHandle( handle, contents.characters, contents.height, contents.metadata )
+end
+
+function FontDocument:changeCharactersHeight( height )
+    local contents = self.contents
+    local changeInHeight = height - contents.height
+    if changeInHeight == 0 then return end
+    contents.height = height
+    local rowChanges = {
+        math.floor( changeInHeight / 2 );
+    }
+
+    table.insert( rowChanges, (height % 2 == 0) and 1 or 2, math.ceil( changeInHeight / 2 ))
+
+
+
+    local characters = contents.characters
+    for i, changes in ipairs( rowChanges ) do
+        if changes > 0 then
+            for _, character in pairs( characters ) do
+                for __ = 1, changes do
+                    local blankRow = {}
+                    for i = 1, character.width do
+                        table.insert( blankRow, false )
+                    end
+                    table.insert( character, i == 1 and (#character + 1) or 1, blankRow )
+                end
+            end
+        elseif changes < 0 then
+            for _, character in pairs( characters ) do
+                for __ = -1, changes, -1 do
+                    table.remove( character, i == 1 and #character or 1 )
+                end
+            end
+        end
+    end
+
+end
+
+function FontDocument:resizeCharacter( character, width, height )
+    local changeInWidth = width - character.width
+    if changeInWidth ~= 0 then
+        character.width = width
+        local columnChanges = {
+            math.floor( changeInWidth / 2 );
+        }
+
+        table.insert( columnChanges, (width % 2 == 0) and 1 or 2, math.ceil( changeInWidth / 2 ))
+
+        for i, changes in ipairs( columnChanges ) do
+            if changes > 0 then
+                for _, row in ipairs( character ) do
+                    table.insert( row, i == 1 and (#row + 1) or 1, false )
+                end
+            elseif changes < 0 then
+                for _, row in ipairs( character ) do
+                    for __ = -1, changes, -1 do
+                        table.remove( row, i == 1 and #character or 1 )
+                    end
+                end
+            end
+        end
+    end
+
+    self:changeCharactersHeight( height )
+end

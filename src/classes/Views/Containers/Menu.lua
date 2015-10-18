@@ -22,8 +22,8 @@ class "Menu" extends "Container" {
 
     cornerRadius = 4;
 
-    shadowObject = nil;
-    backgroundObject = nil;
+    shadowObject = false;
+    backgroundObject = false;
 
     width = 40;
     height = 40;

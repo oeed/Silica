@@ -34,8 +34,8 @@ local keySymbols = {
 class "KeyboardShortcutManager" {
 	keysDown = {};
 	keysUpdates = {};
-	owner = nil;
-	event = nil;
+	owner = false;
+	event = false;
 }
 
 function KeyboardShortcutManager:initialise( owner )

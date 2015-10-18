@@ -1,6 +1,6 @@
 
 class "String" {
-	str = nil;
+	str = false;
 }
 
 --[[

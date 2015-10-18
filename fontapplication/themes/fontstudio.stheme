@@ -1,0 +1,19 @@
+<Theme extends="default">
+
+    <CharacterEditorView>
+        <fillColour type="Graphics.colours" default="LIGHT_GREY" />
+        <artboardColour type="Graphics.colours" default="WHITE" />
+        <pixelColour type="Graphics.colours" default="BLACK" />
+        <resizeHandleColour type="Graphics.colours" default="GREY" />
+    </CharacterEditorView>
+
+    <FontStudioApplicationContainer>
+        <fillColour type="Graphics.colours" default="GREY"/>
+    </FontStudioApplicationContainer>
+
+    <CharacterPreviewView>
+        <pixelColour type="Graphics.colours" default="LIGHT_GREY" />
+        <labelColour type="Graphics.colours" default="LIGHT_GREY" active="WHITE" />
+    </CharacterPreviewView>
+
+</Theme>

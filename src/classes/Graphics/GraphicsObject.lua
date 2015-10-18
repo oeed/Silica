@@ -5,7 +5,7 @@ class "GraphicsObject" {
 	width = 0; -- @property width [number] - The width of the object
 	height = 0; -- @property height [number] - The height of the object
 	hasChanged = false; -- @property hasChanged [boolean] - Whether or not the object's internals have hasChanged since it was last drawn
-	parent = nil; -- @property parent [View] - The parent of the object, if it exists
+	parent = false; -- @property parent [View] - The parent of the object, if it exists
 	outlineColour = Graphics.colours.TRANSPARENT; -- @property [Graphics.colours] -- The colour of the outline
 	leftOutlineWidth = 1; -- @property [number] -- The thickness of the outline
 	topOutlineWidth = 1; -- @property [number] -- The thickness of the outline
@@ -13,6 +13,7 @@ class "GraphicsObject" {
 	bottomOutlineWidth = 1; -- @property [number] -- The thickness of the outline
 	fillColour = Graphics.colours.TRANSPARENT; -- @property [Graphics.colours] -- The fill colour of the object
 	isVisible = true;
+	fill = false;
 }
 
 --[[
@@ -60,8 +61,10 @@ end
 	@param [number] width -- the width of the graphics object
 ]]
 function GraphicsObject:setWidth( width )
-	self.hasChanged = true
-	self.width = width
+	if self.width ~= width then
+		self.hasChanged = true
+		self.width = width
+	end
 end
 
 --[[
@@ -70,8 +73,10 @@ end
 	@param [number] height -- the height of the graphics object
 ]]
 function GraphicsObject:setHeight( height )
-	self.hasChanged = true
-	self.height = height
+	if self.height ~= height then
+		self.hasChanged = true
+		self.height = height
+	end
 end
 
 --[[
@@ -133,8 +138,20 @@ end
 	@param [number] fillColour -- the fillColour of the graphics object
 ]]
 function GraphicsObject:setFillColour( fillColour )
+	-- assert( type( fillColour ) == "number", "fillColour must be a valid colour.")
 	self.hasChanged = true
 	self.fillColour = fillColour
+end
+
+--[[
+	@instance
+	@desc Sets the outlineColour of the graphics object
+	@param [number] outlineColour -- the outlineColour of the graphics object
+]]
+function GraphicsObject:setOutlineColour( outlineColour )
+	-- assert( type( outlineColour ) == "number", "outlineColour must be a valid colour.")
+	self.hasChanged = true
+	self.outlineColour = outlineColour
 end
 
 --[[
@@ -159,7 +176,7 @@ function GraphicsObject:setHasChanged( hasChanged )
 			parent.hasChanged = true
 		end
 		if self.fill then
-			self.fill = nil
+			self.fill = false
 		end
 	end
 	self.hasChanged = hasChanged
@@ -266,11 +283,11 @@ function GraphicsObject:drawTo( canvas )
 		if fill then
 			for x, row in pairs( fill ) do
 				local outlineX = outline and outline[x]
-				for y, _ in pairs( row ) do
-					if not outline or not outlineX or not outlineX [y] then
-						setPixel( _x + x, _y + y, fillColour )
-					end
-				end
+				for y, isFilled in pairs( row ) do
+                    if isFilled and (not outline or not outlineX or not outlineX[y]) then
+                        setPixel( _x + x, _y + y, fillColour )
+                    end
+                end
 			end
 		end
 

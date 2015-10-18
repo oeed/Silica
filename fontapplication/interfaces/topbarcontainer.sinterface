@@ -1,0 +1,6 @@
+<TopBarContainer height=14>
+    <!-- <HomeButton identifier=homeButton x=1 y=1 width=29 height="100% - 1"> -->
+    <HomeItem/>
+    <ClockItem/>
+    <TopBarSeparatorView identifier=separatorView x=1 y=14 width="100%"/>
+</TopBarContainer>

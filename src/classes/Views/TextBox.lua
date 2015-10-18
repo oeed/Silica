@@ -40,6 +40,7 @@ class "TextBox" extends "View" {
 	cursorPosition = 1;
 	maximumLength = false;
 	selectionPosition = false;
+
 }
 
 --[[
@@ -48,7 +49,6 @@ class "TextBox" extends "View" {
 ]]
 function TextBox:initialise( ... )
 	self.super:initialise( ... )
-	
 	self:event( Event.KEY_UP, self.onKeyUp )
 	self:event( Event.KEY_DOWN, self.onKeyDown )
 	self:event( Event.CHARACTER, self.onCharacter )
@@ -289,7 +289,7 @@ function TextBox:write( text )
 		sp = sp - 1
 		self.text = text:sub( 1, math.min( cp, sp ) - 1 ) .. s .. text:sub( math.max( cp, sp ) + 1 )
 		self.cursorPosition =  math.min( cp, sp ) + #s
-		self.selectionPosition = nil
+		self.selectionPosition = false
 	else
 		self.text = text:sub( 1, cp - 1 ) .. s .. text:sub( cp )
 		self.cursorPosition =  cp + #s
@@ -578,7 +578,7 @@ function TextBox:onKeyboardShortcut( event )
         elseif event:matchesKeys( { "ctrl", "backspace" } ) then
         	local cursorPosition = self.cursorPosition
         	self.cursorPosition = 1
-        	self.selectionPosition = nil
+        	self.selectionPosition = false
         	self.text = self.text:sub( cursorPosition )
         elseif event:matchesKeys( { "ctrl", "home" } ) then
         	self.cursorPosition = 1

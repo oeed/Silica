@@ -3,6 +3,7 @@ class "Event" {
 	
 	relativeView = false; -- the view that the event is relative of
 	eventType = false;
+    sender = false;
 
 	isSentToChildren = true; -- whether the event will be passed to children
 	isSentToSender = true; -- whether the event will be handled by the sender
@@ -29,6 +30,8 @@ class "Event" {
 	INTERFACE_OUTLET_CHANGED = "interface_outlet_changed";
 	ACTION = "interface_action";
 	THEME_CHANGED = "interface_theme_changed";
+	CHILD_ADDED = "interface_child_added";
+	CHILD_REMOVED = "interface_child_removed";
 
 }
 

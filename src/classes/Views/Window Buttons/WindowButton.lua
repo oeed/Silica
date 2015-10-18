@@ -3,9 +3,9 @@ class "WindowButton" extends "View" {
 	width = 9;
 	height = 7;
     isPressed = false;
-    backgroundObject = nil;
-    symbolObject = nil;
-    window = nil;
+    backgroundObject = false;
+    symbolObject = false;
+    window = false;
 }
 
 --[[

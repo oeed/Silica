@@ -3,17 +3,17 @@ class "Button" extends "View" {
 
     height = 16; -- the default height
     width = 36;
-    text = nil;
+    text = false;
 
     isPressed = false;
     isFocused = false;
     isAutosizing = true;
-    font = nil;
+    font = false;
 
-    shadowObject = nil;
-    backgroundObject = nil;
+    shadowObject = false;
+    backgroundObject = false;
     isFocusDismissable = false;
-    textObject = nil;
+    textObject = false;
 
     needsAutosize = false;
 
@@ -36,7 +36,9 @@ function Button:initialise( ... )
     self:event( Event.KEY_UP, self.onKeyUp )
     self:event( Event.FOCUS_CHANGED, self.onFocusChanged )
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
-    if self.onMouseUp then self:event( Event.MOUSE_UP, self.onMouseUp ) end
+
+    -- TODO: we can't do this
+    -- if self.onMouseUp then self:event( Event.MOUSE_UP, self.onMouseUp ) end
 end
 
 --[[

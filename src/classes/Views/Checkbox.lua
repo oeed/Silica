@@ -8,7 +8,7 @@ class "Checkbox" extends "View" {
     isEnabled = true;
     isChecked = false;
 
-    checkObject = nil;
+    checkObject = false;
 
 }
 

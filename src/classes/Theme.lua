@@ -98,7 +98,7 @@ function Theme:initialiseTheme( nodes, cantExtend )
 					if Validator.isValid( styleValue, validationTypeName ) then
 						propertyTheme[styleName] = Validator.parse( styleValue, validationTypeName )
 					else
-						return "Style value '" .. tostring( styleValue ) .. "' is invalid: '" .. styleName .. "' (of property: " .. propertyNode.name .. " and of class: " .. classNode.name .. ")" 
+						return "Style value '" .. tostring( styleValue ) .. "' is invalid for type '" .. validationTypeName .. "' : '" .. styleName .. "' (of property: " .. propertyNode.type .. " and of class: " .. classNode.type .. ")" 
 					end
 				end
 			end
@@ -131,7 +131,7 @@ function Theme:value( _class, propertyName, styleName, noError )
 		local propertyTheme = classTheme[propertyName]
 		if propertyTheme then
 			local styleValue = propertyTheme[styleName] or propertyTheme["default"]
-			if styleValue then
+			if styleValue ~= nil then
 				return styleValue
 			else
 				err = "Theme '" .. self.name .. "' does not have any definition for style: '" .. styleName .. "' or 'default' (of property: " .. propertyName .. " and of class: " .. _class.className .. ")"

@@ -35,6 +35,20 @@ function _G.logtraceback( level )
 	log( "Start of traceback:\n" .. ("-"):rep( 20 ) .. "\nin " .. table.concat( traceback, "\nin ") .. "\n" .. ("-"):rep( 20 ) .. "\nEnd of traceback" )
 end
 
+local _error = error
+function _G.error(...)
+	term.setBackgroundColor(colors.red)
+	term.clear()
+	_error(...)
+
+	while true do
+		local event, key = os.pullEvent("char")
+		if key == "\\" then
+			os.reboot()
+		end
+	end
+end
+
 -- if not fs.exists( "oeed" ) then
 -- 	shell.run "NewRendering/test.lua"
 -- 	read()
@@ -47,10 +61,14 @@ end
 
 
 shell.run( "package /src Silica" )
+-- shell.run( "package /application app" )
+-- 
+
 
 dofile( "Silica" )
+-- dofile( "app" )
+Application.load( "/fontapplication" )
 
-Application.load( "/application" )
 
 -- BitmapFont.convertFile( "font src/auckland", "src/fonts/Auckland.sfont", 32, 8, {
 -- 	name = "Auckland";
@@ -60,4 +78,6 @@ Application.load( "/application" )
 -- } )
 
 -- -- this is essentially what the startup file will look like
-ExampleApplication():run( ... )
+-- ExampleApplication():run( ... )
+-- Program functions...
+FontStudioApplication():run( ... )

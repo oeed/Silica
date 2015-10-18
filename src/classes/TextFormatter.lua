@@ -24,8 +24,8 @@ class "TextFormatter" {
 	yAlignment = "top"; -- alignment.TOP?
 
 	changed = false;
-	stream = nil;
-	wrappedStream = nil;
+	stream = false;
+	wrappedStream = false;
 }
 
 function TextFormatter:initialise( text, width, height )

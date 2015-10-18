@@ -1,7 +1,7 @@
 
 class "TestView" extends "View" {
-	width = nil;
-	height = nil;
+	width = false;
+	height = false;
 }
 
 function TestView:initialise( ... )

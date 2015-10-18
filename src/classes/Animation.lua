@@ -9,10 +9,11 @@ local function copyTables(destination, keysTable, valuesTable)
         setmetatable(destination, mt)
     end
     for k,v in pairs( keysTable ) do
-        if type( v ) == "table" then
-            destination[k] = copyTables({}, v, valuesTable[k])
+        local value = valuesTable[k]
+        if type( value ) == "table" then
+            destination[k] = value[#value]
         else
-            destination[k] = valuesTable[k]
+            destination[k] = value
         end
     end
     return destination
@@ -20,15 +21,44 @@ end
 
 local function performEasingOnSubject(subject, targetValues, initialValues, time, duration, easingFunc, round)
     local t,b,c,d
+    local progressPercentage, ceil, floor = false, math.ceil, math.floor
     for k,v in pairs( targetValues ) do
         if type( v ) == "table" then
-            performEasingOnSubject(subject[k], v, initialValues[k], time, duration, easingFunc)
-        else
-            t,b,c,d = time, initialValues[k], v - initialValues[k], duration
+            log('keyframe')
+            -- Not sure what this for, I think keyframes would be more useful
+            -- performEasingOnSubject(subject[k], v, initialValues[k], time, duration, easingFunc)
+
+            -- Keyframe animation
+            progressPercentage = progressPercentage or easingFunc( time, 0, 1, duration )
+            local keyframe = progressPercentage * #v -- NOT an int, the progress through the keyframes. 0.5 is half way through the first keyframe
+
+            -- if round is true the keyframes values are not tweened between, they are just set when over the threshhold. This is the best approach for colours
             if round then
-                subject[k] = math.floor( easingFunc( t,b,c,d ) + 0.5 )
+                local value = v[ ceil( keyframe ) ]
+                if subject[k] ~= value then
+                    subject[k] = value
+                end
             else
-                subject[k] = easingFunc( t,b,c,d )
+                -- TODO: tweenning not tested
+                local isInteger = ( keyframe % 1 == 0 )
+                if isInteger then
+                    subject[k] = v[ floor( keyframe + 0.5) ]
+                else
+                    local lowerKeyframe = floor( keyframe )
+                    local upperKeyframe = ceil( keyframe )
+                    local percentageUpper = keyframe - lowerKeyframe
+                    local lowerValue = v[ lowerKeyframe ]
+                    subject[k] = lowerValue + ( v[ upperKeyframe ] - lowerValue) * percentageUpper
+                end
+            end
+        else
+            b = initialValues[k]
+            if not b then error( "No initial value for animation. Property name: " .. k ) end
+            c = v - initialValues[k]
+            if round then
+                subject[k] = floor( easingFunc( time, b, c, duration ) + 0.5 )
+            else
+                subject[k] = easingFunc( time, b, c, duration )
             end
         end
     end
@@ -36,12 +66,13 @@ end
 
 class "Animation" {
 	easing = {};
-	duration = nil;
-	subject = nil;
-	targetValues = nil;
-	easingFunc = nil;
-	initialValues = nil;
-	time = nil;
+	duration = false;
+	subject = false;
+	targetValues = false; -- if a targetValue is an array, not a single value, the values are used as evenly spaced 'keyframes'. This can be used for colours.
+	easingFunc = false;
+	initialValues = false;
+	time = false;
+    round = false;
 }
 
 --[[
@@ -69,14 +100,15 @@ end
 	@return [boolean] isComplete -- whether the animation is complete
 ]]
 function Animation:setTime( time )
-	assert( type(time ) == "number", "time must be a positive number or 0")
+	assert( type(time ) == "number" and time >= 0, "time must be a positive number or 0")
 
+    local duration
 	self.time = time
 
-	if self.time <= 0 then
+	if time <= 0 then
 		self.time = 0
 		copyTables(self.subject, self.initialValues)
-	elseif self.time >= self.duration then -- the tween has expired
+	elseif time >= self.duration then -- the tween has expired
 		self.time = self.duration
 		copyTables(self.subject, self.targetValues)
 	else

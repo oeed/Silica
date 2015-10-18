@@ -3,15 +3,32 @@ class "Circle" extends "GraphicsObject" {}
 
 --[[
 	@static
-	@desc Creates a rounded rectangle
-	@param [number] x -- the x coordinate of the rectangle
-	@param [number] y -- the y coordinate of the rectangle
-	@param [number] width -- the width of the rectangle
-	@param [number] height -- the height of the rectangle
-	@param [number] radius -- the radius of the corners. of the top of the next parameter is defined, or top left if all 4 are
+	@desc Creates a cricle 
+	@param [number] x -- the x coordinate of the circle
+	@param [number] y -- the y coordinate of the circle
+	@param [number] diameter -- the diameter of the circle
 ]]
 function Circle:initialise( x, y, diameter )
 	self.super:initialise( x, y, diameter, diameter )
+end
+
+--[[
+	@instance
+	@desc Sets the diamater of the circle
+	@param [number] diameter -- the diameter of the circle
+]]
+function Circle:setDiameter( diameter )
+	self.width = diameter
+	self.height = diameter
+end
+
+--[[
+	@instance
+	@desc Gets the diameter of the circle
+	@return [number] diameter -- the diameter
+]]
+function Circle:getDiameter( arg1, arg2, arg3 )
+	return self.height
 end
 
 --[[

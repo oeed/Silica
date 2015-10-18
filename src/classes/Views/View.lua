@@ -2,14 +2,15 @@
 local DEFAULT_TIME = .3
 local DEFAULT_EASING = Animation.easing.IN_OUT_SINE
 
-local function newAnimation( self, label, time, values, easing, onFinish )
-	local animation = Animation( time, self, values, easing, true )
-	for i = #self.animations, 1, -1 do
-		if self.animations[i].label == label then
-			table.remove( self.animations, i )
+local function newAnimation( self, label, time, values, easing, onFinish, round )
+	local animation = Animation( time, self, values, easing, round == nil and true or round )
+	local animations = self.animations
+	for i = #animations, 1, -1 do
+		if animations[i].label == label then
+			table.remove( animations, i )
 		end
 	end
-	self.animations[#self.animations + 1] = { label = label, animation = animation, onFinish = onFinish }
+	animations[#animations + 1] = { label = label, animation = animation, onFinish = onFinish }
 end
 
 class "View" {
@@ -59,15 +60,15 @@ function View:initialise( properties )
 	self:initialiseTheme()
 	self:initialiseCanvas()
 
-	setmetatable( self.stringConstraints, {
-		__index = { parent = self }, __newindex = function( t, k, v )
-			if t.parent.identifier == "testview" then
-				-- log( "Setting " .. k .. " to " .. tostring( v ) )
-				-- logtraceback()
-			end
-			rawset( t, k, v )
-		end
-	} )
+	-- setmetatable( self.stringConstraints, {
+	-- 	__index = { parent = self }, __newindex = function( t, k, v )
+	-- 		if t.parent.identifier == "testview" then
+	-- 			-- log( "Setting " .. k .. " to " .. tostring( v ) )
+	-- 			-- logtraceback()
+	-- 		end
+	-- 		rawset( t, k, v )
+	-- 	end
+	-- } )
 	
 	if properties and type( properties ) == "table" then
 		self:properties( properties )
@@ -252,6 +253,7 @@ function View:evalConstraint( property )
 	self.references[property] = references
 	
 	self.needsConstraintUpdate[self:updateConstraint( property, value )] = true
+	-- log('eval! '..tostring(self)..': '..tostring(value)..' ('..tostring(property)..')')
 	return value
 end
 
@@ -602,10 +604,10 @@ function View:update( dt )
 		local animation = animations[i]
 		animation.animation:update( dt )
 		if animation.animation.time >= animation.animation.duration then
+			table.remove( animations, i )
 			if animation.onFinish then
 				animation.onFinish( self )
 			end
-			table.remove( animations, i )
 		end
 	end
 
@@ -622,9 +624,9 @@ function View:update( dt )
 		local needsConstraintUpdate = self.needsConstraintUpdate
 		for k, isChanged in pairs( needsConstraintUpdate ) do
 			if isChanged then
-				local constraintUpdate = self[k == "x" and "updateX" or k == "y" and "updateY" or k == "width" and "updateWidth" or k == "height" and "updateHeight"]
-				if constraintUpdate then
-					constraintUpdate( self, self.raw[k] )
+				local _k = k == "x" and "updateX" or k == "y" and "updateY" or k == "width" and "updateWidth" or k == "height" and "updateHeight"
+				if self:isDefined( _k ) then
+					self[_k]( self, self.raw[k] )
 				end
 				needsConstraintUpdate[k] = false
 			end
@@ -639,10 +641,18 @@ end
 	@param [number] value -- the target value
 	@param [number] time -- the duration of the animation
 	@param [function] onFinish -- the function called on completion of the animation
+	@param [boolean] round -- whether values are rounded. For keyframe animations, the keyframes will not be tweened between.
 	@param [Animation.easing] easing -- the easing function of the animation
 ]]
-function View:animate( propertyName, value, time, onFinish, easing )
-	newAnimation( self, propertyName, time or DEFAULT_TIME, { [propertyName] = value }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
+function View:animate( propertyName, value, time, onFinish, easing, delay, round )
+	local addAnimation = function()
+		newAnimation( self, propertyName, time or DEFAULT_TIME, { [propertyName] = value }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish, round )
+	end
+	if not delay or type( delay ) ~= 'number' or delay < 0.05 then
+		addAnimation()
+	else
+		self.application:schedule(addAnimation, delay)
+	end
 end
 
 --[[

@@ -60,7 +60,7 @@ function Application.load( path )
 	loadClass = function( _path, content )
 		local name = fs.getName( _path )
 		if not loaded[name] then
-			local f, err = loadfile( _path, name )
+			local f, err = loadfile( _path )
 			if err then error( err, 0 ) end
 			local ok, err = pcall( f )
 			if err then error( err, 0 ) end
@@ -144,7 +144,7 @@ function Application:reloadInterface()
 		oldContainer:dispose()
 	end
 
-	if interfaceName then
+	if interfaceName then		
 		self.container = Interface( interfaceName ).container
 	else
 		self.container = ApplicationContainer()
@@ -228,7 +228,7 @@ end
 ]]
 function Application:checkScheduled( lastUpdate )
 	local now = os.clock()
-	for scheduleId, task in ipairs( self.schedules ) do
+	for scheduleId, task in pairs( self.schedules ) do
 		if task[2] <= now then
 			local func = task[1]
 			table.remove( task, 2 )

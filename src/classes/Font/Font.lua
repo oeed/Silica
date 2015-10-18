@@ -43,10 +43,14 @@ class "Font" {
 	height = 0;
 	desiredHeight = 0;
 	spacing = 1;
+	characters = false;
+	scale = false;
+	systemFont = false;
 
 	alignments = {
 		LEFT = 0;
 		CENTER = 1;
+		CENTRE = 1;
 		RIGHT = 2;
 		JUSTIFIED = 3;
 	};
@@ -78,7 +82,8 @@ end
 
 function Font.initialisePresets()
 	-- TODO: make this come from the theme
-	Font.systemFont = Font( "Auckland" )
+	Font.systemFont = Font( "Napier" )
+	-- Font.systemFont = Font( "Auckland" )
 end
 
 function Font.readMetadata( file )
@@ -98,6 +103,10 @@ end
 
 function Font.encodeFile( file, characters, height, metadata )
 	local h = fs.open( file, "wb" )
+	return Font.encodeHandle( handle, characters, height, metadata)
+end
+
+function Font.encodeHandle( h, characters, height, metadata )
 	if h then
 		for k, v in pairs( metadata or {} ) do
 			h.write( 0 )
@@ -110,9 +119,9 @@ function Font.encodeFile( file, characters, height, metadata )
 		h.write( height )
 		local bytes
 		if metadata.fontType == "vector" then
-			bytes = BitmapFont.encodeSet( characters, height )
-		else
 			bytes = VectorFont.encodeSet( characters, height )
+		else
+			bytes = BitmapFont.encodeSet( characters, height )
 		end
 		for _, byte in ipairs( bytes ) do
 			h.write( byte )
@@ -123,16 +132,20 @@ function Font.encodeFile( file, characters, height, metadata )
 end
 
 function Font.decodeResource( resource )
+	-- log(resource)
 	local contents = resource.contents
+	-- log(resource.path)
+	-- log(contents)
 	if contents then
 		local i = 1
 		local contentsLen = #contents
 		local b = string.byte
+		local sub = string.sub
 		local h = {}
 
 		function h.read()
 			if i <= contentsLen then
-				local value = b( contents:sub( i, i ) )
+				local value = b( sub( contents, i, i ) )
 				i = i + 1
 				return value
 			end
@@ -193,7 +206,7 @@ function Font:getWidth( text )
 		end
 		width = width + bitmap.width * scale + spacing * scale
 	end
-	return width
+	return width - spacing
 end
 
 function Font:getRawWidth( text )

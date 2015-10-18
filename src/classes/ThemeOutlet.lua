@@ -24,7 +24,7 @@ end
 	@return value -- the value
 ]]
 function ThemeOutlet:get( key )
-	if key == "themeValue" or key == "identifier" or key == "instance" or key == "style" or self[key] then return false end
+	if key == "class" or self.definedBoth[key] or class.defined[key] then return false end
 	return true, self:themeValue( key, self.style )
 end
 

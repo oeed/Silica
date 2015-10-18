@@ -17,6 +17,7 @@ local function writestring( handle, text )
 end
 
 local function bhasbit( n, i )
+	if not n then log(debug.traceback()) end
 	return floor( n / 2 ^ ( 8 - i ) ) % 2 == 1
 end
 
@@ -33,6 +34,7 @@ function BitmapFont.decodeCharacter( bytes, width, height )
 		if index == 0 then index = 8 end
 		local s = ""
 		for i = 1, 8 do
+			-- log(bytes[byte])
 			s = s .. ( bhasbit( bytes[byte], i ) and 1 or 0 )
 		end
 		return bhasbit( bytes[byte], index )

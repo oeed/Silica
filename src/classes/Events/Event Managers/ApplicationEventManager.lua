@@ -1,6 +1,6 @@
 
 class "ApplicationEventManager" extends "EventManager" {
-	handlesGlobal = nil;
+	handlesGlobal = false;
 }
 
 --[[

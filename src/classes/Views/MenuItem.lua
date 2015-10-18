@@ -10,11 +10,11 @@ class "MenuItem" extends "View" {
     isEnabled = true;
 	isCanvasHitTested = false;
 
-    keyboardShortcut = nil;
-    text = nil;
+    keyboardShortcut = false;
+    text = false;
 
-    font = nil;
-    backgroundObject = nil;
+    font = false;
+    backgroundObject = false;
 }
 
 --[[
@@ -32,10 +32,11 @@ end
 
 function MenuItem:initialiseCanvas()
     self.super:initialiseCanvas()
-    local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
-    local textObject = self.canvas:insert( Text( 7, 3, self.height, self.width - TEXT_MARGIN, self.text ) )
+    local width, height, canvas = self.width, self.height, self.canvas
+    local backgroundObject = canvas:insert( Rectangle( 1, 1, width, height, self.fillColour ) )
+    local textObject = canvas:insert( Text( 7, 3, height, width - TEXT_MARGIN, self.text ) )
     local keyboardShortcut = self.keyboardShortcut
-    local shortcutObject = self.canvas:insert( Text( 1, 3, self.height, self.width - TEXT_MARGIN, keyboardShortcut and keyboardShortcut:symbols() or "" ) )
+    local shortcutObject = canvas:insert( Text( 1, 3, height, width - TEXT_MARGIN, keyboardShortcut and keyboardShortcut:symbols() or "" ) )
     shortcutObject.alignment = Font.alignments.RIGHT
     self.theme:connect( backgroundObject, "fillColour" )
     self.theme:connect( textObject, "textColour" )
@@ -90,7 +91,6 @@ function MenuItem:updateText()
     end
 end
 
-
 function MenuItem:setText( text )
     self.text = text
     self:updateText()
@@ -138,7 +138,8 @@ function MenuItem:onGlobalMouseUp( event )
         if self.isEnabled and self:hitTestEvent( event ) then
             if self.event:handleEvent( ActionInterfaceEvent( self ) ) then return true end
             self.parent:close()
-            return self.event:handleEvent( event )
+            local result = self.event:handleEvent( event )
+            return ( result ~= nil and result or true )
         end
         return true
     end

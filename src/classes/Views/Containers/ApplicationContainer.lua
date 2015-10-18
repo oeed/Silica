@@ -3,8 +3,8 @@ class "ApplicationContainer" extends "Container" {
 	-- TODO: make this use a Constraint
 	x = 1;
 	y = 1;
-	width = 310;
-	height = 175;
+	width = 320;
+	height = 200;
 	themeName = false;
 }
 
@@ -14,13 +14,12 @@ class "ApplicationContainer" extends "Container" {
 	@param [table] properties -- the properties for the view
 ]]
 function ApplicationContainer:initialise( ... )
-	self.super:initialise( ... )
-
 	if not self.themeName then
 		self.themeName = "default"
 	end
 
-    self.theme:connect( self.canvas, "fillColour" )
+	self.super:initialise( ... )
+
     self:event( Event.MOUSE_DOWN, self.onMouseUp, EventManager.phase.AFTER )
 end
 

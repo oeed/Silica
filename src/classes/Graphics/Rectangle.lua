@@ -5,7 +5,7 @@ class "Rectangle" extends "GraphicsObject" {
 
 function Rectangle:initialise( x, y, width, height, fillColour ) -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )
 	self.super:initialise( x, y, width, height )
-	self.fillColour = fillColour
+	self.fillColour = fillColour or false
 end
 
 --[[

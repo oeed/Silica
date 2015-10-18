@@ -16,6 +16,8 @@ function Validator.validatorType( typeName )
 		return tonumber
 	elseif typeName == "string" then
 		return tostring
+	elseif typeName == "boolean" or typeName == "bool" then
+		return function( K ) local k = K:lower() if k == "true" then return true elseif k == "false" then return false end end
 	end
 end
 

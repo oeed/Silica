@@ -126,7 +126,7 @@ local fileString = serialise( fileTree, {}, "" )
 
 local f = fs.open( destinationPath, "w" )
 if not f then
-	error( "Failed to write to source file: " .. sourcePath, 0 )
+	error( "Failed to write to destination file: " .. destinationPath, 0 )
 end
 
 local template = 

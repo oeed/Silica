@@ -97,10 +97,13 @@ end
 function Canvas:insert( graphicsObject )
     graphicsObject = graphicsObject
     self.hasChanged = true
+    if not graphicsObject then
+        logtraceback()
+    end
     if graphicsObject.parent then
         graphicsObject.parent:remove( graphicsObject )
     end
-    graphicsObject.parent = self
+    graphicsObject.raw.parent = self
     self.children[#self.children + 1] = graphicsObject
     return graphicsObject
 end
@@ -112,12 +115,11 @@ end
     @return self
 ]]
 function Canvas:remove( graphicsObject )
-    graphicsObject = graphicsObject
     local c = false
     for i = #self.children, 1, -1 do
         if self.children[i] == graphicsObject then
-            graphicsObject.parent = nil
             table.remove( self.children, i )
+            graphicsObject.raw.parent = false
             c = true
         end
     end
@@ -153,7 +155,7 @@ end
 function Canvas:drawTo( canvas )
     if self.isVisible then
         if self.hasChanged then
-            local drawdt = os.clock()
+            -- local drawdt = os.clock()
             self:draw()
             -- log( tostring( self ) .. 'is rerendering dt ' .. os.clock() - drawdt )
         end

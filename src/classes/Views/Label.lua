@@ -1,17 +1,13 @@
 
 class "Label" extends "View" {
 
-    text = nil;
+    text = false;
     isAutosizing = true;
-    font = nil;
-    textObject = nil;
+    font = false;
+    textObject = false;
     needsAutosize = false;
 	
 }
-
-function Label:initialise( ... )
-    self.super:initialise( ... )
-    end
 
 --[[
     @instance
@@ -19,11 +15,11 @@ function Label:initialise( ... )
 ]]
 function Label:initialiseCanvas()
     self.super:initialiseCanvas()
-    local width, height, theme = self.width, self.height, self.theme
-    local textObject = self.canvas:insert( Text( 1, 1, self.width, self.height, self.text ) )
+    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
+    local textObject = canvas:insert( Text( 1, 1, width, height, self.text ) )
 
     theme:connect( textObject, "textColour" )
-    theme:connect( self.canvas, "fillColour" )
+    theme:connect( canvas, "fillColour" )
     self.textObject = textObject
 
     if not self.font then
@@ -42,6 +38,10 @@ function Label:setFont( font )
         self.textObject.font = font
         self.needsAutosize = true
     end
+end
+
+function Label:updateWidth( width )
+    self.textObject.width = width
 end
 
 function Label:setText( text )
@@ -67,8 +67,8 @@ end
     @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text
 ]]
 function Label:autosize()
-    -- TODO: support self.isAutosizingc
-    local font, text, textObject = self.font, self.text, self.textObject
+    -- TODO: support self.isAutosizing
+    local font, text = self.font, self.text
 
     if font and text then
         local fontWidth = font:getWidth( text )

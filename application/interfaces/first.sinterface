@@ -7,10 +7,16 @@
 	<Button identifier=firstButton x=100 y=20 text="Open Second" />
 
 
-	<!-- <MenuButton x=190 y=20 text=Menu menuName=file /> -->
+	<MenuButton x=190 y=20 text="Menu Button" menuName=file />
 	
 	<TextBox width=130 x=100 y=50 text="I'm a text box!" />
 	<MaskedTextBox width=130 x=100 y=80 placeholder="Password" />
+
+	<SegmentContainer x=100 y=110>
+		<SegmentButton text=One isChecked=true />
+		<SegmentButton text=Two isChecked=true />
+		<SegmentButton text=Three isChecked=true />
+	</SegmentContainer>
 
 	<!-- <TestView identifier=testview left="10%" right="100% - 10" top=20 height=100/> -->
 

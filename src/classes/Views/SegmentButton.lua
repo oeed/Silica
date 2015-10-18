@@ -3,7 +3,7 @@
 
 class "SegmentButton" extends "Button" {
 	
-	separatorObject = nil;
+	separatorObject = false;
 
 }
 

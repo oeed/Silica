@@ -1,16 +1,16 @@
 
 class "Text" extends "GraphicsObject" {
-	font = nil;
-	text = nil;
-	textColour = nil;
-	alignment = Font.alignments.LEFT
+	font = false;
+	text = false;
+	textColour = false;
+	alignment = false;
 }
 
-function Text:initialise( x, y, width, height, text, font, textColour )
+function Text:initialise( x, y, width, height, text, alignment, font )
 	self.super:initialise( x, y, width, height )
 	self.text = text
-	self.font = font
-	self.textColour = textColour
+	self.font = font or Font.systemFont
+	self.alignment = alignment or Font.alignments.LEFT
 end
 
 --[[
@@ -18,7 +18,7 @@ end
 	@desc Sets the font of the text object
 	@param [number] font -- the font of the text object
 ]]
-function GraphicsObject:setFont( font )
+function Text:setFont( font )
 	self.hasChanged = true
 	self.font = font
 end
@@ -28,7 +28,7 @@ end
 	@desc Sets the text of the text object
 	@param [number] text -- the text of the text object
 ]]
-function GraphicsObject:setText( text )
+function Text:setText( text )
 	self.hasChanged = true
 	self.text = text
 end
@@ -43,18 +43,17 @@ function Text:drawTo( canvas )
 	if self.isVisible then
 		local font = self.font
 		local width = self.width
+		local text = self.text
 
-		-- TODO: font alignment
-		local fontWidth = font:getWidth( self.text )
+		local fontWidth = font:getWidth( text )
 		local x = 1
 		local alignment = self.alignment
 		if alignment == Font.alignments.CENTRE then
-			error( "TODO: Font.alignments.CENTRE" )
-			-- x = math.floor( width / 2 - fontWidth / 2 + 1 )
+			x = 1 + math.floor( (width - fontWidth ) / 2 )
 		elseif alignment == Font.alignments.RIGHT then
 			x = width - fontWidth + 1
 		end
-        font:render( canvas, self.text, self.x + x - 1, self.y, self.textColour )
+        font:render( canvas, text, self.x + x - 1, self.y, self.textColour )
 	end
 	return self
 end

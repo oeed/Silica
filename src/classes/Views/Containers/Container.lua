@@ -5,6 +5,7 @@ class "Container" extends "View" {
 	interfaceName = false;
 	offsetX = 0;
 	offsetY = 0;
+	interfaceOutletActions = {};
 }
 
 --[[
@@ -15,6 +16,7 @@ class "Container" extends "View" {
 function Container:initialise( ... )
 	self.super:initialise( ... )
 	self:loadInterface()
+    self.theme:connect( self.canvas, "fillColour" )
 	self:event( Event.INTERFACE_OUTLET_CHANGED, self.onInterfaceOutletChanged )
 end
 
@@ -42,9 +44,9 @@ function Container:loadInterface()
     local interfaceName = self.interfaceName
     if interfaceName then
         local interface = Interface( interfaceName, self.class )
-        
+
         local containerInterfaceProperties = self.interfaceProperties
-        for k, v in pairs( interface.properties ) do
+        for k, v in pairs( interface.containerProperties ) do
         	if not containerInterfaceProperties or not containerInterfaceProperties[k] then -- if the interface defining THIS container specified this property then don't set it
         		self[k] = v
         	end
@@ -60,7 +62,7 @@ function Container:onInterfaceOutletChanged( event )
 	local interfaceOutlet = event.interfaceOutlet
 	local oldView = false
 	local newView = false
-	local interfaceOutletActions = false
+	local interfaceOutletActions = self.interfaceOutletActions
 	local BEFORE = EventManager.phase.BEFORE
 	local ACTION = Event.ACTION
 
@@ -69,7 +71,6 @@ function Container:onInterfaceOutletChanged( event )
 			oldView = oldView == false and event.oldView or oldView
 			newView = newView == false and event.newView or newView
 			if oldView ~= newView then
-				interfaceOutletActions = interfaceOutletActions == false and self.interfaceOutletActions or interfaceOutletActions
 				local func = interfaceOutletActions[k]
 				if func then
 					if oldView and #oldView == 0 then oldView.event:disconnect( ACTION, func, BEFORE, nil, self ) end
@@ -87,13 +88,13 @@ end
 	@param [string] key -- the key of the set value
     @param value -- the value
 ]]
-function Container:set( key, value )
-	if value and type( value ) == "table" and value.typeOf and value:typeOf( InterfaceOutlet ) then
-		value:connect( key, self )
-	elseif self.interfaceOutlets[key] and not value then
-		self.interfaceOutlets[key]:disconnect()
-	end
-end
+-- function Container:set( key, value )
+-- 	if value and type( value ) == "table" and value.typeOf and value:typeOf( InterfaceOutlet ) then
+-- 		value:connect( key, self )
+-- 	elseif self.interfaceOutlets[key] and not value then
+-- 		self.interfaceOutlets[key]:disconnect()
+-- 	end
+-- end
 
 --[[
 	@instance
@@ -204,10 +205,11 @@ end
 	@return [View] childView -- the sent child view
 ]]
 function Container:insert( childView, position )
+	local children = self.children
 	if position then
-		table.insert( self.children, position, childView )
+		table.insert( children, position, childView )
 	else
-		self.children[#self.children + 1] = childView
+		children[#children + 1] = childView
 	end
 
 	local oldParent = childView.parent 
@@ -216,7 +218,7 @@ function Container:insert( childView, position )
 	-- we need to update the isEnabled value
 	childView.isEnabled = childView.raw.isEnabled
 
-	for i, _childView in ipairs( self.children ) do
+	for i, _childView in ipairs( children ) do
 		if _childView == childView then
 			_childView.event:handleEvent( ParentChangedInterfaceEvent( self, oldParent ) )
 		else
@@ -234,6 +236,9 @@ function Container:insert( childView, position )
 		end
 		view = view and view.parent
 	end
+
+	self.event:handleEvent( ChildAddedInterfaceEvent( childView ) )
+
 	return childView
 end
 
@@ -246,21 +251,17 @@ end
 function Container:remove( removingView )
 	local didRemove = false
 
-	for i, childView in ipairs( self.children ) do
+	local children, canvas = self.children, self.canvas
+	for i, childView in ipairs( children ) do
 		if childView == removingView then
-			self.canvas:remove( removingView.canvas )
-			table.remove( self.children, i )
+			canvas:remove( removingView.canvas )
+			table.remove( children, i )
 			didRemove = true
 			break
 		end
 	end
 
-	for i, childView in ipairs( self.children ) do
-		local onSiblingsChanged = childView.onSiblingsChanged
-		if onSiblingsChanged then onSiblingsChanged( childView ) end
-	end
-
-	removingView.parent = nil
+	removingView.parent = false
 
 	if didRemove then
 		local view = self
@@ -271,6 +272,8 @@ function Container:remove( removingView )
 			view = view.parent
 		end
 	end
+
+	self.event:handleEvent( ChildRemovedInterfaceEvent( removingView ) )
 
 	return didRemove
 end

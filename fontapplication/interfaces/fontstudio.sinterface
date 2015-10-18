@@ -1,0 +1,11 @@
+<FontStudioApplicationContainer themeName="fontstudio">
+    
+    <Button identifier=saveButton x=10 y=10 text="Save" />
+    
+    <!-- <CharacterPreviewView identifier=previousPreviewView x=30 y=68 />
+    <CharacterPreviewView identifier=previewView x=120 y=68 />
+    <CharacterPreviewView identifier=nextPreviewView x=240 y=68 /> -->
+    
+    <CharacterEditorView identifier=characterEditorView x=60 y=10 width=50 height=50 />
+    
+</FontStudioApplicationContainer>

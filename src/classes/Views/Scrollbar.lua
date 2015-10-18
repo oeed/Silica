@@ -2,9 +2,9 @@
 class "Scrollbar" extends "View" {
 	width = 7;
     isHorizontal = false;
-	scrollerObject = nil;
-	grabberObject = nil;
-    dragPoint = nil;
+	scrollerObject = false;
+	grabberObject = false;
+    dragPoint = false;
 }
 
 function Scrollbar:initialise( ... )

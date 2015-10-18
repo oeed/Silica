@@ -192,7 +192,6 @@ class "Path" extends "GraphicsObject" {
 ]]
 function Path:initialise( x, y, width, height, currentX, currentY )
 	self.super:initialise( x, y, width, height )
-	self.fillColour = fillColour
 	self.currentX = currentX or 1
 	self.currentY = currentY or 1
 end
@@ -324,8 +323,8 @@ function Path:close( linkedToEnd )
 	end
 
 	self.defined = true;
-	self.currentX = nil
-	self.currentY = nil
+	self.currentX = false
+	self.currentY = false
 	return true
 end
 

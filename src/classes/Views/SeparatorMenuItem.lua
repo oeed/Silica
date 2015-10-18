@@ -1,6 +1,6 @@
 
 class "SeparatorMenuItem" extends "MenuItem" {
-	text = nil;
+	text = false;
 
 	height = 3;
 	width = 51;
