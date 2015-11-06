@@ -22,7 +22,7 @@ end
 	@return [boolean] stopPropagation
 ]]
 function FontStudioApplication:onChar( event )
-	if not self.focus and event.character == '\\' then
+	if not self:hasFocus() and event.character == '\\' then
 		os.reboot()
 	end
 end

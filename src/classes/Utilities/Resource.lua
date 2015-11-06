@@ -12,6 +12,7 @@ class "Resource" {
 	@param [boolean] allowDirectories -- default false, whether directories are able to be matched
 ]]
 function Resource:initialise( name, category, allowDirectories )
+	category = category or "resources"
 	-- TODO: path tidying
 	-- TODO: maybe do this backwards? so you can override files in other libraries
 	
@@ -57,7 +58,7 @@ function Resource:initialise( name, category, allowDirectories )
 	end
 
 	local path = searchDirectories( self.application.resourceDirectories )
-	self.path = path or fase
+	self.path = path or false
 
 	if path and not fs.isDir( path ) then
 		local f = fs.open( path, "r" )

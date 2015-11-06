@@ -20,7 +20,7 @@ function ApplicationContainer:initialise( ... )
 
 	self.super:initialise( ... )
 
-    self:event( Event.MOUSE_DOWN, self.onMouseUp, EventManager.phase.AFTER )
+    self:event( Event.MOUSE_DOWN, self.onMouseDownAfter, EventManager.phase.AFTER )
 end
 
 function ApplicationContainer:initialiseCanvas()
@@ -55,11 +55,15 @@ end
     @param [MouseDownEvent] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function ApplicationContainer:onMouseUp( event )
+function ApplicationContainer:onMouseDownAfter( event )
 	local application = self.application
-	local focus = application.focus
-	if focus and focus.isFocusDismissable then
-	    application:clearFocus()
+	
+	if application:hasFocus() then
+		for focus, v in pairs( application.focuses ) do
+			 if focus.isFocusDismissable then
+			 	application:unfocus( focus )
+			 end
+		end
 	end
 end
 

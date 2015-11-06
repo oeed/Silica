@@ -1,0 +1,2 @@
+
+class "ToolbarSymbolSegmentButton" extends "SymbolSegmentButton" {}

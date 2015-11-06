@@ -5,6 +5,8 @@ class "Scrollbar" extends "View" {
 	scrollerObject = false;
 	grabberObject = false;
     dragPoint = false;
+    direction = false;
+    isPressed = false;
 }
 
 function Scrollbar:initialise( ... )
@@ -34,10 +36,12 @@ function Scrollbar:initialiseCanvas()
 
     local position, size = self.scroller
     -- local position, size = self:getScroller()
-    -- log( position )
-    -- log( size )
     self.scrollerObject = scrollerObject
     self.grabberObject = grabberObject
+end
+
+function Scrollbar:updateHeight( height )
+    self:getScroller()
 end
 
 function Scrollbar:updateThemeStyle()
@@ -74,6 +78,7 @@ function Scrollbar:getScroller( dontSetPosition )
     local container = parent.container
     contentSize = container.height
     contentScroll = - parent.offsetY
+
 
     local barSize = math.max( math.floor( traySize * frameSize / contentSize ), 1 )
     local barPosition = math.ceil( traySize * contentScroll / contentSize )

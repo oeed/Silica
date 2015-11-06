@@ -5,7 +5,7 @@ class "GraphicsObject" {
 	width = 0; -- @property width [number] - The width of the object
 	height = 0; -- @property height [number] - The height of the object
 	hasChanged = false; -- @property hasChanged [boolean] - Whether or not the object's internals have hasChanged since it was last drawn
-	parent = false; -- @property parent [View] - The parent of the object, if it exists
+	parent = false; -- @property parent [Canvas] - The parent of the object, if it exists
 	outlineColour = Graphics.colours.TRANSPARENT; -- @property [Graphics.colours] -- The colour of the outline
 	leftOutlineWidth = 1; -- @property [number] -- The thickness of the outline
 	topOutlineWidth = 1; -- @property [number] -- The thickness of the outline
@@ -14,6 +14,7 @@ class "GraphicsObject" {
 	fillColour = Graphics.colours.TRANSPARENT; -- @property [Graphics.colours] -- The fill colour of the object
 	isVisible = true;
 	fill = false;
+	drawsShadow = false;
 }
 
 --[[
@@ -85,7 +86,6 @@ end
 	@param [number] outlineWidth -- the outlineWidth of the graphics object
 ]]
 function GraphicsObject:setOutlineWidth( outlineWidth )
-	self.hasChanged = true
 	self.leftOutlineWidth = outlineWidth
 	self.topOutlineWidth = outlineWidth
 	self.rightOutlineWidth = outlineWidth
@@ -175,7 +175,7 @@ function GraphicsObject:setHasChanged( hasChanged )
 		if parent then
 			parent.hasChanged = true
 		end
-		if self.fill then
+		if self.raw.fill then
 			self.fill = false
 		end
 	end
@@ -257,16 +257,16 @@ end
 	@param [Canvas] canvas -- the canvas to draw to
 	@return self
 ]]
-function GraphicsObject:drawTo( canvas )
-	if self.isVisible then
+function GraphicsObject:drawTo( canvas, isShadow )
+	if self.isVisible and ( not isShadow or ( isShadow and self.drawsShadow ) ) then
 		local fill = self.fill
 		local outline
-		if self.outlineColour ~= Graphics.colours.TRANSPARENT then
+		local outlineColour = self.outlineColour
+		if outlineColour ~= Graphics.colours.TRANSPARENT then
 			outline = self:getOutline( fill )
 		end
 
 		local fillColour = self.fillColour
-		local outlineColour = self.outlineColour
 		local _x = self.x - 1
 		local _y = self.y - 1
 
@@ -277,7 +277,6 @@ function GraphicsObject:drawTo( canvas )
 			if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then
 				buffer[ ( y - 1 ) * width + x ] = colour
 			end
-			return canvas
 		end
 
 		if fill then
@@ -301,4 +300,44 @@ function GraphicsObject:drawTo( canvas )
 	end
 	
 	return self
+end
+
+--[[
+    @instance
+    @desc Draws a graphics object to an image
+	@param [boolean] isShadow -- whether just the shadow should be drawn
+    @return [Image] image -- the image of the graphics object
+]]
+function GraphicsObject:toImage( isShadow )
+	local parent = self.parent or self
+    local canvasWidth, canvasHeight = parent.width, parent.height
+    local width, height = self.width, self.height
+    local fakeCanvas = { width = canvasWidth; height = canvasHeight; buffer = {} }
+
+    self:drawTo( fakeCanvas, isShadow )
+
+    local _x = self.x - 1
+    local _y = self.y
+    local pixels, canvasBuffer = {}, fakeCanvas.buffer
+	local TRANSPARENT = Graphics.colours.TRANSPARENT
+
+    for x = 1, width do
+    	local pixelsX = {}
+        for y = 1, height do
+            local nx, ny = x + _x, y + _y - 1
+            pixelsX[y] = canvasBuffer[( ny - 1 ) * canvasWidth + nx] or TRANSPARENT
+        end
+        pixels[x] = pixelsX
+    end
+
+    return Image.fromPixels( pixels, width, height )
+end
+
+--[[
+    @instance
+    @desc Draws a graphics object's shadow to an image
+    @return [Image] image -- the image of the graphics object
+]]
+function GraphicsObject:toShadowImage()
+    return self:toImage( true )
 end

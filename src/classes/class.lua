@@ -18,12 +18,13 @@ setmetatable( getters, {
 
 local classes = {}
 local creating
+local constructing = nil
 local USE_GLOBALS = true
 
 
-local class = {}
+local class = {  }
 
-local classDefined = { dispose = true, can = true, properties = true, alias = true, type = true, typeOf = true, get = true, instance = true, application = true, isDefinedFunction = true, isDefinedProperty = true, isDefined = true, ifDefined = true, ifDefinedProperty = true, ifDefinedFunction = true } -- essentially the properties that instances can access
+local classDefined = { className = true, dispose = true, can = true, properties = true, alias = true, type = true, typeOf = true, get = true, instance = true, application = true, isDefinedFunction = true, isDefinedProperty = true, isDefined = true, ifDefined = true, ifDefinedProperty = true, ifDefinedFunction = true } -- essentially the properties that instances can access
 class.defined = classDefined
 
 function class.get( type )
@@ -32,7 +33,7 @@ end
 
 -- ensures that all tables that should be unique to an instance are (designated by assigning the table to {} as class a property)
 local function uniqueTable( _class, raw )
-	for k, v in pairs( _class ) do
+	for k, v in pairs( _class.mt.__index ) do
 		-- if the properties contain any blank tables generate a new table so it's not shared between instances
 		if type( v ) == "table" then
 			if #v == 0 then
@@ -131,19 +132,31 @@ end
 -- @instance
 -- returns true if there is a property or function for the given key 
 function class:isDefined( key )
-	return self.definedBoth[key] or self.class._extends and self.class._extends.definedBoth[key]
+	local inst = self.definedBoth[key]
+	if inst then return inst end
+
+	local _extends = self._extends
+	if _extends then return _extends:isDefined( key ) end
 end
 
 -- @instance
 -- returns true if there is a function for the given key 
 function class:isDefinedFunction( key )
-	return self.definedFunctions[key] or self.class._extends and self.class._extends.definedFunctions[key]
+	local inst = self.definedFunctions[key]
+	if inst then return inst end
+
+	local _extends = self._extends
+	if _extends then return _extends:isDefinedFunction( key ) end
 end
 
 -- @instance
 -- returns true if there is a property for the given key 
 function class:isDefinedProperty( key )
-	return self.definedProperties[key] or self.class._extends and self.class._extends.definedProperties[key]
+	local inst = self.definedProperties[key]
+	if inst then return inst end
+
+	local _extends = self._extends
+	if _extends then return _extends:isDefinedProperty( key ) end
 end
 
 -- @instance
@@ -190,6 +203,7 @@ function class:new( ... )
 	proxy.mt = {}
 
 	raw.class = _class
+	local _classValues = _class.mt.__index
 	raw.mt = {}
 	function proxy.mt.__eq( l, r )
 		return rawequal( l, r ) or ( rawequal( l.instance, r ) ) or ( rawequal( l, r.instance ) ) or ( rawequal( l.instance, r.instance ) )
@@ -206,10 +220,10 @@ function class:new( ... )
 	local _superSuper = super and super.super or nil
 	local superDefinedProperties = _superClass and _superClass.definedProperties
 	local superDefinedFunctions = _superClass and _superClass.definedFunctions
-	function raw.mt:__index( k )
+	function raw.mt:__index( k )		
 		local selfDefined = definedBoth[k]
 		if selfDefined then
-			local rawClassValue = rawget( _class, k )
+			local rawClassValue = _classValues[k]
 			-- if rawClassValue ~= nil then -- TODO: maybe this check should be skipped
 				-- try to take it from the self class (only, not super)
 				return rawClassValue
@@ -243,7 +257,7 @@ function class:new( ... )
 		if classDefined[k] then
 			return class[k]
 		end
-		error( "Attempt to access undeclared property '" .. tostring( k ) .. "' for class '" .. _class.className .. "'", 3 )
+		error( "Attempt to access undeclared property '" .. tostring( k ) .. "' for class '" .. _class.className .. "'", 4 )
 	end
 	
 	setmetatable( raw, raw.mt )
@@ -257,7 +271,7 @@ function class:new( ... )
 	proxy.definedBoth = definedBoth
 	proxy.__lockedSetters = lockedSetters
 	proxy.__lockedGetters = lockedGetters
-	proxy.raw = raw -- not sure about this, although i guess it can't hurt
+	proxy.raw = raw
 	-- TODO: the getter/setter ifs could be made more efficient
 
 	-- this basically allows a global filter or notification on all get
@@ -274,6 +288,23 @@ function class:new( ... )
 			if use then
 				return value
 			end	
+		end
+
+		-- handle class functions
+		if definedFunctions[k] then
+			return function( _self, ... )
+				if rawequal( _self, proxy ) then
+					-- if the super has been masked then change it back, then change it again
+					local oldSuper = rawget( proxy, "super" )
+					rawset( proxy, "super", nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
+					local v = { raw[k]( proxy, ... ) }
+
+					rawset( proxy, "super", oldSuper )
+					return unpack( v )
+				else
+					return raw[k]( _self, ... )
+				end
+			end
 		end
 
 		-- handle getters
@@ -293,22 +324,6 @@ function class:new( ... )
 			return value
 		end
 
-		-- handle class functions
-		if definedFunctions[k] then
-			return function( _self, ... )
-				if rawequal( _self, proxy ) then
-					-- if the super has been masked then change it back, then change it again
-					local oldSuper = rawget( proxy, "super" )
-					rawset( proxy, "super", nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
-					local v = { raw[k]( proxy, ... ) }
-					rawset( proxy, "super", oldSuper )
-					return unpack( v )
-				else
-					return raw[k]( _self, ... )
-				end
-			end
-		end
-
 		return raw[k]
 	end
 
@@ -318,7 +333,7 @@ function class:new( ... )
 	function proxy.mt:__newindex( k, v )
 		if k == nil then error( "Attempt to set value with nil key", 2 ) end
 		if v == nil then
-			error( "Attempt to set property '" .. k .. "' to nil for class: '" .. _class.className .. "'. Use false instead.", 2 )
+			error( "Attempt to set property '" .. k .. "' to nil for class: '" .. _class.className .. "'. Use false instead.", 3 )
 		end
 
 		local notLocked = not lockedSetters[k]
@@ -376,7 +391,7 @@ function class:new( ... )
 
 	if definedProperties.interfaceOutlets then
 		local interfaceOutlets = proxy.interfaceOutlets
-		for k, v in pairs( _class ) do
+		for k, v in pairs( _class.mt.__index ) do
 			if type( v ) == "table" and v.typeOf and v:typeOf( InterfaceOutlet ) then
 				-- link interface outlets, they set the class property to a share instance, so we need to generate a unique one
 				-- proxy[k] = false--InterfaceOutlet( v.viewIdentifier or k, v.trackAll, proxy )
@@ -386,7 +401,7 @@ function class:new( ... )
 	end
 
 	-- once the class has been created, pass the arguments to the init function for handling
-	if definedFunctions.initialise then
+	if definedFunctions.initialise or superDefinedFunctions and superDefinedFunctions.initialise then
 		proxy:initialise( ... )
 	end
 	proxy.hasInitialised = true
@@ -394,11 +409,16 @@ function class:new( ... )
 	return proxy
 end
 
-local lastConstructed
 -- constructs an actual class ( NOT instance )
 -- @static
 function class:construct( _, className )
-	local _class = {}
+	if className == "" then
+		error( "Class must have a name", 2 )
+	elseif class.get( className) then
+		error( "Class '" .. className .. "' has already been defined or the name is already in use.", 2 )
+	end
+
+	local _class, _classProxy = {}, {}
 	_class.className = className
 	local definedProperties = { } -- the properties that were defined in the table at class construction
 	_class.definedProperties = definedProperties
@@ -407,8 +427,17 @@ function class:construct( _, className )
 	local definedBoth = {} -- the properties AND functions defiend
 	_class.definedBoth = definedBoth
 
-	local mt = { __index = self }
-	_class.mt = mt
+	_class._implements = {}
+
+	local selfDefinedFunctions = {}
+	local selfDefinedProperties = {}
+
+	local _mt = { __index = self }
+	setmetatable( _class, _mt )
+	_class.mt = _mt
+
+	local mt = { __index = _class }
+	_classProxy.mt = mt
 
 	function mt:__call( ... )
 		return self:new( ... )
@@ -416,15 +445,22 @@ function class:construct( _, className )
 
 	local interfaceOutletActions = definedProperties.interfaceOutletActions
 	function mt:__newindex( k, v )
-		if self ~= lastConstructed then -- TODO: doesn't work if the function is already made (just overwrites it)
-			error( "Attempted to set class property or function '" .. k .. "' after class construction completion for class '" .. className .. "'.", 2 )
+		if self ~= constructing and not definedProperties[k] then
+			error( "Attempted to set class property or create function '" .. k .. "' after class construction completion for class '" .. className .. "'.", 2 )
 		end
 		if k == nil then error( "Attempt to set value with nil key", 2 ) end
+		if selfDefinedFunctions[k] then
+			error( "Attempted to redeclare function '" .. k .. "' for class '" .. className .. "'", 3 )
+		-- elseif selfDefinedProperties[k] then
+			-- error( "Attempted to redeclare property '" .. k .. "' for class '" .. className .. "'", 2 )
+		end
 		local isFunction = type( v ) == "function"
 		if isFunction then
 			definedFunctions[k] = true
+			selfDefinedFunctions[k] = true
 		else
 			definedProperties[k] = true
+			selfDefinedProperties[k] = true
 		end
 		definedBoth[k] = true
 
@@ -441,27 +477,42 @@ function class:construct( _, className )
 		end
 
 		rawset(_class, k, v)
+		_class[k] = v
 	end
 
 	function mt:__tostring()
-		return 'class: ' .. self.className
+		return 'class: ' .. _class.className
 	end
 
-	lastConstructed = _class
+	setmetatable( _classProxy, mt )
 
-	setmetatable( _class, mt )
+	constructing = _classProxy
 
-	classes[className] = _class
-	_G[className] = _class -- TODO: this is just temporary due to the temporary loading system in Silica
-	-- getfenv( 2 )[className] = _class
-	creating = _class
+	classes[className] = _classProxy
+	_G[className] = _classProxy -- TODO: this is just temporary due to the temporary loading system in Silica
+	-- getfenv( 2 )[className] = _classProxy
+	creating = _classProxy
 	return function( properties )
 		creating = nil
-		_class:properties( properties, true )
-		if _class.constructed then
-			_class:constructed()
+		_classProxy:properties( properties, true )
+		return _classProxy
+	end
+end
+
+function class:cement() -- the class finished construction, there shouldn't be any more function or property additions now
+	constructing = nil
+
+	local definedFunctions = self.definedFunctions
+	for interfaceName, _interface in pairs(self._implements) do
+		for k, v in pairs( _interface.mt.definedFunctions ) do
+			if not definedFunctions[k] then
+				error( "Class '" .. self.className .. "' does not define the function '" .. k .. "' required by the interface '" .. interfaceName .. "'", 0 )
+			end
 		end
-		return _class
+	end
+
+	if self.constructed then
+		self:constructed()
 	end
 end
 
@@ -493,8 +544,12 @@ end
 function class:typeOf( _class )
 	_self = self.instance or self -- gets the class at the bottom of the chain (i.e. the one who has the most supers above)
 
-	if type( _self ) ~= "table" then
+	if not _class then return false
+	elseif type( _self ) ~= "table" then
 		return false
+	elseif _class.mt and _class.mt.__index == interface then
+		local __class = _self.class or _self
+		return __class._implements[_class.mt.interfaceName]
 	elseif _self.class then
 		return _self.class:typeOf( _class )
 	elseif _self == _class then
@@ -525,7 +580,12 @@ setmetatable( class, {
 	end
 } )
 
+-- this essentially works like so:
 local function extends( superName )
+	if creating._extends then
+		error( "Class '" .. creating.className .. "' already extends another class (trying to extend '" .. superName .. "')", 2 )
+	end
+
 	local superClass = classes[superName]
 	if not superClass then
 		-- try to load the class
@@ -534,16 +594,17 @@ local function extends( superName )
 		__loadClassNamed( superName )
 		superClass = classes[superName]
 		creating = ourCreating
-		lastConstructed = creating
+
+		constructing = creating
 		if not superClass then
-			error( 'Super class for `' .. creating.className .. '` was not found: ' .. superName, 0 )
+			error( 'Super class for `' .. creating.className .. '` was not found: ' .. superName, 2 )
 		end
 	end
+	local rawSuper = superClass.mt.__index
 
 	local definedFunctions = creating.definedFunctions
 	local definedProperties = creating.definedProperties
 	local definedBoth = creating.definedBoth
-
 	for k, v in pairs( superClass.definedFunctions ) do
 		if not definedBoth[k] then
 			definedFunctions[k] = true
@@ -557,29 +618,55 @@ local function extends( superName )
 	end
 
 	creating._extends = superClass
-	for k, v in pairs( superClass.mt ) do
-		if not creating.mt[k] then
-			creating.mt[k] = v
-		end
-	end
-	creating.mt.__index = superClass
-
-	setmetatable( creating, creating.mt )
+	local rawCreating = creating.mt.__index
+	rawCreating.mt.__index = rawSuper
 
 	return function( properties )
-		local _class = creating
-		creating = nil
-		_class:properties( properties, true )
-		if _class.constructed then
-			_class:constructed()
+		if properties then
+			creating:properties( properties, true )
+			creating = nil
 		end
-		return _class
+	end
+end
+
+local function implements( interfaceName )
+	if creating._implements[interfaceName] then
+		error( "Class '" .. creating.className .. "' already implements interface '" .. interfaceName .. "'.", 2 )
+	end
+
+	local _interface = class.interfaces[interfacesName]
+	if not _interface then
+		-- try to load the interface
+		__loadClassNamed( interfaceName )
+		_interface = class.interfaces[interfaceName]
+
+		if not _interface then
+			error( 'Interface for `' .. creating.className .. '` was not found: ' .. interfaceName, 2 )
+		end
+	end
+
+	creating._implements[interfaceName] = _interface
+
+	return function( properties )
+		if properties then
+			creating:properties( properties, true )
+
+			local definedProperties = creating.definedProperties
+			for k, v in pairs( _interface.mt.definedProperties ) do
+				if not definedProperties[k] then
+					error( "Class '" .. creating.className .. "' does not define the property '" .. k .. "' required by the interface '" .. interfaceName .. "'", 0 )
+				end
+			end
+
+			creating = nil
+		end
 	end
 end
 
 if USE_GLOBALS then
 	getfenv().class = class
 	getfenv().extends = extends
+	getfenv().implements = implements
 else
 	class.extends = extends
 	return class

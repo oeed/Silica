@@ -218,8 +218,3 @@ function Menu:close()
 		self:dispose()
 	end
 end
-
-function Menu:dispose()
-	self.super:dispose()
-	self.parent:remove( self )
-end

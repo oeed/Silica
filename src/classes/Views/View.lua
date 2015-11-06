@@ -3,6 +3,17 @@ local DEFAULT_TIME = .3
 local DEFAULT_EASING = Animation.easing.IN_OUT_SINE
 
 local function newAnimation( self, label, time, values, easing, onFinish, round )
+	local hasValue = false
+	-- prevent values that won't change from being animated
+	for k, v in pairs( values ) do
+		if self[k] == v then
+			values[k] = nil
+		else
+			hasValue = true
+		end
+	end
+	if not hasValue then return end
+
 	local animation = Animation( time, self, values, easing, round == nil and true or round )
 	local animations = self.animations
 	for i = #animations, 1, -1 do
@@ -18,7 +29,7 @@ class "View" {
 	y = false;
 	width = false;
 	height = false;
-	index = false; -- its index in its parent
+	index = false; -- the z index in its parent
 	parent = false;
 	siblings = false;
 	identifier = false;
@@ -31,6 +42,8 @@ class "View" {
 	theme = false;
 	isCanvasHitTested = true;
 	isVisible = true;
+	isFocused = false;
+	isSingleFocusOnly = false; -- whether only this view can be in-focus when focused (i.e. so 3 textboxes aren't focused at the same time)
 	isFocusDismissable = true; -- whether clicking away from the view when focused will unfocus it
 	isEnabled = true;
 
@@ -39,6 +52,8 @@ class "View" {
 	constraintsNeedingUpdate = {}; -- the constraints that need to be refreshed next update
 	needsConstraintUpdate = {}; -- whether the constraint values have changed and the view needs to be informed
 	references = {};
+	lastMouseDown = {};
+	lastMouseUp = {};
 	--[[ format:
 		{
 			[property] = {
@@ -63,8 +78,6 @@ function View:initialise( properties )
 	-- setmetatable( self.stringConstraints, {
 	-- 	__index = { parent = self }, __newindex = function( t, k, v )
 	-- 		if t.parent.identifier == "testview" then
-	-- 			-- log( "Setting " .. k .. " to " .. tostring( v ) )
-	-- 			-- logtraceback()
 	-- 		end
 	-- 		rawset( t, k, v )
 	-- 	end
@@ -76,6 +89,8 @@ function View:initialise( properties )
 
     self:event( Event.PARENT_RESIZED, self.onParentResizedConstraintUpdate )
     self:event( Event.PARENT_CHANGED, self.onParentChangedConstraintUpdate )
+    self:event( Event.MOUSE_DOWN, self.onMouseDownMetaEvents )
+    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUpMetaEvents )
     self:event( Event.INTERFACE_READY, self.onReadyConstraintUpdate )
 end
 
@@ -96,7 +111,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function View:initialiseCanvas()
-	self.canvas = Canvas( self.x, self.y, self.width, self.height )
+	self.canvas = Canvas( self.x, self.y, self.width, self.height, self )
 end
 
 --[[
@@ -169,6 +184,32 @@ function View:getIndex()
 		end
 	end
 	return 1
+end
+
+--[[
+	@instance
+	@desc Sets the z index of the view in it's parent container
+	@param [number] index
+]]
+function View:setIndex( index )
+	local parent = self.parent
+	if parent then
+		local containerChildren = parent.children
+		index = math.max( math.min( index, #containerChildren), 1 )
+
+		local currentIndex
+		for i, child in ipairs( containerChildren ) do
+			if child == self then
+				currentIndex = i
+				break
+			end
+		end
+
+		if currentIndex ~= index then
+			table.remove( containerChildren, currentIndex )
+			table.insert( containerChildren, index, self )
+		end
+	end
 end
 
 --[[
@@ -249,11 +290,13 @@ function View:evalConstraint( property )
 	local resolved = MathParser.resolve( parsed, self, property, references )
 	local value = MathParser.eval( resolved )
 
-	self.raw[property] = value
-	self.references[property] = references
-	
-	self.needsConstraintUpdate[self:updateConstraint( property, value )] = true
-	-- log('eval! '..tostring(self)..': '..tostring(value)..' ('..tostring(property)..')')
+	local oldValue = self.raw[property]
+	if oldValue ~= value then
+		self.raw[property] = value
+		self.references[property] = references
+		
+		self.needsConstraintUpdate[self:updateConstraint( property, value )] = true
+	end
 	return value
 end
 
@@ -330,7 +373,7 @@ end
 --[[
 	@instance
 	@desc Called when the parent resizes. This updates constraints.
-	@param [ParentResizeInterfaceEvent] event -- the event
+	@param [ParentResizedInterfaceEvent] event -- the event
 ]]
 function View:onParentResizedConstraintUpdate( event )
 	local isHorizontal = event.isHorizontal
@@ -561,17 +604,17 @@ end
 
 --[[
 	@instance
-	@desc Hit test the view realative to the parent's coordinates (or globally if not specified)
+	@desc Hit test the view realative to its parent's coordinates
 	@param [number] x -- the x coordinate to hit test
 	@param [number] y -- the y coorindate to hit test
-	@param [View] parent -- the parent
 	@return [boolean] isHit -- whether the hit test hit
 ]]
-function View:hitTest( x, y, parent )
-	return self.isVisible and self.x <= x
-	   and x <= self.x + self.width - 1
-	   and self.y <= y and y <= self.y + self.height - 1
-	   and ( not self.isCanvasHitTested or self.canvas:hitTest( x - self.x + 1, y - self.y + 1 ))
+function View:hitTest( x, y )
+	local _x, _y = self.x, self.y
+	return self.isVisible and _x <= x
+	   and x <= _x + self.width - 1
+	   and _y <= y and y <= _y + self.height - 1
+	   and ( not self.isCanvasHitTested or self.canvas:hitTest( x - _x + 1, y - _y + 1 ) )
 end
 
 --[[
@@ -587,7 +630,7 @@ function View:hitTestEvent( event, parent )
 	elseif event:typeOf( MouseEvent ) then
 		event:makeRelative( parent )
 		local x, y = event.x, event.y
-		return self:hitTest( x, y, parent )
+		return self:hitTest( x, y )
 	else
 		return true
 	end
@@ -634,7 +677,7 @@ function View:update( dt )
 	end
 end
 
---[[
+--[[/
 	@instance
 	@desc Animate a change in a certain property
 	@param [string] propertyName -- the name of the property
@@ -663,8 +706,15 @@ end
 	@param [function] onFinish -- the function called on completion of the animation
 	@param [Animation.easing] easing -- the easing function of the animation
 ]]
-function View:animateX( x, time, onFinish, easing )
-	newAnimation( self, "x", time or DEFAULT_TIME, { x = x }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
+function View:animateX( x, time, onFinish, easing, delay )
+	local addAnimation = function()
+		newAnimation( self, "x", time or DEFAULT_TIME, { x = x }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
+	end
+	if not delay or type( delay ) ~= 'number' or delay < 0.05 then
+		addAnimation()
+	else
+		self.application:schedule(addAnimation, delay)
+	end
 end
 
 --[[
@@ -675,8 +725,15 @@ end
 	@param [function] onFinish -- the function called on completion of the animation
 	@param [Animation.easing] easing -- the easing function of the animation
 ]]
-function View:animateY( y, time, onFinish, easing )
-	newAnimation( self, "y", time or DEFAULT_TIME, { y = y }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
+function View:animateY( y, time, onFinish, easing, delay )
+	local addAnimation = function()
+		newAnimation( self, "y", time or DEFAULT_TIME, { y = y }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
+	end
+	if not delay or type( delay ) ~= 'number' or delay < 0.05 then
+		addAnimation()
+	else
+		self.application:schedule(addAnimation, delay)
+	end
 end
 
 --[[
@@ -687,8 +744,15 @@ end
 	@param [function] onFinish -- the function called on completion of the animation
 	@param [Animation.easing] easing -- the easing function of the animation
 ]]
-function View:animateWidth( width, time, onFinish, easing )
-	newAnimation( self, "width", time or DEFAULT_TIME, { width = width }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
+function View:animateWidth( width, time, onFinish, easing, delay )
+	local addAnimation = function()
+		newAnimation( self, "width", time or DEFAULT_TIME, { width = width }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
+	end
+	if not delay or type( delay ) ~= 'number' or delay < 0.05 then
+		addAnimation()
+	else
+		self.application:schedule(addAnimation, delay)
+	end
 end
 
 --[[
@@ -699,8 +763,15 @@ end
 	@param [function] onFinish -- the function called on completion of the animation
 	@param [Animation.easing] easing -- the easing function of the animation
 ]]
-function View:animateHeight( height, time, onFinish, easing )
-	newAnimation( self, "height", time or DEFAULT_TIME, { height = height }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
+function View:animateHeight( height, time, onFinish, easing, delay )
+	local addAnimation = function()
+		newAnimation( self, "height", time or DEFAULT_TIME, { height = height }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
+	end
+	if not delay or type( delay ) ~= 'number' or delay < 0.05 then
+		addAnimation()
+	else
+		self.application:schedule(addAnimation, delay)
+	end
 end
 
 --[[
@@ -739,6 +810,99 @@ function View:resize( width, height, time, onFinish, easing )
 	self:animateHeight( height, time, type( onFinish ) == "function" and f, easing )
 end
 
+local MAX_DOUBLE_CLICK_TIME = 0.8
+local MIN_MOUSE_HOLD_TIME = 0.3
+
+--[[
+	@instance
+	@desc Detects when the mouse is pressed. Used to fire mouse held and double click
+	@param [MouseDownEvent] event
+]]
+function View:onMouseDownMetaEvents( event )
+	local mouseButton, time = event.mouseButton, os.time()
+	local lastMouseDown, lastMouseUp = self.lastMouseDown, self.lastMouseUp
+
+	local thisLastMouseDown = lastMouseDown[mouseButton]
+	if thisLastMouseDown and time - thisLastMouseDown < MAX_DOUBLE_CLICK_TIME then
+		-- double click
+		self.event:handleEvent( MouseDoubleClickEvent( mouseButton, event.x, event.y, event.globalX, event.globalY ) )
+	else
+		
+		-- start a held timer
+		local application = self.application 
+		if lastMouseDown.timer then
+			application:unschedule( lastMouseDown.timer )
+		end
+
+		local x, y, globalX, globalY = event.x, event.y, event.globalX, event.globalY
+		local n
+		lastMouseDown.timer = application:schedule( function()
+			lastMouseDown.timer = nil
+			local thisLastMouseUp = lastMouseUp[mouseButton]
+			if not thisLastMouseUp or thisLastMouseUp < time then
+				self.event:handleEvent( MouseHeldEvent( mouseButton, x, y, globalX, globalY ) )
+			end
+		end, MIN_MOUSE_HOLD_TIME )
+		n = lastMouseDown.timer
+	end
+	lastMouseDown[mouseButton] = time
+end
+
+--[[
+	@instance
+	@desc Detects when the mouse is released. Used to fire mouse held and double click
+	@param [MouseUpEvent] event
+]]
+function View:onGlobalMouseUpMetaEvents( event )
+	self.lastMouseUp[event.mouseButton] = os.time()
+end
+
+--[[
+	@instance
+	@desc Starts a drag and drop for the view
+	@param [MouseDownEvent] event -- the mouse down event to start the event
+	@param [ClipboardData] data -- the data to associate with the drag
+	@param [boolean] hideSource -- whether the view is hidden when the drag starts
+	@param [function] completion -- a function called when the drag and drop completes (cancelled or successful)
+	@param [table{View}] views -- the list of views your want to be dragged (leave blank for just sel)
+]]
+function View:startDragDrop( event, data, hideSource, completion, views )
+    self.application.dragDropManager:start( views or { self }, data, event.globalX, event.globalY, hideSource, completion )
+end
+
+function View:setIsFocused( isFocused )
+    local wasFocused = self.isFocused
+    if wasFocused ~= isFocused then
+        self.isFocused = isFocused
+        -- self:updateThemeStyle()
+    end
+end
+
+function View:focus()
+    self.application:focus( self )
+end
+
+function View:addFocus()
+    self.application:addFocus( self )
+end
+
+function View:unfocus()
+    self.application:unfocus( self )
+end
+
+function View:unfocusAll()
+    self.application:unfocusAll()
+end
+
 function View:dispose()
 	self.event:dispose()
+
+	local parent = self.parent
+	if parent then
+		parent:remove( self )
+	end
+
+	if self.isFocused then
+		self:unfocus()
+	end
 end

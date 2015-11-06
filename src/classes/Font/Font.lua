@@ -227,16 +227,17 @@ function Font:getRawWidth( text )
 	return width
 end
 
-function Font:render( canvas, text, x, y, colour )
+function Font:render( canvas, text, x, y, cropWidth, cropHeight, colour )
 	y = y - 1
 	x = x - 1
 	text = text == nil and "" or tostring( text )
 	local buffer = canvas.buffer
 	local width, height, _height = canvas.width, canvas.height, self.height
+	local cropX, cropY = math.min( x + cropWidth, width ), math.min( y + cropHeight, height )
 	local TRANSPARENT = Graphics.colours.TRANSPARENT
 	local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing
 	local function setPixel( x, y, colour )
-		if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then
+		if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= cropX and y <= cropY then
 	        buffer[ ( y - 1 ) * width + x ] = colour
 	    end
 	end

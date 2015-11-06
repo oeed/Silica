@@ -4,6 +4,10 @@ class "ScreenCanvas" extends "Canvas" {
 	drawn = {};
 }
 
+function ScreenCanvas:setHasChanged( hasChanged )
+	self.hasChanged = hasChanged
+end
+
 --[[
 	@instance
 	@desc Draws the canvas to the terminal/screen provided
@@ -13,22 +17,17 @@ class "ScreenCanvas" extends "Canvas" {
 function ScreenCanvas:drawToTerminal( terminal )	
     if self.isVisible then
 		if self.hasChanged then
-			local startScr = os.clock()
-        	-- log( 'Starting ScreenCanvas:draw() at ' .. startScr )
-
 			self:draw()
-        	-- log( 'Finished ScreenCanvas:draw() dt: ' .. os.clock() - startScr )
-
-        	-- log( 'Starting render to screen at ' .. os.clock() )
-
 			terminal = terminal or term
 
 			local currentLength, currentX, currentY, currentColour
+
+			local sBC, sCP, w = term.setBackgroundColour, term.setCursorPos, term.write
 			local function draw()
 				if currentLength == 0 then return end
-				term.setBackgroundColour( currentColour )
-				term.setCursorPos( currentX, currentY )
-				term.write( (" "):rep( currentLength ) )
+				sBC( currentColour )
+				sCP( currentX, currentY )
+				w( (" "):rep( currentLength ) )
 			end
 
 			local buffer = self.buffer
@@ -80,8 +79,6 @@ function ScreenCanvas:drawToTerminal( terminal )
 				end
 				draw()
 			end
-
-        	-- log( 'Finished render to screen at ' .. os.clock() )
 
 		end
 	end

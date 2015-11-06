@@ -13,8 +13,8 @@ end
     @param [Canvas] canvas -- the canvas to draw to
     @return self
 ]]
-function Shader:drawTo( canvas )
-	if self.isVisible then
+function Shader:drawTo( canvas, isShadow )
+	if self.isVisible and ( not isShadow or ( isShadow and self.drawsShadow ) ) then
 		canvas:map( self.shader, self.x, self.y, self.width, self.height )
 	end
 	

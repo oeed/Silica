@@ -61,6 +61,10 @@ function KeyboardShortcutManager:onGlobalKeyUp( event )
 	self.keysUpdates[keyString] = os.clock()
 end
 
+function KeyboardShortcutManager:isKeyDown( keyString )
+	return self.keysDown[keyString] == true
+end
+
 --[[
 	@static
 	@desc Returns the symbol for a keyString for places such as menus

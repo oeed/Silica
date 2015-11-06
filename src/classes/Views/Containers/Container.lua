@@ -133,7 +133,7 @@ function Container:setWidth( width )
     width = self.width
 	local event = self.event
 	if event then
-		event:handleEvent( ParentResizeInterfaceEvent( true, false, self ) )
+		event:handleEvent( ParentResizedInterfaceEvent( true, false, self ) )
 	end
 end
 
@@ -142,7 +142,7 @@ function Container:setHeight( height )
     height = self.height
 	local event = self.event
 	if event then
-		event:handleEvent( ParentResizeInterfaceEvent( false, true, self ) )
+		event:handleEvent( ParentResizedInterfaceEvent( false, true, self ) )
 	end
 end
 
@@ -205,6 +205,10 @@ end
 	@return [View] childView -- the sent child view
 ]]
 function Container:insert( childView, position )
+	if not childView:typeOf( View ) then
+		error( "Attempted to insert non-View to Container", 4 )
+	end
+
 	local children = self.children
 	if position then
 		table.insert( children, position, childView )

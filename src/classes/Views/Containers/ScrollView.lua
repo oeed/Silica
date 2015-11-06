@@ -12,8 +12,8 @@ class "ScrollView" extends "Container" {
 	contents = false;
 	horizontalScrollbar = false;
 	verticalScrollbar = false;
-
-	verticalStartTime = 0;
+	container = false;
+	verticalVelocityTime = 0;
 	verticalVelocity = 0;
 	horizontalVelocity = 0;
 }
@@ -25,7 +25,6 @@ class "ScrollView" extends "Container" {
 ]]
 function ScrollView:initialise( ... )
 	self.super:initialise( ... )
-	self.canvas.fillColour = Graphics.colours.WHITE
 
 	local width, height = self.width, self.height
 	self.verticalScrollbar = self:insert( Scrollbar( { isHorizontal = false, x = width - Scrollbar.width + 1, height = height } ) )
@@ -37,13 +36,19 @@ function ScrollView:initialise( ... )
     self:event( Event.MOUSE_SCROLL, self.onMouseScroll )
 end
 
+function ScrollView:initialiseCanvas()
+	self.super:initialiseCanvas()
+
+	self.theme:connect( self.canvas, "fillColour" )
+end
+
 function ScrollView:onInterfaceLoaded( event )
     local currentContainer = self.container
     for i, childView in ipairs( self.children ) do
         if childView ~= currentContainer and childView:typeOf( ScrollContainer ) then
             childView.x = 1
             childView.y = 1
-            self:remove( self.container )
+            self:remove( currentContainer )
             self.container = childView
             -- self:sendToFront( self.horizontalScrollbar )
 			self.verticalScrollbar:getScroller()
@@ -51,6 +56,21 @@ function ScrollView:onInterfaceLoaded( event )
             break
         end
     end
+end
+
+function ScrollView:updateContainerSize()
+	local container = self.container
+	-- if container.width > self.width then
+	-- else
+	-- end
+
+	if container.height > self.height then
+		if not self.verticalScrollbar then
+			self.verticalScrollbar = self:insert( Scrollbar( { isHorizontal = false, x = self.width - Scrollbar.width + 1, height = self.height } ) )
+		end
+	else
+		self:remove( self.verticalScrollbar )
+	end
 end
 
 function ScrollView:updateWidth( width )
@@ -77,7 +97,8 @@ function ScrollView:setOffsetY( offsetY, isVelocity )
 		local currentOffsetY = self.offsetY
 		local realOffsetY = math.max( math.min( offsetY, math.max( container.height - height, 0 ) ), 0 )
 		self.raw.offsetY = realOffsetY
-		self.verticalScrollbar:getScroller()
+		local verticalScrollbar = self.verticalScrollbar
+		if verticalScrollbar then verticalScrollbar:getScroller() end
 		if realOffsetY ~= offsetY then
 			self.verticalVelocity = 0
 			self.verticalVelocityTime = 0
@@ -115,9 +136,10 @@ function ScrollView:scrollTo( offsetY )
 	-- calculate the velocity required to reach a certain point
 	-- see https://www.desmos.com/calculator/qis3qhbsvs for details
 	-- d = vi / a * ( 1 - e ^ ln( vf / vi ) )
-	-- it turns out that this is far easier than oeed first thought and spent an hour playing with integrals...
-	-- vi = ad + vf
-	-- (vi - vf)/a = d
+
+	-- it turns out that this is far easier than oeed first thought, having spent many, many hours playing with integrals...
+	-- it's simply: vi = a * d + vf
+	-- hence: (vi - vf)/a = d
 	local deltaOffsetY = offsetY - self.offsetY
 	local velocity = SCROLL_DECAY * deltaOffsetY + SPEED_CUTOFF
 	self.verticalVelocity = velocity

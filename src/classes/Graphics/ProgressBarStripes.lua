@@ -17,9 +17,8 @@ function ProgressBarStripes:setAnimationStep( animationStep )
 	self.animationStep = math.floor( animationStep )
 end
 
--- doing this is a little naughty, but it is the easiest and nope way to doing it
-function ProgressBarStripes:drawTo( canvas )
-	if self.isVisible then
+function ProgressBarStripes:drawTo( canvas, isShadow )
+	if self.isVisible and ( not isShadow or ( isShadow and self.drawsShadow ) ) then
 		local fill = self.fill
 		local outline
 		if self.outlineColour ~= Graphics.colours.TRANSPARENT then

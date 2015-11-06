@@ -16,14 +16,16 @@ class "Application" {
 	resourceDirectories = { _ = true }; -- the folders in which the applications resources are
 	resourceTables = false; -- the tables of files where resources are
 	keyboardShortcutManager = false;
-	focus = false;
+	dragDropManager = false;
+	fileSystem = false;
+	focuses = {};
 
 	interfaceName = false;
 
 	-- TODO: exit codes
 	exitCode = {
 		OKAY = 1;
-		ERROR = 2;
+	ERROR = 2;
 		-- etc
 	};
 }
@@ -111,8 +113,10 @@ function Application:initialise()
 	_G.__resourceTables = nil
 	class.application = self
 
+	self.fileSystem = FileSystem( "/" )
 	self.event = ApplicationEventManager( self )
 	self.keyboardShortcutManager = KeyboardShortcutManager( self )
+	self.dragDropManager = DragDropManager( self )
 	
 	Font.initialisePresets()
 	
@@ -161,51 +165,144 @@ end
 	@desc Update all application's views
 ]]
 function Application:update()
-	-- TODO: not exactally sure how to handle deltaTime for the first one. for now it's zero
-	local lastUpdate = self.lastUpdate or 0
+	-- TODO: not exactally sure how to handle deltaTime for the first one. for now it's one 60th
+	local lastUpdate = self.lastUpdate or 1/60
 	local deltaTime = os.clock() - lastUpdate
-	self.updateTimer = os.startTimer( 0.05 )
+	self.updateTimer = os.startTimer( 1/20 )
 	self.lastUpdate = os.clock()
 
 	self:checkScheduled( lastUpdate )
-
-	self.container:update( deltaTime )
-	self.container:draw()
+	local container = self.container
+	container:update( deltaTime )
+	container:draw()
 end
 
 --[[
 	@instance
-	@desc Sets the view that is currently focused (i.e. the selected text box). Do NOT use this when unsetting/remove the focus, use :clearFocus instead
+	@desc Returns a table of the views in focus that are of the given type
+	@param [class] type -- the type
+	@param [table{View}] searchFocuses -- the focuses to look through, i.e. from the focuses changed event (defaults to the current ones)
+	@return [table{View}] focuses -- the focuses
+]]
+function Application:focusesOfType( _type, searchFocuses )
+	local focuses = {}
+	for view, _ in pairs( searchFocuses or self.focuses ) do
+		if view:typeOf( _type ) then
+			table.insert( focuses, view )
+		end
+	end
+	return focuses
+end
+
+--[[
+	@instance
+	@desc Returns true if there is at least one focused view
+	@return [boolean] hasFocus
+]]
+function Application:hasFocus()
+	return next( self.focuses ) ~= nil
+end
+
+--[[
+	@instance
+	@desc Unfocuses everything else and makes the given view the only focused view
+	@param [View] newFocus -- the view that is to be focused upon
+	@param [class] filter -- the filter class. any other views that are focused that extend this class will be unfocused, all others will be untouched
+]]
+function Application:focus( newFocus, filter )
+	local focuses = self.focuses
+	local oldFocuses = {}
+	local hadOtherFocus = false
+	for oldFocus, _ in pairs( focuses ) do
+		if oldFocus ~= newFocus and (not filter or oldFocus:typeOf( filter )) then
+			hadOtherFocus = true
+			oldFocuses[oldFocus] = true
+			focuses[oldFocus] = nil
+			oldFocus.isFocused = false
+		end
+	end
+	if hadOtherFocus or not focuses[newFocus] then
+		if not focuses[newFocus] then
+			focuses[newFocus] = true
+			newFocus.isFocused = true
+		end
+		self.event:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
+	end
+end
+
+--[[
+	@instance
+	@desc Adds the given view to the list of focused views, unfocusing single focus only views
 	@param [view] newFocus -- the view that is to be focused upon
 ]]
-function Application:setFocus( newFocus )
-	local oldFocus = self.focus
-	if oldFocus ~= newFocus then
-		self.focus = newFocus
-		self.event:handleEvent( FocusChangedInterfaceEvent( newFocus ) )
+function Application:addFocus( newFocus )
+	local focuses = self.focuses
+	local oldFocuses = {}
+	if not focuses[newFocus] then
+		for focusedView, _ in pairs( focuses ) do
+			oldFocuses[focusedView] = true
+			if focusedView.isSingleFocusOnly then
+				focuses[focusedView] = nil
+			end
+		end
+		focuses[newFocus] = true
+		newFocus.isFocused = true
+		self.event:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
+	end
+end
+
+--[[
+	@instance
+	@desc Removes the given view from the list of focused views
+	@param [view] oldFocus -- the view that is to be focused upon
+]]
+function Application:unfocus( oldFocus )
+	local focuses = self.focuses
+	if focuses[oldFocus] then
+		local oldFocuses = {}
+		for k, _ in pairs( focuses ) do
+			oldFocuses[k] = true
+		end
+		focuses[oldFocus] = nil
+		oldFocus.isFocused = false
+		log("unfocus")
+		logtraceback()
+		self.event:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
 	end
 end
 
 --[[
 	@instance
 	@desc Unfocuses the view that is currently focused (i.e. the selected text box)
+	@param [class] filter -- the filter class. views that are focused that extend this class will be unfocused, all others will be untouched. if nil all are unfocused
 ]]
-function Application:clearFocus()
-	self.focus = false	
+function Application:unfocusAll( filter )
+	local focuses = self.focuses
+	local oldFocuses = {}
+	for oldFocus, _ in pairs( focuses ) do
+		if not filter or oldFocus:typeOf( filter ) then
+			oldFocuses[oldFocus] = true
+			focuses[oldFocus] = nil
+			oldFocus.isFocused = false
+		end
+	end
+	self.event:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
 end
 
 --[[
 	@instance
 	@desc Schedules a function to be called at a specified time in the future
 	@param [number] time -- in how many seconds the function should be run
-	@param [function] func -- the function to call
+	@param [function] func -- the function to call (self is always passed as first argument)
 	@param [class] _class -- the class to call the function on ( optional )
 	@param ... -- any values you want. will be passed as the parameters (other than self)
 	@return [number] scheduleId -- the ID of the scheduled task
 ]]
 function Application:schedule( func, time, ... )
 	time = time or 0.05
-	table.insert( self.schedules, { func, os.clock() + time, ... } )
+	local schedules = self.schedules
+	table.insert( schedules, { func, os.clock() + time, ... } )
+	return #schedules
 end
 
 --[[
@@ -215,8 +312,9 @@ end
 	@return [boolean] didUnschedule -- whether the task was unscheduled. this is only false if the task no longer exists or never existed
 ]]
 function Application:unschedule( scheduleId )
-	if self.schedules[scheduleId] then
-		self.schedules[scheduleId] = nil
+	local schedules = self.schedules
+	if schedules[scheduleId] then
+		schedules[scheduleId] = nil
 		return true
 	else return false end
 end
@@ -228,13 +326,14 @@ end
 ]]
 function Application:checkScheduled( lastUpdate )
 	local now = os.clock()
-	for scheduleId, task in pairs( self.schedules ) do
+	local schedules = self.schedules
+	for scheduleId, task in pairs( schedules ) do
 		if task[2] <= now then
 			local func = task[1]
 			table.remove( task, 2 )
 			table.remove( task, 1 )
 			func( unpack( task ) )
-			self.schedules[scheduleId] = nil
+			schedules[scheduleId] = nil
 		end
 	end
 end

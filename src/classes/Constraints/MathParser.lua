@@ -282,7 +282,6 @@ function parse( tokens )
 		if i % 2 == 1 and tokens[i].type == "symbol" then
 			error( getpos( tokens[i] ) .. "unexpected symbol, expected operand", 0 )
 		elseif i % 2 == 0 and tokens[i].type ~= "symbol" then
-			log( textutils.serialize( tokens ) )
 			error( getpos( tokens[i] ) .. "expected symbol between operands", 0 )
 		end
 		if tokens[i].type == "symbol" and tokens[i].value == "," then

@@ -39,13 +39,24 @@ end
 	@param [Canvas] canvas -- the canvas to draw to
 	@return self
 ]]
-function Text:drawTo( canvas )
-	if self.isVisible then
+function Text:drawTo( canvas, isShadow )
+	if self.isVisible and ( not isShadow or ( isShadow and self.drawsShadow ) ) then
 		local font = self.font
 		local width = self.width
 		local text = self.text
+		local hasEllipsis = false
 
 		local fontWidth = font:getWidth( text )
+		while fontWidth > width and #text > 1 do
+			text = text:sub( 1, #text - 1 )
+			fontWidth = font:getWidth( text .. "..." )
+			hasEllipsis = true
+		end
+
+		if hasEllipsis then
+			text = text .. "..."
+		end
+
 		local x = 1
 		local alignment = self.alignment
 		if alignment == Font.alignments.CENTRE then
@@ -53,7 +64,7 @@ function Text:drawTo( canvas )
 		elseif alignment == Font.alignments.RIGHT then
 			x = width - fontWidth + 1
 		end
-        font:render( canvas, text, self.x + x - 1, self.y, self.textColour )
+        font:render( canvas, text, self.x + x - 1, self.y, width, self.height, self.textColour )
 	end
 	return self
 end

@@ -26,6 +26,9 @@ end
 class "RoundedRectangle" extends "GraphicsObject" {
 	fillColour = Graphics.colours.RED;
 
+	radius = false;
+	leftRadius = false;
+	rightRadius = false;
 	topLeftRadius = 1;
 	topRightRadius = 1;
 	bottomLeftRadius = 1;
@@ -140,7 +143,6 @@ end
 ]]
 function RoundedRectangle:getFill()
 	if self.fill then return self.fill end
-
 	local fill = {}
 
 	local topLeftRadius = self.topLeftRadius

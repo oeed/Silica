@@ -67,7 +67,8 @@ shell.run( "package /src Silica" )
 
 dofile( "Silica" )
 -- dofile( "app" )
-Application.load( "/fontapplication" )
+-- Application.load( "/fontapplication" )
+Application.load( "/filesapplication" )
 
 
 -- BitmapFont.convertFile( "font src/auckland", "src/fonts/Auckland.sfont", 32, 8, {
@@ -80,4 +81,5 @@ Application.load( "/fontapplication" )
 -- -- this is essentially what the startup file will look like
 -- ExampleApplication():run( ... )
 -- Program functions...
-FontStudioApplication():run( ... )
+-- FontStudioApplication():run( ... )
+FilesApplication():run( ... )

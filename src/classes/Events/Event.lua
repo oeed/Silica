@@ -12,6 +12,8 @@ class "Event" {
 	MOUSE_DOWN = "mouse_click";
 	MOUSE_DRAG = "mouse_drag";
 	MOUSE_SCROLL = "mouse_scroll";
+	MOUSE_HELD = "mouse_held";
+	MOUSE_DOUBLE_CLICK = "mouse_double_click";
 	KEY_DOWN = "key";
 	KEY_UP = "key_up";
 	CHARACTER = "char";
@@ -20,7 +22,7 @@ class "Event" {
 	MENU_CHANGED = "interface_menu_changed";
 	INTERFACE_LOADED = "interface_loaded";
 	KEYBOARD_SHORTCUT = "interface_keyboard_shortcut";
-	FOCUS_CHANGED = "interface_focus";
+	FOCUSES_CHANGED = "interface_focuses_changed";
 	TEXT_CHANGED = "interface_text";
 	SIBLING_ADDED = "interface_sibling_added";
 	SIBLING_REMOVED = "interface_sibling_removed";

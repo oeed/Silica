@@ -36,6 +36,7 @@ end
 ]]
 function EventManager:connect( eventType, func, phase, eventManager, sender )
 	if not eventType then error( "No event type given to EventManager:connect!", 2 ) end
+	if type( eventType ) == "table" and eventType:typeOf( Event ) then eventType = eventType.eventType end
 	
 	if func and type( func ) == "function" then
 		phase = phase or EventManager.phase.BEFORE
@@ -173,14 +174,21 @@ end
 	@return [boolean] stopPropagation -- whether no further handles should recieve this event
 ]]
 function EventManager:handleEventPhase( event, phase )
-	if self.handles[event.eventType] then
-		for i, handle in pairs( self.handles[event.eventType] ) do
+	local eventType = event.eventType
+	if self.handles[eventType] then
+		for i, handle in pairs( self.handles[eventType] ) do
 			if handle and phase == handle[2] then
 				-- handle[1] is the handle function
 				-- handle[2] is the phase
 				-- handle[3] is the event manager
 				-- handle[4] is the sender
-				if handle[1]( handle[4], event, handle[2] ) then
+				local response = handle[1]( handle[4], event, handle[2] ) -- if response is true stop propagation, if false continue
+				-- TODO: maybe enforce returning boolean for event handler functions
+				-- if response ~= true and response ~= false then
+				-- 	error( "Error handler for event '" .. eventType .. "' of instance '" .. tostring( handle[4] ) .. "' did not return boolean. If the event should not be sent to anything else (i.e. stop propagation) return true, otherwise, if it can continue being passed around, return false.", 0 )
+				-- end
+
+				if response then
 					return true
 				end
 			end

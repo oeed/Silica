@@ -28,6 +28,7 @@ class "TextBox" extends "View" {
 	textObject = false;
 	placeholderObject = false;
 	cursorObject = false;
+	selectionObject = false;
 	cursorFlashCounter = 0;
 
 	leftMargin = 0;
@@ -56,7 +57,6 @@ function TextBox:initialise( ... )
 	self:event( Event.MOUSE_UP, self.onMouseUp )
 	self:event( Event.MOUSE_DRAG, self.onMouseDrag )
     self:event( Event.KEYBOARD_SHORTCUT, self.onKeyboardShortcut )
-	self:event( Event.FOCUS_CHANGED, self.onFocusChanged )
     	self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 end
 
@@ -391,47 +391,12 @@ function TextBox:setIsEnabled( isEnabled )
 	self:updateThemeStyle()
 end
 
---[[
-	@instance
-	@desc Sets whether the text box is focused. DO NOT CALL/SET THIS DIRECTLY! Use :focus and :unfocus instead.
-	@param [boolean] isFocused -- whether the text box is focused
-]]
 function TextBox:setIsFocused( isFocused )
-	local wasFocused = self.isFocused
-	if wasFocused ~= isFocused then
-		self.cursorObject.isVisible = isFocused
-		self.cursorPosition = self.cursorPosition or 1
-		self.isFocused = isFocused
-		self:updateThemeStyle()
-	end
-end
-
---[[
-	@instance
-	@desc Focuses the text box, making it the current view that text is entered in to
-]]
-function TextBox:focus()
-	self.application.focus = self
-end
-
---[[
-	@instance
-	@desc Unfocuses the text box, making no other view focused
-]]
-function TextBox:unfocus()
-	if self.isFocused then
-		self.application:clearFocus()
-	end
-end
-
---[[
-	@instance
-	@desc Fired when the focused view changes
-	@param [FocusChangedInterfaceEvent] event -- the focus changed event
-	@return [boolean] preventPropagation -- prevent anyone else using the event
-]]
-function TextBox:onFocusChanged( event )
-	self.isFocused = ( self == event.newFocus )
+	self.isFocused = isFocused
+	self.cursorObject.isVisible = isFocused
+	self.cursorPosition = self.cursorPosition or 1
+	self.isFocused = isFocused
+	self:updateThemeStyle()
 end
 
 --[[

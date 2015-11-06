@@ -2,7 +2,7 @@
 class "Window" extends "Container" {
 	-- separatorObject = false;	
 	-- shadowObject = false;
-	-- barObject = false;	
+	-- barObject = false;
 	barHeight = 7;
 
 	container = false;
@@ -21,7 +21,6 @@ class "Window" extends "Container" {
     minHeight = 40;
     maxWidth = 300;
     maxHeight = 150;
-
 
     isCanvasHitTested = false;
 }

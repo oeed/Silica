@@ -34,11 +34,7 @@ function Button:initialise( ... )
     self:event( Event.MOUSE_DOWN, self.onMouseDown )
     self:event( Event.KEY_DOWN, self.onKeyDown )
     self:event( Event.KEY_UP, self.onKeyUp )
-    self:event( Event.FOCUS_CHANGED, self.onFocusChanged )
     self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
-
-    -- TODO: we can't do this
-    -- if self.onMouseUp then self:event( Event.MOUSE_UP, self.onMouseUp ) end
 end
 
 --[[
@@ -47,10 +43,10 @@ end
 ]]
 function Button:initialiseCanvas()
     self.super:initialiseCanvas()
-    local width, height, theme = self.width, self.height, self.theme
-    local shadowObject = self.canvas:insert( RoundedRectangle( 2, 2, width - 1, height - 1, theme.shadowColour ) )
-    local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, width - 1, height - 1, theme.fillColour, theme.outlineColour, cornerRadius ) )
-    local textObject = self.canvas:insert( Text( 1, 5, self.width, 10, self.text ) )
+    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
+    local shadowObject = canvas:insert( RoundedRectangle( 2, 2, width - 1, height - 1, theme.shadowColour ) )
+    local backgroundObject = canvas:insert( RoundedRectangle( 1, 1, width - 1, height - 1, theme.fillColour, theme.outlineColour, cornerRadius ) )
+    local textObject = canvas:insert( Text( 1, 5, width, 10, self.text ) )
 
     theme:connect( backgroundObject, "fillColour" )
     theme:connect( backgroundObject, "outlineColour" )
@@ -73,21 +69,26 @@ end
 function Button:updateHeight( height )
     self.backgroundObject.height = height - 1
     self.shadowObject.height = height - 1
-    self.needsAutosize = true
+    -- self.needsAutosize = true
 end
 
 function Button:updateWidth( width )
     self.backgroundObject.width = width - 1
     self.shadowObject.width = width - 1
     local textObject = self.textObject
-    local leftMargin, rightMargin = self.leftMargin, self.rightMargin
-    textObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1
-    textObject.width = width - leftMargin - rightMargin
+    if textObject then
+        local leftMargin, rightMargin = self.leftMargin, self.rightMargin
+        textObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1
+        textObject.width = width - leftMargin - rightMargin
+    end
 end
 
 function Button:setText( text )
     self.text = text
-    self.textObject.text = text
+    local textObject = self.textObject
+    if textObject then
+        textObject.text = text
+    end
     self.needsAutosize = true
 end
 
@@ -132,7 +133,7 @@ function Button:setFont( font )
     self.font = font
     local textObject = self.textObject
     if textObject then
-        self.textObject.font = font
+        textObject.font = font
         self.needsAutosize = true
     end
 end
@@ -147,11 +148,11 @@ end
 ]]
 function Button:autosize()
     -- TODO: support self.isAutosizing
-    local font, text, textObject = self.font, self.text, self.textObject
+    local font, text = self.font, self.text
 
     if font and text then
         local fontWidth = font:getWidth( text )
-        self.width = fontWidth + self.leftMargin + self.rightMargin
+        self.width = fontWidth + self.leftMargin + self.rightMargin + 1
 
         local fontHeight = font.height
         self.height = fontHeight + 8
@@ -176,46 +177,14 @@ function Button:setIsPressed( isPressed )
     backgroundObject.y = isPressed and 2 or 1
     local textObject = self.textObject
     -- textObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1
-    textObject.y = isPressed and 6 or 5
-end
-
---[[
-    @instance
-    @desc Sets whether the button is focused. DO NOT CALL/SET THIS DIRECTLY! Use :focus and :unfocus instead.
-    @param [boolean] isFocused -- whether the button is focused
-]]
-function Button:setIsFocused( isFocused )
-    local wasFocused = self.isFocused
-    if wasFocused ~= isFocused then
-        self.isFocused = isFocused
-        self:updateThemeStyle()
+    if textObject then
+        textObject.y = isPressed and 6 or 5
     end
 end
 
---[[
-    @instance
-    @desc Focuses the button, making it so when enter is pressed it is clicked.
-]]
-function Button:focus()
-    self.application.focus = self
-end
-
---[[
-    @instance
-    @desc Unfocuses the button, making no other view focused
-]]
-function Button:unfocus()
-    self.application:clearFocus()
-end
-
---[[
-    @instance
-    @desc Fired when the focused view changes
-    @param [FocusChangedInterfaceEvent] event -- the focus changed event
-    @return [boolean] preventPropagation -- prevent anyone else using the event
-]]
-function Button:onFocusChanged( event )
-    self.isFocused = ( self == event.newFocus )
+function Button:setIsFocused( isFocused )
+    self.isFocused = isFocused
+    self:updateThemeStyle()
 end
 
 --[[
@@ -228,7 +197,7 @@ function Button:onGlobalMouseUp( event )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
-        self.event:handleEvent( ActionInterfaceEvent( self ) )
+            self.event:handleEvent( ActionInterfaceEvent( self ) )
             local result = self.event:handleEvent( event )
             return result == nil and true or result
         end

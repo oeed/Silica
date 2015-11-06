@@ -3,6 +3,7 @@ class "Canvas" extends "GraphicsObject" {
     fillColour = Graphics.colours.TRANSPARENT; -- The colour of the Canvas when it clears
     buffer = {};
     children = {};
+    owner = false; -- @property [View] - The view that owns this objects
 }
 
 --[[
@@ -11,12 +12,10 @@ class "Canvas" extends "GraphicsObject" {
     @param [number] width -- the width of the canvas
     @param [number] height -- the height of the canvas
 ]]
--- function Canvas:initialise( width, height )
---     self.buffer = {}
---     self.children = {}
---     self.width = width
---     self.height = height
--- end
+function Canvas:initialise( x, y, width, height, owner )
+    self.super:initialise( x, y, width, height )
+    self.owner = owner or false
+end
 
 --[[
     @instance
@@ -95,11 +94,10 @@ end
     @return self
 ]]
 function Canvas:insert( graphicsObject )
-    graphicsObject = graphicsObject
-    self.hasChanged = true
     if not graphicsObject then
-        logtraceback()
+        error( "GraphicsObject not supplied in canvas:insert", 3 )
     end
+    self.hasChanged = true
     if graphicsObject.parent then
         graphicsObject.parent:remove( graphicsObject )
     end
@@ -134,12 +132,12 @@ end
     @desc Clears the buffer then draws the objects of the canvas
     @return self
 ]]
-function Canvas:draw()
+function Canvas:draw( isShadow )
     if self.isVisible then
         self.buffer = {}
         local children = self.children
         for i = 1, #children do
-            children[i]:drawTo( self )
+            children[i]:drawTo( self, isShadow )
         end
         self.hasChanged = false
     end
@@ -152,12 +150,12 @@ end
     @param [Canvas] canvas -- the canvas to draw to
     @return self
 ]]
-function Canvas:drawTo( canvas )
+function Canvas:drawTo( canvas, isShadow )
+    local drawsShadow = self.drawsShadow
     if self.isVisible then
-        if self.hasChanged then
+        if isShadow or self.hasChanged then
             -- local drawdt = os.clock()
-            self:draw()
-            -- log( tostring( self ) .. 'is rerendering dt ' .. os.clock() - drawdt )
+            self:draw( isShadow )
         end
         
         local width = self.width
@@ -168,24 +166,46 @@ function Canvas:drawTo( canvas )
         local _y = self.y
         
 
-        local start = os.clock()
-        -- log( tostring( self ) .. 'is drawing to parent at ' .. os.clock() )
+        local setPixel
+        local TRANSPARENT = Graphics.colours.TRANSPARENT
 
         local canvasWidth = canvas.width
         local canvasHeight = canvas.height
         local canvasBuffer = canvas.buffer
-        local TRANSPARENT = Graphics.colours.TRANSPARENT
-        for x = 1, width do
-            for y = 0, height - 1 do -- just so there's no need for y-1 below
-                local colour = buffer[y * width + x] or fillColour
-                local nx, ny = x + _x, y + _y
-                if colour ~= TRANSPARENT and nx >= 1 and ny >= 1 and nx <= canvasWidth and ny <= canvasHeight then
-                    canvasBuffer[( ny - 1 ) * canvasWidth + nx] = colour
+        if isShadow then
+            local shadowColour
+            local owner = self.owner
+            if owner then
+                shadowColour = owner.theme.shadowColour
+            else
+                shadowColour = Graphics.colours.GREEN
+            end
+            setPixel = function( x, y, colour )
+                if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= canvasWidth and y <= canvasHeight then
+                    canvasBuffer[ ( y - 1 ) * canvasWidth + x ] = shadowColour
+                end
+            end
+        else
+            setPixel = function( x, y, colour )
+                if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= canvasWidth and y <= canvasHeight then
+                    canvasBuffer[ ( y - 1 ) * canvasWidth + x ] = colour
                 end
             end
         end
 
-        -- log( tostring( self ) .. 'is done drawing to parent dt ' .. os.clock() - start )
+        -- local start = os.clock()
+
+        for x = 1, width do
+            for y = 0, height - 1 do -- just so there's no need for y-1 below
+                local colour = buffer[y * width + x] or fillColour
+                local nx, ny = x + _x, y + _y
+                setPixel( nx, ny, colour )
+                -- if colour ~= TRANSPARENT and nx >= 1 and ny >= 1 and nx <= canvasWidth and ny <= canvasHeight then
+                --     canvasBuffer[( ny - 1 ) * canvasWidth + nx] = colour
+                -- end
+            end
+        end
+
 
     end
     return self

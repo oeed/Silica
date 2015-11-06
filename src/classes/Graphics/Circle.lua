@@ -27,7 +27,7 @@ end
 	@desc Gets the diameter of the circle
 	@return [number] diameter -- the diameter
 ]]
-function Circle:getDiameter( arg1, arg2, arg3 )
+function Circle:getDiameter()
 	return self.height
 end
 
@@ -37,12 +37,14 @@ end
     @return [table] fill -- the pixels to fill
 ]]
 function Circle:getFill()
-	-- TODO: why is this commented out?
-	-- if self.fill then return self.fill end
+	-- TODO: why was this commented out?
+	if self.fill then return self.fill end
 
 	local fill = {}
-	local fillColour = self.fillColour
 	local r = math.min( self.width, self.height ) / 2
+	if r % 1 ~= 0 then
+		r = r - 0.25
+	end
 	local radius = ( math.min( self.width, self.height ) + 1 ) / 2
 	for y = 1, self.height do
 		local ySqrd = ( y - radius )^2

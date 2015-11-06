@@ -38,6 +38,9 @@ end
 function ThemeOutlet:connect( _class, classKey, key )
 	self:disconnect( _class, classKey, key )
 	key = key or classKey
+	if not _class:isDefinedProperty( classKey ) then
+		error( "Attempted to connect theme to undefined property '" .. classKey .. "' for object '" .. tostring( _class ) .. "'", 4 )
+	end
 	table.insert( self.connections, { _class, classKey, key, _class[classKey] } )
 	_class[classKey] = self:themeValue( key, style )
 end
@@ -70,6 +73,7 @@ function ThemeOutlet:onThemeChange( event )
 	for i, connection in pairs( self.connections ) do
 		connection[1][connection[2]] = self:themeValue( connection[3], style )
 	end
+
 end
 
 --[[

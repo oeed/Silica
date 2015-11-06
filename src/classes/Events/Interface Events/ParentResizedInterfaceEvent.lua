@@ -1,5 +1,5 @@
 
-class "ParentResizeInterfaceEvent" extends "InterfaceEvent" {
+class "ParentResizedInterfaceEvent" extends "InterfaceEvent" {
 	eventType = Event.PARENT_RESIZED;
 	isHorizontal = false;
 	isVertical = false;
@@ -14,7 +14,7 @@ class "ParentResizeInterfaceEvent" extends "InterfaceEvent" {
 	@param [boolean] isVertical -- whether the change effected the height
 	@param [Container] sender -- the parent that resized
 ]]
-function ParentResizeInterfaceEvent:initialise( isHorizontal, isVertical, sender )
+function ParentResizedInterfaceEvent:initialise( isHorizontal, isVertical, sender )
 	self.isHorizontal = isHorizontal
 	self.isVertical = isVertical
 	self.sender = sender

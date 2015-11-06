@@ -1,0 +1,11 @@
+<Theme extends="default">
+
+    <FileItem>
+        <focusRadius type="number" default="6" />
+        <focusFillColour type="Graphics.colours" default="TRANSPARENT" focused="BLUE" />
+        <focusOutlineColour type="Graphics.colours" default="TRANSPARENT" hover="BLUE" />
+        <titleColour type="Graphics.colours" default="BLACK" focused="WHITE" />
+        <subtitleColour type="Graphics.colours" default="LIGHT_GREY" />
+    </FileItem>
+
+</Theme>

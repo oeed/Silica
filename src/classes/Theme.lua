@@ -137,7 +137,7 @@ function Theme:value( _class, propertyName, styleName, noError )
 				err = "Theme '" .. self.name .. "' does not have any definition for style: '" .. styleName .. "' or 'default' (of property: " .. propertyName .. " and of class: " .. _class.className .. ")"
 			end
 		else
-			err = "Theme '" .. self.name .. "' does not have any definitions for property: '" .. propertyName .. " '(of class: " .. className .. ")"
+			err = "Theme '" .. self.name .. "' does not have any definitions for property: '" .. propertyName .. "' (of class: " .. className .. ")"
 		end
 	else
 		err = "Theme '" .. self.name .. "' does not have any definitions for class: '" .. className .. "'"

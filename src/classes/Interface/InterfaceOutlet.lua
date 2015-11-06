@@ -25,8 +25,8 @@ class "InterfaceOutlet" {
 ]]
 function InterfaceOutlet:initialise( viewIdentifier, trackAll, key, container ) -- if you change this you need to change it in class.lua uniqueTable() too
 	trackAll = trackAll or false
-	self.viewIdentifier = viewIdentifier
-	self.trackAll = trackAll
+	self.viewIdentifier = viewIdentifier or false
+	self.trackAll = trackAll or false
 	self.key = key or false
 	self.container = container or false
 	

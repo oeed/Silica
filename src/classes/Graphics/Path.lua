@@ -190,10 +190,44 @@ class "Path" extends "GraphicsObject" {
 	@param [number] currentX -- the starting x coordinate
 	@param [number] currentY -- the starting y coordinate
 ]]
-function Path:initialise( x, y, width, height, currentX, currentY )
+function Path:initialise( x, y, width, height, currentX, currentY, lines )
 	self.super:initialise( x, y, width, height )
 	self.currentX = currentX or 1
 	self.currentY = currentY or 1
+	if lines then
+		self.lines = lines
+		self.defined = true
+	end
+end
+
+--[[
+	@static
+	@desc Loads a path from a serialised path
+	@param [table] serialisedPath -- the serialised path table
+	@return [Path] path -- the path
+]]
+function Path.fromSerialisedPath( serialisedPath )
+	return Path( serialisedPath.x, serialisedPath.y, serialisedPath.width, serialisedPath.height, 1, 1, serialisedPath.lines )
+end
+
+--[[
+	@instance
+	@desc Returns a serialised copy of the path which can be used to load from later
+	@return [table] path -- the copied path table
+]]
+function Path:getSerialisedPath()
+	local lines, pathCopy = self.lines, { x = self.x, y = self.y, width = self.width, height = self.height, lines = {} }
+	local linesCopy = pathCopy.lines
+
+	for i, line in ipairs( lines ) do
+		local lineCopy = {}
+		for k, v in pairs( line ) do
+			lineCopy[k] = v
+		end
+		linesCopy[i] = lineCopy
+	end
+
+	return pathCopy
 end
 
 --[[
