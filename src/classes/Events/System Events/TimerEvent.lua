@@ -1,6 +1,6 @@
 
 class "TimerEvent" extends "Event" {
-	eventType = Event.TIMER;
+	eventType = "timer";
 	timer = false;
 }
 

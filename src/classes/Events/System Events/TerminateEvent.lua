@@ -1,4 +1,4 @@
 
 class "TerminateEvent" extends "Event" {
-	eventType = Event.TERMINATE;
+	eventType = "terminate";
 }

@@ -1,6 +1,6 @@
 
 class "MouseUpEvent" extends "MouseEvent" {
-	eventType = Event.MOUSE_UP;
+	eventType = "mouse_up";
 	mouseButton = false;
 }
 

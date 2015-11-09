@@ -7,8 +7,8 @@ class "AlertWindow" extends "Window" {
 function AlertWindow:initialise( ... )
 	self.super:initialise( ... )
 
-	self:event( Event.INTERFACE_LOADED, self.onInterfaceLoaded )
-	self:event( Event.INTERFACE_READY, self.onReady )
+	self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
+	self:event( ReadyInterfaceEvent, self.onReady )
 
 	self.width = 100
 	self.height = 40

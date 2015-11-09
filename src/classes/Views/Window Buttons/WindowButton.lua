@@ -15,9 +15,9 @@ class "WindowButton" extends "View" {
 function WindowButton:initialise( ... )
     self.super:initialise( ... )
     
-    self:event( Event.MOUSE_DOWN, self.onMouseDown )
-    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
-    if self.onMouseUp then self:event( Event.MOUSE_UP, self.onMouseUp ) end
+    self:event( MouseDownEvent, self.onMouseDown )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    if self.onMouseUp then self:event( MouseUpEvent, self.onMouseUp ) end
 end
 
 function WindowButton:initialiseCanvas()

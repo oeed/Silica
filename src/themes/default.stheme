@@ -139,9 +139,10 @@
 		<placeholderColour type="Graphics.colours" default="LIGHT_GREY" />
 	</TextBox>
 
-	<Container>
-		<fillColour type="Graphics.colours" default="TRANSPARENT"/>
-	</Container>
+	<SearchBox>
+		<leftMargin type="number" default="18" />
+		<searchSymbolColour type="Graphics.colours" default="LIGHT_GREY" />
+	</SearchBox>
 
 	<ApplicationContainer>
 		<fillColour type="Graphics.colours" default="WHITE"/>

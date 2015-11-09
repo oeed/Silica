@@ -1,6 +1,6 @@
 
 class "SiblingRemovedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = Event.SIBLING_REMOVED;
+	eventType = "interface_sibling_removed";
 	view = false; -- the new sibling that was removed
 	isSentToChildren = false;
 }

@@ -39,7 +39,7 @@ class "Menu" extends "Container" {
 function Menu:initialise( ... )
 	self.super:initialise( ... )
 
-    self.event:connectGlobal( Event.MOUSE_DOWN, self.onGlobalMouseDown, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseDownEvent, self.onGlobalMouseDown, EventManager.phase.BEFORE )
 end
 
 --[[

@@ -1,6 +1,6 @@
 
 class "MouseScrollEvent" extends "MouseEvent" {
-	eventType = Event.MOUSE_SCROLL;
+	eventType = "mouse_scroll";
 	direction = false;
 }
 

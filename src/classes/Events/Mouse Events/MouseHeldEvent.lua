@@ -1,6 +1,6 @@
 
 class "MouseHeldEvent" extends "MouseEvent" {
-    eventType = Event.MOUSE_HELD;
+    eventType = "mouse_held";
     mouseButton = false;
     isSentToChildren = false;
 }

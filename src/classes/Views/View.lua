@@ -3,8 +3,15 @@ local DEFAULT_TIME = .3
 local DEFAULT_EASING = Animation.easing.IN_OUT_SINE
 
 local function newAnimation( self, label, time, values, easing, onFinish, round )
-	local hasValue = false
+	local animations = self.animations
+	for i = #animations, 1, -1 do
+		if animations[i].label == label then
+			table.remove( animations, i )
+		end
+	end
+	
 	-- prevent values that won't change from being animated
+	local hasValue = false
 	for k, v in pairs( values ) do
 		if self[k] == v then
 			values[k] = nil
@@ -13,14 +20,7 @@ local function newAnimation( self, label, time, values, easing, onFinish, round 
 		end
 	end
 	if not hasValue then return end
-
 	local animation = Animation( time, self, values, easing, round == nil and true or round )
-	local animations = self.animations
-	for i = #animations, 1, -1 do
-		if animations[i].label == label then
-			table.remove( animations, i )
-		end
-	end
 	animations[#animations + 1] = { label = label, animation = animation, onFinish = onFinish }
 end
 
@@ -87,11 +87,11 @@ function View:initialise( properties )
 		self:properties( properties )
 	end
 
-    self:event( Event.PARENT_RESIZED, self.onParentResizedConstraintUpdate )
-    self:event( Event.PARENT_CHANGED, self.onParentChangedConstraintUpdate )
-    self:event( Event.MOUSE_DOWN, self.onMouseDownMetaEvents )
-    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUpMetaEvents )
-    self:event( Event.INTERFACE_READY, self.onReadyConstraintUpdate )
+    self:event( ParentResizedInterfaceEvent, self.onParentResizedConstraintUpdate )
+    self:event( ParentChangedInterfaceEvent, self.onParentChangedConstraintUpdate )
+    self:event( MouseDownEvent, self.onMouseDownMetaEvents )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUpMetaEvents )
+    self:event( ReadyInterfaceEvent, self.onReadyConstraintUpdate )
 end
 
 function View:initialiseTheme()
@@ -878,8 +878,8 @@ function View:setIsFocused( isFocused )
     end
 end
 
-function View:focus()
-    self.application:focus( self )
+function View:focus( filter )
+    self.application:focus( self, filter )
 end
 
 function View:addFocus()
@@ -890,8 +890,8 @@ function View:unfocus()
     self.application:unfocus( self )
 end
 
-function View:unfocusAll()
-    self.application:unfocusAll()
+function View:clearFocus( filter )
+    self.application:clearFocus( filter )
 end
 
 function View:dispose()

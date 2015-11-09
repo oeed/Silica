@@ -20,16 +20,17 @@ function ApplicationContainer:initialise( ... )
 
 	self.super:initialise( ... )
 
-    self:event( Event.MOUSE_DOWN, self.onMouseDownAfter, EventManager.phase.AFTER )
+    self:event( MouseDownEvent, self.onMouseDownAfter, EventManager.phase.AFTER )
 end
 
 function ApplicationContainer:initialiseCanvas()
 	local canvas = ScreenCanvas( self.x, self.y, self.width, self.height )
     self.canvas = canvas
+    self.theme:connect( self.canvas, "fillColour" )
 end
 
 function ApplicationContainer:setTheme( theme )
-	if type( theme ) == "string" then error( "Use .themeName, not .theme, to set a theme with it's name.", 0 ) end
+	if type( theme ) == "string" then error( "To the set the theme of an ApplicationContainer using a string, use the property 'themeName', rather than 'theme'. Most likely cause: you have use theme=\"" .. theme .. "\" in an interface file, rather than themeName=\"" .. theme .. "\"", 0 ) end
 	self.theme = theme
 end
 

@@ -1,6 +1,6 @@
 
 class "ThemeChangedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = Event.THEME_CHANGED;
+	eventType = "interface_theme_changed";
 	newThemeName = false;
 	oldThemeName = false;
 }

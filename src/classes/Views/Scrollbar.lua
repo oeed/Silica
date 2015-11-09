@@ -11,10 +11,10 @@ class "Scrollbar" extends "View" {
 
 function Scrollbar:initialise( ... )
 	self.super:initialise( ... )
-    -- self:event( Event.MOUSE_SCROLL, self.onMouseScroll )
-    self:event( Event.MOUSE_DOWN, self.onMouseDown )
-    self.event:connectGlobal( Event.MOUSE_DRAG, self.onGlobalMouseDrag )
-    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    -- self:event( MouseScrollEvent, self.onMouseScroll )
+    self:event( MouseDownEvent, self.onMouseDown )
+    self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 end
 
 --[[

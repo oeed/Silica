@@ -1,6 +1,6 @@
 
 class "InterfaceOutletChangedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = Event.INTERFACE_OUTLET_CHANGED;
+	eventType = "interface_outlet_changed";
 	interfaceOutlet = false;
 	oldView = false;
 	newView = false;

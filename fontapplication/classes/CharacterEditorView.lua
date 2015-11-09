@@ -23,10 +23,10 @@ class "CharacterEditorView" extends "View" {
 function CharacterEditorView:initialise( ... )
     self.super:initialise( ... )
 
-    self:event( Event.MOUSE_DOWN, self.onMouseDownOrMove )
-    self:event( Event.MOUSE_DRAG, self.onMouseDownOrMove )
-    self.event:connectGlobal( Event.MOUSE_DOWN, self.onGlobalMouseDownOrMove, EventManager.phase.BEFORE )
-    self.event:connectGlobal( Event.MOUSE_DRAG, self.onGlobalMouseDownOrMove, EventManager.phase.BEFORE )
+    self:event( MouseDownEvent, self.onMouseDownOrMove )
+    self:event( MouseDragEvent, self.onMouseDownOrMove )
+    self.event:connectGlobal( MouseDownEvent, self.onGlobalMouseDownOrMove, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDownOrMove, EventManager.phase.BEFORE )
     self:event( Event.INTERFACE_READY, self.onReady)
 end
 
@@ -167,7 +167,7 @@ end
 
 function CharacterEditorView:onGlobalMouseDownOrMove( event )
     local dragStart = self.dragStart
-    local isDragging = ( event.eventType == Event.MOUSE_DRAG and #dragStart == 4 )
+    local isDragging = ( event.eventType == MouseDragEvent and #dragStart == 4 )
     if isDragging or self:hitTestEvent( event ) then
         local scale, ceil, width, height = self.scale, math.ceil, self.width, self.height
         local eventX, eventY = event.x, event.y
@@ -175,7 +175,7 @@ function CharacterEditorView:onGlobalMouseDownOrMove( event )
         event:makeRelative( self )
         if isDragging or (eventX <= RESIZE_MARGIN_SIZE or eventX > width - RESIZE_MARGIN_SIZE) and (eventY <= RESIZE_MARGIN_SIZE or eventY > height - RESIZE_MARGIN_SIZE) then
             local globalX, globalY = event.globalX, event.globalY
-            if event.eventType == Event.MOUSE_DOWN then
+            if event.eventType == MouseDownEvent then
                 dragStart[1] = globalX
                 dragStart[2] = globalY
                 dragStart[3] = width

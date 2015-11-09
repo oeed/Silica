@@ -29,8 +29,8 @@ class "DragDropManager" {
 ]]
 function DragDropManager:initialise( owner )
     self.owner = owner
-    owner:event( Event.MOUSE_DRAG, self.onMouseDrag, nil, nil, self )
-    owner:event( Event.MOUSE_UP, self.onMouseUp, nil, nil, self )
+    owner:event( MouseDragEvent, self.onMouseDrag, nil, nil, self )
+    owner:event( MouseUpEvent, self.onMouseUp, nil, nil, self )
 end
 
 --[[

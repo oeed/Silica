@@ -1,6 +1,6 @@
 
 class "SiblingAddedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = Event.SIBLING_ADDED;
+	eventType = "interface_sibling_added";
 	view = false; -- the new sibling that was added
 	isSentToChildren = false;
 }

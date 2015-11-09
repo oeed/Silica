@@ -14,7 +14,7 @@ class "ThemeOutlet" {
 function ThemeOutlet:initialise( owner )
 	self.owner = owner
 	self.ownerClass = owner.class
-	owner.event:connectGlobal( Event.THEME_CHANGED, self.onThemeChange, nil, self )
+	owner.event:connectGlobal( ThemeChangedInterfaceEvent, self.onThemeChange, nil, self )
 end
 
 --[[

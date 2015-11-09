@@ -45,12 +45,12 @@ class "FileItem" extends "View" implements "IDraggableView" implements "IFlowIte
 function FileItem:initialise( ... )
     self.super:initialise( ... )
 
-    self:event( Event.MOUSE_DOWN, self.onMouseDown )
-    self:event( Event.MOUSE_HELD, self.onMouseHeld )
+    self:event( MouseDownEvent, self.onMouseDown )
+    self:event( MouseHeldEvent, self.onMouseHeld )
     self:event( Event.MOUSE_DOUBLE_CLICK, self.onMouseDoubleClick )
     -- self:event( Event.KEY_DOWN, self.onKeyDown )
     -- self:event( Event.KEY_UP, self.onKeyUp )
-    -- self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    -- self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 
     folderIcon = Image.fromPath( "folder.image" )
     folderSmallIcon = Image.fromPath( "folder-small.image" )

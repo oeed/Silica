@@ -406,6 +406,18 @@ function class:new( ... )
 	end
 	proxy.hasInitialised = true
 
+	-- log(proxy)
+	for k, _ in pairs( definedProperties ) do
+		local classValue = self[k]
+		local instanceValue = raw[k]
+		-- log(k)
+		if classValue and type( classValue ) ~= "table" and instanceValue == classValue and definedFunctions[setters[k]] then
+			-- log("compare "..k..": "..tostring(instanceValue)..' == '..tostring(classValue).. ' - ' ..tostring(instanceValue ~= classValue))
+			-- log("set "..k..": "..tostring(classValue))
+			proxy[k] = classValue
+		end
+	end
+
 	return proxy
 end
 

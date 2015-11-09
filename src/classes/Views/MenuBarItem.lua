@@ -33,10 +33,10 @@ function MenuBarItem:initialise( ... )
     menu.hitTestOwner = true
     menu.topMargin = Menu.topMargin + 4
     self.menu = menu
-    self:event( Event.MENU_CHANGED, self.onMenuChanged )
-    self:event( Event.MOUSE_DOWN, self.onMouseDown )
-    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
-    self:event( Event.INTERFACE_READY, self.onInterfaceReady )
+    self:event( MenuChangedInterfaceEvent, self.onMenuChanged )
+    self:event( MouseDownEvent, self.onMouseDown )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self:event( ReadyInterfaceEvent, self.onInterfaceReady )
 end
 
 function MenuBarItem:onInterfaceReady( event )

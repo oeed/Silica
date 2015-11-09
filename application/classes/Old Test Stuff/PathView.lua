@@ -12,7 +12,7 @@ class "PathView" extends "View" {
 ]]
 function PathView:initialise( ... )
     self.super:initialise( ... )
-    self:event( Event.MOUSE_DOWN, self.onMouseDown )
+    self:event( MouseDownEvent, self.onMouseDown )
 end
 
 function PathView:onMouseDown( event )

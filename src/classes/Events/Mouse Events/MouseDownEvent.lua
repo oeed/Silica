@@ -1,6 +1,6 @@
 
 class "MouseDownEvent" extends "MouseEvent" {
-	eventType = Event.MOUSE_DOWN;
+	eventType = "mouse_click";
 	mouseButton = false;
 }
 

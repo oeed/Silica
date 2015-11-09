@@ -122,7 +122,7 @@ function Application:initialise()
 	
 	self:reloadInterface()
 
-	self.event:connect( Event.TIMER, self.onTimer )
+	self.event:connect( TimerEvent, self.onTimer )
 
 end
 
@@ -132,8 +132,10 @@ end
 	@param [string] interfaceName -- the name of the interface (the file name without extension)
 ]]
 function Application:setInterfaceName( interfaceName )
-	self.interfaceName = interfaceName
-	self:reloadInterface()
+	if interfaceName and self.interfaceName ~= interfaceName then
+		self.interfaceName = interfaceName
+		self:reloadInterface()
+	end
 end
 
 --[[
@@ -153,6 +155,8 @@ function Application:reloadInterface()
 	else
 		self.container = ApplicationContainer()
 	end
+	log("loaded")
+	log(self.container)
 	self.event:handleEvent( ReadyInterfaceEvent( true ) )
 end
 
@@ -214,11 +218,13 @@ function Application:focus( newFocus, filter )
 	local oldFocuses = {}
 	local hadOtherFocus = false
 	for oldFocus, _ in pairs( focuses ) do
-		if oldFocus ~= newFocus and (not filter or oldFocus:typeOf( filter )) then
-			hadOtherFocus = true
+		if oldFocus ~= newFocus then
 			oldFocuses[oldFocus] = true
-			focuses[oldFocus] = nil
-			oldFocus.isFocused = false
+			if (not filter or oldFocus:typeOf( filter )) then
+				hadOtherFocus = true
+				focuses[oldFocus] = nil
+				oldFocus.isFocused = false
+			end
 		end
 	end
 	if hadOtherFocus or not focuses[newFocus] then
@@ -265,8 +271,6 @@ function Application:unfocus( oldFocus )
 		end
 		focuses[oldFocus] = nil
 		oldFocus.isFocused = false
-		log("unfocus")
-		logtraceback()
 		self.event:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
 	end
 end

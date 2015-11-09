@@ -12,8 +12,8 @@ class "ToolbarContainer" extends "Container" {
 function ToolbarContainer:initialise( ... )
     self.super:initialise( ... )
 
-    self:event( Event.CHILD_ADDED, self.onChildAdded )
-    self:event( Event.CHILD_REMOVED, self.onChildRemoved )
+    self:event( ChildAddedInterfaceEvent, self.onChildAdded )
+    self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
 end
 
 function ToolbarContainer:initialiseCanvas()

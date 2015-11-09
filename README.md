@@ -6,7 +6,7 @@ Installation
 
 First, if you haven't already done so, download LÖVE from [their site](https://love2d.org/).
 
-Then [download](http://puu.sh/iWhZy/27bdfcb2a1.zip) the emulator and open the .love file. When it loads the screen will be black, that's normal. Close the emulator for now.
+Then [download](http://puu.sh/ldg0G/678a022ae5.love) the emulator and open the .love file. When it loads the screen will be black, that's normal. Close the emulator for now.
 
 Now download the files from GitHub using the Download ZIP button.
 

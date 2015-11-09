@@ -1,6 +1,6 @@
 
 class "ActionInterfaceEvent" extends "InterfaceEvent" {
-	eventType = Event.ACTION;
+	eventType = "interface_action";
 	sender = false; -- the view whose action it is
 }
 

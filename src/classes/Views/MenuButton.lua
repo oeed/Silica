@@ -28,8 +28,8 @@ function MenuButton:initialise( ... )
     menu.hitTestOwner = true
     menu.topMargin = Menu.topMargin + 8
     self.menu = menu
-    self:event( Event.MENU_CHANGED, self.onMenuChanged )
-    self:event( Event.PARENT_CHANGED, self.onParentChanged )
+    self:event( MenuChangedInterfaceEvent, self.onMenuChanged )
+    self:event( ParentChangedInterfaceEvent, self.onParentChanged )
 end
 
 function MenuButton:onParentChanged( event )

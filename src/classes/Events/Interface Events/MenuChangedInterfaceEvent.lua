@@ -1,5 +1,5 @@
 
 class "MenuChangedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = Event.MENU_CHANGED;
+	eventType = "interface_menu_changed";
 	isSentToChildren = false;
 }

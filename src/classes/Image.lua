@@ -139,7 +139,6 @@ end
     @return [table] pixels -- the scaled pixels
 ]]
 function Image:getScaledPixels( scaledWidth, scaledHeight )
-
     scaledWidth = math.floor( scaledWidth + 0.5 )
     scaledHeight = math.floor( scaledHeight + 0.5 )
 

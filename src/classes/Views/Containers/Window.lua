@@ -38,11 +38,11 @@ function Window:initialise( ... )
 
     self:loadInterface()
     
-    self:event( Event.MOUSE_DOWN, self.onMouseDownBefore, EventManager.phase.BEFORE )
-    self:event( Event.MOUSE_DOWN, self.onMouseDownAfter, EventManager.phase.AFTER )
-    self.event:connectGlobal( Event.MOUSE_DRAG, self.onGlobalMouseDrag )
-    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
-    self:event( Event.INTERFACE_LOADED, self.onInterfaceLoaded )
+    self:event( MouseDownEvent, self.onMouseDownBefore, EventManager.phase.BEFORE )
+    self:event( MouseDownEvent, self.onMouseDownAfter, EventManager.phase.AFTER )
+    self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
 end
 
 --[[
@@ -154,7 +154,7 @@ Window.center = Window.centre
 ]]
 function Window:focus()
     if not self.isEnabled then
-        self.application:clearFocus()
+        self.application:clearFocus( Window )
         self.isEnabled = true
         self.parent:sendToFront( self )
         for i, sibling in ipairs( self:siblingsOfType( Window ) ) do

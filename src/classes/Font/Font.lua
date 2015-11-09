@@ -82,8 +82,8 @@ end
 
 function Font.initialisePresets()
 	-- TODO: make this come from the theme
-	Font.systemFont = Font( "Napier" )
-	-- Font.systemFont = Font( "Auckland" )
+	-- Font.systemFont = Font( "Napier" )
+	Font.systemFont = Font( "Auckland" )
 end
 
 function Font.readMetadata( file )

@@ -1,6 +1,6 @@
 
 class "MouseDoubleClickEvent" extends "MouseEvent" {
-    eventType = Event.MOUSE_DOUBLE_CLICK;
+    eventType = "mouse_double_click";
     mouseButton = false;
     isSentToChildren = false;
 }

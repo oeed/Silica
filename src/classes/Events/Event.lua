@@ -8,33 +8,6 @@ class "Event" {
 	isSentToChildren = true; -- whether the event will be passed to children
 	isSentToSender = true; -- whether the event will be handled by the sender
 
-	MOUSE_UP = "mouse_up";
-	MOUSE_DOWN = "mouse_click";
-	MOUSE_DRAG = "mouse_drag";
-	MOUSE_SCROLL = "mouse_scroll";
-	MOUSE_HELD = "mouse_held";
-	MOUSE_DOUBLE_CLICK = "mouse_double_click";
-	KEY_DOWN = "key";
-	KEY_UP = "key_up";
-	CHARACTER = "char";
-	TIMER = "timer";
-	TERMINATE = "terminate";
-	MENU_CHANGED = "interface_menu_changed";
-	INTERFACE_LOADED = "interface_loaded";
-	KEYBOARD_SHORTCUT = "interface_keyboard_shortcut";
-	FOCUSES_CHANGED = "interface_focuses_changed";
-	TEXT_CHANGED = "interface_text";
-	SIBLING_ADDED = "interface_sibling_added";
-	SIBLING_REMOVED = "interface_sibling_removed";
-	PARENT_CHANGED = "interface_parent_changed";
-	PARENT_RESIZED = "interface_parent_resized";
-	INTERFACE_READY = "interface_ready";
-	INTERFACE_OUTLET_CHANGED = "interface_outlet_changed";
-	ACTION = "interface_action";
-	THEME_CHANGED = "interface_theme_changed";
-	CHILD_ADDED = "interface_child_added";
-	CHILD_REMOVED = "interface_child_removed";
-
 }
 
 local eventClasses = {}

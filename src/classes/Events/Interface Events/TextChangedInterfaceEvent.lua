@@ -1,6 +1,6 @@
 
 class "TextChangedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = Event.TEXT_CHANGED;
+	eventType = "interface_text";
 	text = false; -- the new text value
 	oldText = false; -- the previous text value
 }

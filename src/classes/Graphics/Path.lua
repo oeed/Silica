@@ -301,11 +301,10 @@ end
 
 --[[
 	@instance
-	@desc Adds an arc from the current position of the specified position. This is always circular (constant radius).
-	@param [number] endX -- the x coordinate to create the arc to
-	@param [number] endY -- the y coordinate to create the arc to
+	@desc Adds an arc at the current position
 	@param [number] startAngle -- the angle to start (in radians)
 	@param [number] endAngle -- the angle to end (in radians)
+	@param [number] radius -- the radius
 	@return [boolean] didAdd -- whether the line was added
 ]]
 

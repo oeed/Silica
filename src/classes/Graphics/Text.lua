@@ -8,7 +8,7 @@ class "Text" extends "GraphicsObject" {
 
 function Text:initialise( x, y, width, height, text, alignment, font )
 	self.super:initialise( x, y, width, height )
-	self.text = text
+	self.text = text or ""
 	self.font = font or Font.systemFont
 	self.alignment = alignment or Font.alignments.LEFT
 end
@@ -30,7 +30,7 @@ end
 ]]
 function Text:setText( text )
 	self.hasChanged = true
-	self.text = text
+	self.text = text or ""
 end
 
 --[[

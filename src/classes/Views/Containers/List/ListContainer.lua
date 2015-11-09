@@ -15,9 +15,9 @@ class "ListContainer" extends "ScrollContainer" implements "IDragDropDestination
 
 function ListContainer:initialise( ... )
     self.super:initialise( ... )
-    self:event( Event.CHILD_ADDED, self.onChildAdded )
-    self:event( Event.CHILD_REMOVED, self.onChildRemoved )
-    self:event( Event.INTERFACE_READY, self.onReady )
+    self:event( ChildAddedInterfaceEvent, self.onChildAdded )
+    self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
+    self:event( ReadyInterfaceEvent, self.onReady )
 end
 
 function ListContainer:onReady( event )

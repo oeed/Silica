@@ -41,8 +41,8 @@ class "KeyboardShortcutManager" {
 function KeyboardShortcutManager:initialise( owner )
 	self.owner = owner
 	self.event = EventManager( self )
-	self.event:connectGlobal( Event.KEY_DOWN, self.onGlobalKeyDown )
-	self.event:connectGlobal( Event.KEY_UP, self.onGlobalKeyUp )
+	self.event:connectGlobal( KeyDownEvent, self.onGlobalKeyDown )
+	self.event:connectGlobal( KeyUpEvent, self.onGlobalKeyUp )
 end
 
 function KeyboardShortcutManager:onGlobalKeyDown( event )

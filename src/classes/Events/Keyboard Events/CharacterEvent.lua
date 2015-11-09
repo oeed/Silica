@@ -1,6 +1,6 @@
 
 class "CharacterEvent" extends "Event" {
-	eventType = Event.CHARACTER;
+	eventType = "char";
 	character = false;
 }
 

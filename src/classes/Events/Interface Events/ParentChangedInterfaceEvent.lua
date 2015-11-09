@@ -1,6 +1,6 @@
 
 class "ParentChangedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = Event.PARENT_CHANGED;
+	eventType = "interface_parent_changed";
 	newParent = false; -- the new parent
 	oldParent = false; -- the old parent
 	isSentToChildren = false;

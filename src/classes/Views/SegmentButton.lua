@@ -13,9 +13,9 @@ class "SegmentButton" extends "Button" {
 
 function SegmentButton:initialise( ... )
     self.super:initialise( ... )
-    self:event( Event.PARENT_CHANGED, self.onSiblingOrParentChanged )
-    self:event( Event.SIBLING_ADDED, self.onSiblingOrParentChanged )
-    self:event( Event.SIBLING_ADDED, self.onSiblingOrParentChanged )
+    self:event( ParentChangedInterfaceEvent, self.onSiblingOrParentChanged )
+    self:event( SiblingAddedInterfaceEvent, self.onSiblingOrParentChanged )
+    self:event( SiblingAddedInterfaceEvent, self.onSiblingOrParentChanged )
 end
 
 --[[

@@ -16,8 +16,7 @@ class "Container" extends "View" {
 function Container:initialise( ... )
 	self.super:initialise( ... )
 	self:loadInterface()
-    self.theme:connect( self.canvas, "fillColour" )
-	self:event( Event.INTERFACE_OUTLET_CHANGED, self.onInterfaceOutletChanged )
+	self:event( InterfaceOutletChangedInterfaceEvent, self.onInterfaceOutletChanged )
 end
 
 --[[
@@ -64,7 +63,7 @@ function Container:onInterfaceOutletChanged( event )
 	local newView = false
 	local interfaceOutletActions = self.interfaceOutletActions
 	local BEFORE = EventManager.phase.BEFORE
-	local ACTION = Event.ACTION
+	local ACTION = ActionInterfaceEvent
 
 	for k, outlet in pairs( self.interfaceOutlets ) do
 		if interfaceOutlet == outlet then

@@ -31,10 +31,10 @@ class "Button" extends "View" {
 function Button:initialise( ... )
     self.super:initialise( ... )
 
-    self:event( Event.MOUSE_DOWN, self.onMouseDown )
-    self:event( Event.KEY_DOWN, self.onKeyDown )
-    self:event( Event.KEY_UP, self.onKeyUp )
-    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self:event( MouseDownEvent, self.onMouseDown )
+    self:event( KeyDownEvent, self.onKeyDown )
+    self:event( KeyUpEvent, self.onKeyUp )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 end
 
 --[[

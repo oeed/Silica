@@ -8,6 +8,8 @@
 -- 	...
 -- }
 
+-- TODO: update interface outlets when the .identifer of a view is changed
+
 class "InterfaceOutlet" {
 	viewIdentifier = false;
 	key = false;

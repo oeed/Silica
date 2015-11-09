@@ -1,6 +1,6 @@
 
 class "MouseDragEvent" extends "MouseEvent" {
-	eventType = Event.MOUSE_DRAG;
+	eventType = "mouse_drag";
 	mouseButton = false;
 }
 

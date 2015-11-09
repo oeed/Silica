@@ -1,6 +1,6 @@
 
 class "ChildAddedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = Event.CHILD_ADDED;
+	eventType = "interface_child_added";
 	childView = false; -- the added child
 	isSentToChildren = false;
 }

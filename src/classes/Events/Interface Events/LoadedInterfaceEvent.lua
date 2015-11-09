@@ -1,4 +1,4 @@
 
 class "LoadedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = Event.INTERFACE_LOADED;
+	eventType = "interface_loaded";
 }

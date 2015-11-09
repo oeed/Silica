@@ -25,9 +25,9 @@ class "MenuItem" extends "View" {
 function MenuItem:initialise( ... )
 	self.super:initialise( ... )
 
-    self:event( Event.MOUSE_DOWN, self.onMouseDown )
-    self:event( Event.KEYBOARD_SHORTCUT, self.onKeyboardShortcut )
-    self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self:event( MouseDownEvent, self.onMouseDown )
+    self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 end
 
 function MenuItem:initialiseCanvas()

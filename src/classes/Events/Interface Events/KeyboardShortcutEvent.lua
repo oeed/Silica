@@ -1,6 +1,6 @@
 
 class "KeyboardShortcutEvent" extends "Event" {
-	eventType = Event.KEYBOARD_SHORTCUT;
+	eventType = "interface_keyboard_shortcut";
 	keys = false;
 }
 

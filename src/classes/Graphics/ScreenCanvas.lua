@@ -17,6 +17,7 @@ end
 function ScreenCanvas:drawToTerminal( terminal )	
     if self.isVisible then
 		if self.hasChanged then
+	        local s = os.clock()
 			self:draw()
 			terminal = terminal or term
 
@@ -52,34 +53,65 @@ function ScreenCanvas:drawToTerminal( terminal )
 					buffer[ ( y - 1 ) * width + x ] = cornerColour
 				end
 			end
+	        local blit = term.blit
+	        local hexes = { 
+	        	[2^0] = "0",
+	        	[2^1] = "1",
+	        	[2^2] = "2",
+	        	[2^3] = "3",
+	        	[2^4] = "4",
+	        	[2^5] = "5",
+	        	[2^6] = "6",
+	        	[2^7] = "7",
+	        	[2^8] = "8",
+	        	[2^9] = "9",
+	        	[2^10] = "a",
+	        	[2^11] = "b",
+	        	[2^12] = "c",
+	        	[2^13] = "d",
+	        	[2^14] = "e",
+	        	[2^15] = "f"
+	        }
+
 			for y = 1, self.height do
-				currentY = y
-				currentLength = 0
-				currentColour = nil
+				-- currentY = y
+				-- currentLength = 0
+				-- currentColour = nil
+				-- for x = 1, width do
+				-- 	local p = ( y - 1 ) * width + x
+				-- 	local c = buffer[p] or colour
+				-- 	if c ~= drawn[p] then
+				-- 		drawn[p] = c
+				-- 		if currentColour == c then
+				-- 			currentLength = currentLength + 1
+				-- 		else
+				-- 			draw()
+				-- 			currentLength = 1
+				-- 			currentX = x
+				-- 			currentColour = c
+				-- 		end
+				-- 	elseif currentLength ~= 0 then
+				-- 		draw()
+				-- 		currentLength = 0
+				-- 		currentColour = nil
+				-- 	else
+				-- 		currentColour = nil
+				-- 	end
+				-- end
+				-- draw()
+				local changed = false
+				local str = ""
 				for x = 1, width do
 					local p = ( y - 1 ) * width + x
 					local c = buffer[p] or colour
-					if c ~= drawn[p] then
-						drawn[p] = c
-						if currentColour == c then
-							currentLength = currentLength + 1
-						else
-							draw()
-							currentLength = 1
-							currentX = x
-							currentColour = c
-						end
-					elseif currentLength ~= 0 then
-						draw()
-						currentLength = 0
-						currentColour = nil
-					else
-						currentColour = nil
+					str = str .. hexes[c]
+					if not changed and c ~= drawn[p] then
+						changed = true
 					end
 				end
-				draw()
+				term.setCursorPos(1,y)
+				blit(str)
 			end
-
 		end
 	end
 	return self

@@ -14,6 +14,7 @@ class "GraphicsObject" {
 	fillColour = Graphics.colours.TRANSPARENT; -- @property [Graphics.colours] -- The fill colour of the object
 	isVisible = true;
 	fill = false;
+	outline = false;
 	drawsShadow = false;
 }
 

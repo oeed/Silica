@@ -50,14 +50,14 @@ class "TextBox" extends "View" {
 ]]
 function TextBox:initialise( ... )
 	self.super:initialise( ... )
-	self:event( Event.KEY_UP, self.onKeyUp )
-	self:event( Event.KEY_DOWN, self.onKeyDown )
-	self:event( Event.CHARACTER, self.onCharacter )
-	self:event( Event.MOUSE_DOWN, self.onMouseDown )
-	self:event( Event.MOUSE_UP, self.onMouseUp )
-	self:event( Event.MOUSE_DRAG, self.onMouseDrag )
-    self:event( Event.KEYBOARD_SHORTCUT, self.onKeyboardShortcut )
-    	self.event:connectGlobal( Event.MOUSE_UP, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+	self:event( KeyUpEvent, self.onKeyUp )
+	self:event( KeyDownEvent, self.onKeyDown )
+	self:event( CharacterEvent, self.onCharacter )
+	self:event( MouseDownEvent, self.onMouseDown )
+	self:event( MouseUpEvent, self.onMouseUp )
+	self:event( MouseDragEvent, self.onMouseDrag )
+    self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
+	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 end
 
 --[[
@@ -67,10 +67,10 @@ end
 function TextBox:initialiseCanvas()
 	self.super:initialiseCanvas()
 	local width, height, theme = self.width, self.height, self.theme
-	local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, width, height, theme.fillColour, theme.outlineColour, cornerRadius ) )
+	local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, width, height ) )
 	local selectionObject = self.canvas:insert( Rectangle( 0, 4, 1, self.height - 6 ) )
-	local placeholderObject = self.canvas:insert( Text( self.leftMargin, 5, self.width, 10, self.text ) )
-	local textObject = self.canvas:insert( Text( self.leftMargin, 5, self.width, 10, self.placeholder ) )
+	local placeholderObject = self.canvas:insert( Text( self.leftMargin, 5, self.width, 10, self.placeholder ) )
+	local textObject = self.canvas:insert( Text( self.leftMargin, 5, self.width, 10, self.text ) )
 	local cursorObject = self.canvas:insert( Cursor( 0, 4, self.height - 6 ) )
 	cursorObject.isVisible = false
 	selectionObject.isVisible = false
@@ -132,6 +132,15 @@ function TextBox:updateWidth( width )
 	local placeholderObject = self.placeholderObject
 	placeholderObject.x = self.leftMargin + 1
 	placeholderObject.width = width - self.leftMargin - self.rightMargin
+end
+
+function TextBox:setLeftMargin( leftMargin )
+	self.leftMargin = leftMargin
+	local textObject = self.textObject
+	if textObject then
+		textObject.x = leftMargin + 1 - self.scroll
+		self.placeholderObject.x = leftMargin + 2
+	end
 end
 
 function TextBox:updateSelection()
@@ -386,7 +395,7 @@ end
 function TextBox:setIsEnabled( isEnabled )
 	self.isEnabled = isEnabled
 	if not isEnabled then
-		self:unfocus()
+		self:unfocus( TextBox )
 	end
 	self:updateThemeStyle()
 end
@@ -422,7 +431,7 @@ end
 ]]
 function TextBox:onMouseUp( event )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
-		self:focus()
+		self:focus( TextBox )
 	end
 	return true
 end
@@ -501,7 +510,7 @@ end
 function TextBox:onCharacter( event )
 	if self.isFocused then
 		local text = self.text
-		self:write( event.character )
+		self:write( CharacterEvent )
 	end
 end
 

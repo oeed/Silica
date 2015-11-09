@@ -59,6 +59,7 @@ function Interface:getContainer()
 	if container then return container end
 
 	local containerProperties = self.containerProperties
+	log(textutils.serialize(containerProperties))
 	container = self.containerClass( containerProperties )
 	container.interfaceProperties = containerProperties
 	if not container then

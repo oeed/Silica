@@ -46,12 +46,6 @@ function ImageObject:drawTo( canvas, isShadow )
         local image = self.image
         if not image then return end
 
-        local fill = self.fill
-        local outline
-        if self.outlineColour ~= Graphics.colours.TRANSPARENT then
-            outline = self:getOutline( fill )
-        end
-
         local fillColour = self.fillColour
         local outlineColour = self.outlineColour
         local _x = self.x - 1
@@ -67,7 +61,21 @@ function ImageObject:drawTo( canvas, isShadow )
             return canvas
         end
 
+        local fill = {}
         local pixels = image:getScaledPixels( self.width, self.height )
+        for x, column in ipairs( pixels ) do
+            local fillX = {}
+            for y, pixel in ipairs( column ) do
+                fillX[y] = pixel ~= TRANSPARENT
+            end
+            fill[x] = fillX
+        end
+
+        local outline
+        if self.outlineColour ~= Graphics.colours.TRANSPARENT then
+            outline = self:getOutline( fill )
+        end
+
         for x, column in ipairs( pixels ) do
             for y, pixel in ipairs( column ) do
                 if (not outline or not outlineX or not outlineX[y]) then

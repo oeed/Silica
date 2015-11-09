@@ -32,8 +32,8 @@ function ScrollView:initialise( ... )
     -- self:sendToFront( self.horizontalScrollbar )
     self:sendToFront( self.verticalScrollbar )
 
-    self:event( Event.INTERFACE_LOADED, self.onInterfaceLoaded )
-    self:event( Event.MOUSE_SCROLL, self.onMouseScroll )
+    self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
+    self:event( MouseScrollEvent, self.onMouseScroll )
 end
 
 function ScrollView:initialiseCanvas()
