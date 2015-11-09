@@ -8,7 +8,7 @@ class "FilesApplicationContainer" extends "ApplicationContainer" {
 
 function FilesApplicationContainer:initialise( ... )
 	self.super:initialise( ... )
-	self:event( Event.INTERFACE_READY, self.onReady)
+	self:event( ReadyInterfaceEvent, self.onReady)
 end
 
 function FilesApplicationContainer:initialiseCanvas()
@@ -28,9 +28,9 @@ end
 
 function FilesApplicationContainer:setFileStyle( fileStyle )
     self.fileStyle = fileStyle
-    for i, fileItem in ipairs( self.filesContainer.children ) do
-        fileItem.style = fileStyle
-    end
+    -- for i, fileItem in ipairs( self.filesContainer.children ) do
+    --     fileItem.style = fileStyle
+    -- end
 end
 
 function FilesApplicationContainer:onReady( event )

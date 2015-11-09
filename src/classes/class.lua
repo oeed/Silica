@@ -22,9 +22,9 @@ local constructing = nil
 local USE_GLOBALS = true
 
 
-local class = {  }
+local class = { setters = setters }
 
-local classDefined = { className = true, dispose = true, can = true, properties = true, alias = true, type = true, typeOf = true, get = true, instance = true, application = true, isDefinedFunction = true, isDefinedProperty = true, isDefined = true, ifDefined = true, ifDefinedProperty = true, ifDefinedFunction = true } -- essentially the properties that instances can access
+local classDefined = { class = true, className = true, dispose = true, can = true, properties = true, alias = true, type = true, typeOf = true, get = true, instance = true, application = true, isDefinedFunction = true, isDefinedProperty = true, isDefined = true, ifDefined = true, ifDefinedProperty = true, ifDefinedFunction = true } -- essentially the properties that instances can access
 class.defined = classDefined
 
 function class.get( type )
@@ -91,6 +91,7 @@ function class:newSuper( instance, eq, ... )
 			local f = _class[k]
 			return function(_self, ...)
 				if _self == raw then
+					-- THIS SHOULD BE INSTANCE RAW
 					-- when calling a function on super, the instance needs to be given, but the super needs to be the super's super
 					local oldSuper = rawget( instance, "super" )
 					rawset( instance, "super", _rawSuper )
@@ -192,13 +193,15 @@ function class:ifFunc( key )
 end
 
 -- @static
-function class:new( ... )
+function class:new( shouldCallUnchangedSetters, ... )
 	local _class = self
 	local raw = {}
 	local proxy = { hasInitialised = false } -- the proxy. "self" always needs to be this, NOT raw
 	local super
 	local definedProperties = _class.definedProperties
 	local definedFunctions = _class.definedFunctions
+	local selfDefinedProperties = _class.selfDefinedProperties
+	local selfDefinedFunctions = _class.selfDefinedFunctions
 	local definedBoth = _class.definedBoth
 	proxy.mt = {}
 
@@ -283,7 +286,15 @@ function class:new( ... )
 		local notLocked = not lockedGetters[k]
 		if getFunc and notLocked then
 			lockedGetters[k] = true
-			local use, value = getFunc( proxy, k )
+
+			-- find the correct class to use. if the getter was define in a super class pass the super class
+			local _super, superSelfDefinedFunctions = proxy, selfDefinedFunctions
+			while not (superSelfDefinedFunctions and superSelfDefinedFunctions["get"] or _super.class.selfDefinedFunctions["get"]) do
+				_super = superSelfDefinedFunctions and _super.raw.super or _super.super
+				superSelfDefinedFunctions = nil
+			end
+
+			local use, value = getFunc( _super, k )
 			lockedGetters[k] = nil
 			if use then
 				return value
@@ -313,10 +324,18 @@ function class:new( ... )
 			local rawFunc = raw[getterName]
 			lockedGetters[k] = true
 
+			-- find the correct class to use. if the getter was define in a super class pass the super class
+			local _super, _superRaw, superSelfDefinedFunctions = proxy, raw, selfDefinedFunctions
+			while not (superSelfDefinedFunctions and superSelfDefinedFunctions[getterName] or _super.class.selfDefinedFunctions[getterName]) do
+				_super = superSelfDefinedFunctions and _super.raw.super or _super.super
+				_superRaw = _super
+				superSelfDefinedFunctions = nil
+			end
+
 			-- if the super has been masked then change it back, then change it again
 			local oldSuper = rawget( proxy, "super" )
-			rawset( proxy, "super", nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
-			local v = { rawFunc( proxy ) }
+			rawset( proxy, "super", _super ) -- as it's the proxy setting to nil simply causes it to look in raw again
+			local v = { rawFunc( _super ) }
 			rawset( proxy, "super", oldSuper )
 			local value =  unpack( v )
 
@@ -341,7 +360,14 @@ function class:new( ... )
 		-- it allows them to by pass the default class set behaviour and add their own
 		if setFunc and notLocked then
 			lockedSetters[k] = true
-			local use, value = setFunc( proxy, k, v )
+			-- find the correct class to use. if the setter was define in a super class pass the super class
+			local _super, _superRaw, superSelfDefinedFunctions = proxy, raw, selfDefinedFunctions
+			while not (superSelfDefinedFunctions and superSelfDefinedFunctions["set"] or _super.class.selfDefinedFunctions["set"]) do
+				_super = superSelfDefinedFunctions and _super.raw.super or _super.super
+				superSelfDefinedFunctions = nil
+			end
+
+			local use, value = setFunc( _super, k, v )
 			lockedSetters[k] = nil
 			if use then
 				raw[k] = value
@@ -359,15 +385,24 @@ function class:new( ... )
 
 		-- setters
 		local setterName = setters[k]
-		if definedFunctions[setterName] and notLocked then
-				-- if the filter wasn't applied, if the set"Key" function is set, call it
-			local rawFunc = raw[setterName]
+		if definedFunctions[setterName] and notLocked then -- there's a function somewhere that defines the getter
 			lockedSetters[k] = true
+
+			-- find the correct class to use. if the setter was define in a super class pass the super class
+			local _super, _superRaw, _superRaw, superSelfDefinedFunctions = proxy, raw, raw, selfDefinedFunctions
+			while not (superSelfDefinedFunctions and superSelfDefinedFunctions[setterName] or _super.class.selfDefinedFunctions[setterName]) do
+				_super = superSelfDefinedFunctions and _super.raw.super or _super.super
+				_superRaw = _super
+				_superRaw = _super
+				superSelfDefinedFunctions = nil
+			end
+				-- if the filter wasn't applied, if the set"Key" function is set, call it
+			local rawFunc = _superRaw[setterName]
 
 			-- if the super has been masked then change it back, then change it again
 			local oldSuper = rawget( proxy, "super" )
-			rawset( proxy, "super", nil ) -- as it's the proxy setting to nil simply causes it to look in raw again
-			local v = { rawFunc( proxy, v ) }
+			rawset( proxy, "super", _super )
+			local v = { rawFunc( _super, v ) }
 			rawset( proxy, "super", oldSuper )
 
 			lockedSetters[k] = nil
@@ -406,15 +441,13 @@ function class:new( ... )
 	end
 	proxy.hasInitialised = true
 
-	-- log(proxy)
-	for k, _ in pairs( definedProperties ) do
-		local classValue = self[k]
-		local instanceValue = raw[k]
-		-- log(k)
-		if classValue and type( classValue ) ~= "table" and instanceValue == classValue and definedFunctions[setters[k]] then
-			-- log("compare "..k..": "..tostring(instanceValue)..' == '..tostring(classValue).. ' - ' ..tostring(instanceValue ~= classValue))
-			-- log("set "..k..": "..tostring(classValue))
-			proxy[k] = classValue
+	if shouldCallUnchangedSetters then
+		for k, _ in pairs( definedProperties ) do
+			local classValue = self[k]
+			local instanceValue = raw[k]
+			if classValue and type( classValue ) ~= "table" and instanceValue == classValue and definedFunctions[setters[k]] then
+				proxy[k] = classValue
+			end
 		end
 	end
 
@@ -432,7 +465,7 @@ function class:construct( _, className )
 
 	local _class, _classProxy = {}, {}
 	_class.className = className
-	local definedProperties = { } -- the properties that were defined in the table at class construction
+	local definedProperties = { } -- the properties that were defined in the table at class construction. includes super classes
 	_class.definedProperties = definedProperties
 	local definedFunctions = { } -- the class functions defined 
 	_class.definedFunctions = definedFunctions
@@ -442,7 +475,9 @@ function class:construct( _, className )
 	_class._implements = {}
 
 	local selfDefinedFunctions = {}
+	_class.selfDefinedFunctions = selfDefinedFunctions
 	local selfDefinedProperties = {}
+	_class.selfDefinedProperties = selfDefinedProperties
 
 	local _mt = { __index = self }
 	setmetatable( _class, _mt )
@@ -452,7 +487,7 @@ function class:construct( _, className )
 	_classProxy.mt = mt
 
 	function mt:__call( ... )
-		return self:new( ... )
+		return self:new( true, ... )
 	end
 
 	local interfaceOutletActions = definedProperties.interfaceOutletActions

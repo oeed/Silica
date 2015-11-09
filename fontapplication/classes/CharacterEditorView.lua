@@ -27,7 +27,7 @@ function CharacterEditorView:initialise( ... )
     self:event( MouseDragEvent, self.onMouseDownOrMove )
     self.event:connectGlobal( MouseDownEvent, self.onGlobalMouseDownOrMove, EventManager.phase.BEFORE )
     self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDownOrMove, EventManager.phase.BEFORE )
-    self:event( Event.INTERFACE_READY, self.onReady)
+    self:event( ReadyInterfaceEvent, self.onReady)
 end
 
 function CharacterEditorView:onReady()

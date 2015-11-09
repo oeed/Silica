@@ -18,12 +18,13 @@ function _G.log2( text )
 	h.close()	
 end
 
+local _error = error
 function _G.logtraceback( level )
 	level = 2 + ( level or 1 )
 	local traceback, trace, source, line = {}
 	repeat
 		traceback[#traceback + 1] = trace
-		trace = select( 2, pcall( error, "@", level ) ):match "^(.+) @"
+		trace = select( 2, pcall( _error, "@", level ) ):match "^(.+) @"
 		if trace and trace:find "^.+%.lua:%d+:$" then
 			trace = trace:match "^(.+)%.lua:%d+:$" .. " on line " .. trace:match "^.+%.lua:(%d+):$"
 		end
@@ -35,12 +36,11 @@ function _G.logtraceback( level )
 	log( "Start of traceback:\n" .. ("-"):rep( 20 ) .. "\nin " .. table.concat( traceback, "\nin ") .. "\n" .. ("-"):rep( 20 ) .. "\nEnd of traceback" )
 end
 
-local _error = error
 function _G.error(...)
 	term.setBackgroundColor(colors.red)
 	term.clear()
+	logtraceback()
 	_error(...)
-
 	while true do
 		local event, key = os.pullEvent("char")
 		if key == "\\" then
@@ -59,6 +59,7 @@ end
 -- os.loadAPI( 'src/debug' )
 -- _G.debug = debug
 
+term.redirect(term.native())
 
 shell.run( "package /src Silica" )
 -- shell.run( "package /application app" )

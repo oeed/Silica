@@ -1,4 +1,15 @@
 
+local function callSetters( instance, _class )
+	local definedFunctions, setters, raw = _class.definedFunctions, class.setters, instance.raw
+	for k, _ in pairs( _class.definedProperties ) do
+		local classValue = _class[k]
+		local instanceValue = raw[k]
+		if classValue and type( classValue ) ~= "table" and instanceValue == classValue and definedFunctions[setters[k]] then
+			instance[k] = classValue
+		end
+	end
+end
+
 class "Interface" {
 	name = false; -- the name of the interface (the file name without the extension)
 	container = false; -- if you want to generate a container based on the interface (i.e. not use the properties and children for an already made interface) you can use the value
@@ -59,19 +70,22 @@ function Interface:getContainer()
 	if container then return container end
 
 	local containerProperties = self.containerProperties
-	log(textutils.serialize(containerProperties))
-	container = self.containerClass( containerProperties )
+	local containerClass = self.containerClass
+	container = containerClass:new( false, containerProperties )
 	container.interfaceProperties = containerProperties
 	if not container then
 		error( "Interface XML invaid: " .. self.name .. ".sinterface. Error: Failed to initialise Container class: " .. tostring( self.class ) .. ". Identifier: " .. tostring( properties.identifier ), 0 )
 	end
 
 	self.container = container
+	callSetters( container, containerClass )
 
 	local children = self.children
 	for i, childView in ipairs( children ) do
 		container:insert( childView )
+		callSetters( childView, childView.class )
 	end
+
 
 	container.event:handleEvent( LoadedInterfaceEvent( container ) )
 	return container
@@ -99,7 +113,7 @@ function Interface:getChildren()
 			interfaceProperties[k] = v
 		end
 		childNode.attributes.interfaceProperties = interfaceProperties
-		local childView = childClass( childNode.attributes )
+		local childView = childClass:new( false, childNode.attributes )
 
 		if not childView then
 			return nil, "Failed to initialise " .. childNode.type .. ". Identifier: " .. tostring( childNode.attributes.identifier )

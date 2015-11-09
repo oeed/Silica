@@ -21,7 +21,7 @@ class "FontStudioApplicationContainer" extends "ApplicationContainer" {
 
 function FontStudioApplicationContainer:initialise( ... )
 	self.super:initialise( ... )
-	self:event( Event.INTERFACE_READY, self.onReady)
+	self:event( ReadyInterfaceEvent, self.onReady)
     self:event( Event.KEY_DOWN, self.onKeyDown )
 end
 

@@ -47,7 +47,7 @@ function FileItem:initialise( ... )
 
     self:event( MouseDownEvent, self.onMouseDown )
     self:event( MouseHeldEvent, self.onMouseHeld )
-    self:event( Event.MOUSE_DOUBLE_CLICK, self.onMouseDoubleClick )
+    self:event( MouseDoubleClickEvent, self.onMouseDoubleClick )
     -- self:event( Event.KEY_DOWN, self.onKeyDown )
     -- self:event( Event.KEY_UP, self.onKeyUp )
     -- self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )

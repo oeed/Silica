@@ -40,7 +40,7 @@ function SegmentButton:initialiseCanvas()
     theme:disconnect( self.shadowObject, "radius", "cornerRadius" )
 end
 
-function SegmentButton:setWidth( width ) -- yes, set
+function SegmentButton:setWidth( width ) -- yes, set, not update
     self.super:setWidth( width )
     local isFirst = self.isFirst
     local isLast = self.isLast

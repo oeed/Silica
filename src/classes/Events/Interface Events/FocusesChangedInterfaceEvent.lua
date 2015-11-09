@@ -12,10 +12,6 @@ class "FocusesChangedInterfaceEvent" extends "InterfaceEvent" {
 	@param [table] oldFocuses -- the old focuses
 ]]
 function FocusesChangedInterfaceEvent:initialise( newFocuses, oldFocuses )
-    log("change?")
-    for k, v in pairs(oldFocuses) do
-        log(tostring(k)..":"..tostring(v))
-    end
 	self.newFocuses = newFocuses
     self.oldFocuses = oldFocuses
 end

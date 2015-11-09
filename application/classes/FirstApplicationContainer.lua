@@ -5,7 +5,7 @@ class "FirstApplicationContainer" extends "ApplicationContainer" {
 
 function FirstApplicationContainer:initialise( ... )
 	self.super:initialise( ... )
-	self:event( Event.INTERFACE_READY, self.onReady)
+	self:event( ReadyInterfaceEvent, self.onReady)
 end
 
 function FirstApplicationContainer:onReady( event )

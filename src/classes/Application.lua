@@ -67,6 +67,17 @@ function Application.load( path )
 			local ok, err = pcall( f )
 			if err then error( err, 0 ) end
 			loaded[name] = true
+			local _class = class.get( name:gsub(".lua", ""))
+            if _class then 
+                _class:cement()
+            else
+                local _interface = interface.get( name:gsub(".lua", ""))
+                if _interface then
+                    _interface:cement()
+                else
+                    error( "File '" .. name .. "' did not define class or interface '" .. name:gsub(".lua", "") .. "'. Check your syntax/spelling or remove it from the classes folder if it does not define a class.", 0)
+                end
+            end
 		end
 	end
 
@@ -155,8 +166,6 @@ function Application:reloadInterface()
 	else
 		self.container = ApplicationContainer()
 	end
-	log("loaded")
-	log(self.container)
 	self.event:handleEvent( ReadyInterfaceEvent( true ) )
 end
 

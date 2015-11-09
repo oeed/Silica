@@ -12,7 +12,7 @@ class "FontStudioApplication" extends "Application" {
 ]]
 function FontStudioApplication:initialise()
 	self.super:initialise()
-	self:event( Event.CHARACTER, self.onChar )
+	self:event( CharacterEvent, self.onChar )
 end
 
 --[[

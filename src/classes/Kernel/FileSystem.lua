@@ -1,15 +1,15 @@
 
--- local function tidy( path )
---     return path
---         :gsub( "/.-/%.%./", "/" )
---         :gsub( "^.-/%.%./", "" )
---         :gsub( "/%./", "/" )
---         :gsub( "^%.%./", "" )
---         :gsub( "^%.%.$", "" )
---         :gsub( "//+", "/" )
---         :gsub( "^/", "" )
---         :gsub( "/$", "" )
--- end
+local function tidy( path )
+    return path
+        :gsub( "/.-/%.%./", "/" )
+        :gsub( "^.-/%.%./", "" )
+        :gsub( "/%./", "/" )
+        :gsub( "^%.%./", "" )
+        :gsub( "^%.%.$", "" )
+        :gsub( "//+", "/" )
+        :gsub( "^/", "" )
+        :gsub( "/$", "" )
+end
 
 -- local function formatDevicePath( path )
 --     return path:gsub( "([%%%.%(%)%[%]%^%$%*%+%-%?])", "%%%1" )
@@ -24,8 +24,7 @@ class "FileSystem" {
 }
 
 function FileSystem:initialise( relativePath )
-    assert( type( relativePath ) == "string", "Expected realtive path as string." )
-    self.relativePath = relativePath
+    self.relativePath = relativePath or ""
 end
 
 -- function FileSystem:invoke( mathod, path, ... )
