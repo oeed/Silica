@@ -25,7 +25,7 @@ function Folder:getItems( noFiles, noFolders)
     local items = {}
     local path = self.path
     for i, name in ipairs( fs.list( path ) ) do
-        if name ~= ".DS_Store" then
+        if name ~= ".DS_Store" or name ~= ".meta" then
             local item = FileSystemItem( path .. "/" .. name, self )
             if not ( noFolders and noFolders ) or ( noFiles and not item:typeOf( File ) ) or ( noFolders and not item:typeOf( Folder ) ) then
                 table.insert( items, item )

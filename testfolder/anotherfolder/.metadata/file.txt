@@ -1,0 +1,6 @@
+{
+    openedTimestamp = 1447157682,
+    mime = "text/plain",
+    createdTimestamp = 1447157682,
+    modifiedTimestamp = 1447157682,
+}

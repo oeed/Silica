@@ -1,5 +1,5 @@
 
-class "File" extends "FileSystemItem" {
+class "File" extends "FileSystemItem" implements "IEditableFileSystemItem" {
 
     contents = false; -- the string contents of the file
     binaryContents = false; -- a table of bytes; the file contents, read and written using the rb/wb mode 

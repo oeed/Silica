@@ -752,6 +752,8 @@ class \"FileSystemItem\" {\
     sizeString = false;\
     parent = false;\
     parentPath = false;\
+    metadata = false;\
+    metadataPath = false;\
 \
 }\
 \
@@ -781,7 +783,7 @@ function FileSystemItem:setPath( path )\
 \
     local parentPath, fullName = path:match( \"(.*)/(.+)\" )\
     self.fullName = fullName\
-    self.parentPath = parentPath\
+    self.raw.parentPath = parentPath\
     local name, extension = fullName:match( \"^(.+)%.(%w-)$\" )\
     self.name = name or fullName\
     self.extension = extension or false\
@@ -819,6 +821,53 @@ end\
 \
 function FileSystemItem:setParent( items )\
     error( \"FileSystemItem.parent is a read-only property. To move a FileSystemItem use :moveTo\", 2 )\
+end\
+\
+function FileSystemItem:setParentPath( items )\
+    error( \"FileSystemItem.parentPath is a read-only property. To move a FileSystemItem use :moveTo\", 2 )\
+end\
+\
+function FileSystemItem:moveTo( folder )\
+    local folderPath = folder.path\
+    if folderPath == self.parentPath then return end\
+\
+    local newPath = folderPath .. \"/\" .. self.fullName\
+    fs.move( self.path, newPath )\
+    self.metadata:moveTo( folder )\
+    self.raw.parentPath = folderPath\
+end\
+\
+function FileSystemItem:copyTo( folder )\
+    local folderPath = folder.path\
+    if folderPath == self.parentPath then return end\
+\
+    local newPath = folderPath .. \"/\" .. self.fullName\
+    fs.copy( self.path, newPath )\
+    local newFile = FileSystemItem( newPath )\
+    self.metadata:copyTo( folder, newFile )\
+end\
+\
+function FileSystemItem:rename( fullName )\
+    local newPath = self.parentPath .. \"/\" .. fullName\
+    fs.move( self.path, newPath )\
+    self.metadata:rename( fullName )\
+end\
+\
+function FileSystemItem:getMetadataPath()\
+    return self.parentPath .. \"/.metadata/\" ..self.fullName\
+end\
+\
+function FileSystemItem:getMetadata()\
+    local metadata = self.metadata\
+    if metadata then return metadata end\
+\
+    metadata = Metadata( self )\
+    self.raw.metadata = metadata\
+    return metadata\
+end\
+\
+function FileSystemItem:setMetadata( items )\
+    error( \"FileSystemItem.metadata is a read-only property.\", 2 )\
 end",["ToolbarStaticSpace.lua"] = "\
 class \"ToolbarStaticSpace\" extends \"View\" implements \"IToolbarItem\" {\
 \
@@ -2614,206 +2663,274 @@ function Rectangle:getFill()\
 \
 \9self.fill = fill\
 \9return fill\
-end",["EventManager.lua"] = "\
-class \"EventManager\" {\
-\9owner = false;\
-\9handles = {};\
-\9handlesGlobal = {};\
+end",["Font.lua"] = "\
+local floor, ceil = math.floor, math.ceil\
+local cache = {}\
 \
-\9-- functions can be called either before or after tickle down\
-\9phase = {\
-\9\9BEFORE = 1;\
-\9\9AFTER = 2;\
+local function readstring( handle )\
+\9local v = handle.read()\
+\9local s = \"\"\
+\9while v ~= 0 do\
+\9\9s = s .. string.char( v )\
+\9\9v = handle.read()\
+\9end\
+\9return s\
+end\
+local function writestring( handle, text )\
+\9for i = 1, #text do\
+\9\9handle.write( text:byte( i ) )\
+\9end\
+end\
+\
+local function renderCharacterScaledDown( setPixel, character, _x, _y, cw, ch, scale, colour )\
+\9_x = _x - 1\
+\9_y = _y - 1\
+\9for x = 1, cw do\
+\9\9for y = 1, ch do\
+\9\9\9if character[y] and character[y][x] then\
+\9\9\9\9setPixel( ceil( _x + x * scale - .5 ), ceil( _y + y * scale - .5 ), colour )\
+\9\9\9end\
+\9\9end\
+\9end\
+end\
+\
+local no_char_map = {\
+\9width = 5;\
+\9{ true,  true,  true,  true, true };\
+\9{ true, false, false, false, true };\
+\9{ true, false, false, false, true };\
+\9{ true, false, false, false, true };\
+\9{ true, false, false, false, true };\
+\9{ true,  true,  true,  true, true };\
+}\
+\
+class \"Font\" {\
+\9height = 0;\
+\9desiredHeight = 0;\
+\9spacing = 1;\
+\9characters = false;\
+\9scale = false;\
+\9systemFont = false;\
+\
+\9alignments = {\
+\9\9LEFT = 0;\
+\9\9CENTER = 1;\
+\9\9CENTRE = 1;\
+\9\9RIGHT = 2;\
+\9\9JUSTIFIED = 3;\
 \9};\
 }\
 \
-\
 --[[\
 \9@constructor\
-\9@desc Creates an EventManager for the provided owner, with owner reverting to the EventManager instance\
-\9@param [class] owner -- the owner of the EventManger (i.e. what self will be on function calls)\
+\9@desc Create a font with the given name\
+\9@param [string] fontName -- the name of the desired font\
+\9@param [number] desiredHeight -- the height of the desired font\
+\9@param [boolean] reload -- default is false, whether the cache should be ignored and the font reloaded\
 ]]\
-function EventManager:initialise( owner )\
-\9self.owner = owner or self\
-\9self.owner = self.owner\
-\
-\9-- allow the class to be called as a shorthand for :connect\
-\9self.mt.__call = function(self, _, ...) return self:connect( ... ) end\
-\9setmetatable( self, self.mt )\
-end\
-\
---[[\
-\9@instance\
-\9@desc Subscribes a function to the given event\
-\9@param [Event.eventType] eventType -- the name of the event type\
-\9@param [EventManager] eventManager -- the handle manager \
-\9@param [function] func -- the function called when the event occurs\
-\9@param [class] sender -- the value passed as self. defaults to eventManager.owner\
-]]\
-function EventManager:connect( eventType, func, phase, eventManager, sender )\
-\9if not eventType then error( \"No event type given to EventManager:connect!\", 2 ) end\
-\9if type( eventType ) == \"table\" and eventType:typeOf( Event ) then eventType = eventType.eventType end\
-\9\
-\9if func and type( func ) == \"function\" then\
-\9\9phase = phase or EventManager.phase.BEFORE\
-\9\9eventManager = eventManager or self\
-\9\9self:disconnect( eventType, func, phase, eventManager, sender ) -- ensure duplicates won't be made\
-\
-\9\9if not self.handles[eventType] then\
-\9\9\9self.handles[eventType] = {}\
-\9\9end\
-\
-\9\9table.insert( self.handles[eventType], { func, phase, eventManager, sender or eventManager.owner } )\
+function Font:initialise( name, desiredHeight, reload )\
+\9local characters, height\
+\9desiredHeight = desiredHeight or 8\
+\9if cache[name] and cache[name][desiredHeight] and not reload then\
+\9\9characters, height = cache[name][desiredHeight][1], cache[name][desiredHeight][2]\
 \9else\
-\9\9error( \"Attempted to connect non-function to event: \" .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )\
+\9\9local resource = Resource( name .. \".sfont\", \"fonts\" )\
+\9\9characters, height = BitmapFont.decodeResource( resource )\
+\9\9cache[name] = cache[name] or {}\
+\9\9cache[name][desiredHeight] = { characters, height }\
 \9end\
+\9self.characters = characters\
+\9self.height = height\
+\9self.desiredHeight = desiredHeight or height\
+\9self.scale = ( desiredHeight or height ) / height\
 end\
 \
---[[\
-\9@instance\
-\9@desc Unsubscribes a function to the given event\
-\9@param [Event.eventType] eventType -- the name of the event type\
-\9@param [function] func -- the function called when the event occurs\
-\9@param [class] sender -- the value passed as self. defaults to eventManager.owner\
-]]\
-function EventManager:disconnect( eventType, func, phase, eventManager, sender )\
-\9phase = phase or EventManager.phase.BEFORE\
-\9eventManager = eventManager or self\
-\9sender = sender or eventManager.owner\
+function Font.initialisePresets()\
+\9-- TODO: make this come from the theme\
+\9-- Font.systemFont = Font( \"Napier\" )\
+\9Font.systemFont = Font( \"Auckland\" )\
+end\
 \
-\9if self.handles[eventType] then\
-\9\9for i, handle in pairs( self.handles[eventType] ) do\
-\9\9\9if handle[1] == func and handle[2] == phase and handle[3] == eventManager and handle[4] == sender then\
-\9\9\9\9self.handles[eventType][i] = nil\
-\9\9\9end\
+function Font.readMetadata( file )\
+\9local h = fs.open( file, \"rb\" )\
+\9if h then\
+\9\9local metadata = {}\
+\9\9local v = h.read()\
+\9\9while v == 0 do\
+\9\9\9local key, value = readstring( h ), readstring( h )\
+\9\9\9metadata[key] = value\
+\9\9\9v = h.read()\
 \9\9end\
+\9\9h.close()\
+\9\9return metadata\
 \9end\
 end\
 \
---[[\
-\9@instance\
-\9@desc Subscribes a function globally to the given event\
-\9@param [Event.eventType] eventType -- the name of the event type\
-\9@param [function] func -- the function called when the event occurs\
-]]\
-function EventManager:connectGlobal( eventType, func, phase, sender )\
-\9if func and type( func ) == \"function\" then\
-\9\9phase = phase or EventManager.phase.BEFORE\
-\9\9sender = sender or self.owner\
-\9\9self:disconnectGlobal( eventType, func, phase, sender ) -- ensure duplicates won't be made\
+function Font.encodeFile( file, characters, height, metadata )\
+\9local h = fs.open( file, \"wb\" )\
+\9return Font.encodeHandle( handle, characters, height, metadata)\
+end\
 \
-\9\9if not self.handlesGlobal[eventType] then\
-\9\9\9self.handlesGlobal[eventType] = {}\
+function Font.encodeHandle( h, characters, height, metadata )\
+\9if h then\
+\9\9for k, v in pairs( metadata or {} ) do\
+\9\9\9h.write( 0 )\
+\9\9\9writestring( h, tostring( k ) )\
+\9\9\9h.write( 0 )\
+\9\9\9writestring( h, tostring( v ) )\
+\9\9\9h.write( 0 )\
 \9\9end\
-\
-\9\9table.insert( self.handlesGlobal[eventType], { func, phase, sender } )\
-\9\9self.application.event:connect( eventType, func, phase, self, sender )\
-\9else\
-\9\9error( \"Attempted to connect non-function to global event: \" .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )\
-\9end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Unsubscribes a function to globally the given event\
-\9@param [Event.eventType] eventType -- the name of the event type\
-\9@param [function] func -- the function called when the event occurs\
-]]\
-function EventManager:disconnectGlobal( eventType, func, phase, sender, eventManager )\
-\9phase = phase or EventManager.phase.BEFORE\
-\9sender = sender or self.owner\
-\9self.application.event:disconnect( eventType, func, phase, self, sender )\
-\
-\9if self.handlesGlobal[eventType] then\
-\9\9for i, handle in pairs( self.handlesGlobal[eventType] ) do\
-\9\9\9if handle[1] == func and handle[2] == phase and handle[3] == eventManager and handle[4] == sender then\
-\9\9\9\9self.handlesGlobal[eventType][i] = nil\
-\9\9\9end\
+\9\9h.write( 1 )\
+\9\9h.write( height )\
+\9\9local bytes\
+\9\9if metadata.fontType == \"vector\" then\
+\9\9\9bytes = VectorFont.encodeSet( characters, height )\
+\9\9else\
+\9\9\9bytes = BitmapFont.encodeSet( characters, height )\
 \9\9end\
-\9end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Unsubscribes all global events\
-]]\
-function EventManager:disconnectAllGlobals()\
-\9for eventType, v in pairs( self.handlesGlobal ) do\
-\9\9for i, handle in pairs( v ) do\
-\9\9\9self.application.event:disconnect( eventType, handle[1], handle[2], handle[3], self)\
-\9\9\9v[i] = nil\
+\9\9for _, byte in ipairs( bytes ) do\
+\9\9\9h.write( byte )\
 \9\9end\
-\9end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Returns true if the EventManager has any handles for the given type\
-\9@param [Event.eventType] eventType -- the name of the even type\
-\9@return [boolean] hasConnections\
-]]\
-function EventManager:hasConnections( eventType )\
-\9return self.handles[eventType] and #self.handles[eventType] >= 1\
-end\
-\
---[[\
-\9@instance\
-\9@desc Returns true if the EventManager has any global handles for the given type\
-\9@param [Event.eventType] eventType -- the name of the even type\
-\9@return [boolean] hasConnections\
-]]\
-function EventManager:hasConnectionsGlobal( eventType )\
-\9return self.handlesGlobal[eventType] and #self.handlesGlobal[eventType] >= 1\
-end\
-\
---[[\
-\9@instance\
-\9@desc Perfoms the appropriate handles for the given event\
-\9@param [Event] event -- the event to handle\
-\9@return [boolean] stopPropagation -- whether no further handles should recieve this event\
-]]\
-function EventManager:handleEvent( event )\
-\9if self:handleEventPhase( event, self.phase.BEFORE ) then\
-\9\9return true\
-\9end\
-\
-\9if self:handleEventPhase( event, self.phase.AFTER ) then\
+\9\9h.close()\
 \9\9return true\
 \9end\
 end\
 \
---[[\
-\9@instance\
-\9@desc Performs the handles for a specific phase\
-\9@param [Event] event -- the event to handle\
-\9@param [EventManager.phase] phase -- the phase desired\
-\9@return [boolean] stopPropagation -- whether no further handles should recieve this event\
-]]\
-function EventManager:handleEventPhase( event, phase )\
-\9local eventType = event.eventType\
-\9if self.handles[eventType] then\
-\9\9for i, handle in pairs( self.handles[eventType] ) do\
-\9\9\9if handle and phase == handle[2] then\
-\9\9\9\9-- handle[1] is the handle function\
-\9\9\9\9-- handle[2] is the phase\
-\9\9\9\9-- handle[3] is the event manager\
-\9\9\9\9-- handle[4] is the sender\
-\9\9\9\9local response = handle[1]( handle[4], event, handle[2] ) -- if response is true stop propagation, if false continue\
-\9\9\9\9-- TODO: maybe enforce returning boolean for event handler functions\
-\9\9\9\9-- if response ~= true and response ~= false then\
-\9\9\9\9-- \9error( \"Error handler for event '\" .. eventType .. \"' of instance '\" .. tostring( handle[4] ) .. \"' did not return boolean. If the event should not be sent to anything else (i.e. stop propagation) return true, otherwise, if it can continue being passed around, return false.\", 0 )\
-\9\9\9\9-- end\
+function Font.decodeResource( resource )\
+\9-- log(resource)\
+\9local contents = resource.contents\
+\9-- log(resource.path)\
+\9-- log(contents)\
+\9if contents then\
+\9\9local i = 1\
+\9\9local contentsLen = #contents\
+\9\9local b = string.byte\
+\9\9local sub = string.sub\
+\9\9local h = {}\
 \
-\9\9\9\9if response then\
-\9\9\9\9\9return true\
+\9\9function h.read()\
+\9\9\9if i <= contentsLen then\
+\9\9\9\9local value = b( sub( contents, i, i ) )\
+\9\9\9\9i = i + 1\
+\9\9\9\9return value\
+\9\9\9end\
+\9\9end\
+\
+\9\9return Font.decodeHandle( h )\
+\9end\
+end\
+\
+function Font.decodeFile( file )\
+\9local h = fs.open( file, \"rb\" )\
+\9return Font.decodeHandle( h )\
+end\
+\
+function Font.decodeHandle( h )\
+\9if h then\
+\9\9local metadata = {}\
+\9\9local v = h.read()\
+\9\9while v == 0 do\
+\9\9\9local key, value = readstring( h ), readstring( h )\
+\9\9\9metadata[key] = value\
+\9\9\9v = h.read()\
+\9\9end\
+\9\9local height = h.read()\
+\9\9local bytes = {}\
+\9\9for byte in h.read do\
+\9\9\9bytes[#bytes + 1] = byte\
+\9\9end\
+\
+\9\9local fontType = metadata.fontType\
+\9\9local characters\
+\
+\9\9if fontType == \"bitmap\" then\
+\9\9\9characters = BitmapFont.decodeSet( bytes, height )\
+\9\9else\
+\9\9\9characters = VectorFont.decodeSet( bytes, height )\
+\9\9end\
+\9\9return characters, height, metadata\
+\9end\
+end\
+\
+function Font:getHeight()\
+\9return self.height\
+end\
+\
+function Font:getWidth( text )\
+\9if not text then return 0 end\
+\9local width = 0\
+\9local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing\
+\9for i = 1, #text do\
+\9\9local char = text:byte( i )\
+\9\9local scale, bitmap = scale -- localise scale so it can be changed if the character isn't defined\
+\9\9if characters[char] then\
+\9\9\9bitmap = characters[char]\
+\9\9else\
+\9\9\9bitmap = no_char_map\
+\9\9\9scale = desiredHeight / 6\
+\9\9end\
+\9\9width = width + bitmap.width * scale + spacing * scale\
+\9end\
+\9return width - spacing\
+end\
+\
+function Font:getRawWidth( text )\
+\9if not text then return 0 end\
+\9local width = 0\
+\9local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing\
+\9for i = 1, #text do\
+\9\9local char = text:byte( i )\
+\9\9local scale, bitmap = scale -- localise scale so it can be changed if the character isn't defined\
+\9\9if characters[char] then\
+\9\9\9bitmap = characters[char]\
+\9\9else\
+\9\9\9bitmap = no_char_map\
+\9\9\9scale = desiredHeight / 6\
+\9\9end\
+\9\9width = width + bitmap.width * scale\
+\9end\
+\9return width\
+end\
+\
+function Font:render( canvas, text, x, y, cropWidth, cropHeight, colour )\
+\9y = y - 1\
+\9x = x - 1\
+\9text = text == nil and \"\" or tostring( text )\
+\9local buffer = canvas.buffer\
+\9local width, height, _height = canvas.width, canvas.height, self.height\
+\9local cropX, cropY = math.min( x + cropWidth, width ), math.min( y + cropHeight, height )\
+\9local TRANSPARENT = Graphics.colours.TRANSPARENT\
+\9local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing\
+\9local function setPixel( x, y, colour )\
+\9\9if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= cropX and y <= cropY then\
+\9        buffer[ ( y - 1 ) * width + x ] = colour\
+\9    end\
+\9end\
+\9for i = 1, #text do\
+\9\9local char = text:byte( i )\
+\9\9local bitmap\
+\9\9if characters[char] then\
+\9\9\9bitmap = characters[char]\
+\9\9else\
+\9\9\9bitmap = no_char_map\
+\9\9\9scale = desiredHeight / 6\
+\9\9end\
+\9\9local cwidth = bitmap.width * scale\
+\9\9if scale < 1 then\
+\9\9\9renderCharacterScaledDown( setPixel, bitmap, x, y, bitmap.width, _height, scale, colour )\
+\9\9else\
+\9\9\9for _y = 1, desiredHeight do\
+\9\9\9\9for _x = 1, ceil( cwidth ) do\
+\9\9\9\9\9local bx, by = ceil( _x / scale ), ceil( _y / scale )\
+\9\9\9\9\9local char_is_on = bitmap[by] and bitmap[by][bx]\
+\9\9\9\9\9if char_is_on then\
+\9\9\9\9\9\9setPixel( floor( x + _x + .5 ), floor( y + _y + .5 ), colour ) -- oh no, not this...\
+\9\9\9\9\9end\
 \9\9\9\9end\
 \9\9\9end\
 \9\9end\
+\9\9x = x + cwidth + spacing * scale\
 \9end\
-end\
-\
-function EventManager:dispose()\
-\9self:disconnectAllGlobals()\
 end",["CloseWindowButton.lua"] = "\
 class \"CloseWindowButton\" extends \"WindowButton\" {}\
 \
@@ -2861,7 +2978,7 @@ end",["KeyDownEvent.lua"] = "\
 class \"KeyDownEvent\" extends \"KeyEvent\" {\
 \9eventType = \"key\";\
 }",["File.lua"] = "\
-class \"File\" extends \"FileSystemItem\" {\
+class \"File\" extends \"FileSystemItem\" implements \"IEditableFileSystemItem\" {\
 \
     contents = false; -- the string contents of the file\
     binaryContents = false; -- a table of bytes; the file contents, read and written using the rb/wb mode \
@@ -3719,7 +3836,7 @@ function Folder:getItems( noFiles, noFolders)\
     local items = {}\
     local path = self.path\
     for i, name in ipairs( fs.list( path ) ) do\
-        if name ~= \".DS_Store\" then\
+        if name ~= \".DS_Store\" or name ~= \".meta\" then\
             local item = FileSystemItem( path .. \"/\" .. name, self )\
             if not ( noFolders and noFolders ) or ( noFiles and not item:typeOf( File ) ) or ( noFolders and not item:typeOf( Folder ) ) then\
                 table.insert( items, item )\
@@ -4245,77 +4362,27 @@ function MouseScrollEvent:initialise( direction, x, y )\
 \9self.globalX = x\
 \9self.globalY = y\
 end\
-",["Resource.lua"] = "\
--- TODO: thrown an error when there is an identically named file in a resource folder\
-\
-class \"Resource\" {\
-\9path = false;\
-\9contents = false;\
+",["InterfaceOutletChangedInterfaceEvent.lua"] = "\
+class \"InterfaceOutletChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
+\9eventType = \"interface_outlet_changed\";\
+\9interfaceOutlet = false;\
+\9oldView = false;\
+\9newView = false;\
+\9isSentToChildren = false;\
+\9isSentToSender = false;\
 }\
 \
 --[[\
 \9@constructor\
-\9@desc Creates a resource class, allowing ease resolving and loading of files\
-\9@param [string] match -- the exact file name of the file\
-\9@param [string] category -- the category (folder, such as classes, interfaces) to look in\
-\9@param [boolean] allowDirectories -- default false, whether directories are able to be matched\
+\9@desc Creates a focus event from the arguments\
+\9@param interfaceOutlet -- the interface outlet that changed\
+\9@param newView -- the new view the outlet is bound to\
+\9@param oldView -- the old view the outlet was bound to\
 ]]\
-function Resource:initialise( name, category, allowDirectories )\
-\9category = category or \"resources\"\
-\9-- TODO: path tidying\
-\9-- TODO: maybe do this backwards? so you can override files in other libraries\
-\9\
-\9-- search the resource tables\
-\9local resourceTables = self.application.resourceTables\
-\9if #resourceTables > 0 then\
-\9\9for i = 1, #resourceTables do\
-\9\9\9local categoryFiles = resourceTables[i][category]\
-\9\9\9if categoryFiles then\
-\9\9\9\9local contents = categoryFiles[name]\
-\9\9\9\9if contents and ( allowDirectories or type( contents ) ~= \"table\" ) then\
-\9\9\9\9\9self.contents = contents\
-\9\9\9\9\9return\
-\9\9\9\9end\
-\9\9\9end\
-\9\9end\
-\9end\
-\
-\9-- otherwise search the resource directories\
-\9local function searchDirectories( path )\
-\9\9if type( path ) == \"table\" then\
-\9\9\9for i, _path in ipairs( path ) do\
-\9\9\9\9local value = searchDirectories( _path .. \"/\" .. category )\
-\9\9\9\9if value then return value end\
-\9\9\9end\
-\9\9elseif fs.exists( path ) and fs.isDir( path ) then\
-\9\9\9local files = fs.list( path )\
-\9\9\9for i, v in ipairs( files ) do\
-\9\9\9\9local _path = path .. \"/\" .. v\
-\9\9\9\9local isDir = fs.isDir( _path )\
-\
-\9\9\9\9-- TODO: bundles\
-\9\9\9\9if ( allowDirectories or not isDir ) and name == v then\
-\9\9\9\9\9return _path\
-\9\9\9\9end\
-\
-\9\9\9\9if isDir then\
-\9\9\9\9\9local value = searchDirectories( _path .. '/' )\
-\9\9\9\9\9if value then return value end\
-\9\9\9\9end\
-\9\9\9end\
-\9\9end\
-\9end\
-\
-\9local path = searchDirectories( self.application.resourceDirectories )\
-\9self.path = path or false\
-\
-\9if path and not fs.isDir( path ) then\
-\9\9local f = fs.open( path, \"r\" )\
-\9\9if f then\
-\9\9\9self.contents = f.readAll()\
-\9\9\9f.close()\
-\9\9end\
-\9end\
+function InterfaceOutletChangedInterfaceEvent:initialise( interfaceOutlet, newView, oldView )\
+\9self.interfaceOutlet = interfaceOutlet\
+\9self.newView = newView\
+\9self.oldView = oldView\
 end",["Window.lua"] = "\
 class \"Window\" extends \"Container\" {\
 \9-- separatorObject = false;\9\
@@ -6274,7 +6341,12 @@ function WindowButton:onMouseDown( event )\
         self.isPressed = true\
     end\
     return true\
-end",["Circle.lua"] = "\
+end",["IEditableFileSystemItem.lua"] = "\
+interface \"IEditableFileSystemItem\" {\
+    \
+    contents = false; -- the contents of the file\
+\
+}",["Circle.lua"] = "\
 class \"Circle\" extends \"GraphicsObject\" {}\
 \
 --[[\
@@ -6336,11 +6408,12 @@ function Circle:getFill()\
 \9return fill\
 end",["Document.lua"] = "\
 class \"Document\" {\
-\9path = false;\
+\
 \9contents = false;\
-\9readMode = \"r\";\
-\9writeMode = \"w\";\
+\9file = false;\
+\9isBinary = false;\
 \9isModified = false;\
+\
 }\
 \
 --[[\
@@ -6350,14 +6423,29 @@ class \"Document\" {\
 ]]\
 function Document:initialise( path )\
 \9self.path = path\
-\9\
-\9if fs.exists( path ) then\
-\9\9local rawContents, err, isParsed = self:read()\
-\9\9if rawContents and not isParsed then\
-\9\9\9local contents, err = self:parse( rawContents )\
-\9\9\9if contents then\
-\9\9\9\9self.contents = contents\
+\9\9\
+\9local file = FileSystemItem( path )\
+\
+\9if file then\
+\9\9if file:typeOf( IEditableFileSystemItem ) then\
+\9\9\9local isBinary = self.isBinary\
+\9\9\9if isBinary and not file:typeOf( File ) then\
+\9\9\9\9-- TODO: error, binary cannot be used on non-File FileSystemItems (i.e. Bundles)\
 \9\9\9end\
+\9\9\9-- TODO: error handling\
+\9\9\9local rawContents = self.isBinary and file.binaryContents or file.contents\
+\9\9\9if rawContents then\
+\9\9\9\9local contents, err = self:parse( rawContents )\
+\9\9\9\9if contents then\
+\9\9\9\9\9self.contents = contents\
+\9\9\9\9else\
+\9\9\9\9\9-- TODO: Error, content empty or corrupt\
+\9\9\9\9end\
+\9\9\9else\
+\9\9\9\9-- TODO: Error, content empty or corrupt\
+\9\9\9end\
+\9\9else\
+\9\9\9-- TODO: Error, tried to open folder\
 \9\9end\
 \9else\
 \9\9self:blank()\
@@ -6372,7 +6460,7 @@ end\
 \9@static\
 \9@desc Opens a file and sets it as the application's active document, opening a file dialouge if neccesary. If there was an error the application's active document will not be changed. Simply use Document( path ) if you want to open a document but not set it as active.\
 \9@param [Document] documentClass -- the type of Document class you want to use (it's probably easier to do MyDocument:open)\
-\9@param [string] path -- the path of the document\
+\9@param [string] path -- the path of the document. if empty an open file dialouge will be shown\
 ]]\
 function Document.open( documentClass, path )\
 \9local function f( path )\
@@ -6403,37 +6491,6 @@ end\
 ]]\
 function Document:blank()\
 \9self.contents = \"\"\
-end\
-\
---[[\
-\9@instance\
-\9@desc Reads the raw contents from the path.\
-\9@return [string] rawContents/content -- the raw contents or content if parseHandle was used. return false if there was an error.\
-\9@return [string] err -- the error message if rawContents is false.\
-\9@return [string] isParsed -- whether content is already parsed\
-]]\
-function Document:read()\
-\9local path = self.path\
-\9if not fs.exists( path ) then return false, \"Document path does not exist.\" end\
-\9if fs.isDir( path ) then return false, \"Document path is a folder.\" end\
-\
-\9local h = fs.open( path, self.readMode )\
-\9if not h then return false, \"Document path unreadable.\" end\
-\
-\9local contents, err = self:parseHandle( h )\
-\
-\9if contents == nil then\
-\9\9if not h.readAll then return false, \"Invalid read mode (doesn't support readAll).\" end\
-\
-\9\9local rawContents = h.readAll()\
-\9\9if not rawContents then return false, \"Document has nil contents.\" end\
-\9\9h.close()\
-\
-\9\9return rawContents, nil, false\
-\9else\
-\9\9if err then return false, err end\
-\9\9return contents, nil, true\
-\9end\
 end\
 \
 --[[\
@@ -6481,7 +6538,11 @@ end\
 \9@return [string/nil] err -- the error message if there was an issue with saving, nil otherwise.\
 ]]\
 function Document:save()\
-\9local err = self:write( self.path )\
+\9if self.isBinary then\
+\9\9self.file.binaryContents = self.contents\
+\9else\
+\9\9self.file.contents = self.contents\
+\9end\
 \9if not err then\
 \9\9self.isModified = false\
 \9end\
@@ -6495,7 +6556,16 @@ end\
 \9@return [string/nil] err -- the error message if there was an issue with saving, nil otherwise.\
 ]]\
 function Document:saveAs( path )\
-\9return self:write( path )\
+\9if not path then\
+\9\9-- show save as dialouge\
+\9else\
+\9\9local file = self.file.new( path )\
+\9\9if self.isBinary then\
+\9\9\9file.binaryContents = self.contents\
+\9\9else\
+\9\9\9file.contents = self.contents\
+\9\9end\
+\9end\
 end\
 \
 --[[\
@@ -6522,34 +6592,6 @@ function Document:serialise( contents )\
 end\
 \
 Document:alias( \"serialize\", \"serialise\" )\
-\
---[[\
-\9@instance\
-\9@desc Writes the document's serialised contents to the given path.\
-\9@param [string] path -- the path to save to\
-\9@return [string/nil] err -- the error message if there was an issue with saving, nil otherwise.\
-]]\
-function Document:write( path )\
-\9if fs.exists( path ) then\
-\9\9if fs.isReadOnly( path ) then return \"Document path is read only.\" end\
-\9\9if self.path ~= path and not self:onOverwrite( path ) then return end\
-\9\9if fs.isDir( path ) then fs.delete( path ) end\
-\9end\
-\
-\9local h = fs.open( path, self.writeMode )\
-\9if not h then return \"Document path unwritable.\" end\
-\9local serialiseHandleOkay, err = self:serialiseHandle( h )\
-\
-\9if serialiseHandleOkay == nil then\
-\9\9if not h.write then return false, \"Invalid read mode (doesn't support write).\" end\
-\
-\9\9local serialisedContents, err = self:serialise( self.contents )\
-\9\9if not serialisedContents then return err end\
-\
-\9\9h.write(serialisedContents)\
-\9end\
-\9h.close()\
-end\
 \
 --[[\
 \9@instance\
@@ -6586,28 +6628,189 @@ end\
 function Document:onClose( callback )\
 \9-- self:save()\
 \9callback( false )\
-end",["Cursor.lua"] = "\
-class \"Cursor\" extends \"GraphicsObject\" {\
-\9fillColour = Graphics.colours.BLACK;\
+end",["RoundedRectangle.lua"] = "\
+-- draws a corner with the given radius for the corner given\
+local function corner( fill, width, height, radius, position ) -- position is a byte. first bit is 0 if top, second bit is 0 if left\
+\9if radius <= 0 then return end\
+\9\
+\9local minDistance = radius\
+\9radius = radius + 0.5 -- doing this seems to magically make them look much better\
+\
+\9local centerX = (bit.band( position, 2 ) == 0) and radius or width - radius + 1\
+\9local centerY = (bit.band( position, 1 ) == 0) and radius or height - radius + 1\
+\9local minX = (bit.band( position, 2 ) == 0) and 1 or width - minDistance + 1\
+\9local minY = (bit.band( position, 1 ) == 0) and 1 or height - minDistance + 1\
+\
+\9for x = minX, minX + radius - 1 do\
+\9\9fill[x] = fill[x] or {}\
+\9\9local xDistance = ( x - centerX ) ^ 2\
+\9\9for y = minY, minY + radius - 1 do\
+\9\9\9local distance = ( xDistance + ( y - centerY) ^ 2 ) ^ 0.5\
+\9\9\9if distance <= minDistance then\
+\9\9\9\9fill[x][y] = true\
+\9\9\9end\
+\9\9end\
+\9end\
+end\
+\
+class \"RoundedRectangle\" extends \"GraphicsObject\" {\
+\9fillColour = Graphics.colours.RED;\
+\
+\9radius = false;\
+\9leftRadius = false;\
+\9rightRadius = false;\
+\9topLeftRadius = 1;\
+\9topRightRadius = 1;\
+\9bottomLeftRadius = 1;\
+\9bottomRightRadius = 1;\
 }\
 \
-function Cursor:initialise( x, y, height )\
-\9self.super:initialise( x, y, 1, height )\
+--[[\
+\9@static\
+\9@desc Creates a rounded rectangle\
+\9@param [number] x -- the x coordinate of the rectangle\
+\9@param [number] y -- the y coordinate of the rectangle\
+\9@param [number] width -- the width of the rectangle\
+\9@param [number] height -- the height of the rectangle\
+\9@param [number] topLeftRadius -- the radius of the corners. of the top of the next parameter is defined, or top left if all 4 are\
+\9@param [number] topRightRadius -- the radius of the bottom corners or top right if all 4 are\
+\9@param [number] bottomLeftRadius -- the radius of the bottom left corner\
+\9@param [number] bottomRightRadius -- the radius of the bottom right corner\
+]]\
+function RoundedRectangle:initialise( x, y, width, height, fillColour, outlineColour, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius )\
+\9self.super:initialise( x, y, width, height )\
+\9self.fillColour = fillColour or Graphics.colours.TRANSPARENT\
+\9self.outlineColour = outlineColour or Graphics.colours.TRANSPARENT\
+\9topLeftRadius = topLeftRadius or 0\
+\9self.topLeftRadius = topLeftRadius\
+\9self.topRightRadius = topRightRadius or topLeftRadius\
+\9self.bottomLeftRadius = bottomLeftRadius or topRightRadius or topLeftRadius\
+\9self.bottomRightRadius = bottomRightRadius or bottomLeftRadius or topRightRadius or topLeftRadius\
 end\
 \
 --[[\
+\9@instance\
+\9@desc Sets the radius of both sides\
+\9@param [number] radius -- the new radius\
+\9@return [type] returnedValue -- description\
+]]\
+function RoundedRectangle:setRadius( radius )\
+\9self.topLeftRadius = radius\
+\9self.topRightRadius = radius\
+\9self.bottomLeftRadius = radius\
+\9self.bottomRightRadius = radius\
+end\
+\
+function RoundedRectangle:setTopLeftRadius( radius )\
+\9if radius then self.topLeftRadius = math.floor( radius ) end\
+end\
+\
+function RoundedRectangle:setTopRightRadius( radius )\
+\9if radius then self.topRightRadius = math.floor( radius ) end\
+end\
+\
+function RoundedRectangle:setBottomLeftRadius( radius )\
+\9if radius then self.bottomLeftRadius = math.floor( radius ) end\
+end\
+\
+function RoundedRectangle:setBottomRightRadius( radius )\
+\9if radius then self.bottomRightRadius = math.floor( radius ) end\
+end\
+\
+function RoundedRectangle:setLeftRadius( radius )\
+\9if radius then\
+\9\9self.bottomLeftRadius = math.floor( radius )\
+\9\9self.topLeftRadius = math.floor( radius )\
+\9end\
+end\
+\
+function RoundedRectangle:setRightRadius( radius )\
+\9if radius then\
+\9\9self.bottomRightRadius = math.floor( radius )\
+\9\9self.topRightRadius = math.floor( radius )\
+\9end\
+end\
+\
+function RoundedRectangle:setTopRadius( radius )\
+\9if radius then\
+\9\9self.topLeftRadius = math.floor( radius )\
+\9\9self.topRightRadius = math.floor( radius )\
+\9end\
+end\
+\
+function RoundedRectangle:setBottomRadius( radius )\
+\9if radius then\
+\9\9self.bottomLeftRadius = math.floor( radius )\
+\9\9self.bottomRightRadius = math.floor( radius )\
+\9end\
+end\
+\
+function RoundedRectangle:getRadius( radius )\
+\9return math.max( self.topLeftRadius, self.topRightRadius, self.bottomLeftRadius, self.bottomRightRadius )\
+end\
+\
+function RoundedRectangle:getLeftRadius( radius )\
+\9return math.max( self.topLeftRadius, self.bottomLeftRadius )\
+end\
+\
+function RoundedRectangle:getRightRadius( radius )\
+\9return math.max( self.topRightRadius, self.bottomRightRadius )\
+end\
+\
+function RoundedRectangle:getTopRadius( radius )\
+\9return math.max( self.topLeftRadius, self.topRightRadius )\
+end\
+\
+function RoundedRectangle:getBottomRadius( radius )\
+\9return math.max( self.bottomLeftRadius, self.bottomRightRadius )\
+end\
+\
+\
+--[[\
     @instance\
-    @desc Gets the pixes to be filled\
+    @desc Gets the pixels to be filled\
     @return [table] fill -- the pixels to fill\
 ]]\
-function Cursor:getFill()\
+function RoundedRectangle:getFill()\
 \9if self.fill then return self.fill end\
 \9local fill = {}\
-\9local fillX = {}\
-\9for y = 1, self.height do\
-\9\9fillX[y] = true\
+\
+\9local topLeftRadius = self.topLeftRadius\
+\9local topRightRadius = self.topRightRadius\
+\9local bottomLeftRadius = self.bottomLeftRadius\
+\9local bottomRightRadius = self.bottomRightRadius\
+\
+\9local width, height = self.width, self.height\
+\
+\9corner( fill, width, height, topLeftRadius, 0 )\
+\9corner( fill, width, height, topRightRadius, 2 )\
+\9corner( fill, width, height, bottomLeftRadius, 1 )\
+\9corner( fill, width, height, bottomRightRadius, 3 )\
+\
+\9local maxTopRadius = math.max( topLeftRadius, topRightRadius )\
+\9for x = topLeftRadius, self.width - topRightRadius do\
+\9\9fill[x] = fill[x] or {}\
+\9\9for y = 1, maxTopRadius do\
+\9\9\9fill[x][y] = true\
+\9\9end\
 \9end\
-\9fill[1] = fillX\
+\
+\9local maxBottomRadius = math.max( bottomLeftRadius, bottomRightRadius )\
+\9for x = bottomLeftRadius, self.width - bottomRightRadius do\
+\9\9fill[x] = fill[x] or {}\
+\9\9for y = self.height - maxBottomRadius + 1, self.height do\
+\9\9\9fill[x][y] = true\
+\9\9end\
+\9end\
+\
+\9for x = 1, self.width do\
+\9\9fill[x] = fill[x] or {}\
+\9\9for y = maxTopRadius + 1, self.height - maxBottomRadius do\
+\9\9\9fill[x][y] = true\
+\9\9end\
+\9end\
+\
+\9self.fill = fill\
 \9return fill\
 end",["ThemeChangedInterfaceEvent.lua"] = "\
 class \"ThemeChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
@@ -7160,155 +7363,139 @@ end\
 \
 function MathParser.eval( list )\
 \9return eval.knownList( list )\
-end",["Scrollbar.lua"] = "\
-class \"Scrollbar\" extends \"View\" {\
-\9width = 7;\
-    isHorizontal = false;\
-\9scrollerObject = false;\
-\9grabberObject = false;\
-    dragPoint = false;\
-    direction = false;\
-    isPressed = false;\
+end",["FlowContainer.lua"] = "\
+local TOP_MARGIN = 5\
+local BOTTOM_MARGIN = 5\
+local SIDE_MARGIN = 6\
+\
+class \"FlowContainer\" extends \"Container\" {\
+    \
+    needsLayoutUpdate = false;\
+    expandVertically = true;\
+\
 }\
 \
-function Scrollbar:initialise( ... )\
-\9self.super:initialise( ... )\
-    -- self:event( MouseScrollEvent, self.onMouseScroll )\
-    self:event( MouseDownEvent, self.onMouseDown )\
-    self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )\
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
+function FlowContainer:initialise( ... )\
+    self.super:initialise( ... )\
+    self:event( ChildAddedInterfaceEvent, self.onChildAdded )\
+    self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )\
+    self:event( ReadyInterfaceEvent, self.onReady )\
 end\
 \
---[[\
-    @instance\
-    @desc Sets up the canvas and it's graphics objects\
-]]\
-function Scrollbar:initialiseCanvas()\
+function FlowContainer:initialiseCanvas()\
     self.super:initialiseCanvas()\
 \
     self.theme:connect( self.canvas, \"fillColour\" )\
-\
-    local scrollerObject = self.canvas:insert( RoundedRectangle( 2, 3, self.width - 2, 30 ) )\
-    local grabberObject = self.canvas:insert( ScrollbarGrabber( 3, 3, self.width - 4, 30 ) )\
-\
-    self.theme:connect( scrollerObject, \"fillColour\", \"scrollerColour\" )\
-    self.theme:connect( scrollerObject, \"outlineColour\" )\
-    self.theme:connect( scrollerObject, \"radius\", \"cornerRadius\" )\
-    self.theme:connect( grabberObject, \"fillColour\", \"grabberColour\" )\
-\
-    local position, size = self.scroller\
-    -- local position, size = self:getScroller()\
-    self.scrollerObject = scrollerObject\
-    self.grabberObject = grabberObject\
 end\
 \
-function Scrollbar:updateHeight( height )\
-    self:getScroller()\
+function FlowContainer:updateWidth( width )\
+    self.needsLayoutUpdate = true\
 end\
 \
-function Scrollbar:updateThemeStyle()\
-    self.theme.style = self.isEnabled and ( self.isPressed and \"pressed\" or \"default\" ) or \"disabled\"\
+function FlowContainer:updateHeight( height )\
+    -- self.needsLayoutUpdate = true\
 end\
 \
-function Scrollbar:setIsEnabled( isEnabled )\
-    self.isEnabled = isEnabled\
-    self:updateThemeStyle()\
+function FlowContainer:onReady( event )\
+    self:updateLayout( true )\
 end\
 \
-function Scrollbar:setIsPressed( isPressed )\
-    self.isPressed = isPressed\
-    self:updateThemeStyle()\
-end\
-\
---[[\
-    @instance\
-    @desc Gets and updates the size and location of the scroller\
-    @return [number] position -- the position of the scroller\
-    @return [number] size -- the size of the scroller\
-]]\
-function Scrollbar:getScroller( dontSetPosition )\
-    local parent = self.parent\
-    if not parent then\
-        return 0, self.direction == \"vertical\" and self.height or self.width\
-    end\
-\
-    local trayMargin = 2\
-    local traySize = self.height - 2 * trayMargin\
-\
-    local frameSize, contentSize, contentScroll\
-    frameSize = parent.height\
-    local container = parent.container\
-    contentSize = container.height\
-    contentScroll = - parent.offsetY\
-\
-\
-    local barSize = math.max( math.floor( traySize * frameSize / contentSize ), 1 )\
-    local barPosition = math.ceil( traySize * contentScroll / contentSize )\
-\
-    local scrollerObject = self.scrollerObject\
-    local grabberObject = self.grabberObject\
-    scrollerObject.height = barSize\
-    grabberObject.height = barSize\
-    if not dontSetPosition then\
-        local y = 1 + trayMargin - barPosition\
-        scrollerObject.y = y\
-        grabberObject.y = y\
-    end\
-\
-    return barPosition, barSize\
-end\
-\
---[[\
-    @instance\
-    @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.\
-    @param [Event] event -- the mouse up event\
-    @return [boolean] preventPropagation -- prevent anyone else using the event\
-]]\
-function Scrollbar:onGlobalMouseUp( event )\
-    if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
-        self.isPressed = false\
+function FlowContainer:update( deltaTime )\
+    self.super:update( deltaTime )\
+    if self.needsLayoutUpdate then\
+        self:updateLayout()\
     end\
 end\
 \
---[[\
-    @instance\
-    @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.\
-    @param [MouseDownEvent] event -- the mouse down event\
-    @return [boolean] preventPropagation -- prevent anyone else using the event\
-]]\
-function Scrollbar:onMouseDown( event )\
-    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
-        self.isPressed = true\
-        local position, size = self:getScroller( true )\
-        self.dragPoint = event.y + position - 1\
+function FlowContainer:onChildAdded( event )\
+    if event.childView:typeOf( IFlowItem ) then\
+        self.needsLayoutUpdate = true\
     end\
-    return true\
 end\
 \
---[[\
-    @instance\
-    @desc Fired when the mouse is dragged anywhere on screen. Moves the window if dragging\
-    @param [Event] event -- the mouse drag event\
-    @return [boolean] preventPropagation -- prevent anyone else using the event\
-]]\
-function Scrollbar:onGlobalMouseDrag( event )\
-    if self.isPressed and self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
-        local oldRelative = event.relativeView\
-        event:makeRelative( self )\
+function FlowContainer:onChildRemoved( event )\
+    self.needsLayoutUpdate = true\
+end\
 \
-        local position, size = self:getScroller( true )\
-        local traySize\
-        position = event.y - self.dragPoint\
-        traySize = self.height\
+function FlowContainer:updateLayout( dontAnimate )\
+    local width, height = self.width, self.height\
 \
-        position = math.max( math.min( position, traySize - size ), 0 )\
-        local parent = self.parent\
-        -- parent.offsetY = math.floor( position / traySize * parent.container.height )\
-        -- scrollTo\
-        parent:scrollTo( math.floor( position / traySize * parent.container.height ) )\
-      \
-        event:makeRelative( oldRelative )\
+    local children = {}\
+    for i, childView in ipairs( self.children ) do\
+        if childView:typeOf( IFlowItem ) then\
+            table.insert( children, childView )\
+        end\
     end\
+\
+    local time, easing = 0.5, Animation.easing.SINE_IN_OUT\
+\
+    local nChildren = #children\
+    local totalWidth = 0\
+    local minWidths = {}\
+    for i, childView in ipairs( children ) do\
+        totalWidth = totalWidth + childView.idealWidth\
+        minWidths[i] = childView.minWidth or 1\
+    end\
+\
+    local averageWidth = math.min( math.floor( totalWidth / nChildren + 0.5 ), width - 2 * SIDE_MARGIN )\
+    local maxItemsPerRow = math.floor( totalWidth / averageWidth + 0.5 )\
+    local idealWidth = math.floor( totalWidth / maxItemsPerRow )\
+\
+    local y = TOP_MARGIN + 1\
+\
+    local _i = 0\
+    for i = 1, nChildren do\
+        if i > _i then\
+            local rowWidth = 2 * SIDE_MARGIN\
+            local x = SIDE_MARGIN + 1\
+            local numberOfItems = 1\
+\
+            local totalMinWidths = 0\
+            local spareWidth = width - rowWidth\
+            for n = 1, math.min( maxItemsPerRow, nChildren - i + 1 ) do\
+                local minWidth = minWidths[i + n - 1]\
+                totalMinWidths = totalMinWidths + minWidth\
+                if totalMinWidths + rowWidth > width then\
+                    if n == 1 then\
+                        spareWidth = spareWidth - minWidth\
+                    end\
+                    break\
+                end\
+                numberOfItems = n\
+                spareWidth = spareWidth - minWidth\
+            end\
+\
+            local itemWidth = spareWidth / numberOfItems\
+            _i = _i + numberOfItems\
+\
+            local height = 1\
+            for n = i, _i do\
+                local childView = children[n]\
+                local width = minWidths[n] + ( n == i and math.ceil or math.floor)(itemWidth)\
+                local idealHeight = childView.idealHeight\
+                local maxWidth = childView.maxWidth\
+                width = (maxWidth and math.min( width, maxWidth ) or width)\
+                if dontAnimate then\
+                    childView.x = x\
+                    childView.y = y\
+                    childView.width = width\
+                    childView.height = idealHeight\
+                else\
+                    childView:animateX( x, time, nil, easing )\
+                    childView:animateY( y, time, nil, easing )\
+                    childView:animateWidth( width, time, nil, easing )\
+                    childView:animateHeight( idealHeight, time, nil, easing )\
+                end\
+                x = x + width\
+                height = math.max( idealHeight, height )\
+            end\
+            y = y + height\
+        end\
+    end\
+\
+    self:animateHeight( y + BOTTOM_MARGIN, time, nil, easing )\
+\
+    self.needsLayoutUpdate = false\
 end",["VectorFont.lua"] = "\
 class \"VectorFont\" extends \"Font\" {\
 \9\
@@ -7492,80 +7679,7 @@ function KeyboardShortcutManager:onKeyTimeout( keyString )\
 \9\9self.keysUpdates[keyString] = os.clock()\
 \9end\
 end",["ToolbarSegmentButton.lua"] = "\
-class \"ToolbarSegmentButton\" extends \"SegmentButton\" {}",["ApplicationContainer.lua"] = "\
-class \"ApplicationContainer\" extends \"Container\" {\
-\9-- TODO: make this use a Constraint\
-\9x = 1;\
-\9y = 1;\
-\9width = 320;\
-\9height = 200;\
-\9themeName = false;\
-}\
-\
---[[\
-\9@constructor\
-\9@desc Initialise a application container instance\
-\9@param [table] properties -- the properties for the view\
-]]\
-function ApplicationContainer:initialise( ... )\
-\9if not self.themeName then\
-\9\9self.themeName = \"default\"\
-\9end\
-\
-\9self.super:initialise( ... )\
-\
-    self:event( MouseDownEvent, self.onMouseDownAfter, EventManager.phase.AFTER )\
-end\
-\
-function ApplicationContainer:initialiseCanvas()\
-\9local canvas = ScreenCanvas( self.x, self.y, self.width, self.height )\
-    self.canvas = canvas\
-    self.theme:connect( self.canvas, \"fillColour\" )\
-end\
-\
-function ApplicationContainer:setTheme( theme )\
-\9if type( theme ) == \"string\" then error( \"To the set the theme of an ApplicationContainer using a string, use the property 'themeName', rather than 'theme'. Most likely cause: you have use theme=\\\"\" .. theme .. \"\\\" in an interface file, rather than themeName=\\\"\" .. theme .. \"\\\"\", 0 ) end\
-\9self.theme = theme\
-end\
-\
---[[\
-\9@instance\
-\9@desc Sets the container's theme based upon it's name\
-\9@return [string] themeName -- the name of the theme\
-]]\
-function ApplicationContainer:setThemeName( themeName )\
-\9local oldThemeName = self.themeName\
-\9self.themeName = themeName\
-\9Theme.active = Theme.named( themeName )\
-\9self.application.event:handleEvent( ThemeChangedInterfaceEvent( themeName, oldThemeName ) )\
-end\
-\
-function ApplicationContainer:draw()\
-\9self.canvas:drawToTerminal()\
-end\
-\
---[[\
-    @instance\
-    @desc Fired when the mouse is released and doesn't hit anything else. Unfocuses the focused view, if any.\
-    @param [MouseDownEvent] event -- the mouse up event\
-    @return [boolean] preventPropagation -- prevent anyone else using the event\
-]]\
-function ApplicationContainer:onMouseDownAfter( event )\
-\9local application = self.application\
-\9\
-\9if application:hasFocus() then\
-\9\9for focus, v in pairs( application.focuses ) do\
-\9\9\9 if focus.isFocusDismissable then\
-\9\9\9 \9application:unfocus( focus )\
-\9\9\9 end\
-\9\9end\
-\9end\
-end\
-\
-function ApplicationContainer:dispose()\
-\9self.super:dispose()\
-\9self.application:clearFocus()\
-end",["interface.lua"] = "local interfaces = {}\
+class \"ToolbarSegmentButton\" extends \"SegmentButton\" {}",["interface.lua"] = "local interfaces = {}\
 class.interfaces = interfaces\
 \
 local USE_GLOBALS = true\
@@ -7661,6 +7775,79 @@ if USE_GLOBALS then\
     getfenv().interface = interface\
 else\
     return interface\
+end",["ApplicationContainer.lua"] = "\
+class \"ApplicationContainer\" extends \"Container\" {\
+\9-- TODO: make this use a Constraint\
+\9x = 1;\
+\9y = 1;\
+\9width = 320;\
+\9height = 200;\
+\9themeName = false;\
+}\
+\
+--[[\
+\9@constructor\
+\9@desc Initialise a application container instance\
+\9@param [table] properties -- the properties for the view\
+]]\
+function ApplicationContainer:initialise( ... )\
+\9if not self.themeName then\
+\9\9self.themeName = \"default\"\
+\9end\
+\
+\9self.super:initialise( ... )\
+\
+    self:event( MouseDownEvent, self.onMouseDownAfter, EventManager.phase.AFTER )\
+end\
+\
+function ApplicationContainer:initialiseCanvas()\
+\9local canvas = ScreenCanvas( self.x, self.y, self.width, self.height )\
+    self.canvas = canvas\
+    self.theme:connect( self.canvas, \"fillColour\" )\
+end\
+\
+function ApplicationContainer:setTheme( theme )\
+\9if type( theme ) == \"string\" then error( \"To the set the theme of an ApplicationContainer using a string, use the property 'themeName', rather than 'theme'. Most likely cause: you have use theme=\\\"\" .. theme .. \"\\\" in an interface file, rather than themeName=\\\"\" .. theme .. \"\\\"\", 0 ) end\
+\9self.theme = theme\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Sets the container's theme based upon it's name\
+\9@return [string] themeName -- the name of the theme\
+]]\
+function ApplicationContainer:setThemeName( themeName )\
+\9local oldThemeName = self.themeName\
+\9self.themeName = themeName\
+\9Theme.active = Theme.named( themeName )\
+\9self.application.event:handleEvent( ThemeChangedInterfaceEvent( themeName, oldThemeName ) )\
+end\
+\
+function ApplicationContainer:draw()\
+\9self.canvas:drawToTerminal()\
+end\
+\
+--[[\
+    @instance\
+    @desc Fired when the mouse is released and doesn't hit anything else. Unfocuses the focused view, if any.\
+    @param [MouseDownEvent] event -- the mouse up event\
+    @return [boolean] preventPropagation -- prevent anyone else using the event\
+]]\
+function ApplicationContainer:onMouseDownAfter( event )\
+\9local application = self.application\
+\9\
+\9if application:hasFocus() then\
+\9\9for focus, v in pairs( application.focuses ) do\
+\9\9\9 if focus.isFocusDismissable then\
+\9\9\9 \9application:unfocus( focus )\
+\9\9\9 end\
+\9\9end\
+\9end\
+end\
+\
+function ApplicationContainer:dispose()\
+\9self.super:dispose()\
+\9self.application:clearFocus()\
 end",["ContainerEventManager.lua"] = "\
 class \"ContainerEventManager\" extends \"EventManager\" {}\
 \
@@ -7698,6 +7885,24 @@ function ContainerEventManager:handleEvent( event )\
 \9if isSentToSender and self:handleEventPhase( event, self.phase.AFTER ) then\
 \9\9return true\
 \9end\
+end",["MinimiseWindowButton.lua"] = "\
+class \"MinimiseWindowButton\" extends \"WindowButton\" {}\
+\
+function MinimiseWindowButton:initialiseCanvas()\
+\9self.super:initialiseCanvas()\
+\
+\9local symbolObject = Path( 4, 4, 3, 1, 1, 1 )\
+    symbolObject:lineTo( 3, 1 )\
+    symbolObject:close( false )\
+    self.theme:connect( symbolObject, \"outlineColour\", \"symbolColour\" )\
+    self.symbolObject = self.canvas:insert( symbolObject )\
+end\
+\
+function MinimiseWindowButton:onMouseUp( event )    \
+    if self.window then\
+        self.window:close()\
+        return true\
+    end\
 end",["IDraggableView.lua"] = "\
 interface \"IDraggableView\" {}",["SymbolButton.lua"] = "\
 class \"SymbolButton\" extends \"Button\" {\
@@ -7739,20 +7944,22 @@ function SymbolButton:setIsPressed( isPressed )\
     local symbolObject = self.symbolObject\
     symbolObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1\
     symbolObject.y = isPressed and 6 or 5\
-end",["MinimiseWindowButton.lua"] = "\
-class \"MinimiseWindowButton\" extends \"WindowButton\" {}\
+end",["MaximiseWindowButton.lua"] = "\
+class \"MaximiseWindowButton\" extends \"WindowButton\" {}\
 \
-function MinimiseWindowButton:initialiseCanvas()\
+function MaximiseWindowButton:initialiseCanvas()\
 \9self.super:initialiseCanvas()\
 \
-\9local symbolObject = Path( 4, 4, 3, 1, 1, 1 )\
-    symbolObject:lineTo( 3, 1 )\
+\9local symbolObject = Path( 4, 3, 3, 3, 2, 1 )\
+    symbolObject:lineTo( 2, 3 )\
+    symbolObject:moveTo( 1, 2 )\
+    symbolObject:lineTo( 3, 2 )\
     symbolObject:close( false )\
     self.theme:connect( symbolObject, \"outlineColour\", \"symbolColour\" )\
     self.symbolObject = self.canvas:insert( symbolObject )\
 end\
 \
-function MinimiseWindowButton:onMouseUp( event )    \
+function MaximiseWindowButton:onMouseUp( event )    \
     if self.window then\
         self.window:close()\
         return true\
@@ -7796,76 +8003,6 @@ end\
 \
 function SeparatorMenuItem:updateHeight( height )\
 \9self.backgroundObject.height = 1\
-end",["MaximiseWindowButton.lua"] = "\
-class \"MaximiseWindowButton\" extends \"WindowButton\" {}\
-\
-function MaximiseWindowButton:initialiseCanvas()\
-\9self.super:initialiseCanvas()\
-\
-\9local symbolObject = Path( 4, 3, 3, 3, 2, 1 )\
-    symbolObject:lineTo( 2, 3 )\
-    symbolObject:moveTo( 1, 2 )\
-    symbolObject:lineTo( 3, 2 )\
-    symbolObject:close( false )\
-    self.theme:connect( symbolObject, \"outlineColour\", \"symbolColour\" )\
-    self.symbolObject = self.canvas:insert( symbolObject )\
-end\
-\
-function MaximiseWindowButton:onMouseUp( event )    \
-    if self.window then\
-        self.window:close()\
-        return true\
-    end\
-end",["DragView.lua"] = "\
-local SHADOW_RATIO = 2/3\
-local MAX_SHADOW_SIZE = 3\
-\
-class \"DragView\" extends \"View\" {\
-\
-    imageObject = false;\
-    shadowObject = false;\
-    shadowSize = 0;\
-    image = false;\
-    shadowImage = false;\
-}\
-\
-function DragView:initialiseCanvas()\
-    self.super:initialiseCanvas()\
-\
-    local width, height, canvas = self.width, self.height, self.canvas\
-\
-    local shadowObject = canvas:insert( ImageObject( 1, 1, width - SHADOW_RATIO * MAX_SHADOW_SIZE, height - MAX_SHADOW_SIZE, self.shadowImage ) )\
-    local imageObject = canvas:insert( ImageObject( 1, 1, width - SHADOW_RATIO * MAX_SHADOW_SIZE, height - MAX_SHADOW_SIZE, self.image ) )\
-\
-    self.shadowObject = shadowObject\
-    self.imageObject = imageObject\
-end\
-\
-function DragView:setImage( image )\
-    self.image = image\
-    self.imageObject.image = image\
-end\
-\
-function DragView:setShadowImage( shadowImage )\
-    self.shadowImage = shadowImage\
-    self.shadowObject.image = shadowImage\
-end\
-\
-function DragView:setShadowSize( shadowSize )\
-    self.shadowSize = shadowSize\
-    local shadowObject = self.shadowObject\
-    shadowObject.x = 1 + math.floor( SHADOW_RATIO * shadowSize + 0.5 )\
-    shadowObject.y = 1 + math.floor( shadowSize + 0.5 )\
-end\
-\
-function DragView:updateWidth( width )\
-    self.imageObject.width = width - SHADOW_RATIO * MAX_SHADOW_SIZE\
-    self.shadowObject.width = width - SHADOW_RATIO * MAX_SHADOW_SIZE\
-end\
-\
-function DragView:updateHeight( height )\
-    self.imageObject.height = height - MAX_SHADOW_SIZE\
-    self.shadowObject.height = height - MAX_SHADOW_SIZE\
 end",["TextBox.lua"] = "\
 --[[\
 \9TODO\
@@ -8433,6 +8570,56 @@ function TextBox:onKeyboardShortcut( event )\
         end\
         return true\
     end\
+end",["DragView.lua"] = "\
+local SHADOW_RATIO = 2/3\
+local MAX_SHADOW_SIZE = 3\
+\
+class \"DragView\" extends \"View\" {\
+\
+    imageObject = false;\
+    shadowObject = false;\
+    shadowSize = 0;\
+    image = false;\
+    shadowImage = false;\
+}\
+\
+function DragView:initialiseCanvas()\
+    self.super:initialiseCanvas()\
+\
+    local width, height, canvas = self.width, self.height, self.canvas\
+\
+    local shadowObject = canvas:insert( ImageObject( 1, 1, width - SHADOW_RATIO * MAX_SHADOW_SIZE, height - MAX_SHADOW_SIZE, self.shadowImage ) )\
+    local imageObject = canvas:insert( ImageObject( 1, 1, width - SHADOW_RATIO * MAX_SHADOW_SIZE, height - MAX_SHADOW_SIZE, self.image ) )\
+\
+    self.shadowObject = shadowObject\
+    self.imageObject = imageObject\
+end\
+\
+function DragView:setImage( image )\
+    self.image = image\
+    self.imageObject.image = image\
+end\
+\
+function DragView:setShadowImage( shadowImage )\
+    self.shadowImage = shadowImage\
+    self.shadowObject.image = shadowImage\
+end\
+\
+function DragView:setShadowSize( shadowSize )\
+    self.shadowSize = shadowSize\
+    local shadowObject = self.shadowObject\
+    shadowObject.x = 1 + math.floor( SHADOW_RATIO * shadowSize + 0.5 )\
+    shadowObject.y = 1 + math.floor( shadowSize + 0.5 )\
+end\
+\
+function DragView:updateWidth( width )\
+    self.imageObject.width = width - SHADOW_RATIO * MAX_SHADOW_SIZE\
+    self.shadowObject.width = width - SHADOW_RATIO * MAX_SHADOW_SIZE\
+end\
+\
+function DragView:updateHeight( height )\
+    self.imageObject.height = height - MAX_SHADOW_SIZE\
+    self.shadowObject.height = height - MAX_SHADOW_SIZE\
 end",["SymbolSegmentButton.lua"] = "\
 class \"SymbolSegmentButton\" extends \"SegmentButton\" {\
     \
@@ -8489,6 +8676,155 @@ function SymbolSegmentButton:setIsPressed( isPressed )\
     local symbolObject = self.symbolObject\
     symbolObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1\
     symbolObject.y = isPressed and 6 or 5\
+end",["Scrollbar.lua"] = "\
+class \"Scrollbar\" extends \"View\" {\
+\9width = 7;\
+    isHorizontal = false;\
+\9scrollerObject = false;\
+\9grabberObject = false;\
+    dragPoint = false;\
+    direction = false;\
+    isPressed = false;\
+}\
+\
+function Scrollbar:initialise( ... )\
+\9self.super:initialise( ... )\
+    -- self:event( MouseScrollEvent, self.onMouseScroll )\
+    self:event( MouseDownEvent, self.onMouseDown )\
+    self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )\
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
+end\
+\
+--[[\
+    @instance\
+    @desc Sets up the canvas and it's graphics objects\
+]]\
+function Scrollbar:initialiseCanvas()\
+    self.super:initialiseCanvas()\
+\
+    self.theme:connect( self.canvas, \"fillColour\" )\
+\
+    local scrollerObject = self.canvas:insert( RoundedRectangle( 2, 3, self.width - 2, 30 ) )\
+    local grabberObject = self.canvas:insert( ScrollbarGrabber( 3, 3, self.width - 4, 30 ) )\
+\
+    self.theme:connect( scrollerObject, \"fillColour\", \"scrollerColour\" )\
+    self.theme:connect( scrollerObject, \"outlineColour\" )\
+    self.theme:connect( scrollerObject, \"radius\", \"cornerRadius\" )\
+    self.theme:connect( grabberObject, \"fillColour\", \"grabberColour\" )\
+\
+    local position, size = self.scroller\
+    -- local position, size = self:getScroller()\
+    self.scrollerObject = scrollerObject\
+    self.grabberObject = grabberObject\
+end\
+\
+function Scrollbar:updateHeight( height )\
+    self:getScroller()\
+end\
+\
+function Scrollbar:updateThemeStyle()\
+    self.theme.style = self.isEnabled and ( self.isPressed and \"pressed\" or \"default\" ) or \"disabled\"\
+end\
+\
+function Scrollbar:setIsEnabled( isEnabled )\
+    self.isEnabled = isEnabled\
+    self:updateThemeStyle()\
+end\
+\
+function Scrollbar:setIsPressed( isPressed )\
+    self.isPressed = isPressed\
+    self:updateThemeStyle()\
+end\
+\
+--[[\
+    @instance\
+    @desc Gets and updates the size and location of the scroller\
+    @return [number] position -- the position of the scroller\
+    @return [number] size -- the size of the scroller\
+]]\
+function Scrollbar:getScroller( dontSetPosition )\
+    local parent = self.parent\
+    if not parent then\
+        return 0, self.direction == \"vertical\" and self.height or self.width\
+    end\
+\
+    local trayMargin = 2\
+    local traySize = self.height - 2 * trayMargin\
+\
+    local frameSize, contentSize, contentScroll\
+    frameSize = parent.height\
+    local container = parent.container\
+    contentSize = container.height\
+    contentScroll = - parent.offsetY\
+\
+\
+    local barSize = math.max( math.floor( traySize * frameSize / contentSize ), 1 )\
+    local barPosition = math.ceil( traySize * contentScroll / contentSize )\
+\
+    local scrollerObject = self.scrollerObject\
+    local grabberObject = self.grabberObject\
+    scrollerObject.height = barSize\
+    grabberObject.height = barSize\
+    if not dontSetPosition then\
+        local y = 1 + trayMargin - barPosition\
+        scrollerObject.y = y\
+        grabberObject.y = y\
+    end\
+\
+    return barPosition, barSize\
+end\
+\
+--[[\
+    @instance\
+    @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.\
+    @param [Event] event -- the mouse up event\
+    @return [boolean] preventPropagation -- prevent anyone else using the event\
+]]\
+function Scrollbar:onGlobalMouseUp( event )\
+    if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
+        self.isPressed = false\
+    end\
+end\
+\
+--[[\
+    @instance\
+    @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.\
+    @param [MouseDownEvent] event -- the mouse down event\
+    @return [boolean] preventPropagation -- prevent anyone else using the event\
+]]\
+function Scrollbar:onMouseDown( event )\
+    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
+        self.isPressed = true\
+        local position, size = self:getScroller( true )\
+        self.dragPoint = event.y + position - 1\
+    end\
+    return true\
+end\
+\
+--[[\
+    @instance\
+    @desc Fired when the mouse is dragged anywhere on screen. Moves the window if dragging\
+    @param [Event] event -- the mouse drag event\
+    @return [boolean] preventPropagation -- prevent anyone else using the event\
+]]\
+function Scrollbar:onGlobalMouseDrag( event )\
+    if self.isPressed and self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
+        local oldRelative = event.relativeView\
+        event:makeRelative( self )\
+\
+        local position, size = self:getScroller( true )\
+        local traySize\
+        position = event.y - self.dragPoint\
+        traySize = self.height\
+\
+        position = math.max( math.min( position, traySize - size ), 0 )\
+        local parent = self.parent\
+        -- parent.offsetY = math.floor( position / traySize * parent.container.height )\
+        -- scrollTo\
+        parent:scrollTo( math.floor( position / traySize * parent.container.height ) )\
+      \
+        event:makeRelative( oldRelative )\
+    end\
 end",["MenuButton.lua"] = "\
 class \"MenuButton\" extends \"Button\" {\
 \
@@ -8944,48 +9280,14 @@ function ParentResizedInterfaceEvent:initialise( isHorizontal, isVertical, sende
 \9self.isVertical = isVertical\
 \9self.sender = sender\
 end\
-",["SegmentContainer.lua"] = "\
-class \"SegmentContainer\" extends \"Container\" {\
-\9needsLayoutUpdate = false;\9\
+",["FontWindowContainer.lua"] = "\
+class \"FontWindowContainer\" extends \"WindowContainer\" {\
+\9backgroundObject = false;\
 }\
 \
---[[\
-\9@instance\
-\9@desc Updates the location and size of the menu as well as the location and size of the menu items\
-]]\
-function SegmentContainer:updateLayout()\
-\9if self.isVisible then\
-\9\9local width = 0\
-\9\9local height = 0\
-\9\9for i, childView in ipairs( self.children ) do\
-\9\9\9height = math.max( height, childView.height )\
-\9\9end\
-\
-\9\9for i, childView in ipairs( self.children ) do\
-\9\9\9childView.x = width + 1\
-\9\9\9childView.y = 1\
-\9\9\9width = width + childView.width\
-\9\9end\
-\9\9self.width = width\
-\9\9self.height = height\
-\9end\
-end\
-\
-function SegmentContainer:update( deltaTime )\
-    self.super:update( deltaTime )\
-    if self.needsLayoutUpdate then\
-        self:updateLayout()\
-    end\
-end\
-\
-function SegmentContainer:insert( ... )\
-\9self.super:insert( ... )\
-\9self.needsLayoutUpdate = true\
-end\
-\
-function SegmentContainer:removeChild( ... )\
-\9self.super:removeChild( ... )\
-\9self.needsLayoutUpdate = true\
+function FontWindowContainer:initialiseCanvas()\
+\9self.canvas = FontWindowCanvas( self.x, self.y, self.width, self.height )\
+\9self.backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, Graphics.colours.WHITE ) )\
 end",["ClipboardData.lua"] = "\
 class \"ClipboardData\" {}\
 \
@@ -8993,7 +9295,229 @@ function ClipboardData:initialise()\
 end",["KeyUpEvent.lua"] = "\
 class \"KeyUpEvent\" extends \"KeyEvent\" {\
 \9eventType = KeyUpEvent;\
-}",["Path.lua"] = "\
+}",["Canvas.lua"] = "\
+class \"Canvas\" extends \"GraphicsObject\" {\
+    fillColour = Graphics.colours.TRANSPARENT; -- The colour of the Canvas when it clears\
+    buffer = {};\
+    children = {};\
+    owner = false; -- @property [View] - The view that owns this objects\
+}\
+\
+--[[\
+    @constructor\
+    @desc Creates a canvas\
+    @param [number] width -- the width of the canvas\
+    @param [number] height -- the height of the canvas\
+]]\
+function Canvas:initialise( x, y, width, height, owner )\
+    self.super:initialise( x, y, width, height )\
+    self.owner = owner or false\
+end\
+\
+--[[\
+    @instance\
+    @desc Sets the pixel colour and the given coordinates\
+    @param [number] x -- the x coordinate of the pixel\
+    @param [number] y -- the y coordinate of the pixel\
+    @param [colour] colour -- the colour coordinate of the pixel\
+]]\
+function Canvas:setPixel( x, y, colour )\
+    if colour ~= Graphics.colours.TRANSPARENT and x >= 1 and y >= 1 and x <= self.width and y <= self.height then\
+        self.buffer[ ( y - 1 ) * self.width + x ] = colour\
+    end\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Gets the pixel colour and the given coordinates\
+    @param [number] x -- the x coordinate of the pixel\
+    @param [number] y -- the y coordinate of the pixel\
+    @return [colour] colour -- the colour of the pixel\
+]]\
+function Canvas:getPixel( x, y )\
+    return self.buffer[ ( y - 1 ) * self.width + x ] or self.fillColour\
+end\
+\
+--[[\
+    @instance\
+    @desc Clears the buffer\
+    @return self\
+]]\
+function Canvas:clear()\
+    self.buffer = {}\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Adds a shader to screen area\
+    @param [Canvas.shader] shader -- the shader to use\
+    @param [number] x -- default 1, the x coordinate of the area\
+    @param [number] y -- default 1, the y coordinate of the area\
+    @param [number] width -- default canvas width, the width of the area\
+    @param [number] height -- default canvas height, the height of the area\
+    @return self\
+]]\
+function Canvas:map( shader, x, y, width, height )\
+    local changes = {}\
+    for _x = x or 1, ( x or 1 ) + ( width or self.width ) - 1 do\
+        for _y = y or 1, ( x or 1 ) + ( height or self.height ) - 1 do\
+            local colour = shader( _x, _y, self:getPixel( _x, _y ) )\
+            if colour and colour ~= 0 then\
+                changes[#changes + 1] = { _x, _y, colour }\
+            end\
+        end\
+    end\
+    local buffer = self.buffer\
+    local width, height = self.width, self.height\
+    local TRANSPARENT = Graphics.colours.TRANSPARENT\
+    local function setPixel( x, y, colour )\
+        if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then\
+            buffer[ ( y - 1 ) * width + x ] = colour\
+        end\
+        return self\
+    end\
+    for i = 1, #changes do\
+        setPixel( unpack( changes[i] ) )\
+    end\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Adds a graphics object to the canvas\
+    @param [GraphicsObject] graphicsObject -- the graphics object to add\
+    @return self\
+]]\
+function Canvas:insert( graphicsObject )\
+    if not graphicsObject then\
+        error( \"GraphicsObject not supplied in canvas:insert\", 3 )\
+    end\
+    self.hasChanged = true\
+    if graphicsObject.parent then\
+        graphicsObject.parent:remove( graphicsObject )\
+    end\
+    graphicsObject.raw.parent = self\
+    self.children[#self.children + 1] = graphicsObject\
+    return graphicsObject\
+end\
+\
+--[[\
+    @instance\
+    @desc Removes a graphics object from the canvas\
+    @param [GraphicsObject] graphicsObject -- the graphics object to remove\
+    @return self\
+]]\
+function Canvas:remove( graphicsObject )\
+    local c = false\
+    for i = #self.children, 1, -1 do\
+        if self.children[i] == graphicsObject then\
+            table.remove( self.children, i )\
+            graphicsObject.raw.parent = false\
+            c = true\
+        end\
+    end\
+    if c then\
+        self.hasChanged = true\
+    end\
+    return graphicsObject\
+end\
+\
+--[[\
+    @instance\
+    @desc Clears the buffer then draws the objects of the canvas\
+    @return self\
+]]\
+function Canvas:draw( isShadow )\
+    if self.isVisible then\
+        self.buffer = {}\
+        local children = self.children\
+        for i = 1, #children do\
+            children[i]:drawTo( self, isShadow )\
+        end\
+        self.hasChanged = false\
+    end\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Draws the canvas to another canvas\
+    @param [Canvas] canvas -- the canvas to draw to\
+    @return self\
+]]\
+function Canvas:drawTo( canvas, isShadow )\
+    local drawsShadow = self.drawsShadow\
+    if self.isVisible then\
+        if isShadow or self.hasChanged then\
+            -- local drawdt = os.clock()\
+            self:draw( isShadow )\
+        end\
+        \
+        local width = self.width\
+        local height = self.height\
+        local fillColour = self.fillColour\
+        local buffer = self.buffer\
+        local _x = self.x - 1\
+        local _y = self.y\
+        \
+\
+        local setPixel\
+        local TRANSPARENT = Graphics.colours.TRANSPARENT\
+\
+        local canvasWidth = canvas.width\
+        local canvasHeight = canvas.height\
+        local canvasBuffer = canvas.buffer\
+        if isShadow then\
+            local shadowColour\
+            local owner = self.owner\
+            if owner then\
+                shadowColour = owner.theme.shadowColour\
+            else\
+                shadowColour = Graphics.colours.GREEN\
+            end\
+            setPixel = function( x, y, colour )\
+                if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= canvasWidth and y <= canvasHeight then\
+                    canvasBuffer[ ( y - 1 ) * canvasWidth + x ] = shadowColour\
+                end\
+            end\
+        else\
+            setPixel = function( x, y, colour )\
+                if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= canvasWidth and y <= canvasHeight then\
+                    canvasBuffer[ ( y - 1 ) * canvasWidth + x ] = colour\
+                end\
+            end\
+        end\
+\
+        -- local start = os.clock()\
+\
+        for x = 1, width do\
+            for y = 0, height - 1 do -- just so there's no need for y-1 below\
+                local colour = buffer[y * width + x] or fillColour\
+                local nx, ny = x + _x, y + _y\
+                setPixel( nx, ny, colour )\
+                -- if colour ~= TRANSPARENT and nx >= 1 and ny >= 1 and nx <= canvasWidth and ny <= canvasHeight then\
+                --     canvasBuffer[( ny - 1 ) * canvasWidth + nx] = colour\
+                -- end\
+            end\
+        end\
+\
+\
+    end\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Hit tests the canvas' buffer to see if the colour is set (return false if transparent)\
+    @param [number] x -- the x coordinate to hit test\
+    @param [number] y -- the y coordinate to hit test\
+    @return [boolean] didHit -- whether the colour was set/not transparent\
+]]\
+function Canvas:hitTest( x, y )\
+    return self:getPixel( x, y ) ~= 0\
+end",["Path.lua"] = "\
 local sin, cos, floor, min, max, abs, acos, PI = math.sin, math.cos, math.floor, math.min, math.max, math.abs, math.acos, math.pi\
 \
 local function round( num )\
@@ -9526,274 +10050,6 @@ function Path:getOutline()\
 \
 \9self.outline = thickendOutline\
 \9return thickendOutline\
-end",["Font.lua"] = "\
-local floor, ceil = math.floor, math.ceil\
-local cache = {}\
-\
-local function readstring( handle )\
-\9local v = handle.read()\
-\9local s = \"\"\
-\9while v ~= 0 do\
-\9\9s = s .. string.char( v )\
-\9\9v = handle.read()\
-\9end\
-\9return s\
-end\
-local function writestring( handle, text )\
-\9for i = 1, #text do\
-\9\9handle.write( text:byte( i ) )\
-\9end\
-end\
-\
-local function renderCharacterScaledDown( setPixel, character, _x, _y, cw, ch, scale, colour )\
-\9_x = _x - 1\
-\9_y = _y - 1\
-\9for x = 1, cw do\
-\9\9for y = 1, ch do\
-\9\9\9if character[y] and character[y][x] then\
-\9\9\9\9setPixel( ceil( _x + x * scale - .5 ), ceil( _y + y * scale - .5 ), colour )\
-\9\9\9end\
-\9\9end\
-\9end\
-end\
-\
-local no_char_map = {\
-\9width = 5;\
-\9{ true,  true,  true,  true, true };\
-\9{ true, false, false, false, true };\
-\9{ true, false, false, false, true };\
-\9{ true, false, false, false, true };\
-\9{ true, false, false, false, true };\
-\9{ true,  true,  true,  true, true };\
-}\
-\
-class \"Font\" {\
-\9height = 0;\
-\9desiredHeight = 0;\
-\9spacing = 1;\
-\9characters = false;\
-\9scale = false;\
-\9systemFont = false;\
-\
-\9alignments = {\
-\9\9LEFT = 0;\
-\9\9CENTER = 1;\
-\9\9CENTRE = 1;\
-\9\9RIGHT = 2;\
-\9\9JUSTIFIED = 3;\
-\9};\
-}\
-\
---[[\
-\9@constructor\
-\9@desc Create a font with the given name\
-\9@param [string] fontName -- the name of the desired font\
-\9@param [number] desiredHeight -- the height of the desired font\
-\9@param [boolean] reload -- default is false, whether the cache should be ignored and the font reloaded\
-]]\
-function Font:initialise( name, desiredHeight, reload )\
-\9local characters, height\
-\9desiredHeight = desiredHeight or 8\
-\9if cache[name] and cache[name][desiredHeight] and not reload then\
-\9\9characters, height = cache[name][desiredHeight][1], cache[name][desiredHeight][2]\
-\9else\
-\9\9local resource = Resource( name .. \".sfont\", \"fonts\" )\
-\9\9characters, height = BitmapFont.decodeResource( resource )\
-\9\9cache[name] = cache[name] or {}\
-\9\9cache[name][desiredHeight] = { characters, height }\
-\9end\
-\9self.characters = characters\
-\9self.height = height\
-\9self.desiredHeight = desiredHeight or height\
-\9self.scale = ( desiredHeight or height ) / height\
-end\
-\
-function Font.initialisePresets()\
-\9-- TODO: make this come from the theme\
-\9-- Font.systemFont = Font( \"Napier\" )\
-\9Font.systemFont = Font( \"Auckland\" )\
-end\
-\
-function Font.readMetadata( file )\
-\9local h = fs.open( file, \"rb\" )\
-\9if h then\
-\9\9local metadata = {}\
-\9\9local v = h.read()\
-\9\9while v == 0 do\
-\9\9\9local key, value = readstring( h ), readstring( h )\
-\9\9\9metadata[key] = value\
-\9\9\9v = h.read()\
-\9\9end\
-\9\9h.close()\
-\9\9return metadata\
-\9end\
-end\
-\
-function Font.encodeFile( file, characters, height, metadata )\
-\9local h = fs.open( file, \"wb\" )\
-\9return Font.encodeHandle( handle, characters, height, metadata)\
-end\
-\
-function Font.encodeHandle( h, characters, height, metadata )\
-\9if h then\
-\9\9for k, v in pairs( metadata or {} ) do\
-\9\9\9h.write( 0 )\
-\9\9\9writestring( h, tostring( k ) )\
-\9\9\9h.write( 0 )\
-\9\9\9writestring( h, tostring( v ) )\
-\9\9\9h.write( 0 )\
-\9\9end\
-\9\9h.write( 1 )\
-\9\9h.write( height )\
-\9\9local bytes\
-\9\9if metadata.fontType == \"vector\" then\
-\9\9\9bytes = VectorFont.encodeSet( characters, height )\
-\9\9else\
-\9\9\9bytes = BitmapFont.encodeSet( characters, height )\
-\9\9end\
-\9\9for _, byte in ipairs( bytes ) do\
-\9\9\9h.write( byte )\
-\9\9end\
-\9\9h.close()\
-\9\9return true\
-\9end\
-end\
-\
-function Font.decodeResource( resource )\
-\9-- log(resource)\
-\9local contents = resource.contents\
-\9-- log(resource.path)\
-\9-- log(contents)\
-\9if contents then\
-\9\9local i = 1\
-\9\9local contentsLen = #contents\
-\9\9local b = string.byte\
-\9\9local sub = string.sub\
-\9\9local h = {}\
-\
-\9\9function h.read()\
-\9\9\9if i <= contentsLen then\
-\9\9\9\9local value = b( sub( contents, i, i ) )\
-\9\9\9\9i = i + 1\
-\9\9\9\9return value\
-\9\9\9end\
-\9\9end\
-\
-\9\9return Font.decodeHandle( h )\
-\9end\
-end\
-\
-function Font.decodeFile( file )\
-\9local h = fs.open( file, \"rb\" )\
-\9return Font.decodeHandle( h )\
-end\
-\
-function Font.decodeHandle( h )\
-\9if h then\
-\9\9local metadata = {}\
-\9\9local v = h.read()\
-\9\9while v == 0 do\
-\9\9\9local key, value = readstring( h ), readstring( h )\
-\9\9\9metadata[key] = value\
-\9\9\9v = h.read()\
-\9\9end\
-\9\9local height = h.read()\
-\9\9local bytes = {}\
-\9\9for byte in h.read do\
-\9\9\9bytes[#bytes + 1] = byte\
-\9\9end\
-\
-\9\9local fontType = metadata.fontType\
-\9\9local characters\
-\
-\9\9if fontType == \"bitmap\" then\
-\9\9\9characters = BitmapFont.decodeSet( bytes, height )\
-\9\9else\
-\9\9\9characters = VectorFont.decodeSet( bytes, height )\
-\9\9end\
-\9\9return characters, height, metadata\
-\9end\
-end\
-\
-function Font:getHeight()\
-\9return self.height\
-end\
-\
-function Font:getWidth( text )\
-\9if not text then return 0 end\
-\9local width = 0\
-\9local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing\
-\9for i = 1, #text do\
-\9\9local char = text:byte( i )\
-\9\9local scale, bitmap = scale -- localise scale so it can be changed if the character isn't defined\
-\9\9if characters[char] then\
-\9\9\9bitmap = characters[char]\
-\9\9else\
-\9\9\9bitmap = no_char_map\
-\9\9\9scale = desiredHeight / 6\
-\9\9end\
-\9\9width = width + bitmap.width * scale + spacing * scale\
-\9end\
-\9return width - spacing\
-end\
-\
-function Font:getRawWidth( text )\
-\9if not text then return 0 end\
-\9local width = 0\
-\9local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing\
-\9for i = 1, #text do\
-\9\9local char = text:byte( i )\
-\9\9local scale, bitmap = scale -- localise scale so it can be changed if the character isn't defined\
-\9\9if characters[char] then\
-\9\9\9bitmap = characters[char]\
-\9\9else\
-\9\9\9bitmap = no_char_map\
-\9\9\9scale = desiredHeight / 6\
-\9\9end\
-\9\9width = width + bitmap.width * scale\
-\9end\
-\9return width\
-end\
-\
-function Font:render( canvas, text, x, y, cropWidth, cropHeight, colour )\
-\9y = y - 1\
-\9x = x - 1\
-\9text = text == nil and \"\" or tostring( text )\
-\9local buffer = canvas.buffer\
-\9local width, height, _height = canvas.width, canvas.height, self.height\
-\9local cropX, cropY = math.min( x + cropWidth, width ), math.min( y + cropHeight, height )\
-\9local TRANSPARENT = Graphics.colours.TRANSPARENT\
-\9local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing\
-\9local function setPixel( x, y, colour )\
-\9\9if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= cropX and y <= cropY then\
-\9        buffer[ ( y - 1 ) * width + x ] = colour\
-\9    end\
-\9end\
-\9for i = 1, #text do\
-\9\9local char = text:byte( i )\
-\9\9local bitmap\
-\9\9if characters[char] then\
-\9\9\9bitmap = characters[char]\
-\9\9else\
-\9\9\9bitmap = no_char_map\
-\9\9\9scale = desiredHeight / 6\
-\9\9end\
-\9\9local cwidth = bitmap.width * scale\
-\9\9if scale < 1 then\
-\9\9\9renderCharacterScaledDown( setPixel, bitmap, x, y, bitmap.width, _height, scale, colour )\
-\9\9else\
-\9\9\9for _y = 1, desiredHeight do\
-\9\9\9\9for _x = 1, ceil( cwidth ) do\
-\9\9\9\9\9local bx, by = ceil( _x / scale ), ceil( _y / scale )\
-\9\9\9\9\9local char_is_on = bitmap[by] and bitmap[by][bx]\
-\9\9\9\9\9if char_is_on then\
-\9\9\9\9\9\9setPixel( floor( x + _x + .5 ), floor( y + _y + .5 ), colour ) -- oh no, not this...\
-\9\9\9\9\9end\
-\9\9\9\9end\
-\9\9\9end\
-\9\9end\
-\9\9x = x + cwidth + spacing * scale\
-\9end\
 end",["ShadowObject.lua"] = "\
 class \"ShadowObject\" extends \"GraphicsObject\" {\
 \
@@ -9855,27 +10111,29 @@ end\
 \
 function WindowContainer:updateWidth( width )\
 \9self.backgroundObject.width = width\
-end",["InterfaceOutletChangedInterfaceEvent.lua"] = "\
-class \"InterfaceOutletChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_outlet_changed\";\
-\9interfaceOutlet = false;\
-\9oldView = false;\
-\9newView = false;\
-\9isSentToChildren = false;\
-\9isSentToSender = false;\
+end",["Cursor.lua"] = "\
+class \"Cursor\" extends \"GraphicsObject\" {\
+\9fillColour = Graphics.colours.BLACK;\
 }\
 \
+function Cursor:initialise( x, y, height )\
+\9self.super:initialise( x, y, 1, height )\
+end\
+\
 --[[\
-\9@constructor\
-\9@desc Creates a focus event from the arguments\
-\9@param interfaceOutlet -- the interface outlet that changed\
-\9@param newView -- the new view the outlet is bound to\
-\9@param oldView -- the old view the outlet was bound to\
+    @instance\
+    @desc Gets the pixes to be filled\
+    @return [table] fill -- the pixels to fill\
 ]]\
-function InterfaceOutletChangedInterfaceEvent:initialise( interfaceOutlet, newView, oldView )\
-\9self.interfaceOutlet = interfaceOutlet\
-\9self.newView = newView\
-\9self.oldView = oldView\
+function Cursor:getFill()\
+\9if self.fill then return self.fill end\
+\9local fill = {}\
+\9local fillX = {}\
+\9for y = 1, self.height do\
+\9\9fillX[y] = true\
+\9end\
+\9fill[1] = fillX\
+\9return fill\
 end",["ScreenCanvas.lua"] = "\
 class \"ScreenCanvas\" extends \"Canvas\" {\
 \9fillColour = Graphics.colours.LIGHT_BLUE;\
@@ -9993,423 +10251,208 @@ function ScreenCanvas:drawToTerminal( terminal )\9\
 \9\9end\
 \9end\
 \9return self\
-end",["LoadedInterfaceEvent.lua"] = "\
-class \"LoadedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_loaded\";\
-}",["Canvas.lua"] = "\
-class \"Canvas\" extends \"GraphicsObject\" {\
-    fillColour = Graphics.colours.TRANSPARENT; -- The colour of the Canvas when it clears\
-    buffer = {};\
-    children = {};\
-    owner = false; -- @property [View] - The view that owns this objects\
+end",["Resource.lua"] = "\
+-- TODO: thrown an error when there is an identically named file in a resource folder\
+\
+class \"Resource\" {\
+\9path = false;\
+\9contents = false;\
 }\
 \
 --[[\
-    @constructor\
-    @desc Creates a canvas\
-    @param [number] width -- the width of the canvas\
-    @param [number] height -- the height of the canvas\
+\9@constructor\
+\9@desc Creates a resource class, allowing ease resolving and loading of files\
+\9@param [string] match -- the exact file name of the file\
+\9@param [string] category -- the category (folder, such as classes, interfaces) to look in\
+\9@param [boolean] allowDirectories -- default false, whether directories are able to be matched\
 ]]\
-function Canvas:initialise( x, y, width, height, owner )\
-    self.super:initialise( x, y, width, height )\
-    self.owner = owner or false\
-end\
+function Resource:initialise( name, category, allowDirectories )\
+\9category = category or \"resources\"\
+\9-- TODO: path tidying\
+\9-- TODO: maybe do this backwards? so you can override files in other libraries\
+\9\
+\9-- search the resource tables\
+\9local resourceTables = self.application.resourceTables\
+\9if #resourceTables > 0 then\
+\9\9for i = 1, #resourceTables do\
+\9\9\9local categoryFiles = resourceTables[i][category]\
+\9\9\9if categoryFiles then\
+\9\9\9\9local contents = categoryFiles[name]\
+\9\9\9\9if contents and ( allowDirectories or type( contents ) ~= \"table\" ) then\
+\9\9\9\9\9self.contents = contents\
+\9\9\9\9\9return\
+\9\9\9\9end\
+\9\9\9end\
+\9\9end\
+\9end\
 \
---[[\
-    @instance\
-    @desc Sets the pixel colour and the given coordinates\
-    @param [number] x -- the x coordinate of the pixel\
-    @param [number] y -- the y coordinate of the pixel\
-    @param [colour] colour -- the colour coordinate of the pixel\
-]]\
-function Canvas:setPixel( x, y, colour )\
-    if colour ~= Graphics.colours.TRANSPARENT and x >= 1 and y >= 1 and x <= self.width and y <= self.height then\
-        self.buffer[ ( y - 1 ) * self.width + x ] = colour\
-    end\
-    return self\
-end\
+\9-- otherwise search the resource directories\
+\9local function searchDirectories( path )\
+\9\9if type( path ) == \"table\" then\
+\9\9\9for i, _path in ipairs( path ) do\
+\9\9\9\9local value = searchDirectories( _path .. \"/\" .. category )\
+\9\9\9\9if value then return value end\
+\9\9\9end\
+\9\9elseif fs.exists( path ) and fs.isDir( path ) then\
+\9\9\9local files = fs.list( path )\
+\9\9\9for i, v in ipairs( files ) do\
+\9\9\9\9local _path = path .. \"/\" .. v\
+\9\9\9\9local isDir = fs.isDir( _path )\
 \
---[[\
-    @instance\
-    @desc Gets the pixel colour and the given coordinates\
-    @param [number] x -- the x coordinate of the pixel\
-    @param [number] y -- the y coordinate of the pixel\
-    @return [colour] colour -- the colour of the pixel\
-]]\
-function Canvas:getPixel( x, y )\
-    return self.buffer[ ( y - 1 ) * self.width + x ] or self.fillColour\
-end\
+\9\9\9\9-- TODO: bundles\
+\9\9\9\9if ( allowDirectories or not isDir ) and name == v then\
+\9\9\9\9\9return _path\
+\9\9\9\9end\
 \
---[[\
-    @instance\
-    @desc Clears the buffer\
-    @return self\
-]]\
-function Canvas:clear()\
-    self.buffer = {}\
-    return self\
-end\
+\9\9\9\9if isDir then\
+\9\9\9\9\9local value = searchDirectories( _path .. '/' )\
+\9\9\9\9\9if value then return value end\
+\9\9\9\9end\
+\9\9\9end\
+\9\9end\
+\9end\
 \
---[[\
-    @instance\
-    @desc Adds a shader to screen area\
-    @param [Canvas.shader] shader -- the shader to use\
-    @param [number] x -- default 1, the x coordinate of the area\
-    @param [number] y -- default 1, the y coordinate of the area\
-    @param [number] width -- default canvas width, the width of the area\
-    @param [number] height -- default canvas height, the height of the area\
-    @return self\
-]]\
-function Canvas:map( shader, x, y, width, height )\
-    local changes = {}\
-    for _x = x or 1, ( x or 1 ) + ( width or self.width ) - 1 do\
-        for _y = y or 1, ( x or 1 ) + ( height or self.height ) - 1 do\
-            local colour = shader( _x, _y, self:getPixel( _x, _y ) )\
-            if colour and colour ~= 0 then\
-                changes[#changes + 1] = { _x, _y, colour }\
-            end\
-        end\
-    end\
-    local buffer = self.buffer\
-    local width, height = self.width, self.height\
-    local TRANSPARENT = Graphics.colours.TRANSPARENT\
-    local function setPixel( x, y, colour )\
-        if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then\
-            buffer[ ( y - 1 ) * width + x ] = colour\
-        end\
-        return self\
-    end\
-    for i = 1, #changes do\
-        setPixel( unpack( changes[i] ) )\
-    end\
-    return self\
-end\
+\9local path = searchDirectories( self.application.resourceDirectories )\
+\9self.path = path or false\
 \
---[[\
-    @instance\
-    @desc Adds a graphics object to the canvas\
-    @param [GraphicsObject] graphicsObject -- the graphics object to add\
-    @return self\
-]]\
-function Canvas:insert( graphicsObject )\
-    if not graphicsObject then\
-        error( \"GraphicsObject not supplied in canvas:insert\", 3 )\
-    end\
-    self.hasChanged = true\
-    if graphicsObject.parent then\
-        graphicsObject.parent:remove( graphicsObject )\
-    end\
-    graphicsObject.raw.parent = self\
-    self.children[#self.children + 1] = graphicsObject\
-    return graphicsObject\
-end\
+\9if path and not fs.isDir( path ) then\
+\9\9local f = fs.open( path, \"r\" )\
+\9\9if f then\
+\9\9\9self.contents = f.readAll()\
+\9\9\9f.close()\
+\9\9end\
+\9end\
+end",["Metadata.lua"] = "\
+local DEFAULT_TIMESTAMP = 1417305600; -- default date 1/1/2015\
 \
---[[\
-    @instance\
-    @desc Removes a graphics object from the canvas\
-    @param [GraphicsObject] graphicsObject -- the graphics object to remove\
-    @return self\
-]]\
-function Canvas:remove( graphicsObject )\
-    local c = false\
-    for i = #self.children, 1, -1 do\
-        if self.children[i] == graphicsObject then\
-            table.remove( self.children, i )\
-            graphicsObject.raw.parent = false\
-            c = true\
-        end\
-    end\
-    if c then\
-        self.hasChanged = true\
-    end\
-    return graphicsObject\
-end\
+local SAVED_PROPERTIES = { mime = true; createdTimestamp = true; openedTimestamp = true; modifiedTimestamp = true; icon = true; }\
 \
---[[\
-    @instance\
-    @desc Clears the buffer then draws the objects of the canvas\
-    @return self\
-]]\
-function Canvas:draw( isShadow )\
-    if self.isVisible then\
-        self.buffer = {}\
-        local children = self.children\
-        for i = 1, #children do\
-            children[i]:drawTo( self, isShadow )\
-        end\
-        self.hasChanged = false\
-    end\
-    return self\
-end\
+local EXTENSION_MIMES = {\
+    lua = \"text/lua\";\
+    txt = \"text/plain\";\
+    text = \"text/plain\";\
+    image = \"image/paint\";\
+    nfp = \"image/paint\";\
+    nft = \"image/nft\";\
+    skch = \"image/sketch\";\
+    sinterface = \"text/silicainterface\";\
+    stheme = \"text/silicatheme\";\
+    sconfig = \"text/silicaconfig\";\
+}\
 \
---[[\
-    @instance\
-    @desc Draws the canvas to another canvas\
-    @param [Canvas] canvas -- the canvas to draw to\
-    @return self\
-]]\
-function Canvas:drawTo( canvas, isShadow )\
-    local drawsShadow = self.drawsShadow\
-    if self.isVisible then\
-        if isShadow or self.hasChanged then\
-            -- local drawdt = os.clock()\
-            self:draw( isShadow )\
-        end\
-        \
-        local width = self.width\
-        local height = self.height\
-        local fillColour = self.fillColour\
-        local buffer = self.buffer\
-        local _x = self.x - 1\
-        local _y = self.y\
-        \
-\
-        local setPixel\
-        local TRANSPARENT = Graphics.colours.TRANSPARENT\
-\
-        local canvasWidth = canvas.width\
-        local canvasHeight = canvas.height\
-        local canvasBuffer = canvas.buffer\
-        if isShadow then\
-            local shadowColour\
-            local owner = self.owner\
-            if owner then\
-                shadowColour = owner.theme.shadowColour\
-            else\
-                shadowColour = Graphics.colours.GREEN\
-            end\
-            setPixel = function( x, y, colour )\
-                if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= canvasWidth and y <= canvasHeight then\
-                    canvasBuffer[ ( y - 1 ) * canvasWidth + x ] = shadowColour\
-                end\
-            end\
-        else\
-            setPixel = function( x, y, colour )\
-                if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= canvasWidth and y <= canvasHeight then\
-                    canvasBuffer[ ( y - 1 ) * canvasWidth + x ] = colour\
-                end\
-            end\
-        end\
-\
-        -- local start = os.clock()\
-\
-        for x = 1, width do\
-            for y = 0, height - 1 do -- just so there's no need for y-1 below\
-                local colour = buffer[y * width + x] or fillColour\
-                local nx, ny = x + _x, y + _y\
-                setPixel( nx, ny, colour )\
-                -- if colour ~= TRANSPARENT and nx >= 1 and ny >= 1 and nx <= canvasWidth and ny <= canvasHeight then\
-                --     canvasBuffer[( ny - 1 ) * canvasWidth + nx] = colour\
-                -- end\
-            end\
-        end\
-\
-\
-    end\
-    return self\
-end\
-\
---[[\
-    @instance\
-    @desc Hit tests the canvas' buffer to see if the colour is set (return false if transparent)\
-    @param [number] x -- the x coordinate to hit test\
-    @param [number] y -- the y coordinate to hit test\
-    @return [boolean] didHit -- whether the colour was set/not transparent\
-]]\
-function Canvas:hitTest( x, y )\
-    return self:getPixel( x, y ) ~= 0\
-end",["Image.lua"] = "\
-local hexnums = { [10] = \"a\", [11] = \"b\", [12] = \"c\", [13] = \"d\", [14] = \"e\" , [15] = \"f\" }\
-local function getHexOf(colour)\
-    if colour == Graphics.colours.TRANSPARENT or not colour or not tonumber(colour) then\
-        return \" \"\
-    end\
-    local value = math.log(colour)/math.log(2)\
-    if value > 9 then\
-            value = hexnums[value]\
-    end\
-    return value\
-end\
-\
-local function getColourOf(hex)\
-    if hex == ' ' then\
-        return Graphics.colours.TRANSPARENT\
-    end\
-    local value = tonumber(hex, 16)\
-    if not value then return nil end\
-    value = math.pow(2,value)\
-    return value\
-end\
-\
-local function split(a,e)\
-    local t,e=e or\":\",{}\
-    local t=string.format(\"([^%s]+)\",t)\
-    a:gsub(t,function(t)e[#e+1]=t end)\
-    return e\
-end\
-\
-class \"Image\" {\
+class \"Metadata\" {\
     \
-    width = false;\
-    height = false;\
-    pixels = false;\
-    resource = false;\
-    scaledCache = {};\
+    file = false;\
+    metadataPath = false;\
+\
+    mime = false; -- MIME mime of the file (e.g. image/nft)\
+    createdTimestamp = DEFAULT_TIMESTAMP;\
+    openedTimestamp = DEFAULT_TIMESTAMP;\
+    modifiedTimestamp = DEFAULT_TIMESTAMP;\
+    icon = false; -- by default, if this is empty it will get the default system icon for it. it allows for custom icons\
 \
 }\
 \
-function Image.blank( width, height )\
-    local image = Image()\
-    image.width = width\
-    image.height = height\
-    local TRANSPARENT = Graphics.colours.TRANSPARENT\
-    local pixels = {}\
-    for x = 1, width do\
-        local pixelsX = {}\
-        for y = 1, height do\
-            pixelsX[y] = TRANSPARENT\
-        end\
-        pixels[x] = pixelsX\
-    end\
-    image.pixels = pixels\
-    return image\
+function Metadata:initialise( file )\
+    self.file = file\
+    self.metadataPath = file.metadataPath\
+    self:load()\
 end\
 \
-function Image.fromPath( path )\
-    local image = Image()\
-    image.resource = Resource( path )\
-    image:loadPaintFormat()\
-    return image\
-end\
-\
-function Image.fromResource( resource )\
-    local image = Image()\
-    image.resource = resource\
-    image:loadPaintFormat()\
-    return image\
-end\
-\
-function Image.fromPixels( pixels, width, height )\
-    local image = Image()\
-    image.width = width\
-    image.height = height\
-    image:loadPixels( pixels )\
-    return image\
-end\
-\
-function Image:loadPixels( pixels )\
-    local newPixels = {}\
-\
-    for x, column in ipairs( pixels ) do\
-        local pixelsX = {}\
-        for y, colour in ipairs( column ) do\
-            pixelsX[y] = colour\
-        end\
-        newPixels[x] = pixelsX\
-    end\
-\
-    self.pixels = newPixels\
-end\
-\
-function Image:loadPaintFormat()\
-    local lines = split( self.resource.contents, \"\\n\" )\
-    local pixels = {}\
-\
-    for y, line in ipairs( lines ) do\
-        for x = 1, #line do\
-            if not pixels[x] then\
-                pixels[x] = {}\
-            end\
-            pixels[x][y] = getColourOf( line:sub( x, x ) )\
-        end\
-    end\
-\
-    self.width = #pixels\
-    self.height = #lines\
-    self.pixels = pixels\
-end\
-\
-function Image:toPaintFormat()\
-    local pixels = self.pixels\
-    local paintFormat = \"\"\
-    local width, height = self.width, self.height\
-\
-    for y = 1, height do\
-        for x = 1, width do\
-            paintFormat = paintFormat .. getHexOf( pixels[x][y] )\
-        end\
-        paintFormat = paintFormat .. \"\\n\"\
-    end\
-\
-    return paintFormat\
-end\
-\
-function Image:setPixels( pixels )\
-    self.pixels = pixels\
-    self.scaledCache = {\
-        [self.width .. \":\" .. self.height] = pixels;\
-    }\
-end\
-\
---[[\
-    @instance\
-    @desc Returns the image's pixels scaled to the desired dimensions. These are cached so performance should not be a huge concern.\
-    @param [number] scaledWidth\
-    @param [number] scaledHeight\
-    @return [table] pixels -- the scaled pixels\
-]]\
-function Image:getScaledPixels( scaledWidth, scaledHeight )\
-    scaledWidth = math.floor( scaledWidth + 0.5 )\
-    scaledHeight = math.floor( scaledHeight + 0.5 )\
-\
-    local scaledCache = self.scaledCache\
-\
-    if scaledCache[scaledWidth .. \":\" .. scaledHeight] then\
-        return scaledCache[scaledWidth .. \":\" .. scaledHeight]\
-    end\
-\
-    local width, height, pixels = self.width, self.height, self.pixels\
-\
-    local scaledPixels = {}\
-    local widthRatio = width / scaledWidth\
-    local heightRatio = height / scaledHeight\
-    local ceil = math.ceil\
-\
-    for x = 1, scaledWidth do\
-        local pixelsX = pixels[ ceil( x * widthRatio ) ]\
-        if not pixelsX then break end\
-        local scaledX = {}\
-        for y = 1, scaledHeight do\
-            scaledX[y] = pixelsX[ ceil( y * heightRatio ) ]\
-        end\
-        scaledPixels[x] = scaledX\
-    end\
-\
-    scaledCache[scaledWidth .. \":\" .. scaledHeight] = scaledPixels\
-\
-    return scaledPixels\
-end\
-\
---[[\
-    @instance\
-    @desc Renders the given image on top of the self image at the given position\
-    @param [Image] appendingImage -- description\
-    @param [number] x\
-    @param [number] y\
-]]\
-function Image:appendImage( appendingImage, x, y )\
-    local appendingPixels = appendingImage.pixels\
-    local pixels = self.pixels\
-    for _x, column in ipairs( appendingPixels ) do\
-        local pixelsX = pixels[x + _x - 1]\
-        if not pixelsX then break end\
-        for _y, colour in ipairs( column ) do\
-            if pixelsX[y + _y - 1] then\
-                pixelsX[y + _y - 1] = colour\
+function Metadata:load()\
+    local metadataPath = self.metadataPath\
+    if fs.exists( metadataPath ) then\
+        local h = fs.open( metadataPath, \"r\" )\
+        if h then\
+            local properties = textutils.unserialize( h.readAll() )\
+            h.close()\
+            local raw = self.raw\
+            for key, value in pairs( properties ) do\
+                if SAVED_PROPERTIES[key] then\
+                    raw[key] = value\
+                end\
             end\
         end\
+    else\
+        local metadataFolderPath = self.file.parentPath .. \"/.metadata\"\
+        if fs.exists( metadataFolderPath ) and not fs.isDir( metadataFolderPath ) then\
+            fs.delete( metadataFolderPath )\
+        else\
+            fs.makeDir( metadataFolderPath )\
+        end\
+        self:create()\
     end\
-    self.pixels = pixels\
+end\
+\
+function Metadata:save()\
+    local h = fs.open( self.metadataPath, \"w\" )\
+    if h then\
+        local properties = {}\
+        for key, _ in pairs( SAVED_PROPERTIES ) do\
+            local value = self[key]\
+            if value then\
+                properties[key] = value\
+            end\
+        end\
+        h.write( textutils.serialize( properties ) )\
+        h.close()\
+    end\
+end\
+\
+-- create metadata for the file based on it's content\
+function Metadata:create()\
+    self:updateCreatedTimestamp()\
+    self:updateOpenedTimestamp()\
+    self:updateModifiedTimestamp()\
+    local file = self.file\
+    local extension = file.extension\
+    if extension then\
+        -- try to guess the MIME based on the extension\
+        self.mime = EXTENSION_MIMES[extension] or \"unknown\"\
+    end\
+    self:save()\
+end\
+\
+function Metadata:moveTo( folder )\
+    fs.move( self.metadataPath, folder.path .. \"/.metadata/\" .. self.file.fullName )\
+end\
+\
+function Metadata:copyTo( folder, newFile )\
+    local copyMetadataPath = folder.path .. \"/.metadata/\" .. self.file.fullName\
+    fs.copy( self.metadataPath, copyMetadataPath )\
+    newFile.metadata:updateModifiedTimestamp()\
+end\
+\
+function Metadata:rename( fullName )\
+    fs.move( self.metadataPath, self.file.parentPath .. \"/.metadata/\" .. fullName )\
+    self:updateModifiedTimestamp()\
+end\
+\
+function Metadata:updateCreatedTimestamp()\
+    self.createdTimestamp = os.time()\
+end\
+\
+function Metadata:updateOpenedTimestamp()\
+    self.openedTimestamp = os.time()\
+end\
+\
+function Metadata:updateModifiedTimestamp()\
+    self.modifiedTimestamp = os.time()\
+end\
+\
+function Metadata:setCreatedTimestamp( createdTimestamp )\
+    self.createdTimestamp = createdTimestamp\
+    self:save()\
+end\
+\
+function Metadata:setOpenedTimestamp( openedTimestamp )\
+    self.openedTimestamp = openedTimestamp\
+    self:save()\
+end\
+\
+function Metadata:setModifiedTimestamp( modifiedTimestamp )\
+    self.modifiedTimestamp = modifiedTimestamp\
+    self:save()\
 end",["Animation.lua"] = "\
 local math, assert, tostring, type = math, assert, tostring, type\
 local pow, sin, cos, pi, sqrt, abs, asin = math.pow, math.sin, math.cos, math.pi, math.sqrt, math.abs, math.asin\
@@ -10797,47 +10840,224 @@ end\
 function Animation.easing.OUT_IN_BOUNCE( t, b, c, d )\
 \9if t < d / 2 then return outBounce(t * 2, b, c / 2, d) end\
 \9return inBounce((t * 2) - d, b + c / 2, c / 2, d)\
-end",["BackSymbol.lua"] = "\
-class \"BackSymbol\" extends \"Symbol\" {\
+end",["ScrollbarGrabber.lua"] = "\
+class \"ScrollbarGrabber\" extends \"GraphicsObject\" {\
+\9lines = 4;\
+}\
 \
-    symbolName =  \"back\";\
+--[[\
+    @instance\
+    @desc Gets the pixes to be filled\
+    @return [table] fill -- the pixels to fill\
+]]\
+function ScrollbarGrabber:getFill()\
+\9local height = self.height\
+\9local width = self.width\
+\9local lines = self.lines\
 \
-    width = 4;\
+\9local fill = {}\
+\9local startY = math.ceil( ( height - 2 * lines + 1 ) / 2 )\
+\9for x = 1, width do\
+\9\9fill[x] = fill[x] or {}\
+\9\9for y = startY, startY + 2 * lines - 1, 2 do\
+\9\9\9fill[x][y] = true\
+\9\9end\
+\9end\
 \
-    serialisedPaths = {\
-        {\
-            x = 1,\
-            y = 1,\
-            lines = {\
-                {\
-                    y1 = 1,\
-                    x1 = 1,\
-                    x2 = 4,\
-                    mode = \"linear\",\
-                    y2 = 4,\
-                },\
-                {\
-                    y1 = 4,\
-                    x1 = 4,\
-                    x2 = 1,\
-                    mode = \"linear\",\
-                    y2 = 7,\
-                },\
-                {\
-                    y1 = 7,\
-                    x1 = 1,\
-                    x2 = 1,\
-                    mode = \"linear\",\
-                    y2 = 1,\
-                },\
-            },\
-            height = 7,\
-            width = 4,\
-        }\
+\9return fill\
+end",["Image.lua"] = "\
+local hexnums = { [10] = \"a\", [11] = \"b\", [12] = \"c\", [13] = \"d\", [14] = \"e\" , [15] = \"f\" }\
+local function getHexOf(colour)\
+    if colour == Graphics.colours.TRANSPARENT or not colour or not tonumber(colour) then\
+        return \" \"\
+    end\
+    local value = math.log(colour)/math.log(2)\
+    if value > 9 then\
+            value = hexnums[value]\
+    end\
+    return value\
+end\
+\
+local function getColourOf(hex)\
+    if hex == ' ' then\
+        return Graphics.colours.TRANSPARENT\
+    end\
+    local value = tonumber(hex, 16)\
+    if not value then return nil end\
+    value = math.pow(2,value)\
+    return value\
+end\
+\
+local function split(a,e)\
+    local t,e=e or\":\",{}\
+    local t=string.format(\"([^%s]+)\",t)\
+    a:gsub(t,function(t)e[#e+1]=t end)\
+    return e\
+end\
+\
+class \"Image\" {\
+    \
+    width = false;\
+    height = false;\
+    pixels = false;\
+    resource = false;\
+    scaledCache = {};\
+\
+}\
+\
+function Image.blank( width, height )\
+    local image = Image()\
+    image.width = width\
+    image.height = height\
+    local TRANSPARENT = Graphics.colours.TRANSPARENT\
+    local pixels = {}\
+    for x = 1, width do\
+        local pixelsX = {}\
+        for y = 1, height do\
+            pixelsX[y] = TRANSPARENT\
+        end\
+        pixels[x] = pixelsX\
+    end\
+    image.pixels = pixels\
+    return image\
+end\
+\
+function Image.fromPath( path )\
+    local image = Image()\
+    image.resource = Resource( path )\
+    image:loadPaintFormat()\
+    return image\
+end\
+\
+function Image.fromResource( resource )\
+    local image = Image()\
+    image.resource = resource\
+    image:loadPaintFormat()\
+    return image\
+end\
+\
+function Image.fromPixels( pixels, width, height )\
+    local image = Image()\
+    image.width = width\
+    image.height = height\
+    image:loadPixels( pixels )\
+    return image\
+end\
+\
+function Image:loadPixels( pixels )\
+    local newPixels = {}\
+\
+    for x, column in ipairs( pixels ) do\
+        local pixelsX = {}\
+        for y, colour in ipairs( column ) do\
+            pixelsX[y] = colour\
+        end\
+        newPixels[x] = pixelsX\
+    end\
+\
+    self.pixels = newPixels\
+end\
+\
+function Image:loadPaintFormat()\
+    local lines = split( self.resource.contents, \"\\n\" )\
+    local pixels = {}\
+\
+    for y, line in ipairs( lines ) do\
+        for x = 1, #line do\
+            if not pixels[x] then\
+                pixels[x] = {}\
+            end\
+            pixels[x][y] = getColourOf( line:sub( x, x ) )\
+        end\
+    end\
+\
+    self.width = #pixels\
+    self.height = #lines\
+    self.pixels = pixels\
+end\
+\
+function Image:toPaintFormat()\
+    local pixels = self.pixels\
+    local paintFormat = \"\"\
+    local width, height = self.width, self.height\
+\
+    for y = 1, height do\
+        for x = 1, width do\
+            paintFormat = paintFormat .. getHexOf( pixels[x][y] )\
+        end\
+        paintFormat = paintFormat .. \"\\n\"\
+    end\
+\
+    return paintFormat\
+end\
+\
+function Image:setPixels( pixels )\
+    self.pixels = pixels\
+    self.scaledCache = {\
+        [self.width .. \":\" .. self.height] = pixels;\
     }\
+end\
 \
+--[[\
+    @instance\
+    @desc Returns the image's pixels scaled to the desired dimensions. These are cached so performance should not be a huge concern.\
+    @param [number] scaledWidth\
+    @param [number] scaledHeight\
+    @return [table] pixels -- the scaled pixels\
+]]\
+function Image:getScaledPixels( scaledWidth, scaledHeight )\
+    scaledWidth = math.floor( scaledWidth + 0.5 )\
+    scaledHeight = math.floor( scaledHeight + 0.5 )\
 \
-}",["MouseUpEvent.lua"] = "\
+    local scaledCache = self.scaledCache\
+\
+    if scaledCache[scaledWidth .. \":\" .. scaledHeight] then\
+        return scaledCache[scaledWidth .. \":\" .. scaledHeight]\
+    end\
+\
+    local width, height, pixels = self.width, self.height, self.pixels\
+\
+    local scaledPixels = {}\
+    local widthRatio = width / scaledWidth\
+    local heightRatio = height / scaledHeight\
+    local ceil = math.ceil\
+\
+    for x = 1, scaledWidth do\
+        local pixelsX = pixels[ ceil( x * widthRatio ) ]\
+        if not pixelsX then break end\
+        local scaledX = {}\
+        for y = 1, scaledHeight do\
+            scaledX[y] = pixelsX[ ceil( y * heightRatio ) ]\
+        end\
+        scaledPixels[x] = scaledX\
+    end\
+\
+    scaledCache[scaledWidth .. \":\" .. scaledHeight] = scaledPixels\
+\
+    return scaledPixels\
+end\
+\
+--[[\
+    @instance\
+    @desc Renders the given image on top of the self image at the given position\
+    @param [Image] appendingImage -- description\
+    @param [number] x\
+    @param [number] y\
+]]\
+function Image:appendImage( appendingImage, x, y )\
+    local appendingPixels = appendingImage.pixels\
+    local pixels = self.pixels\
+    for _x, column in ipairs( appendingPixels ) do\
+        local pixelsX = pixels[x + _x - 1]\
+        if not pixelsX then break end\
+        for _y, colour in ipairs( column ) do\
+            if pixelsX[y + _y - 1] then\
+                pixelsX[y + _y - 1] = colour\
+            end\
+        end\
+    end\
+    self.pixels = pixels\
+end",["MouseUpEvent.lua"] = "\
 class \"MouseUpEvent\" extends \"MouseEvent\" {\
 \9eventType = \"mouse_up\";\
 \9mouseButton = false;\
@@ -10931,32 +11151,73 @@ function Separator:getFill()\
 \
 \9self.fill = fill\
 \9return fill\
-end",["ScrollbarGrabber.lua"] = "\
-class \"ScrollbarGrabber\" extends \"GraphicsObject\" {\
-\9lines = 4;\
-}\
+end",["RightSymbol.lua"] = "\
+class \"RightSymbol\" extends \"Symbol\" {\
 \
---[[\
-    @instance\
-    @desc Gets the pixes to be filled\
-    @return [table] fill -- the pixels to fill\
-]]\
-function ScrollbarGrabber:getFill()\
-\9local height = self.height\
-\9local width = self.width\
-\9local lines = self.lines\
+    symbolName =  \"right\";\
 \
-\9local fill = {}\
-\9local startY = math.ceil( ( height - 2 * lines + 1 ) / 2 )\
-\9for x = 1, width do\
-\9\9fill[x] = fill[x] or {}\
-\9\9for y = startY, startY + 2 * lines - 1, 2 do\
-\9\9\9fill[x][y] = true\
-\9\9end\
-\9end\
+    serialisedPaths = {\
+        {\
+            x = 1;\
+            y = 1;\
+            lines = {\
+                {\
+                    y1 = 1;\
+                    x1 = 4;\
+                    x2 = 7;\
+                    mode = \"linear\";\
+                    y2 = 4;\
+                };\
+                {\
+                    y1 = 4;\
+                    x1 = 7;\
+                    x2 = 4;\
+                    mode = \"linear\";\
+                    y2 = 7;\
+                };\
+                {\
+                    y1 = 7;\
+                    x1 = 4;\
+                    x2 = 4;\
+                    mode = \"linear\";\
+                    y2 = 5;\
+                };\
+                {\
+                    y1 = 5;\
+                    x1 = 4;\
+                    x2 = 1;\
+                    mode = \"linear\";\
+                    y2 = 5;\
+                };\
+                {\
+                    y1 = 5;\
+                    x1 = 1;\
+                    x2 = 1;\
+                    mode = \"linear\";\
+                    y2 = 3;\
+                };\
+                {\
+                    y1 = 3;\
+                    x1 = 1;\
+                    x2 = 4;\
+                    mode = \"linear\";\
+                    y2 = 3;\
+                };\
+                {\
+                    y1 = 3;\
+                    x1 = 4;\
+                    x2 = 4;\
+                    mode = \"linear\";\
+                    y2 = 1;\
+                };\
+            };\
+            height = 7;\
+            width = 7;\
+        }\
+    }\
 \
-\9return fill\
-end",["MenuBarItem.lua"] = "\
+\
+}",["MenuBarItem.lua"] = "\
 local TEXT_MARGIN = 12\
 \
 class \"MenuBarItem\" extends \"View\" {\
@@ -11174,72 +11435,9 @@ function MenuBarItem:onMenuChanged( event )\
         menu.parent:sendToFront( self.parent )\
     end\
     return true\
-end",["RightSymbol.lua"] = "\
-class \"RightSymbol\" extends \"Symbol\" {\
-\
-    symbolName =  \"right\";\
-\
-    serialisedPaths = {\
-        {\
-            x = 1;\
-            y = 1;\
-            lines = {\
-                {\
-                    y1 = 1;\
-                    x1 = 4;\
-                    x2 = 7;\
-                    mode = \"linear\";\
-                    y2 = 4;\
-                };\
-                {\
-                    y1 = 4;\
-                    x1 = 7;\
-                    x2 = 4;\
-                    mode = \"linear\";\
-                    y2 = 7;\
-                };\
-                {\
-                    y1 = 7;\
-                    x1 = 4;\
-                    x2 = 4;\
-                    mode = \"linear\";\
-                    y2 = 5;\
-                };\
-                {\
-                    y1 = 5;\
-                    x1 = 4;\
-                    x2 = 1;\
-                    mode = \"linear\";\
-                    y2 = 5;\
-                };\
-                {\
-                    y1 = 5;\
-                    x1 = 1;\
-                    x2 = 1;\
-                    mode = \"linear\";\
-                    y2 = 3;\
-                };\
-                {\
-                    y1 = 3;\
-                    x1 = 1;\
-                    x2 = 4;\
-                    mode = \"linear\";\
-                    y2 = 3;\
-                };\
-                {\
-                    y1 = 3;\
-                    x1 = 4;\
-                    x2 = 4;\
-                    mode = \"linear\";\
-                    y2 = 1;\
-                };\
-            };\
-            height = 7;\
-            width = 7;\
-        }\
-    }\
-\
-\
+end",["LoadedInterfaceEvent.lua"] = "\
+class \"LoadedInterfaceEvent\" extends \"InterfaceEvent\" {\
+\9eventType = \"interface_loaded\";\
 }",["SiblingRemovedInterfaceEvent.lua"] = "\
 class \"SiblingRemovedInterfaceEvent\" extends \"InterfaceEvent\" {\
 \9eventType = \"interface_sibling_removed\";\
@@ -12270,7 +12468,819 @@ function XML.fromFile( filePath )\
 \9local text = h.readAll()\
 \9h.close()\
 \9return XML.fromText( text )\
-end",["Application.lua"] = "\
+end",["Label.lua"] = "\
+class \"Label\" extends \"View\" {\
+\
+    text = false;\
+    isAutosizing = true;\
+    font = false;\
+    textObject = false;\
+    needsAutosize = false;\
+\9\
+}\
+\
+--[[\
+    @instance\
+    @desc Sets up the canvas and it's graphics objects\
+]]\
+function Label:initialiseCanvas()\
+    self.super:initialiseCanvas()\
+    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas\
+    local textObject = canvas:insert( Text( 1, 1, width, height, self.text ) )\
+\
+    theme:connect( textObject, \"textColour\" )\
+    theme:connect( canvas, \"fillColour\" )\
+    self.textObject = textObject\
+\
+    if not self.font then\
+        self.font = Font.systemFont\
+    end\
+end\
+\
+function Label:updateThemeStyle()\
+    self.theme.style = self.isEnabled and \"default\" or \"disabled\"\
+end\
+\
+function Label:setFont( font )\
+    self.font = font\
+    local textObject = self.textObject\
+    if textObject then\
+        self.textObject.font = font\
+        self.needsAutosize = true\
+    end\
+end\
+\
+function Label:updateWidth( width )\
+    self.textObject.width = width\
+end\
+\
+function Label:setText( text )\
+    self.text = text\
+    self.textObject.text = text\
+    self.needsAutosize = true\
+end\
+\
+function Label:setIsEnabled( isEnabled )\
+    self.isEnabled = isEnabled\
+    self:updateThemeStyle()\
+end\
+\
+function Label:update( deltaTime )\
+    self.super:update( deltaTime )\
+    if self.needsAutosize then\
+        self:autosize()\
+    end\
+end\
+\
+--[[\
+    @instance\
+    @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text\
+]]\
+function Label:autosize()\
+    -- TODO: support self.isAutosizing\
+    local font, text = self.font, self.text\
+\
+    if font and text then\
+        local fontWidth = font:getWidth( text )\
+        self.width = fontWidth\
+        self.height = font.height\
+    end\
+    self.needsAutosize = false\
+end",["TerminateEvent.lua"] = "\
+class \"TerminateEvent\" extends \"Event\" {\
+\9eventType = \"terminate\";\
+}",["AlertWindow.lua"] = "\
+class \"AlertWindow\" extends \"Window\" {\
+\9interfaceName = \"alert\";\
+\9okayButton = InterfaceOutlet( \"okayButton\" );\
+}\
+\
+function AlertWindow:initialise( ... )\
+\9self.super:initialise( ... )\
+\
+\9self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )\
+\9self:event( ReadyInterfaceEvent, self.onReady )\
+\
+\9self.width = 100\
+\9self.height = 40\
+end\
+\
+function AlertWindow:onReady( event )\
+\9self:centre()\
+\9self:focus()\
+\9self.okayButton:focus()\
+end",["ListContainer.lua"] = "\
+local SIDE_MARGIN = 6\
+local TOP_MARGIN = 5\
+local BOTTOM_MARGIN = TOP_MARGIN\
+\
+class \"ListContainer\" extends \"ScrollContainer\" implements \"IDragDropDestination\" {\
+    \
+    needsLayoutUpdate = false;\
+    isCanvasHitTested = false;\
+    canRearrange = true;\
+    dropStyle = DragDropManager.dropStyles.RETURN;\
+    canTransferItems = false;\
+\
+}\
+\
+function ListContainer:initialise( ... )\
+    self.super:initialise( ... )\
+    self:event( ChildAddedInterfaceEvent, self.onChildAdded )\
+    self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )\
+    self:event( ReadyInterfaceEvent, self.onReady )\
+end\
+\
+function ListContainer:onReady( event )\
+    self:updateLayout( true )\
+end\
+\
+function ListContainer:update( deltaTime )\
+    self.super:update( deltaTime )\
+    if self.needsLayoutUpdate then\
+        self:updateLayout()\
+    end\
+end\
+\
+function ListContainer:onChildAdded( event )\
+    if not event.childView:typeOf( ListItem ) then\
+        error( \"Attempted to add view '\" .. tostring( event.childView ) .. \"' that does not extend ListItem to '\" .. tostring( self ) .. \"'\", 0 )\
+    end\
+    self.needsLayoutUpdate = true\
+end\
+\
+function ListContainer:onChildRemoved( event )\
+    self.needsLayoutUpdate = true\
+end\
+\
+function ListContainer:updateLayout( dontAnimate )\
+    local children, width = self.children, self.width\
+    local y = TOP_MARGIN + 1\
+\
+    local time, easing = 0.5, Animation.easing.SINE_IN_OUT\
+\
+    for i, childView in ipairs( children ) do\
+        if dontAnimate then\
+            childView.y = y\
+        else\
+            childView:animateY( y, time, nil, easing )\
+        end\
+        childView.x = 1\
+        childView.width = width\
+        y = y + childView.height\
+    end\
+\
+    self.height = y + BOTTOM_MARGIN\
+\
+    self.needsLayoutUpdate = false\
+end\
+\
+function ListContainer:canAcceptDragDrop( data )\
+    return data:typeOf( ListClipboardData ) and (self.canTransferItems or data.listItem.parent == self)\
+end\
+\
+function ListContainer:dragDropMoved( data, dragView )\
+    local _, selfY = self:position()\
+    local listItem = data.listItem\
+    local children = self.children\
+    local index = math.max( math.min( math.floor( ( dragView.y - selfY - TOP_MARGIN - 1 ) / listItem.height + 1.5 ), #children), 1 )\
+    if listItem.index ~= index then\
+        listItem.index = index\
+        self.needsLayoutUpdate = true\
+    end\
+end\
+\
+function ListContainer:dragDropEntered( data, dragView )\
+end\
+\
+function ListContainer:dragDropExited( data, dragView )\
+    -- self:animate( \"row\", 0, 0.3 )\
+end\
+\
+function ListContainer:dragDropDropped( data )\
+\
+end\
+",["ListItem.lua"] = "\
+local SIDE_MARGIN = 7\
+local TOP_BOTTOM_PADDING = 2\
+\
+class \"ListItem\" extends \"View\" implements \"IDraggableView\" {\
+    \
+    height = 12;\
+    isSelected = false;\
+    isCanvasHitTested = false;\
+\
+    backgroundObject = false;\
+    textObject = false;\
+    text = false;\
+\
+}\
+\
+function ListItem:initialise( ... )\
+    self.super:initialise( ... )\
+\
+    self:event( MouseDownEvent, self.onMouseDown )\
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
+    self:event( MouseHeldEvent, self.onMouseHeld )\
+end\
+\
+function ListItem:initialiseCanvas()\
+    self.super:initialiseCanvas()\
+    local width, height, canvas = self.width, self.height, self.canvas\
+    local backgroundObject = canvas:insert( RoundedRectangle( 2, 1, width - 2, height ) )\
+    local textObject = canvas:insert( Text( 1 + SIDE_MARGIN, 1 + TOP_BOTTOM_PADDING, 8, width - 2 * SIDE_MARGIN, self.text ) )\
+\
+    self.theme:connect( backgroundObject, \"radius\", \"cornerRadius\" )\
+    self.theme:connect( backgroundObject, \"fillColour\" )\
+    self.theme:connect( textObject, \"textColour\" )\
+\
+    self.backgroundObject = backgroundObject\
+    self.textObject = textObject\
+end\
+\
+function ListItem:updateWidth( width )\
+    self.backgroundObject.width = width - 2\
+end\
+\
+function ListItem:setText( text )\
+    self.text = text\
+    self.textObject.text = text\
+end\
+\
+function ListItem:updateThemeStyle()\
+    self.theme.style = self.isEnabled and ( self.isSelected and \"selected\" or \"default\" ) or \"disabled\"\
+end\
+\
+function ListItem:setIsEnabled( isEnabled )\
+    self.isEnabled = isEnabled\
+    self:updateThemeStyle()\
+end\
+\
+function ListItem:setIsSelected( isSelected )\
+    self.isSelected = isSelected\
+    self:updateThemeStyle()\
+end\
+\
+function ListItem:onMouseHeld( event )\
+    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then\
+        self.isSelected = true\
+        self:startDragDrop( event, ListClipboardData( self ), true, function()self.isSelected = false end )\
+    end\
+    return true\
+end\
+\
+function ListItem:onGlobalMouseUp( event )\
+    if self.isSelected and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
+        self.isSelected = false\
+        if self.isEnabled and self:hitTestEvent( event ) then\
+            self.event:handleEvent( ActionInterfaceEvent( self ) )\
+            local result = self.event:handleEvent( event )\
+            return result == nil and true or result\
+        end\
+        return true\
+    end\
+end\
+\
+function ListItem:onMouseDown( event )\
+    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
+        self.isSelected = not self.isSelected\
+    end\
+    return true\
+end",["IToolbarItem.lua"] = "\
+interface \"IToolbarItem\" {}",["EventManager.lua"] = "\
+class \"EventManager\" {\
+\9owner = false;\
+\9handles = {};\
+\9handlesGlobal = {};\
+\
+\9-- functions can be called either before or after tickle down\
+\9phase = {\
+\9\9BEFORE = 1;\
+\9\9AFTER = 2;\
+\9};\
+}\
+\
+\
+--[[\
+\9@constructor\
+\9@desc Creates an EventManager for the provided owner, with owner reverting to the EventManager instance\
+\9@param [class] owner -- the owner of the EventManger (i.e. what self will be on function calls)\
+]]\
+function EventManager:initialise( owner )\
+\9self.owner = owner or self\
+\9self.owner = self.owner\
+\
+\9-- allow the class to be called as a shorthand for :connect\
+\9self.mt.__call = function(self, _, ...) return self:connect( ... ) end\
+\9setmetatable( self, self.mt )\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Subscribes a function to the given event\
+\9@param [Event.eventType] eventType -- the name of the event type\
+\9@param [EventManager] eventManager -- the handle manager \
+\9@param [function] func -- the function called when the event occurs\
+\9@param [class] sender -- the value passed as self. defaults to eventManager.owner\
+]]\
+function EventManager:connect( eventType, func, phase, eventManager, sender )\
+\9if not eventType then error( \"No event type given to EventManager:connect!\", 2 ) end\
+\9if type( eventType ) == \"table\" and eventType:typeOf( Event ) then eventType = eventType.eventType end\
+\9\
+\9if func and type( func ) == \"function\" then\
+\9\9phase = phase or EventManager.phase.BEFORE\
+\9\9eventManager = eventManager or self\
+\9\9self:disconnect( eventType, func, phase, eventManager, sender ) -- ensure duplicates won't be made\
+\
+\9\9if not self.handles[eventType] then\
+\9\9\9self.handles[eventType] = {}\
+\9\9end\
+\
+\9\9table.insert( self.handles[eventType], { func, phase, eventManager, sender or eventManager.owner } )\
+\9else\
+\9\9error( \"Attempted to connect non-function to event: \" .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Unsubscribes a function to the given event\
+\9@param [Event.eventType] eventType -- the name of the event type\
+\9@param [function] func -- the function called when the event occurs\
+\9@param [class] sender -- the value passed as self. defaults to eventManager.owner\
+]]\
+function EventManager:disconnect( eventType, func, phase, eventManager, sender )\
+\9phase = phase or EventManager.phase.BEFORE\
+\9eventManager = eventManager or self\
+\9sender = sender or eventManager.owner\
+\
+\9if self.handles[eventType] then\
+\9\9for i, handle in pairs( self.handles[eventType] ) do\
+\9\9\9if handle[1] == func and handle[2] == phase and handle[3] == eventManager and handle[4] == sender then\
+\9\9\9\9self.handles[eventType][i] = nil\
+\9\9\9end\
+\9\9end\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Subscribes a function globally to the given event\
+\9@param [Event.eventType] eventType -- the name of the event type\
+\9@param [function] func -- the function called when the event occurs\
+]]\
+function EventManager:connectGlobal( eventType, func, phase, sender )\
+\9if func and type( func ) == \"function\" then\
+\9\9phase = phase or EventManager.phase.BEFORE\
+\9\9sender = sender or self.owner\
+\9\9self:disconnectGlobal( eventType, func, phase, sender ) -- ensure duplicates won't be made\
+\
+\9\9if not self.handlesGlobal[eventType] then\
+\9\9\9self.handlesGlobal[eventType] = {}\
+\9\9end\
+\
+\9\9table.insert( self.handlesGlobal[eventType], { func, phase, sender } )\
+\9\9self.application.event:connect( eventType, func, phase, self, sender )\
+\9else\
+\9\9error( \"Attempted to connect non-function to global event: \" .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Unsubscribes a function to globally the given event\
+\9@param [Event.eventType] eventType -- the name of the event type\
+\9@param [function] func -- the function called when the event occurs\
+]]\
+function EventManager:disconnectGlobal( eventType, func, phase, sender, eventManager )\
+\9phase = phase or EventManager.phase.BEFORE\
+\9sender = sender or self.owner\
+\9self.application.event:disconnect( eventType, func, phase, self, sender )\
+\
+\9if self.handlesGlobal[eventType] then\
+\9\9for i, handle in pairs( self.handlesGlobal[eventType] ) do\
+\9\9\9if handle[1] == func and handle[2] == phase and handle[3] == eventManager and handle[4] == sender then\
+\9\9\9\9self.handlesGlobal[eventType][i] = nil\
+\9\9\9end\
+\9\9end\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Unsubscribes all global events\
+]]\
+function EventManager:disconnectAllGlobals()\
+\9for eventType, v in pairs( self.handlesGlobal ) do\
+\9\9for i, handle in pairs( v ) do\
+\9\9\9self.application.event:disconnect( eventType, handle[1], handle[2], handle[3], self)\
+\9\9\9v[i] = nil\
+\9\9end\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Returns true if the EventManager has any handles for the given type\
+\9@param [Event.eventType] eventType -- the name of the even type\
+\9@return [boolean] hasConnections\
+]]\
+function EventManager:hasConnections( eventType )\
+\9return self.handles[eventType] and #self.handles[eventType] >= 1\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Returns true if the EventManager has any global handles for the given type\
+\9@param [Event.eventType] eventType -- the name of the even type\
+\9@return [boolean] hasConnections\
+]]\
+function EventManager:hasConnectionsGlobal( eventType )\
+\9return self.handlesGlobal[eventType] and #self.handlesGlobal[eventType] >= 1\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Perfoms the appropriate handles for the given event\
+\9@param [Event] event -- the event to handle\
+\9@return [boolean] stopPropagation -- whether no further handles should recieve this event\
+]]\
+function EventManager:handleEvent( event )\
+\9if self:handleEventPhase( event, self.phase.BEFORE ) then\
+\9\9return true\
+\9end\
+\
+\9if self:handleEventPhase( event, self.phase.AFTER ) then\
+\9\9return true\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Performs the handles for a specific phase\
+\9@param [Event] event -- the event to handle\
+\9@param [EventManager.phase] phase -- the phase desired\
+\9@return [boolean] stopPropagation -- whether no further handles should recieve this event\
+]]\
+function EventManager:handleEventPhase( event, phase )\
+\9local eventType = event.eventType\
+\9if self.handles[eventType] then\
+\9\9for i, handle in pairs( self.handles[eventType] ) do\
+\9\9\9if handle and phase == handle[2] then\
+\9\9\9\9-- handle[1] is the handle function\
+\9\9\9\9-- handle[2] is the phase\
+\9\9\9\9-- handle[3] is the event manager\
+\9\9\9\9-- handle[4] is the sender\
+\9\9\9\9local response = handle[1]( handle[4], event, handle[2] ) -- if response is true stop propagation, if false continue\
+\9\9\9\9-- TODO: maybe enforce returning boolean for event handler functions\
+\9\9\9\9-- if response ~= true and response ~= false then\
+\9\9\9\9-- \9error( \"Error handler for event '\" .. eventType .. \"' of instance '\" .. tostring( handle[4] ) .. \"' did not return boolean. If the event should not be sent to anything else (i.e. stop propagation) return true, otherwise, if it can continue being passed around, return false.\", 0 )\
+\9\9\9\9-- end\
+\
+\9\9\9\9if response then\
+\9\9\9\9\9return true\
+\9\9\9\9end\
+\9\9\9end\
+\9\9end\
+\9end\
+end\
+\
+function EventManager:dispose()\
+\9self:disconnectAllGlobals()\
+end",["MouseDoubleClickEvent.lua"] = "\
+class \"MouseDoubleClickEvent\" extends \"MouseEvent\" {\
+    eventType = \"mouse_double_click\";\
+    mouseButton = false;\
+    isSentToChildren = false;\
+}\
+\
+--[[\
+    @constructor\
+    @desc Creates a mouse held event from the arguments\
+    @param [MouseEvent.mouseButtons] mouseButton -- the mouse button (left, right, etc.)\
+    @param [number] x -- the x screen coordinate\
+    @param [number] y -- the y screen coordinate\
+    @param [number] globalX -- the global x screen coordinate\
+    @param [number] globalY -- the global y screen coordinate\
+]]\
+function MouseDoubleClickEvent:initialise( mouseButton, x, y, globalX, globalY )\
+    self.mouseButton = mouseButton\
+    self.x = x\
+    self.y = y\
+    self.globalX = globalX\
+    self.globalY = globalY\
+end",["ScrollView.lua"] = "-- TODO: scrolling quickly then the opposite way reverses speed (not stops it)\
+\
+\
+local exp = math.exp\
+\
+local SCROLL_DECAY = -8\
+local SCROLL_SPEED = 180\
+local SCROLL_ACCELERATION = 1.2--0.97\
+local SPEED_CUTOFF = 0.2\
+\
+class \"ScrollView\" extends \"Container\" {\
+\9contents = false;\
+\9horizontalScrollbar = false;\
+\9verticalScrollbar = false;\
+\9container = false;\
+\9verticalVelocityTime = 0;\
+\9verticalVelocity = 0;\
+\9horizontalVelocity = 0;\
+}\
+\
+--[[\
+\9@constructor\
+\9@desc Initialise a application container instance\
+\9@param [table] properties -- the properties for the view\
+]]\
+function ScrollView:initialise( ... )\
+\9self.super:initialise( ... )\
+\
+\9local width, height = self.width, self.height\
+\9self.verticalScrollbar = self:insert( Scrollbar( { isHorizontal = false, x = width - Scrollbar.width + 1, height = height } ) )\
+\9self.container = self:insert( ScrollContainer( { x = 1, y = 1, width = width, height = height } ) )\
+    -- self:sendToFront( self.horizontalScrollbar )\
+    self:sendToFront( self.verticalScrollbar )\
+\
+    self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )\
+    self:event( MouseScrollEvent, self.onMouseScroll )\
+end\
+\
+function ScrollView:initialiseCanvas()\
+\9self.super:initialiseCanvas()\
+\
+\9self.theme:connect( self.canvas, \"fillColour\" )\
+end\
+\
+function ScrollView:onInterfaceLoaded( event )\
+    local currentContainer = self.container\
+    for i, childView in ipairs( self.children ) do\
+        if childView ~= currentContainer and childView:typeOf( ScrollContainer ) then\
+            childView.x = 1\
+            childView.y = 1\
+            self:remove( currentContainer )\
+            self.container = childView\
+            -- self:sendToFront( self.horizontalScrollbar )\
+\9\9\9self.verticalScrollbar:getScroller()\
+            self:sendToFront( self.verticalScrollbar )\
+            break\
+        end\
+    end\
+end\
+\
+function ScrollView:updateContainerSize()\
+\9local container = self.container\
+\9-- if container.width > self.width then\
+\9-- else\
+\9-- end\
+\
+\9if container.height > self.height then\
+\9\9if not self.verticalScrollbar then\
+\9\9\9self.verticalScrollbar = self:insert( Scrollbar( { isHorizontal = false, x = self.width - Scrollbar.width + 1, height = self.height } ) )\
+\9\9end\
+\9else\
+\9\9self:remove( self.verticalScrollbar )\
+\9end\
+end\
+\
+function ScrollView:updateWidth( width )\
+    width = self.width\
+\9local verticalScrollbar = self.verticalScrollbar\
+\9if verticalScrollbar then verticalScrollbar.x = width - verticalScrollbar.width + 1 end\
+end\
+\
+function ScrollView:updateHeight( height )\
+    height = self.height\
+\9local verticalScrollbar = self.verticalScrollbar\
+\9if verticalScrollbar then self.verticalScrollbar.height = height end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Set vertical scroll offset of the contents\
+\9@param [number] offsetY -- the vertical offset\
+]]\
+function ScrollView:setOffsetY( offsetY, isVelocity )\
+\9local container = self.container\
+\9if container then\
+\9\9local height = self.height\
+\9\9local currentOffsetY = self.offsetY\
+\9\9local realOffsetY = math.max( math.min( offsetY, math.max( container.height - height, 0 ) ), 0 )\
+\9\9self.raw.offsetY = realOffsetY\
+\9\9local verticalScrollbar = self.verticalScrollbar\
+\9\9if verticalScrollbar then verticalScrollbar:getScroller() end\
+\9\9if realOffsetY ~= offsetY then\
+\9\9\9self.verticalVelocity = 0\
+\9\9\9self.verticalVelocityTime = 0\
+\9\9end\
+\9\9container.y = 1 - math.floor( realOffsetY + 0.5 )\
+\9end\
+end\
+\
+\
+function ScrollView:update( deltaTime )\
+\9self.super:update( deltaTime )\
+\9local verticalVelocity = self.verticalVelocity\
+\9if verticalVelocity ~= 0 then\
+\9\9local startTime\
+\9\9local time = self.verticalVelocityTime\
+\9\9local newVerticalVelocity = verticalVelocity * exp( SCROLL_DECAY * (time + deltaTime) )\
+\9\9local distance\
+\9\9if math.abs( newVerticalVelocity ) <= SPEED_CUTOFF then\
+\9\9\9self.verticalVelocity = 0\
+\9\9\9self.verticalVelocityTime = 0\
+\9\9else\
+\9\9\9self.verticalVelocityTime = time + deltaTime\
+\9\9\9local currentVerticalVelocity = verticalVelocity * exp( SCROLL_DECAY * time )\
+\9\9\9self:setOffsetY( self.offsetY + (currentVerticalVelocity - newVerticalVelocity) / SCROLL_DECAY, true )\
+\9\9end\
+\9end\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Scrolls the scroll view to the offset given, animating the value\
+\9@param [number] offsetY -- the direction/distance to scroll\
+]]\
+function ScrollView:scrollTo( offsetY )\
+\9-- calculate the velocity required to reach a certain point\
+\9-- see https://www.desmos.com/calculator/qis3qhbsvs for details\
+\9-- d = vi / a * ( 1 - e ^ ln( vf / vi ) )\
+\
+\9-- it turns out that this is far easier than oeed first thought, having spent many, many hours playing with integrals...\
+\9-- it's simply: vi = a * d + vf\
+\9-- hence: (vi - vf)/a = d\
+\9local deltaOffsetY = offsetY - self.offsetY\
+\9local velocity = SCROLL_DECAY * deltaOffsetY + SPEED_CUTOFF\
+\9self.verticalVelocity = velocity\
+\9self.verticalVelocityTime = 0\
+\9-- self.offsetY = self.offsetY + direction\
+\9-- TODO: horizontal scrolling\
+end\
+\
+--[[\
+\9@instance\
+\9@desc Fired when the mouse is scrolled over the scroll view\
+\9@param [Event] event -- the mouse scroll event\
+    @return [boolean] preventPropagation -- prevent anyone else using the event\
+]]\
+function ScrollView:onMouseScroll( event )\
+\9if self.isEnabled then\
+\9\9local direction = event.direction\
+\9\9local verticalVelocity = self.verticalVelocity\
+\9\9instantaneousVelocity = verticalVelocity and verticalVelocity * exp( SCROLL_DECAY * (self.verticalVelocityTime or 0) ) or 0\
+\9\9self.verticalVelocityTime = 0\
+\9\9if direction * verticalVelocity > 1 then\
+\9\9\9self.verticalVelocity = -direction * math.abs(instantaneousVelocity + direction * SCROLL_SPEED) ^ SCROLL_ACCELERATION\
+\9\9else\
+\9\9\9self.verticalVelocity = -direction * SCROLL_SPEED\
+\9\9end\
+\9\9-- self:scroll( event.direction * SCROLL_SPEED )\
+\9end\
+\9return true\
+end",["SegmentContainer.lua"] = "\
+class \"SegmentContainer\" extends \"Container\" {\
+\9needsLayoutUpdate = false;\9\
+}\
+\
+--[[\
+\9@instance\
+\9@desc Updates the location and size of the menu as well as the location and size of the menu items\
+]]\
+function SegmentContainer:updateLayout()\
+\9if self.isVisible then\
+\9\9local width = 0\
+\9\9local height = 0\
+\9\9for i, childView in ipairs( self.children ) do\
+\9\9\9height = math.max( height, childView.height )\
+\9\9end\
+\
+\9\9for i, childView in ipairs( self.children ) do\
+\9\9\9childView.x = width + 1\
+\9\9\9childView.y = 1\
+\9\9\9width = width + childView.width\
+\9\9end\
+\9\9self.width = width\
+\9\9self.height = height\
+\9end\
+end\
+\
+function SegmentContainer:update( deltaTime )\
+    self.super:update( deltaTime )\
+    if self.needsLayoutUpdate then\
+        self:updateLayout()\
+    end\
+end\
+\
+function SegmentContainer:insert( ... )\
+\9self.super:insert( ... )\
+\9self.needsLayoutUpdate = true\
+end\
+\
+function SegmentContainer:removeChild( ... )\
+\9self.super:removeChild( ... )\
+\9self.needsLayoutUpdate = true\
+end",["ProgressBarStripes.lua"] = "\
+class \"ProgressBarStripes\" extends \"RoundedRectangle\" {\
+\9stripeColour = false;\
+\9animationStep = 0;\
+\9stripeWidth = 9;\
+}\
+\
+function ProgressBarStripes:initialise( x, y, width, height, fillColour, outlineColour, stripeColour, radius ) -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )\
+\9self.super:initialise( x, y, width, height, fillColour, outlineColour, radius, 0, radius, 0 )\
+\9self.fillColour = fillColour\
+\9self.outlineColour = fillColour\
+\9self.stripeColour = stripeColour\
+end\
+\
+function ProgressBarStripes:setAnimationStep( animationStep )\
+\9self.hasChanged = true\
+\9self.animationStep = math.floor( animationStep )\
+end\
+\
+function ProgressBarStripes:drawTo( canvas, isShadow )\
+\9if self.isVisible and ( not isShadow or ( isShadow and self.drawsShadow ) ) then\
+\9\9local fill = self.fill\
+\9\9local outline\
+\9\9if self.outlineColour ~= Graphics.colours.TRANSPARENT then\
+\9\9\9outline = self:getOutline( fill )\
+\9\9end\
+\
+\9\9local fillColour = self.fillColour\
+\9\9local stripeColour = self.stripeColour\
+\9\9local outlineColour = self.outlineColour\
+\9\9local stripeWidth = self.stripeWidth\
+\9\9local animationStep = self.animationStep\
+\9\9local _x = self.x - 1\
+\9\9local _y = self.y - 1\
+\
+\9\9local function fmap( x, y, colour )\
+\9\9\9if fill[x] and fill[x][y] then\
+\9\9\9\9return ( ( ( x + y - animationStep ) / stripeWidth ) % 2 < 1 ) and fillColour or stripeColour\
+\9\9\9end\
+\9\9end\
+\9\9local function ofmap( x, y, colour )\
+\9\9\9if outline[x] and outline[x][y] then\
+\9\9\9\9return outlineColour\
+\9\9\9elseif fill[x] and fill[x][y] then\
+\9\9\9\9return ( ( ( x + y - animationStep ) / stripeWidth ) % 2 < 1 ) and fillColour or stripeColour\
+\9\9\9end\
+\9\9end\
+\9\9canvas:map( outline and ofmap or fmap, _x, _y, self.width, self.height )\
+\
+\9\9if outline then\
+\9\9\9for x, row in pairs( outline ) do\
+\9\9\9\9for y, _ in pairs( row ) do\
+\9\9\9\9\9canvas:setPixel( _x + x, _y + y, outlineColour )\
+\9\9\9\9end\
+\9\9\9end\
+\9\9end\
+\9end\
+\9\
+    return self\
+end",["BackSymbol.lua"] = "\
+class \"BackSymbol\" extends \"Symbol\" {\
+\
+    symbolName =  \"back\";\
+\
+    width = 4;\
+\
+    serialisedPaths = {\
+        {\
+            x = 1,\
+            y = 1,\
+            lines = {\
+                {\
+                    y1 = 1,\
+                    x1 = 1,\
+                    x2 = 4,\
+                    mode = \"linear\",\
+                    y2 = 4,\
+                },\
+                {\
+                    y1 = 4,\
+                    x1 = 4,\
+                    x2 = 1,\
+                    mode = \"linear\",\
+                    y2 = 7,\
+                },\
+                {\
+                    y1 = 7,\
+                    x1 = 1,\
+                    x2 = 1,\
+                    mode = \"linear\",\
+                    y2 = 1,\
+                },\
+            },\
+            height = 7,\
+            width = 4,\
+        }\
+    }\
+\
+\
+}",["Application.lua"] = "\
 -- need to fix scheduling ... cancelling them won't work right now\
 -- each one needs to have its own ID and return that ID\
 \
@@ -12653,861 +13663,6 @@ function Application:run( ... )\
 \9\9event.relativeView = self.container\
 \9\9self.event:handleEvent( event )\
 \9end\
-end",["TerminateEvent.lua"] = "\
-class \"TerminateEvent\" extends \"Event\" {\
-\9eventType = \"terminate\";\
-}",["AlertWindow.lua"] = "\
-class \"AlertWindow\" extends \"Window\" {\
-\9interfaceName = \"alert\";\
-\9okayButton = InterfaceOutlet( \"okayButton\" );\
-}\
-\
-function AlertWindow:initialise( ... )\
-\9self.super:initialise( ... )\
-\
-\9self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )\
-\9self:event( ReadyInterfaceEvent, self.onReady )\
-\
-\9self.width = 100\
-\9self.height = 40\
-end\
-\
-function AlertWindow:onReady( event )\
-\9self:centre()\
-\9self:focus()\
-\9self.okayButton:focus()\
-end",["ListContainer.lua"] = "\
-local SIDE_MARGIN = 6\
-local TOP_MARGIN = 5\
-local BOTTOM_MARGIN = TOP_MARGIN\
-\
-class \"ListContainer\" extends \"ScrollContainer\" implements \"IDragDropDestination\" {\
-    \
-    needsLayoutUpdate = false;\
-    isCanvasHitTested = false;\
-    canRearrange = true;\
-    dropStyle = DragDropManager.dropStyles.RETURN;\
-    canTransferItems = false;\
-\
-}\
-\
-function ListContainer:initialise( ... )\
-    self.super:initialise( ... )\
-    self:event( ChildAddedInterfaceEvent, self.onChildAdded )\
-    self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )\
-    self:event( ReadyInterfaceEvent, self.onReady )\
-end\
-\
-function ListContainer:onReady( event )\
-    self:updateLayout( true )\
-end\
-\
-function ListContainer:update( deltaTime )\
-    self.super:update( deltaTime )\
-    if self.needsLayoutUpdate then\
-        self:updateLayout()\
-    end\
-end\
-\
-function ListContainer:onChildAdded( event )\
-    if not event.childView:typeOf( ListItem ) then\
-        error( \"Attempted to add view '\" .. tostring( event.childView ) .. \"' that does not extend ListItem to '\" .. tostring( self ) .. \"'\", 0 )\
-    end\
-    self.needsLayoutUpdate = true\
-end\
-\
-function ListContainer:onChildRemoved( event )\
-    self.needsLayoutUpdate = true\
-end\
-\
-function ListContainer:updateLayout( dontAnimate )\
-    local children, width = self.children, self.width\
-    local y = TOP_MARGIN + 1\
-\
-    local time, easing = 0.5, Animation.easing.SINE_IN_OUT\
-\
-    for i, childView in ipairs( children ) do\
-        if dontAnimate then\
-            childView.y = y\
-        else\
-            childView:animateY( y, time, nil, easing )\
-        end\
-        childView.x = 1\
-        childView.width = width\
-        y = y + childView.height\
-    end\
-\
-    self.height = y + BOTTOM_MARGIN\
-\
-    self.needsLayoutUpdate = false\
-end\
-\
-function ListContainer:canAcceptDragDrop( data )\
-    return data:typeOf( ListClipboardData ) and (self.canTransferItems or data.listItem.parent == self)\
-end\
-\
-function ListContainer:dragDropMoved( data, dragView )\
-    local _, selfY = self:position()\
-    local listItem = data.listItem\
-    local children = self.children\
-    local index = math.max( math.min( math.floor( ( dragView.y - selfY - TOP_MARGIN - 1 ) / listItem.height + 1.5 ), #children), 1 )\
-    if listItem.index ~= index then\
-        listItem.index = index\
-        self.needsLayoutUpdate = true\
-    end\
-end\
-\
-function ListContainer:dragDropEntered( data, dragView )\
-end\
-\
-function ListContainer:dragDropExited( data, dragView )\
-    -- self:animate( \"row\", 0, 0.3 )\
-end\
-\
-function ListContainer:dragDropDropped( data )\
-\
-end\
-",["FlowContainer.lua"] = "\
-local TOP_MARGIN = 5\
-local BOTTOM_MARGIN = 5\
-local SIDE_MARGIN = 6\
-\
-class \"FlowContainer\" extends \"Container\" {\
-    \
-    needsLayoutUpdate = false;\
-    expandVertically = true;\
-\
-}\
-\
-function FlowContainer:initialise( ... )\
-    self.super:initialise( ... )\
-    self:event( ChildAddedInterfaceEvent, self.onChildAdded )\
-    self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )\
-    self:event( ReadyInterfaceEvent, self.onReady )\
-end\
-\
-function FlowContainer:initialiseCanvas()\
-    self.super:initialiseCanvas()\
-\
-    self.theme:connect( self.canvas, \"fillColour\" )\
-end\
-\
-function FlowContainer:updateWidth( width )\
-    self.needsLayoutUpdate = true\
-end\
-\
-function FlowContainer:updateHeight( height )\
-    -- self.needsLayoutUpdate = true\
-end\
-\
-function FlowContainer:onReady( event )\
-    self:updateLayout( true )\
-end\
-\
-function FlowContainer:update( deltaTime )\
-    self.super:update( deltaTime )\
-    if self.needsLayoutUpdate then\
-        self:updateLayout()\
-    end\
-end\
-\
-function FlowContainer:onChildAdded( event )\
-    if event.childView:typeOf( IFlowItem ) then\
-        self.needsLayoutUpdate = true\
-    end\
-end\
-\
-function FlowContainer:onChildRemoved( event )\
-    self.needsLayoutUpdate = true\
-end\
-\
-function FlowContainer:updateLayout( dontAnimate )\
-    local width, height = self.width, self.height\
-\
-    local children = {}\
-    for i, childView in ipairs( self.children ) do\
-        if childView:typeOf( IFlowItem ) then\
-            table.insert( children, childView )\
-        end\
-    end\
-\
-    local time, easing = 0.5, Animation.easing.SINE_IN_OUT\
-\
-    local nChildren = #children\
-    local totalWidth = 0\
-    local minWidths = {}\
-    for i, childView in ipairs( children ) do\
-        totalWidth = totalWidth + childView.idealWidth\
-        minWidths[i] = childView.minWidth or 1\
-    end\
-\
-    local averageWidth = math.min( math.floor( totalWidth / nChildren + 0.5 ), width - 2 * SIDE_MARGIN )\
-    local maxItemsPerRow = math.floor( totalWidth / averageWidth + 0.5 )\
-    local idealWidth = math.floor( totalWidth / maxItemsPerRow )\
-\
-    local y = TOP_MARGIN + 1\
-\
-    local _i = 0\
-    for i = 1, nChildren do\
-        if i > _i then\
-            local rowWidth = 2 * SIDE_MARGIN\
-            local x = SIDE_MARGIN + 1\
-            local numberOfItems = 1\
-\
-            local totalMinWidths = 0\
-            local spareWidth = width - rowWidth\
-            for n = 1, math.min( maxItemsPerRow, nChildren - i + 1 ) do\
-                local minWidth = minWidths[i + n - 1]\
-                totalMinWidths = totalMinWidths + minWidth\
-                if totalMinWidths + rowWidth > width then\
-                    if n == 1 then\
-                        spareWidth = spareWidth - minWidth\
-                    end\
-                    break\
-                end\
-                numberOfItems = n\
-                spareWidth = spareWidth - minWidth\
-            end\
-\
-            local itemWidth = spareWidth / numberOfItems\
-            _i = _i + numberOfItems\
-\
-            local height = 1\
-            for n = i, _i do\
-                local childView = children[n]\
-                local width = minWidths[n] + ( n == i and math.ceil or math.floor)(itemWidth)\
-                local idealHeight = childView.idealHeight\
-                local maxWidth = childView.maxWidth\
-                width = (maxWidth and math.min( width, maxWidth ) or width)\
-                if dontAnimate then\
-                    childView.x = x\
-                    childView.y = y\
-                    childView.width = width\
-                    childView.height = idealHeight\
-                else\
-                    childView:animateX( x, time, nil, easing )\
-                    childView:animateY( y, time, nil, easing )\
-                    childView:animateWidth( width, time, nil, easing )\
-                    childView:animateHeight( idealHeight, time, nil, easing )\
-                end\
-                x = x + width\
-                height = math.max( idealHeight, height )\
-            end\
-            y = y + height\
-        end\
-    end\
-\
-    self:animateHeight( y + BOTTOM_MARGIN, time, nil, easing )\
-\
-    self.needsLayoutUpdate = false\
-end",["IToolbarItem.lua"] = "\
-interface \"IToolbarItem\" {}",["ListItem.lua"] = "\
-local SIDE_MARGIN = 7\
-local TOP_BOTTOM_PADDING = 2\
-\
-class \"ListItem\" extends \"View\" implements \"IDraggableView\" {\
-    \
-    height = 12;\
-    isSelected = false;\
-    isCanvasHitTested = false;\
-\
-    backgroundObject = false;\
-    textObject = false;\
-    text = false;\
-\
-}\
-\
-function ListItem:initialise( ... )\
-    self.super:initialise( ... )\
-\
-    self:event( MouseDownEvent, self.onMouseDown )\
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )\
-    self:event( MouseHeldEvent, self.onMouseHeld )\
-end\
-\
-function ListItem:initialiseCanvas()\
-    self.super:initialiseCanvas()\
-    local width, height, canvas = self.width, self.height, self.canvas\
-    local backgroundObject = canvas:insert( RoundedRectangle( 2, 1, width - 2, height ) )\
-    local textObject = canvas:insert( Text( 1 + SIDE_MARGIN, 1 + TOP_BOTTOM_PADDING, 8, width - 2 * SIDE_MARGIN, self.text ) )\
-\
-    self.theme:connect( backgroundObject, \"radius\", \"cornerRadius\" )\
-    self.theme:connect( backgroundObject, \"fillColour\" )\
-    self.theme:connect( textObject, \"textColour\" )\
-\
-    self.backgroundObject = backgroundObject\
-    self.textObject = textObject\
-end\
-\
-function ListItem:updateWidth( width )\
-    self.backgroundObject.width = width - 2\
-end\
-\
-function ListItem:setText( text )\
-    self.text = text\
-    self.textObject.text = text\
-end\
-\
-function ListItem:updateThemeStyle()\
-    self.theme.style = self.isEnabled and ( self.isSelected and \"selected\" or \"default\" ) or \"disabled\"\
-end\
-\
-function ListItem:setIsEnabled( isEnabled )\
-    self.isEnabled = isEnabled\
-    self:updateThemeStyle()\
-end\
-\
-function ListItem:setIsSelected( isSelected )\
-    self.isSelected = isSelected\
-    self:updateThemeStyle()\
-end\
-\
-function ListItem:onMouseHeld( event )\
-    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then\
-        self.isSelected = true\
-        self:startDragDrop( event, ListClipboardData( self ), true, function()self.isSelected = false end )\
-    end\
-    return true\
-end\
-\
-function ListItem:onGlobalMouseUp( event )\
-    if self.isSelected and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
-        self.isSelected = false\
-        if self.isEnabled and self:hitTestEvent( event ) then\
-            self.event:handleEvent( ActionInterfaceEvent( self ) )\
-            local result = self.event:handleEvent( event )\
-            return result == nil and true or result\
-        end\
-        return true\
-    end\
-end\
-\
-function ListItem:onMouseDown( event )\
-    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
-        self.isSelected = not self.isSelected\
-    end\
-    return true\
-end",["MouseDoubleClickEvent.lua"] = "\
-class \"MouseDoubleClickEvent\" extends \"MouseEvent\" {\
-    eventType = \"mouse_double_click\";\
-    mouseButton = false;\
-    isSentToChildren = false;\
-}\
-\
---[[\
-    @constructor\
-    @desc Creates a mouse held event from the arguments\
-    @param [MouseEvent.mouseButtons] mouseButton -- the mouse button (left, right, etc.)\
-    @param [number] x -- the x screen coordinate\
-    @param [number] y -- the y screen coordinate\
-    @param [number] globalX -- the global x screen coordinate\
-    @param [number] globalY -- the global y screen coordinate\
-]]\
-function MouseDoubleClickEvent:initialise( mouseButton, x, y, globalX, globalY )\
-    self.mouseButton = mouseButton\
-    self.x = x\
-    self.y = y\
-    self.globalX = globalX\
-    self.globalY = globalY\
-end",["RoundedRectangle.lua"] = "\
--- draws a corner with the given radius for the corner given\
-local function corner( fill, width, height, radius, position ) -- position is a byte. first bit is 0 if top, second bit is 0 if left\
-\9if radius <= 0 then return end\
-\9\
-\9local minDistance = radius\
-\9radius = radius + 0.5 -- doing this seems to magically make them look much better\
-\
-\9local centerX = (bit.band( position, 2 ) == 0) and radius or width - radius + 1\
-\9local centerY = (bit.band( position, 1 ) == 0) and radius or height - radius + 1\
-\9local minX = (bit.band( position, 2 ) == 0) and 1 or width - minDistance + 1\
-\9local minY = (bit.band( position, 1 ) == 0) and 1 or height - minDistance + 1\
-\
-\9for x = minX, minX + radius - 1 do\
-\9\9fill[x] = fill[x] or {}\
-\9\9local xDistance = ( x - centerX ) ^ 2\
-\9\9for y = minY, minY + radius - 1 do\
-\9\9\9local distance = ( xDistance + ( y - centerY) ^ 2 ) ^ 0.5\
-\9\9\9if distance <= minDistance then\
-\9\9\9\9fill[x][y] = true\
-\9\9\9end\
-\9\9end\
-\9end\
-end\
-\
-class \"RoundedRectangle\" extends \"GraphicsObject\" {\
-\9fillColour = Graphics.colours.RED;\
-\
-\9radius = false;\
-\9leftRadius = false;\
-\9rightRadius = false;\
-\9topLeftRadius = 1;\
-\9topRightRadius = 1;\
-\9bottomLeftRadius = 1;\
-\9bottomRightRadius = 1;\
-}\
-\
---[[\
-\9@static\
-\9@desc Creates a rounded rectangle\
-\9@param [number] x -- the x coordinate of the rectangle\
-\9@param [number] y -- the y coordinate of the rectangle\
-\9@param [number] width -- the width of the rectangle\
-\9@param [number] height -- the height of the rectangle\
-\9@param [number] topLeftRadius -- the radius of the corners. of the top of the next parameter is defined, or top left if all 4 are\
-\9@param [number] topRightRadius -- the radius of the bottom corners or top right if all 4 are\
-\9@param [number] bottomLeftRadius -- the radius of the bottom left corner\
-\9@param [number] bottomRightRadius -- the radius of the bottom right corner\
-]]\
-function RoundedRectangle:initialise( x, y, width, height, fillColour, outlineColour, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius )\
-\9self.super:initialise( x, y, width, height )\
-\9self.fillColour = fillColour or Graphics.colours.TRANSPARENT\
-\9self.outlineColour = outlineColour or Graphics.colours.TRANSPARENT\
-\9topLeftRadius = topLeftRadius or 0\
-\9self.topLeftRadius = topLeftRadius\
-\9self.topRightRadius = topRightRadius or topLeftRadius\
-\9self.bottomLeftRadius = bottomLeftRadius or topRightRadius or topLeftRadius\
-\9self.bottomRightRadius = bottomRightRadius or bottomLeftRadius or topRightRadius or topLeftRadius\
-end\
-\
---[[\
-\9@instance\
-\9@desc Sets the radius of both sides\
-\9@param [number] radius -- the new radius\
-\9@return [type] returnedValue -- description\
-]]\
-function RoundedRectangle:setRadius( radius )\
-\9self.topLeftRadius = radius\
-\9self.topRightRadius = radius\
-\9self.bottomLeftRadius = radius\
-\9self.bottomRightRadius = radius\
-end\
-\
-function RoundedRectangle:setTopLeftRadius( radius )\
-\9if radius then self.topLeftRadius = math.floor( radius ) end\
-end\
-\
-function RoundedRectangle:setTopRightRadius( radius )\
-\9if radius then self.topRightRadius = math.floor( radius ) end\
-end\
-\
-function RoundedRectangle:setBottomLeftRadius( radius )\
-\9if radius then self.bottomLeftRadius = math.floor( radius ) end\
-end\
-\
-function RoundedRectangle:setBottomRightRadius( radius )\
-\9if radius then self.bottomRightRadius = math.floor( radius ) end\
-end\
-\
-function RoundedRectangle:setLeftRadius( radius )\
-\9if radius then\
-\9\9self.bottomLeftRadius = math.floor( radius )\
-\9\9self.topLeftRadius = math.floor( radius )\
-\9end\
-end\
-\
-function RoundedRectangle:setRightRadius( radius )\
-\9if radius then\
-\9\9self.bottomRightRadius = math.floor( radius )\
-\9\9self.topRightRadius = math.floor( radius )\
-\9end\
-end\
-\
-function RoundedRectangle:setTopRadius( radius )\
-\9if radius then\
-\9\9self.topLeftRadius = math.floor( radius )\
-\9\9self.topRightRadius = math.floor( radius )\
-\9end\
-end\
-\
-function RoundedRectangle:setBottomRadius( radius )\
-\9if radius then\
-\9\9self.bottomLeftRadius = math.floor( radius )\
-\9\9self.bottomRightRadius = math.floor( radius )\
-\9end\
-end\
-\
-function RoundedRectangle:getRadius( radius )\
-\9return math.max( self.topLeftRadius, self.topRightRadius, self.bottomLeftRadius, self.bottomRightRadius )\
-end\
-\
-function RoundedRectangle:getLeftRadius( radius )\
-\9return math.max( self.topLeftRadius, self.bottomLeftRadius )\
-end\
-\
-function RoundedRectangle:getRightRadius( radius )\
-\9return math.max( self.topRightRadius, self.bottomRightRadius )\
-end\
-\
-function RoundedRectangle:getTopRadius( radius )\
-\9return math.max( self.topLeftRadius, self.topRightRadius )\
-end\
-\
-function RoundedRectangle:getBottomRadius( radius )\
-\9return math.max( self.bottomLeftRadius, self.bottomRightRadius )\
-end\
-\
-\
---[[\
-    @instance\
-    @desc Gets the pixels to be filled\
-    @return [table] fill -- the pixels to fill\
-]]\
-function RoundedRectangle:getFill()\
-\9if self.fill then return self.fill end\
-\9local fill = {}\
-\
-\9local topLeftRadius = self.topLeftRadius\
-\9local topRightRadius = self.topRightRadius\
-\9local bottomLeftRadius = self.bottomLeftRadius\
-\9local bottomRightRadius = self.bottomRightRadius\
-\
-\9local width, height = self.width, self.height\
-\
-\9corner( fill, width, height, topLeftRadius, 0 )\
-\9corner( fill, width, height, topRightRadius, 2 )\
-\9corner( fill, width, height, bottomLeftRadius, 1 )\
-\9corner( fill, width, height, bottomRightRadius, 3 )\
-\
-\9local maxTopRadius = math.max( topLeftRadius, topRightRadius )\
-\9for x = topLeftRadius, self.width - topRightRadius do\
-\9\9fill[x] = fill[x] or {}\
-\9\9for y = 1, maxTopRadius do\
-\9\9\9fill[x][y] = true\
-\9\9end\
-\9end\
-\
-\9local maxBottomRadius = math.max( bottomLeftRadius, bottomRightRadius )\
-\9for x = bottomLeftRadius, self.width - bottomRightRadius do\
-\9\9fill[x] = fill[x] or {}\
-\9\9for y = self.height - maxBottomRadius + 1, self.height do\
-\9\9\9fill[x][y] = true\
-\9\9end\
-\9end\
-\
-\9for x = 1, self.width do\
-\9\9fill[x] = fill[x] or {}\
-\9\9for y = maxTopRadius + 1, self.height - maxBottomRadius do\
-\9\9\9fill[x][y] = true\
-\9\9end\
-\9end\
-\
-\9self.fill = fill\
-\9return fill\
-end",["ScrollView.lua"] = "-- TODO: scrolling quickly then the opposite way reverses speed (not stops it)\
-\
-\
-local exp = math.exp\
-\
-local SCROLL_DECAY = -8\
-local SCROLL_SPEED = 180\
-local SCROLL_ACCELERATION = 1.2--0.97\
-local SPEED_CUTOFF = 0.2\
-\
-class \"ScrollView\" extends \"Container\" {\
-\9contents = false;\
-\9horizontalScrollbar = false;\
-\9verticalScrollbar = false;\
-\9container = false;\
-\9verticalVelocityTime = 0;\
-\9verticalVelocity = 0;\
-\9horizontalVelocity = 0;\
-}\
-\
---[[\
-\9@constructor\
-\9@desc Initialise a application container instance\
-\9@param [table] properties -- the properties for the view\
-]]\
-function ScrollView:initialise( ... )\
-\9self.super:initialise( ... )\
-\
-\9local width, height = self.width, self.height\
-\9self.verticalScrollbar = self:insert( Scrollbar( { isHorizontal = false, x = width - Scrollbar.width + 1, height = height } ) )\
-\9self.container = self:insert( ScrollContainer( { x = 1, y = 1, width = width, height = height } ) )\
-    -- self:sendToFront( self.horizontalScrollbar )\
-    self:sendToFront( self.verticalScrollbar )\
-\
-    self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )\
-    self:event( MouseScrollEvent, self.onMouseScroll )\
-end\
-\
-function ScrollView:initialiseCanvas()\
-\9self.super:initialiseCanvas()\
-\
-\9self.theme:connect( self.canvas, \"fillColour\" )\
-end\
-\
-function ScrollView:onInterfaceLoaded( event )\
-    local currentContainer = self.container\
-    for i, childView in ipairs( self.children ) do\
-        if childView ~= currentContainer and childView:typeOf( ScrollContainer ) then\
-            childView.x = 1\
-            childView.y = 1\
-            self:remove( currentContainer )\
-            self.container = childView\
-            -- self:sendToFront( self.horizontalScrollbar )\
-\9\9\9self.verticalScrollbar:getScroller()\
-            self:sendToFront( self.verticalScrollbar )\
-            break\
-        end\
-    end\
-end\
-\
-function ScrollView:updateContainerSize()\
-\9local container = self.container\
-\9-- if container.width > self.width then\
-\9-- else\
-\9-- end\
-\
-\9if container.height > self.height then\
-\9\9if not self.verticalScrollbar then\
-\9\9\9self.verticalScrollbar = self:insert( Scrollbar( { isHorizontal = false, x = self.width - Scrollbar.width + 1, height = self.height } ) )\
-\9\9end\
-\9else\
-\9\9self:remove( self.verticalScrollbar )\
-\9end\
-end\
-\
-function ScrollView:updateWidth( width )\
-    width = self.width\
-\9local verticalScrollbar = self.verticalScrollbar\
-\9if verticalScrollbar then verticalScrollbar.x = width - verticalScrollbar.width + 1 end\
-end\
-\
-function ScrollView:updateHeight( height )\
-    height = self.height\
-\9local verticalScrollbar = self.verticalScrollbar\
-\9if verticalScrollbar then self.verticalScrollbar.height = height end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Set vertical scroll offset of the contents\
-\9@param [number] offsetY -- the vertical offset\
-]]\
-function ScrollView:setOffsetY( offsetY, isVelocity )\
-\9local container = self.container\
-\9if container then\
-\9\9local height = self.height\
-\9\9local currentOffsetY = self.offsetY\
-\9\9local realOffsetY = math.max( math.min( offsetY, math.max( container.height - height, 0 ) ), 0 )\
-\9\9self.raw.offsetY = realOffsetY\
-\9\9local verticalScrollbar = self.verticalScrollbar\
-\9\9if verticalScrollbar then verticalScrollbar:getScroller() end\
-\9\9if realOffsetY ~= offsetY then\
-\9\9\9self.verticalVelocity = 0\
-\9\9\9self.verticalVelocityTime = 0\
-\9\9end\
-\9\9container.y = 1 - math.floor( realOffsetY + 0.5 )\
-\9end\
-end\
-\
-\
-function ScrollView:update( deltaTime )\
-\9self.super:update( deltaTime )\
-\9local verticalVelocity = self.verticalVelocity\
-\9if verticalVelocity ~= 0 then\
-\9\9local startTime\
-\9\9local time = self.verticalVelocityTime\
-\9\9local newVerticalVelocity = verticalVelocity * exp( SCROLL_DECAY * (time + deltaTime) )\
-\9\9local distance\
-\9\9if math.abs( newVerticalVelocity ) <= SPEED_CUTOFF then\
-\9\9\9self.verticalVelocity = 0\
-\9\9\9self.verticalVelocityTime = 0\
-\9\9else\
-\9\9\9self.verticalVelocityTime = time + deltaTime\
-\9\9\9local currentVerticalVelocity = verticalVelocity * exp( SCROLL_DECAY * time )\
-\9\9\9self:setOffsetY( self.offsetY + (currentVerticalVelocity - newVerticalVelocity) / SCROLL_DECAY, true )\
-\9\9end\
-\9end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Scrolls the scroll view to the offset given, animating the value\
-\9@param [number] offsetY -- the direction/distance to scroll\
-]]\
-function ScrollView:scrollTo( offsetY )\
-\9-- calculate the velocity required to reach a certain point\
-\9-- see https://www.desmos.com/calculator/qis3qhbsvs for details\
-\9-- d = vi / a * ( 1 - e ^ ln( vf / vi ) )\
-\
-\9-- it turns out that this is far easier than oeed first thought, having spent many, many hours playing with integrals...\
-\9-- it's simply: vi = a * d + vf\
-\9-- hence: (vi - vf)/a = d\
-\9local deltaOffsetY = offsetY - self.offsetY\
-\9local velocity = SCROLL_DECAY * deltaOffsetY + SPEED_CUTOFF\
-\9self.verticalVelocity = velocity\
-\9self.verticalVelocityTime = 0\
-\9-- self.offsetY = self.offsetY + direction\
-\9-- TODO: horizontal scrolling\
-end\
-\
---[[\
-\9@instance\
-\9@desc Fired when the mouse is scrolled over the scroll view\
-\9@param [Event] event -- the mouse scroll event\
-    @return [boolean] preventPropagation -- prevent anyone else using the event\
-]]\
-function ScrollView:onMouseScroll( event )\
-\9if self.isEnabled then\
-\9\9local direction = event.direction\
-\9\9local verticalVelocity = self.verticalVelocity\
-\9\9instantaneousVelocity = verticalVelocity and verticalVelocity * exp( SCROLL_DECAY * (self.verticalVelocityTime or 0) ) or 0\
-\9\9self.verticalVelocityTime = 0\
-\9\9if direction * verticalVelocity > 1 then\
-\9\9\9self.verticalVelocity = -direction * math.abs(instantaneousVelocity + direction * SCROLL_SPEED) ^ SCROLL_ACCELERATION\
-\9\9else\
-\9\9\9self.verticalVelocity = -direction * SCROLL_SPEED\
-\9\9end\
-\9\9-- self:scroll( event.direction * SCROLL_SPEED )\
-\9end\
-\9return true\
-end",["ProgressBarStripes.lua"] = "\
-class \"ProgressBarStripes\" extends \"RoundedRectangle\" {\
-\9stripeColour = false;\
-\9animationStep = 0;\
-\9stripeWidth = 9;\
-}\
-\
-function ProgressBarStripes:initialise( x, y, width, height, fillColour, outlineColour, stripeColour, radius ) -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )\
-\9self.super:initialise( x, y, width, height, fillColour, outlineColour, radius, 0, radius, 0 )\
-\9self.fillColour = fillColour\
-\9self.outlineColour = fillColour\
-\9self.stripeColour = stripeColour\
-end\
-\
-function ProgressBarStripes:setAnimationStep( animationStep )\
-\9self.hasChanged = true\
-\9self.animationStep = math.floor( animationStep )\
-end\
-\
-function ProgressBarStripes:drawTo( canvas, isShadow )\
-\9if self.isVisible and ( not isShadow or ( isShadow and self.drawsShadow ) ) then\
-\9\9local fill = self.fill\
-\9\9local outline\
-\9\9if self.outlineColour ~= Graphics.colours.TRANSPARENT then\
-\9\9\9outline = self:getOutline( fill )\
-\9\9end\
-\
-\9\9local fillColour = self.fillColour\
-\9\9local stripeColour = self.stripeColour\
-\9\9local outlineColour = self.outlineColour\
-\9\9local stripeWidth = self.stripeWidth\
-\9\9local animationStep = self.animationStep\
-\9\9local _x = self.x - 1\
-\9\9local _y = self.y - 1\
-\
-\9\9local function fmap( x, y, colour )\
-\9\9\9if fill[x] and fill[x][y] then\
-\9\9\9\9return ( ( ( x + y - animationStep ) / stripeWidth ) % 2 < 1 ) and fillColour or stripeColour\
-\9\9\9end\
-\9\9end\
-\9\9local function ofmap( x, y, colour )\
-\9\9\9if outline[x] and outline[x][y] then\
-\9\9\9\9return outlineColour\
-\9\9\9elseif fill[x] and fill[x][y] then\
-\9\9\9\9return ( ( ( x + y - animationStep ) / stripeWidth ) % 2 < 1 ) and fillColour or stripeColour\
-\9\9\9end\
-\9\9end\
-\9\9canvas:map( outline and ofmap or fmap, _x, _y, self.width, self.height )\
-\
-\9\9if outline then\
-\9\9\9for x, row in pairs( outline ) do\
-\9\9\9\9for y, _ in pairs( row ) do\
-\9\9\9\9\9canvas:setPixel( _x + x, _y + y, outlineColour )\
-\9\9\9\9end\
-\9\9\9end\
-\9\9end\
-\9end\
-\9\
-    return self\
-end",["FontWindowContainer.lua"] = "\
-class \"FontWindowContainer\" extends \"WindowContainer\" {\
-\9backgroundObject = false;\
-}\
-\
-function FontWindowContainer:initialiseCanvas()\
-\9self.canvas = FontWindowCanvas( self.x, self.y, self.width, self.height )\
-\9self.backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, Graphics.colours.WHITE ) )\
-end",["Label.lua"] = "\
-class \"Label\" extends \"View\" {\
-\
-    text = false;\
-    isAutosizing = true;\
-    font = false;\
-    textObject = false;\
-    needsAutosize = false;\
-\9\
-}\
-\
---[[\
-    @instance\
-    @desc Sets up the canvas and it's graphics objects\
-]]\
-function Label:initialiseCanvas()\
-    self.super:initialiseCanvas()\
-    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas\
-    local textObject = canvas:insert( Text( 1, 1, width, height, self.text ) )\
-\
-    theme:connect( textObject, \"textColour\" )\
-    theme:connect( canvas, \"fillColour\" )\
-    self.textObject = textObject\
-\
-    if not self.font then\
-        self.font = Font.systemFont\
-    end\
-end\
-\
-function Label:updateThemeStyle()\
-    self.theme.style = self.isEnabled and \"default\" or \"disabled\"\
-end\
-\
-function Label:setFont( font )\
-    self.font = font\
-    local textObject = self.textObject\
-    if textObject then\
-        self.textObject.font = font\
-        self.needsAutosize = true\
-    end\
-end\
-\
-function Label:updateWidth( width )\
-    self.textObject.width = width\
-end\
-\
-function Label:setText( text )\
-    self.text = text\
-    self.textObject.text = text\
-    self.needsAutosize = true\
-end\
-\
-function Label:setIsEnabled( isEnabled )\
-    self.isEnabled = isEnabled\
-    self:updateThemeStyle()\
-end\
-\
-function Label:update( deltaTime )\
-    self.super:update( deltaTime )\
-    if self.needsAutosize then\
-        self:autosize()\
-    end\
-end\
-\
---[[\
-    @instance\
-    @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text\
-]]\
-function Label:autosize()\
-    -- TODO: support self.isAutosizing\
-    local font, text = self.font, self.text\
-\
-    if font and text then\
-        local fontWidth = font:getWidth( text )\
-        self.width = fontWidth\
-        self.height = font.height\
-    end\
-    self.needsAutosize = false\
 end",["Button.lua"] = "\
 class \"Button\" extends \"View\" {\
 \

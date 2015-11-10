@@ -22,6 +22,8 @@ class "FileSystemItem" {
     sizeString = false;
     parent = false;
     parentPath = false;
+    metadata = false;
+    metadataPath = false;
 
 }
 
@@ -51,7 +53,7 @@ function FileSystemItem:setPath( path )
 
     local parentPath, fullName = path:match( "(.*)/(.+)" )
     self.fullName = fullName
-    self.parentPath = parentPath
+    self.raw.parentPath = parentPath
     local name, extension = fullName:match( "^(.+)%.(%w-)$" )
     self.name = name or fullName
     self.extension = extension or false
@@ -89,4 +91,51 @@ end
 
 function FileSystemItem:setParent( items )
     error( "FileSystemItem.parent is a read-only property. To move a FileSystemItem use :moveTo", 2 )
+end
+
+function FileSystemItem:setParentPath( items )
+    error( "FileSystemItem.parentPath is a read-only property. To move a FileSystemItem use :moveTo", 2 )
+end
+
+function FileSystemItem:moveTo( folder )
+    local folderPath = folder.path
+    if folderPath == self.parentPath then return end
+
+    local newPath = folderPath .. "/" .. self.fullName
+    fs.move( self.path, newPath )
+    self.metadata:moveTo( folder )
+    self.raw.parentPath = folderPath
+end
+
+function FileSystemItem:copyTo( folder )
+    local folderPath = folder.path
+    if folderPath == self.parentPath then return end
+
+    local newPath = folderPath .. "/" .. self.fullName
+    fs.copy( self.path, newPath )
+    local newFile = FileSystemItem( newPath )
+    self.metadata:copyTo( folder, newFile )
+end
+
+function FileSystemItem:rename( fullName )
+    local newPath = self.parentPath .. "/" .. fullName
+    fs.move( self.path, newPath )
+    self.metadata:rename( fullName )
+end
+
+function FileSystemItem:getMetadataPath()
+    return self.parentPath .. "/.metadata/" ..self.fullName
+end
+
+function FileSystemItem:getMetadata()
+    local metadata = self.metadata
+    if metadata then return metadata end
+
+    metadata = Metadata( self )
+    self.raw.metadata = metadata
+    return metadata
+end
+
+function FileSystemItem:setMetadata( items )
+    error( "FileSystemItem.metadata is a read-only property.", 2 )
 end

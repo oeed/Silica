@@ -1,10 +1,11 @@
 
 class "Document" {
-	path = false;
+
 	contents = false;
-	readMode = "r";
-	writeMode = "w";
+	file = false;
+	isBinary = false;
 	isModified = false;
+
 }
 
 --[[
@@ -14,14 +15,29 @@ class "Document" {
 ]]
 function Document:initialise( path )
 	self.path = path
-	
-	if fs.exists( path ) then
-		local rawContents, err, isParsed = self:read()
-		if rawContents and not isParsed then
-			local contents, err = self:parse( rawContents )
-			if contents then
-				self.contents = contents
+		
+	local file = FileSystemItem( path )
+
+	if file then
+		if file:typeOf( IEditableFileSystemItem ) then
+			local isBinary = self.isBinary
+			if isBinary and not file:typeOf( File ) then
+				-- TODO: error, binary cannot be used on non-File FileSystemItems (i.e. Bundles)
 			end
+			-- TODO: error handling
+			local rawContents = self.isBinary and file.binaryContents or file.contents
+			if rawContents then
+				local contents, err = self:parse( rawContents )
+				if contents then
+					self.contents = contents
+				else
+					-- TODO: Error, content empty or corrupt
+				end
+			else
+				-- TODO: Error, content empty or corrupt
+			end
+		else
+			-- TODO: Error, tried to open folder
 		end
 	else
 		self:blank()
@@ -36,7 +52,7 @@ end
 	@static
 	@desc Opens a file and sets it as the application's active document, opening a file dialouge if neccesary. If there was an error the application's active document will not be changed. Simply use Document( path ) if you want to open a document but not set it as active.
 	@param [Document] documentClass -- the type of Document class you want to use (it's probably easier to do MyDocument:open)
-	@param [string] path -- the path of the document
+	@param [string] path -- the path of the document. if empty an open file dialouge will be shown
 ]]
 function Document.open( documentClass, path )
 	local function f( path )
@@ -67,37 +83,6 @@ end
 ]]
 function Document:blank()
 	self.contents = ""
-end
-
---[[
-	@instance
-	@desc Reads the raw contents from the path.
-	@return [string] rawContents/content -- the raw contents or content if parseHandle was used. return false if there was an error.
-	@return [string] err -- the error message if rawContents is false.
-	@return [string] isParsed -- whether content is already parsed
-]]
-function Document:read()
-	local path = self.path
-	if not fs.exists( path ) then return false, "Document path does not exist." end
-	if fs.isDir( path ) then return false, "Document path is a folder." end
-
-	local h = fs.open( path, self.readMode )
-	if not h then return false, "Document path unreadable." end
-
-	local contents, err = self:parseHandle( h )
-
-	if contents == nil then
-		if not h.readAll then return false, "Invalid read mode (doesn't support readAll)." end
-
-		local rawContents = h.readAll()
-		if not rawContents then return false, "Document has nil contents." end
-		h.close()
-
-		return rawContents, nil, false
-	else
-		if err then return false, err end
-		return contents, nil, true
-	end
 end
 
 --[[
@@ -145,7 +130,11 @@ end
 	@return [string/nil] err -- the error message if there was an issue with saving, nil otherwise.
 ]]
 function Document:save()
-	local err = self:write( self.path )
+	if self.isBinary then
+		self.file.binaryContents = self.contents
+	else
+		self.file.contents = self.contents
+	end
 	if not err then
 		self.isModified = false
 	end
@@ -159,7 +148,16 @@ end
 	@return [string/nil] err -- the error message if there was an issue with saving, nil otherwise.
 ]]
 function Document:saveAs( path )
-	return self:write( path )
+	if not path then
+		-- show save as dialouge
+	else
+		local file = self.file.new( path )
+		if self.isBinary then
+			file.binaryContents = self.contents
+		else
+			file.contents = self.contents
+		end
+	end
 end
 
 --[[
@@ -186,34 +184,6 @@ function Document:serialise( contents )
 end
 
 Document:alias( "serialize", "serialise" )
-
---[[
-	@instance
-	@desc Writes the document's serialised contents to the given path.
-	@param [string] path -- the path to save to
-	@return [string/nil] err -- the error message if there was an issue with saving, nil otherwise.
-]]
-function Document:write( path )
-	if fs.exists( path ) then
-		if fs.isReadOnly( path ) then return "Document path is read only." end
-		if self.path ~= path and not self:onOverwrite( path ) then return end
-		if fs.isDir( path ) then fs.delete( path ) end
-	end
-
-	local h = fs.open( path, self.writeMode )
-	if not h then return "Document path unwritable." end
-	local serialiseHandleOkay, err = self:serialiseHandle( h )
-
-	if serialiseHandleOkay == nil then
-		if not h.write then return false, "Invalid read mode (doesn't support write)." end
-
-		local serialisedContents, err = self:serialise( self.contents )
-		if not serialisedContents then return err end
-
-		h.write(serialisedContents)
-	end
-	h.close()
-end
 
 --[[
 	@instance
