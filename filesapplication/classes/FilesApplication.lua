@@ -31,10 +31,13 @@ function FilesApplication:initialise()
 	-- 	log( file.fullName )
 	-- end
 
-	local file = FileSystemItem( "/testfolder/anotherfolder/file.txt")
-	local metadata = file.metadata
-	log(metadata.mime)
-
+	-- local file = FileSystemItem( "/testfolder/anotherfolder")
+	-- local metadata = file.metadata
+	-- log(metadata.mime)
+	-- file:moveTo(file.parent.parent)
+	-- file:copyTo(file.parent.parent)
+	-- file:rename("Hai!.txt")
+	-- file:delete()
 end
 
 --[[

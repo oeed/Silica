@@ -97,6 +97,12 @@ function FileSystemItem:setParentPath( items )
     error( "FileSystemItem.parentPath is a read-only property. To move a FileSystemItem use :moveTo", 2 )
 end
 
+function FileSystemItem:delete()
+    fs.delete( self.path )
+    self.metadata:delete( folder )
+    self:dispose()
+end
+
 function FileSystemItem:moveTo( folder )
     local folderPath = folder.path
     if folderPath == self.parentPath then return end

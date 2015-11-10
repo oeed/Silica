@@ -81,16 +81,40 @@ function Metadata:create()
     self:updateOpenedTimestamp()
     self:updateModifiedTimestamp()
     local file = self.file
+    local path = file.path
     local extension = file.extension
     if extension then
         -- try to guess the MIME based on the extension
         self.mime = EXTENSION_MIMES[extension] or "unknown"
+    elseif fs.isDir( path ) then
+        self.mime = "folder"
     end
     self:save()
 end
 
+function Metadata:delete()
+    fs.delete( self.metadataPath )
+    local oldParentMetadataPath = self.file.parentPath .. "/.metadata"
+    if #fs.list( oldParentMetadataPath ) == 0 then
+        fs.delete( oldParentMetadataPath )
+    end
+end
+
 function Metadata:moveTo( folder )
-    fs.move( self.metadataPath, folder.path .. "/.metadata/" .. self.file.fullName )
+    local folderMetadataFolderPath = folder.path .. "/.metadata"
+    if not fs.exists( folderMetadataFolderPath ) then
+        fs.makeDir( folderMetadataFolderPath )
+    elseif fs.isDir( folderMetadataFolderPath ) then
+        fs.delete( folderMetadataFolderPath )
+        fs.makeDir( folderMetadataFolderPath )
+    end
+    local newMetadataPath = folderMetadataFolderPath .. "/" .. self.file.fullName
+    fs.move( self.metadataPath, newMetadataPath )
+    self.metadataPath = newMetadataPath
+    local oldParentMetadataPath = self.file.parentPath .. "/.metadata"
+    if #fs.list( oldParentMetadataPath ) == 0 then
+        fs.delete( oldParentMetadataPath )
+    end
 end
 
 function Metadata:copyTo( folder, newFile )
@@ -100,7 +124,9 @@ function Metadata:copyTo( folder, newFile )
 end
 
 function Metadata:rename( fullName )
-    fs.move( self.metadataPath, self.file.parentPath .. "/.metadata/" .. fullName )
+    local newMetadataPath = self.file.parentPath .. "/.metadata/" .. fullName
+    fs.move( self.metadataPath, newMetadataPath )
+    self.metadataPath = newMetadataPath
     self:updateModifiedTimestamp()
 end
 
