@@ -69,7 +69,7 @@ function Font:initialise( name, desiredHeight, reload )
 	if cache[name] and cache[name][desiredHeight] and not reload then
 		characters, height = cache[name][desiredHeight][1], cache[name][desiredHeight][2]
 	else
-		local resource = Resource( name .. ".sfont", "fonts" )
+		local resource = Resource( name, Metadata.mimes.SFONT, "fonts" )
 		characters, height = BitmapFont.decodeResource( resource )
 		cache[name] = cache[name] or {}
 		cache[name][desiredHeight] = { characters, height }

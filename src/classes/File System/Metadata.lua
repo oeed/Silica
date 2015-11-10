@@ -1,19 +1,86 @@
 
 local DEFAULT_TIMESTAMP = 1417305600; -- default date 1/1/2015
 
-local SAVED_PROPERTIES = { mime = true; createdTimestamp = true; openedTimestamp = true; modifiedTimestamp = true; icon = true; }
+local SAVED_PROPERTIES = { t = "mime"; c = "createdTimestamp"; o = "openedTimestamp"; m = "modifiedTimestamp"; i = "icon"; }
+
+local g_tLuaKeywords = {
+    [ "and" ] = true,
+    [ "break" ] = true,
+    [ "do" ] = true,
+    [ "else" ] = true,
+    [ "elseif" ] = true,
+    [ "end" ] = true,
+    [ "false" ] = true,
+    [ "for" ] = true,
+    [ "function" ] = true,
+    [ "if" ] = true,
+    [ "in" ] = true,
+    [ "local" ] = true,
+    [ "nil" ] = true,
+    [ "not" ] = true,
+    [ "or" ] = true,
+    [ "repeat" ] = true,
+    [ "return" ] = true,
+    [ "then" ] = true,
+    [ "true" ] = true,
+    [ "until" ] = true,
+    [ "while" ] = true,
+}
+
+local function serialise( t, tTracking )
+    local sType = type(t)
+    if sType == "table" then
+        if tTracking[t] ~= nil then
+            error( "Cannot serialize table with recursive entries", 0 )
+        end
+        tTracking[t] = true
+
+        if next(t) == nil then
+            return "{}"
+        else
+            local sResult = "{"
+            local tSeen = {}
+            for k,v in ipairs(t) do
+                tSeen[k] = true
+                sResult = sResult .. serialise( v, tTracking ) .. ";"
+            end
+            for k,v in pairs(t) do
+                if not tSeen[k] then
+                    local sEntry
+                    if type(k) == "string" and not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
+                        sEntry = k .. "=" .. serialise( v, tTracking ) .. ";"
+                    else
+                        sEntry = "[" .. serialise( k, tTracking ) .. "]=" .. serialise( v, tTracking ) .. ";"
+                    end
+                    sResult = sResult .. sEntry
+                end
+            end
+            sResult = sResult:sub( 1, #sResult - 1 ) .. "}"
+            return sResult
+        end
+    elseif sType == "string" then
+        return string.format( "%q", t )
+    elseif sType == "number" or sType == "boolean" or sType == "nil" then
+        return tostring(t)
+    else
+        error( "Cannot serialize type "..sType, 0 )
+    end
+end
 
 local EXTENSION_MIMES = {
-    lua = "text/lua";
-    txt = "text/plain";
-    text = "text/plain";
-    image = "image/paint";
-    nfp = "image/paint";
-    nft = "image/nft";
-    skch = "image/sketch";
-    sinterface = "text/silicainterface";
-    stheme = "text/silicatheme";
-    sconfig = "text/silicaconfig";
+    LUA = "text/lua";
+    TXT = "text/plain";
+    TEXT = "text/plain";
+    IMAGE = "image/paint";
+    NFP = "image/paint";
+    NFT = "image/nft";
+    SKCH = "image/sketch";
+    SINTERFACE = "silica/interface";
+    STHEME = "silica/theme";
+    SCFG = "silica/config";
+    SFONT = "silica/font";
+    RESOURCEPKG = "package/resource";
+    PACKAGE = "package/plain";
 }
 
 class "Metadata" {
@@ -26,6 +93,8 @@ class "Metadata" {
     openedTimestamp = DEFAULT_TIMESTAMP;
     modifiedTimestamp = DEFAULT_TIMESTAMP;
     icon = false; -- by default, if this is empty it will get the default system icon for it. it allows for custom icons
+
+    mimes = EXTENSION_MIMES;
 
 }
 
@@ -44,8 +113,9 @@ function Metadata:load()
             h.close()
             local raw = self.raw
             for key, value in pairs( properties ) do
+                local propertyName = SAVED_PROPERTIES[key]
                 if SAVED_PROPERTIES[key] then
-                    raw[key] = value
+                    raw[propertyName] = value
                 end
             end
         end
@@ -64,16 +134,30 @@ function Metadata:save()
     local h = fs.open( self.metadataPath, "w" )
     if h then
         local properties = {}
-        for key, _ in pairs( SAVED_PROPERTIES ) do
+        for shortKey, key in pairs( SAVED_PROPERTIES ) do
             local value = self[key]
             if value then
-                properties[key] = value
+                properties[shortKey] = value
             end
         end
-        h.write( textutils.serialize( properties ) )
+        h.write( serialise( properties, {} ) )
         h.close()
     end
 end
+
+function Metadata:serialise( allowedProperties )
+    local properties = {}
+    for shortKey, key in pairs( SAVED_PROPERTIES ) do
+        local value = self[key]
+        if value and ( not allowedProperties or allowedProperties[key] ) then
+            properties[shortKey] = value
+        end
+    end
+    return properties
+end
+
+-- TODO: do function aliases work?
+-- Metadata:alias( "serialise", "serialize" )
 
 -- create metadata for the file based on it's content
 function Metadata:create()
@@ -85,7 +169,10 @@ function Metadata:create()
     local extension = file.extension
     if extension then
         -- try to guess the MIME based on the extension
-        self.mime = EXTENSION_MIMES[extension] or "unknown"
+        if not EXTENSION_MIMES[ extension:upper() ] then
+            error(extension:upper())
+        end
+        self.mime = EXTENSION_MIMES[ extension:upper() ] or "unknown"
     elseif fs.isDir( path ) then
         self.mime = "folder"
     end

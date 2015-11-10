@@ -29,7 +29,7 @@ function Interface:initialise( interfaceName, extend )
 	extend = extend or ApplicationContainer
 
 	-- TODO: dynamic path resolving for interfaces and other files
-	local resource = Resource( interfaceName .. ".sinterface", "interfaces" )
+	local resource = Resource( interfaceName, Metadata.mimes.SINTERFACE, "interfaces" )
 	local contents = resource.contents
 	if contents then
 		local nodes, err = XML.fromText( contents )

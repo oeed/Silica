@@ -52,8 +52,8 @@ function FileItem:initialise( ... )
     -- self:event( Event.KEY_UP, self.onKeyUp )
     -- self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
 
-    folderIcon = Image.fromPath( "folder.image" )
-    folderSmallIcon = Image.fromPath( "folder-small.image" )
+    folderIcon = Image.fromPath( "folder" )
+    folderSmallIcon = Image.fromPath( "folder-small" )
 end
 
 function FileItem:initialiseCanvas()
@@ -137,7 +137,7 @@ function FileItem:updateHeight( height )
     local iconSize = math.min( height - 2, LARGE_ICON_SIZE )
     imageObject.width = iconSize
     imageObject.height = iconSize
-    local icon = ( iconSize > (LARGE_ICON_SIZE - SMALL_ICON_SIZE) / 2 + SMALL_ICON_SIZE ) and "folder.image" or "folder-small.image"
+    local icon = ( iconSize > (LARGE_ICON_SIZE - SMALL_ICON_SIZE) / 2 + SMALL_ICON_SIZE ) and "folder" or "folder-small"
     if imageObject.image ~= icon then
         imageObject.image = icon
     end
@@ -208,14 +208,14 @@ end
 
 function FileItem:dragDropEntered( data, dragView )
     self.isDropHovering = true
-    self.imageObject.image = "folder-open.image"
+    self.imageObject.image = "folder-open"
 end
 
 function FileItem:dragDropMoved( data, dragView ) end
 
 function FileItem:dragDropExited( data, dragView )
     self.isDropHovering = false
-    self.imageObject.image = "folder.image"
+    self.imageObject.image = "folder"
 end
 
 function FileItem:dragDropDropped( data ) end

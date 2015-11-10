@@ -28,12 +28,16 @@ local function split(a,e)
     return e
 end
 
+local imageMimes = { "image/paint" }
+
 class "Image" {
     
     width = false;
     height = false;
     pixels = false;
-    resource = false;
+    -- resource = false;
+    -- file = false;
+    contents = false;
     scaledCache = {};
 
 }
@@ -56,15 +60,26 @@ function Image.blank( width, height )
 end
 
 function Image.fromPath( path )
-    local image = Image()
-    image.resource = Resource( path )
-    image:loadPaintFormat()
-    return image
+    local file = File( path )
+    if file then
+        local image = Image()
+        image.contents = file.contents
+        image:loadPaintFormat()
+        return image
+    end
+end
+
+function Image.fromName( name )
+    log("name "..name)
+    local resource = Resource( name, imageMimes )
+    if resource then
+        return Image.fromResource( resource )
+    end
 end
 
 function Image.fromResource( resource )
     local image = Image()
-    image.resource = resource
+    image.contents = resource.contents
     image:loadPaintFormat()
     return image
 end
@@ -92,7 +107,7 @@ function Image:loadPixels( pixels )
 end
 
 function Image:loadPaintFormat()
-    local lines = split( self.resource.contents, "\n" )
+    local lines = split( self.contents, "\n" )
     local pixels = {}
 
     for y, line in ipairs( lines ) do

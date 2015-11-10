@@ -3,6 +3,7 @@
 -- each one needs to have its own ID and return that ID
 
 class "Application" {
+
 	name = false;
 	path = false;
 	updateTimer = false;
@@ -17,7 +18,6 @@ class "Application" {
 	resourceTables = false; -- the tables of files where resources are
 	keyboardShortcutManager = false;
 	dragDropManager = false;
-	fileSystem = false;
 	focuses = {};
 
 	interfaceName = false;
@@ -120,15 +120,16 @@ end
 	@param [table] resourceDirectories -- a table of paths in which the applications resources are (classes, themes, etc.)
 ]]
 function Application:initialise()
+	log('initialised')
 	self.resourceTables = __resourceTables or {}
 	_G.__resourceTables = nil
 	class.application = self
 
-	self.fileSystem = FileSystem( "/" )
 	self.event = ApplicationEventManager( self )
 	self.keyboardShortcutManager = KeyboardShortcutManager( self )
 	self.dragDropManager = DragDropManager( self )
-	
+
+
 	Font.initialisePresets()
 	
 	self:reloadInterface()

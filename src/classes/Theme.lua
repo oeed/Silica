@@ -22,7 +22,7 @@ function Theme:initialise( themeName, cantExtend )
 	self.name = themeName
 
 	-- TODO: dynamic path resolving for interfaces and other files
-	local resource = Resource( themeName .. ".stheme", "themes" )
+	local resource = Resource( themeName, Metadata.mimes.STHEME, "themes" )
 	local contents = resource.contents
 	if contents then
 		local nodes, err = XML.fromText( contents )

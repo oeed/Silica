@@ -636,7 +636,6 @@ local function extends( superName )
 	local superClass = classes[superName]
 	if not superClass then
 		-- try to load the class
-		-- TODO: set this system up correctly
 		local ourCreating = creating
 		__loadClassNamed( superName )
 		superClass = classes[superName]

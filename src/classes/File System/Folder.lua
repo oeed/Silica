@@ -13,6 +13,7 @@ end
 
 class "Folder" extends "FileSystemItem" {
     
+    allItems = false;
     items = false;
     files = false;
     folders = false;
@@ -21,13 +22,69 @@ class "Folder" extends "FileSystemItem" {
 
 }
 
-function Folder:getItems( noFiles, noFolders)
+function Folder.mt:__call( path, ... )
+    if fs.exists( path ) and fs.isDir( path ) then
+        return self:new( true, path, ... )
+    end
+    return false
+end
+
+function Folder.make( path, overwrite )
+    local exists = fs.exists( path )
+    if overwrite and exists then
+        fs.delete( path )
+        exists = false
+    end
+
+    if not exists then
+        fs.makeDir( path )
+        return Folder( path )
+    end
+end
+
+function Folder:serialise( flatten, metadataProperties )
+    local allItems = {}
+
+    local path = self.path
+    for i, name in ipairs( fs.list( path ) ) do
+        if name ~= ".DS_Store" and name ~= ".metadata" then
+            local item = FileSystemItem( path .. "/" .. name, self )
+            local itemName = item.name
+            local isFolder = item:typeOf( Folder )
+            if not isFolder or not flatten then
+                if flatten and allItems[flatten and itemName or name] then
+                    allItems[flatten and itemName or name][item.metadata.mime] = item.contents
+                else
+                    allItems[flatten and itemName or name] = flatten and {[item.metadata.mime] = item.contents} or { isFolder and {} or item.contents, item.metadata:serialise( metadataProperties ) }
+                end
+            end
+            if isFolder then
+                local subItems = item:serialise( flatten, metadataProperties )
+                if flatten and not item:typeOf( Bundle ) then
+                    for k, subItem in pairs( subItems ) do
+                        -- if flatten then
+                            allItems[k] = subItem--{ subItem., item.metadata:serialise() }
+                        -- else
+                            -- allItems[name][1][subItem.fullName] = { item, item.metadata:serialise() }
+                        -- end
+                    end
+                else
+                    allItems[name][1] = subItems
+                end
+            end
+        end
+    end
+
+    return allItems
+end
+
+function Folder:getItems( noFiles, noFolders )
     local items = {}
     local path = self.path
     for i, name in ipairs( fs.list( path ) ) do
-        if name ~= ".DS_Store" or name ~= ".meta" then
+        if name ~= ".DS_Store" and name ~= ".metadata" then
             local item = FileSystemItem( path .. "/" .. name, self )
-            if not ( noFolders and noFolders ) or ( noFiles and not item:typeOf( File ) ) or ( noFolders and not item:typeOf( Folder ) ) then
+            if not ( noFolders and noFolders ) or ( noFiles and not item:typeOf( IEditableFileSystemItem ) ) or ( noFolders and not item:typeOf( Folder ) ) then
                 table.insert( items, item )
             end
         end
@@ -53,6 +110,45 @@ end
 
 function Folder:setFolders( items )
     error( "Folder.folders is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
+end
+
+--[[
+    @instance
+    @desc Find an IEditableFileSystemItem that matches the name (without the extension) and
+    @param [string] name -- the exact name of the file to match
+    @param [Metatable.mimes/table{Metatable.mimes}] mimes -- a mime or table of mimes
+    @param [boolean] noSubfolders -- whether to not look in subfolders, by default subfolders will be searched
+    @return [IEditableFileSystemItem] returnedValue -- description
+]]
+function Folder:find( name, mimes, noSubfolders ) -- find a FileSystemItem with the name that matches (with or without the extension) and the mime type.
+    local items = self.items
+    local folders = {}
+    if type( mimes ) == "string" then mimes = { mimes } end
+
+    for i, fileSystemItem in ipairs( items ) do
+        if fileSystemItem:typeOf( IEditableFileSystemItem ) then
+            if --[[(]] name == fileSystemItem.name --[[ or name == fileSystemItem.fullName )]] then
+                local mime = fileSystemItem.metadata.mime
+                for i, _mime in ipairs( mimes ) do
+                    if _mime == mime then
+                        return fileSystemItem
+                    end
+                end
+            end
+        end
+        if not noSubfolders and fileSystemItem:typeOf( Folder ) then
+            -- look through folders last
+            table.insert( folders, fileSystemItem )
+        end
+    end
+
+    for i, folder in ipairs( folders ) do
+        local found = folder:find( name, mime )
+        if found then
+            return found
+        end
+    end
+    return false
 end
 
 function Folder:getFs()
@@ -122,4 +218,8 @@ end
 
 function Folder:setIo( io )
     error( "Folder.io is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
+end
+
+function Folder:package( path, overwrite, isResourcePackage )
+    return Package:make( path, overwrite, self, isResourcePackage )
 end

@@ -16,7 +16,7 @@ end
 function ImageObject:setImage( image )
     self.hasChanged = true
     if type( image ) == "string" then
-        self.image = Image.fromPath( image )
+        self.image = Image.fromName( image ) or false
     else
         self.image = image
     end

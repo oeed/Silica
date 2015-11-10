@@ -61,16 +61,29 @@ end
 
 term.redirect(term.native())
 
-shell.run( "package /src Silica" )
+if fs.exists("Silica.resourcepkg") then
+	local _, err = pcall(function() dofile( "Silica.resourcepkg" ) end)
+	fs.move("Silica.resourcepkg","Old-Silica.resourcepkg")
+	if err then error(err,2) end
+else
+	shell.run( "package /src Silica" )
+	dofile( "Silica" )
+
+	local folder = Folder( "/src" )
+	log(folder)
+	local package = folder:package( "/Silica.resourcepkg", true, true )
+	log("packaged!")
+	os.reboot()
+end
+
+
 -- shell.run( "package /application app" )
 -- 
 
 
-dofile( "Silica" )
 -- dofile( "app" )
 -- Application.load( "/fontapplication" )
 Application.load( "/filesapplication" )
-
 
 -- BitmapFont.convertFile( "font src/auckland", "src/fonts/Auckland.sfont", 32, 8, {
 -- 	name = "Auckland";

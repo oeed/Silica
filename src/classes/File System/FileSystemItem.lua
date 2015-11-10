@@ -1,5 +1,6 @@
 
 local function tidy( path )
+    if type(path)=="boolean" then logtraceback() end
     return path
         :gsub( "/.-/%.%./", "/" )
         :gsub( "^.-/%.%./", "" )

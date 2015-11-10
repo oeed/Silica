@@ -7,6 +7,30 @@ class "File" extends "FileSystemItem" implements "IEditableFileSystemItem" {
     
 }
 
+function File.mt:__call( path, ... )
+    if fs.exists( path ) and not fs.isDir( path ) then
+        return self:new( true, path, ... )
+    end
+    return false
+end
+
+function File:make( path, mime, overwrite, contents )
+    local exists = fs.exists( path )
+    if overwrite and exists then
+        fs.delete( path )
+        exists = false
+    end
+
+    if not exists then
+        local h = fs.open( path, "w" )
+        h.write( contents or "" )
+        h.close()
+        local file = self( path )
+        file.metadata.mime = mime
+        return file
+    end
+end
+
 function File:setContents( contents )
     local handle = fs.open( self.path, "w" )
     if handle then
