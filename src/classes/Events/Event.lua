@@ -1,4 +1,6 @@
 
+local eventClasses = {}
+
 class "Event" {
 	
 	relativeView = false; -- the view that the event is relative of
@@ -9,8 +11,6 @@ class "Event" {
 	isSentToSender = true; -- whether the event will be handled by the sender
 
 }
-
-local eventClasses = {}
 
 --[[
 	@static

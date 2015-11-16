@@ -13,6 +13,7 @@ class "ExampleApplication" extends "Application" {
 function ExampleApplication:initialise()
 	self.super:initialise()
 	self:event( CharacterEvent, self.onChar )
+
 end
 
 --[[

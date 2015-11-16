@@ -1,6 +1,7 @@
 
 local function tidy( path )
     if type(path)=="boolean" then logtraceback() end
+    path = "/" .. path
     return path
         :gsub( "/.-/%.%./", "/" )
         :gsub( "^.-/%.%./", "" )
@@ -8,7 +9,7 @@ local function tidy( path )
         :gsub( "^%.%./", "" )
         :gsub( "^%.%.$", "" )
         :gsub( "//+", "/" )
-        :gsub( "^[^/]", "/" )
+        -- :gsub( "^[^/]", "/" )
         :gsub( "/$", "" )
 end
 
@@ -29,10 +30,6 @@ class "FileSystemItem" {
 }
 
 function FileSystemItem.mt:__call( path, ... )
-    if not fs.exists( path ) then
-        return false
-    end
-
     if fs.isDir( path ) then
         return Folder( path, ... )
     else
@@ -53,6 +50,7 @@ function FileSystemItem:setPath( path )
     self.path = path
 
     local parentPath, fullName = path:match( "(.*)/(.+)" )
+    fullName = fullName or ""
     self.fullName = fullName
     self.raw.parentPath = parentPath
     local name, extension = fullName:match( "^(.+)%.(%w-)$" )
@@ -80,6 +78,9 @@ end
 function FileSystemItem:setSizeString( items )
     error( "FileSystemItem.sizeString is a read-only property.", 2 )
 end
+
+-- function FileSystemItem:{ Number, String }:doSomething( x, label )
+-- end
 
 function FileSystemItem:getParent()
     local parent = self.parent
@@ -112,6 +113,7 @@ function FileSystemItem:moveTo( folder )
     fs.move( self.path, newPath )
     self.metadata:moveTo( folder )
     self.raw.parentPath = folderPath
+    self.raw.parent = false -- delete the cache of the old parent
 end
 
 function FileSystemItem:copyTo( folder )

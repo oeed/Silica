@@ -81,6 +81,7 @@ local EXTENSION_MIMES = {
     SFONT = "silica/font";
     RESOURCEPKG = "package/resource";
     PACKAGE = "package/plain";
+    APPLICATION = "silica/application";
 }
 
 class "Metadata" {
@@ -121,9 +122,12 @@ function Metadata:load()
         end
     else
         local metadataFolderPath = self.file.parentPath .. "/.metadata"
-        if fs.exists( metadataFolderPath ) and not fs.isDir( metadataFolderPath ) then
-            fs.delete( metadataFolderPath )
+        if fs.exists( metadataFolderPath ) then
+            if not fs.isDir( metadataFolderPath ) then
+                fs.delete( metadataFolderPath )
+            end
         else
+            log("make "..metadataFolderPath)
             fs.makeDir( metadataFolderPath )
         end
         self:create()

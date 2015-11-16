@@ -14,6 +14,25 @@ function FilesApplication:initialise()
 	self.super:initialise()
 	self:event( CharacterEvent, self.onChar )
 
+	try( function() 
+		log("one")
+		Exception( "Blah" ):throw()
+		log("two")
+	end ) {
+
+		catch( Exception, function()
+			log( "Exception" )
+			log( exception )
+		end );
+
+		default( function( exception )
+			log( "default" )
+			log( exception )
+		end );
+
+	}
+
+
 	-- local file = File( "/application/test.txt" ) -- subclass of FileSystemItem. you can also do FileSystemItem( “/path” ) and it will return a File or Folder
 	-- log( file.contents ) -- does all the fs.open stuff in the getter/setters. so to write you simply set .contents. there is also .binaryContents and .serialisedContents
 	-- log( file.path ) -- /src/loadfirst.cfg

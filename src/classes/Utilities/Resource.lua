@@ -65,6 +65,7 @@ function Resource:initialise( name, mimes, category, allowDirectories )
 	if file then
 		self.contents = file.contents
 	else
-		error('not found')
+		error('File not found: '..name)
+		-- TODO: error, file not found
 	end
 end

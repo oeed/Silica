@@ -8,8 +8,11 @@ class "File" extends "FileSystemItem" implements "IEditableFileSystemItem" {
 }
 
 function File.mt:__call( path, ... )
-    if fs.exists( path ) and not fs.isDir( path ) then
-        return self:new( true, path, ... )
+    if fs.exists( path ) and not fs.isDir( path ) and not fs.isReadOnly( path ) then
+        local name = fs.getName( path )
+        if name ~= ".DS_Store" and name ~= ".metadata" then
+            return self:new( true, path, ... )
+        end
     end
     return false
 end

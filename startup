@@ -36,18 +36,18 @@ function _G.logtraceback( level )
 	log( "Start of traceback:\n" .. ("-"):rep( 20 ) .. "\nin " .. table.concat( traceback, "\nin ") .. "\n" .. ("-"):rep( 20 ) .. "\nEnd of traceback" )
 end
 
-function _G.error(...)
-	term.setBackgroundColor(colors.red)
-	term.clear()
-	logtraceback()
-	_error(...)
-	while true do
-		local event, key = os.pullEvent("char")
-		if key == "\\" then
-			os.reboot()
-		end
-	end
-end
+-- function _G.error(...)
+-- 	term.setBackgroundColor(colors.red)
+-- 	term.clear()
+-- 	logtraceback()
+-- 	_error(...)
+-- 	while true do
+-- 		local event, key = os.pullEvent("char")
+-- 		if key == "\\" then
+-- 			os.reboot()
+-- 		end
+-- 	end
+-- end
 
 -- if not fs.exists( "oeed" ) then
 -- 	shell.run "NewRendering/test.lua"
@@ -63,6 +63,7 @@ term.redirect(term.native())
 
 if fs.exists("Silica.resourcepkg") then
 	local _, err = pcall(function() dofile( "Silica.resourcepkg" ) end)
+    fs.delete("Old-Silica.resourcepkg")
 	fs.move("Silica.resourcepkg","Old-Silica.resourcepkg")
 	if err then error(err,2) end
 else

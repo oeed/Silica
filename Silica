@@ -3875,6 +3875,8 @@ end\
 function ApplicationEventManager:disconnectGlobal()\
 \9error( \"Cannot disconnect global handle on ApplicationEventManager as it is the global handler. Use the handler's own manager.\", 0 )\
 end",["Event.lua"] = "\
+local eventClasses = {}\
+\
 class \"Event\" {\
 \9\
 \9relativeView = false; -- the view that the event is relative of\
@@ -3885,8 +3887,6 @@ class \"Event\" {\
 \9isSentToSender = true; -- whether the event will be handled by the sender\
 \
 }\
-\
-local eventClasses = {}\
 \
 --[[\
 \9@static\
@@ -3949,6 +3949,8 @@ function ChildAddedInterfaceEvent:initialise( childView )\
 \9self.childView = childView\
 end",["Folder.lua"] = "\
 local function tidy( path )\
+    if type(path)~=\"string\" then logtraceback() end\
+    path = \"/\" .. path\
     return path\
         :gsub( \"/.-/%.%./\", \"/\" )\
         :gsub( \"^.-/%.%./\", \"\" )\
@@ -3956,7 +3958,7 @@ local function tidy( path )\
         :gsub( \"^%.%./\", \"\" )\
         :gsub( \"^%.%.$\", \"\" )\
         :gsub( \"//+\", \"/\" )\
-        :gsub( \"^[^/]\", \"/\" )\
+        -- :gsub( \"^[^/]\", \"/\" )\
         :gsub( \"/$\", \"\" )\
 end\
 \
@@ -3972,8 +3974,11 @@ class \"Folder\" extends \"FileSystemItem\" {\
 }\
 \
 function Folder.mt:__call( path, ... )\
-    if fs.exists( path ) and fs.isDir( path ) then\
-        return self:new( true, path, ... )\
+    if fs.exists( path ) and fs.isDir( path ) and not fs.isReadOnly( path ) then\
+        local name = fs.getName( path )\
+        if name ~= \".DS_Store\" and name ~= \".metadata\" then\
+            return self:new( true, path, ... )\
+        end\
     end\
     return false\
 end\
@@ -3996,8 +4001,8 @@ function Folder:serialise( flatten, metadataProperties )\
 \
     local path = self.path\
     for i, name in ipairs( fs.list( path ) ) do\
-        if name ~= \".DS_Store\" and name ~= \".metadata\" then\
-            local item = FileSystemItem( path .. \"/\" .. name, self )\
+        local item = FileSystemItem( path .. \"/\" .. name, self )\
+        if item then\
             local itemName = item.name\
             local isFolder = item:typeOf( Folder )\
             if not isFolder or not flatten then\
@@ -4092,7 +4097,7 @@ function Folder:find( name, mimes, noSubfolders ) -- find a FileSystemItem with 
     end\
 \
     for i, folder in ipairs( folders ) do\
-        local found = folder:find( name, mime )\
+        local found = folder:find( name, mimes )\
         if found then\
             return found\
         end\
@@ -4119,7 +4124,9 @@ function Folder:getFs()\
     for i, name in ipairs( resolveFunctions ) do\
         local func = fs[name]\
         _fs[name] = function ( path, ... )\
-            func( resolve( path ), ... )\
+            log(\"func \"..name..\" : \"..tostring(path))\
+            path = path and resolve( path ) or path\
+            return func( path, ... )\
         end\
     end\
 \
@@ -4127,13 +4134,13 @@ function Folder:getFs()\
     for i, name in ipairs( doubleResolveFunctions ) do\
         local func = fs[name]\
         _fs[name] = function ( fromPath, toPath, ... )\
-            func( resolve( fromPath ), resolve( toPath ), ... )\
+            return func( resolve( fromPath ), resolve( toPath ), ... )\
         end\
     end\
 \
-    function _fs.combine( partial, path, ... )\
-        return fs.combine( partial, resolve( path), ... )\
-    end\
+    -- function _fs.combine( partial, path, ... )\
+    --     return fs.combine( partial, resolve( path), ... )\
+    -- end\
 \
     self.raw.fs = _fs\
     return _fs\
@@ -4628,7 +4635,8 @@ function Resource:initialise( name, mimes, category, allowDirectories )\
 \9if file then\
 \9\9self.contents = file.contents\
 \9else\
-\9\9error('not found')\
+\9\9error('File not found: '..name)\
+\9\9-- TODO: error, file not found\
 \9end\
 end",["Window.lua"] = "\
 class \"Window\" extends \"Container\" {\
@@ -5545,7 +5553,7 @@ function class:new( shouldCallUnchangedSetters, ... )\
 \9\9end\
 \9end\
 \
-\9local proxyId = tostring( proxy):sub( 8 ) -- remove 'table: ' from the id\
+\9local proxyId = tostring( proxy ):sub( 8 ) -- remove 'table: ' from the id\
 \9function proxy.mt:__tostring()\
 \9\9local identifier = definedProperties['identifier'] and proxy.identifier\
 \9\9return \"instance of `\" .. _class.className .. \"`\" .. (identifier and \" ('\" .. identifier .. \"')\" or \"\") .. \": \" .. proxyId\
@@ -6874,228 +6882,29 @@ end\
 function Document:onClose( callback )\
 \9-- self:save()\
 \9callback( false )\
-end",["Canvas.lua"] = "\
-class \"Canvas\" extends \"GraphicsObject\" {\
-    fillColour = Graphics.colours.TRANSPARENT; -- The colour of the Canvas when it clears\
-    buffer = {};\
-    children = {};\
-    owner = false; -- @property [View] - The view that owns this objects\
+end",["Cursor.lua"] = "\
+class \"Cursor\" extends \"GraphicsObject\" {\
+\9fillColour = Graphics.colours.BLACK;\
 }\
 \
---[[\
-    @constructor\
-    @desc Creates a canvas\
-    @param [number] width -- the width of the canvas\
-    @param [number] height -- the height of the canvas\
-]]\
-function Canvas:initialise( x, y, width, height, owner )\
-    self.super:initialise( x, y, width, height )\
-    self.owner = owner or false\
+function Cursor:initialise( x, y, height )\
+\9self.super:initialise( x, y, 1, height )\
 end\
 \
 --[[\
     @instance\
-    @desc Sets the pixel colour and the given coordinates\
-    @param [number] x -- the x coordinate of the pixel\
-    @param [number] y -- the y coordinate of the pixel\
-    @param [colour] colour -- the colour coordinate of the pixel\
+    @desc Gets the pixes to be filled\
+    @return [table] fill -- the pixels to fill\
 ]]\
-function Canvas:setPixel( x, y, colour )\
-    if colour ~= Graphics.colours.TRANSPARENT and x >= 1 and y >= 1 and x <= self.width and y <= self.height then\
-        self.buffer[ ( y - 1 ) * self.width + x ] = colour\
-    end\
-    return self\
-end\
-\
---[[\
-    @instance\
-    @desc Gets the pixel colour and the given coordinates\
-    @param [number] x -- the x coordinate of the pixel\
-    @param [number] y -- the y coordinate of the pixel\
-    @return [colour] colour -- the colour of the pixel\
-]]\
-function Canvas:getPixel( x, y )\
-    return self.buffer[ ( y - 1 ) * self.width + x ] or self.fillColour\
-end\
-\
---[[\
-    @instance\
-    @desc Clears the buffer\
-    @return self\
-]]\
-function Canvas:clear()\
-    self.buffer = {}\
-    return self\
-end\
-\
---[[\
-    @instance\
-    @desc Adds a shader to screen area\
-    @param [Canvas.shader] shader -- the shader to use\
-    @param [number] x -- default 1, the x coordinate of the area\
-    @param [number] y -- default 1, the y coordinate of the area\
-    @param [number] width -- default canvas width, the width of the area\
-    @param [number] height -- default canvas height, the height of the area\
-    @return self\
-]]\
-function Canvas:map( shader, x, y, width, height )\
-    local changes = {}\
-    for _x = x or 1, ( x or 1 ) + ( width or self.width ) - 1 do\
-        for _y = y or 1, ( x or 1 ) + ( height or self.height ) - 1 do\
-            local colour = shader( _x, _y, self:getPixel( _x, _y ) )\
-            if colour and colour ~= 0 then\
-                changes[#changes + 1] = { _x, _y, colour }\
-            end\
-        end\
-    end\
-    local buffer = self.buffer\
-    local width, height = self.width, self.height\
-    local TRANSPARENT = Graphics.colours.TRANSPARENT\
-    local function setPixel( x, y, colour )\
-        if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then\
-            buffer[ ( y - 1 ) * width + x ] = colour\
-        end\
-        return self\
-    end\
-    for i = 1, #changes do\
-        setPixel( unpack( changes[i] ) )\
-    end\
-    return self\
-end\
-\
---[[\
-    @instance\
-    @desc Adds a graphics object to the canvas\
-    @param [GraphicsObject] graphicsObject -- the graphics object to add\
-    @return self\
-]]\
-function Canvas:insert( graphicsObject )\
-    if not graphicsObject then\
-        error( \"GraphicsObject not supplied in canvas:insert\", 3 )\
-    end\
-    self.hasChanged = true\
-    if graphicsObject.parent then\
-        graphicsObject.parent:remove( graphicsObject )\
-    end\
-    graphicsObject.raw.parent = self\
-    self.children[#self.children + 1] = graphicsObject\
-    return graphicsObject\
-end\
-\
---[[\
-    @instance\
-    @desc Removes a graphics object from the canvas\
-    @param [GraphicsObject] graphicsObject -- the graphics object to remove\
-    @return self\
-]]\
-function Canvas:remove( graphicsObject )\
-    local c = false\
-    for i = #self.children, 1, -1 do\
-        if self.children[i] == graphicsObject then\
-            table.remove( self.children, i )\
-            graphicsObject.raw.parent = false\
-            c = true\
-        end\
-    end\
-    if c then\
-        self.hasChanged = true\
-    end\
-    return graphicsObject\
-end\
-\
---[[\
-    @instance\
-    @desc Clears the buffer then draws the objects of the canvas\
-    @return self\
-]]\
-function Canvas:draw( isShadow )\
-    if self.isVisible then\
-        self.buffer = {}\
-        local children = self.children\
-        for i = 1, #children do\
-            children[i]:drawTo( self, isShadow )\
-        end\
-        self.hasChanged = false\
-    end\
-    return self\
-end\
-\
---[[\
-    @instance\
-    @desc Draws the canvas to another canvas\
-    @param [Canvas] canvas -- the canvas to draw to\
-    @return self\
-]]\
-function Canvas:drawTo( canvas, isShadow )\
-    local drawsShadow = self.drawsShadow\
-    if self.isVisible then\
-        if isShadow or self.hasChanged then\
-            -- local drawdt = os.clock()\
-            self:draw( isShadow )\
-        end\
-        \
-        local width = self.width\
-        local height = self.height\
-        local fillColour = self.fillColour\
-        local buffer = self.buffer\
-        local _x = self.x - 1\
-        local _y = self.y\
-        \
-\
-        local setPixel\
-        local TRANSPARENT = Graphics.colours.TRANSPARENT\
-\
-        local canvasWidth = canvas.width\
-        local canvasHeight = canvas.height\
-        local canvasBuffer = canvas.buffer\
-        if isShadow then\
-            local shadowColour\
-            local owner = self.owner\
-            if owner then\
-                shadowColour = owner.theme.shadowColour\
-            else\
-                shadowColour = Graphics.colours.GREEN\
-            end\
-            setPixel = function( x, y, colour )\
-                if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= canvasWidth and y <= canvasHeight then\
-                    canvasBuffer[ ( y - 1 ) * canvasWidth + x ] = shadowColour\
-                end\
-            end\
-        else\
-            setPixel = function( x, y, colour )\
-                if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= canvasWidth and y <= canvasHeight then\
-                    canvasBuffer[ ( y - 1 ) * canvasWidth + x ] = colour\
-                end\
-            end\
-        end\
-\
-        -- local start = os.clock()\
-\
-        for x = 1, width do\
-            for y = 0, height - 1 do -- just so there's no need for y-1 below\
-                local colour = buffer[y * width + x] or fillColour\
-                local nx, ny = x + _x, y + _y\
-                setPixel( nx, ny, colour )\
-                -- if colour ~= TRANSPARENT and nx >= 1 and ny >= 1 and nx <= canvasWidth and ny <= canvasHeight then\
-                --     canvasBuffer[( ny - 1 ) * canvasWidth + nx] = colour\
-                -- end\
-            end\
-        end\
-\
-\
-    end\
-    return self\
-end\
-\
---[[\
-    @instance\
-    @desc Hit tests the canvas' buffer to see if the colour is set (return false if transparent)\
-    @param [number] x -- the x coordinate to hit test\
-    @param [number] y -- the y coordinate to hit test\
-    @return [boolean] didHit -- whether the colour was set/not transparent\
-]]\
-function Canvas:hitTest( x, y )\
-    return self:getPixel( x, y ) ~= 0\
+function Cursor:getFill()\
+\9if self.fill then return self.fill end\
+\9local fill = {}\
+\9local fillX = {}\
+\9for y = 1, self.height do\
+\9\9fillX[y] = true\
+\9end\
+\9fill[1] = fillX\
+\9return fill\
 end",["ThemeChangedInterfaceEvent.lua"] = "\
 class \"ThemeChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
 \9eventType = \"interface_theme_changed\";\
@@ -7841,6 +7650,102 @@ function Shader:drawTo( canvas, isShadow )\
 \9end\
 \9\
     return self\
+end",["interface.lua"] = "local interfaces = {}\
+class.interfaces = interfaces\
+\
+local USE_GLOBALS = true\
+\
+local interface = {}\
+local creating\
+local constructing\
+\
+function interface.get( type )\
+    return interfaces[type]\
+end\
+\
+function interface:construct( _, interfaceName )\
+    if interfaceName == \"\" or interfaceName:sub(1,1) ~= \"I\" then\
+        error( \"The name of interface '\" .. interfaceName .. \"' does not start with a capital I (i.e. IClickable)\")\
+    end\
+    local _interface ={}\
+    local mt = { __index = self }\
+\
+    mt.interfaceName = interfaceName\
+    local definedProperties = { } -- the properties that were defined in the table at interface construction\
+    mt.definedProperties = definedProperties\
+    local definedFunctions = { } -- the interface functions defined \
+    mt.definedFunctions = definedFunctions\
+    local definedBoth = {} -- the properties AND functions defined\
+    mt.definedBoth = definedBoth\
+\
+    setmetatable( _interface, mt )\
+    _interface.mt = mt\
+\
+    function mt:__call( ... )\
+        error( \"Attempted to call interface '\" .. interfaceName .. \"'\", 2 )\
+    end\
+\
+    local interfaceOutletActions = definedProperties.interfaceOutletActions\
+    function mt:__newindex( k, v )\
+        if self ~= constructing and not definedProperties[k] then -- TODO: doesn't work if the function is already made (just overwrites it)\
+            error( \"Attempted to set interface property or create function '\" .. k .. \"' after interface construction completion for interface '\" .. interfaceName .. \"'.\", 2 )\
+        end\
+        if k == nil then error( \"Attempt to set value with nil key\", 2 ) end\
+        if definedFunctions[k] then\
+            error( \"Attempted to redeclare function '\" .. k .. \"' for interface '\" .. interfaceName .. \"'\", 2 )\
+        -- elseif selfDefinedProperties[k] then\
+            -- error( \"Attempted to redeclare property '\" .. k .. \"' for interface '\" .. interfaceName .. \"'\", 2 )\
+        end\
+        local isFunction = type( v ) == \"function\"\
+        if isFunction then\
+            definedFunctions[k] = true\
+        else\
+            definedProperties[k] = true\
+        end\
+        definedBoth[k] = true\
+\
+        rawset(_interface, k, v)\
+    end\
+\
+    function mt:__tostring()\
+        return 'interface: ' .. interfaceName\
+    end\
+\
+    setmetatable( _interface, mt )\
+\
+    constructing = _interface\
+\
+    interfaces[interfaceName] = _interface\
+    _G[interfaceName] = _interface -- TODO: this is just temporary due to the temporary loading system in Silica\
+\
+    creating = _interface\
+    return function( properties )\
+        for k, v in pairs( properties ) do\
+            if type( v ) == \"function\" then\
+                error( \"Attempted to set function from properties table for key '\" .. k .. \"' and interface '\" .. tostring( self ) .. \"'\", 0 )\
+            end\
+            creating[k] = v\
+        end\
+        creating = nil\
+\
+        return _interface\
+    end\
+end\
+\
+function interface:cement() -- the class finished construction, there shouldn't be any more function or property additions now\
+    constructing = nil\
+end\
+\
+setmetatable( interface, {\
+    __call = function( ... ) \
+        return interface:construct( ... )\
+    end\
+} )\
+\
+if USE_GLOBALS then\
+    getfenv().interface = interface\
+else\
+    return interface\
 end",["KeyboardShortcutManager.lua"] = "\
 local keyStrings = {\
 \9nil,\9\"1\", \9\"2\", \9\"3\",\9\"4\",\
@@ -7962,104 +7867,7 @@ function KeyboardShortcutManager:onKeyTimeout( keyString )\
 \9\9self.keysDown[keyString] = nil\
 \9\9self.keysUpdates[keyString] = os.clock()\
 \9end\
-end",["interface.lua"] = "local interfaces = {}\
-class.interfaces = interfaces\
-\
-local USE_GLOBALS = true\
-\
-local interface = {}\
-local creating\
-local constructing\
-\
-function interface.get( type )\
-    return interfaces[type]\
-end\
-\
-function interface:construct( _, interfaceName )\
-    if interfaceName == \"\" or interfaceName:sub(1,1) ~= \"I\" then\
-        error( \"The name of interface '\" .. interfaceName .. \"' does not start with a capital I (i.e. IClickable)\")\
-    end\
-    local _interface ={}\
-    local mt = { __index = self }\
-\
-    mt.interfaceName = interfaceName\
-    local definedProperties = { } -- the properties that were defined in the table at interface construction\
-    mt.definedProperties = definedProperties\
-    local definedFunctions = { } -- the interface functions defined \
-    mt.definedFunctions = definedFunctions\
-    local definedBoth = {} -- the properties AND functions defined\
-    mt.definedBoth = definedBoth\
-\
-    setmetatable( _interface, mt )\
-    _interface.mt = mt\
-\
-    function mt:__call( ... )\
-        error( \"Attempted to call interface '\" .. interfaceName .. \"'\", 2 )\
-    end\
-\
-    local interfaceOutletActions = definedProperties.interfaceOutletActions\
-    function mt:__newindex( k, v )\
-        if self ~= constructing and not definedProperties[k] then -- TODO: doesn't work if the function is already made (just overwrites it)\
-            error( \"Attempted to set interface property or create function '\" .. k .. \"' after interface construction completion for interface '\" .. interfaceName .. \"'.\", 2 )\
-        end\
-        if k == nil then error( \"Attempt to set value with nil key\", 2 ) end\
-        if definedFunctions[k] then\
-            error( \"Attempted to redeclare function '\" .. k .. \"' for interface '\" .. interfaceName .. \"'\", 2 )\
-        -- elseif selfDefinedProperties[k] then\
-            -- error( \"Attempted to redeclare property '\" .. k .. \"' for interface '\" .. interfaceName .. \"'\", 2 )\
-        end\
-        local isFunction = type( v ) == \"function\"\
-        if isFunction then\
-            definedFunctions[k] = true\
-        else\
-            definedProperties[k] = true\
-        end\
-        definedBoth[k] = true\
-\
-        rawset(_interface, k, v)\
-    end\
-\
-    function mt:__tostring()\
-        return 'interface: ' .. interfaceName\
-    end\
-\
-    setmetatable( _interface, mt )\
-\
-    constructing = _interface\
-\
-    interfaces[interfaceName] = _interface\
-    _G[interfaceName] = _interface -- TODO: this is just temporary due to the temporary loading system in Silica\
-\
-    creating = _interface\
-    return function( properties )\
-        for k, v in pairs( properties ) do\
-            if type( v ) == \"function\" then\
-                error( \"Attempted to set function from properties table for key '\" .. k .. \"' and interface '\" .. tostring( self ) .. \"'\", 0 )\
-            end\
-            creating[k] = v\
-        end\
-        creating = nil\
-\
-        return _interface\
-    end\
-end\
-\
-function interface:cement() -- the class finished construction, there shouldn't be any more function or property additions now\
-    constructing = nil\
-end\
-\
-setmetatable( interface, {\
-    __call = function( ... ) \
-        return interface:construct( ... )\
-    end\
-} )\
-\
-if USE_GLOBALS then\
-    getfenv().interface = interface\
-else\
-    return interface\
-end",["ToolbarSegmentButton.lua"] = "\
-class \"ToolbarSegmentButton\" extends \"SegmentButton\" {}",["ListContainer.lua"] = "\
+end",["ListContainer.lua"] = "\
 local SIDE_MARGIN = 6\
 local TOP_MARGIN = 5\
 local BOTTOM_MARGIN = TOP_MARGIN\
@@ -8150,7 +7958,8 @@ end\
 function ListContainer:dragDropDropped( data )\
 \
 end\
-",["MinimiseWindowButton.lua"] = "\
+",["ToolbarSegmentButton.lua"] = "\
+class \"ToolbarSegmentButton\" extends \"SegmentButton\" {}",["MinimiseWindowButton.lua"] = "\
 class \"MinimiseWindowButton\" extends \"WindowButton\" {}\
 \
 function MinimiseWindowButton:initialiseCanvas()\
@@ -8164,6 +7973,26 @@ function MinimiseWindowButton:initialiseCanvas()\
 end\
 \
 function MinimiseWindowButton:onMouseUp( event )    \
+    if self.window then\
+        self.window:close()\
+        return true\
+    end\
+end",["MaximiseWindowButton.lua"] = "\
+class \"MaximiseWindowButton\" extends \"WindowButton\" {}\
+\
+function MaximiseWindowButton:initialiseCanvas()\
+\9self.super:initialiseCanvas()\
+\
+\9local symbolObject = Path( 4, 3, 3, 3, 2, 1 )\
+    symbolObject:lineTo( 2, 3 )\
+    symbolObject:moveTo( 1, 2 )\
+    symbolObject:lineTo( 3, 2 )\
+    symbolObject:close( false )\
+    self.theme:connect( symbolObject, \"outlineColour\", \"symbolColour\" )\
+    self.symbolObject = self.canvas:insert( symbolObject )\
+end\
+\
+function MaximiseWindowButton:onMouseUp( event )    \
     if self.window then\
         self.window:close()\
         return true\
@@ -8241,26 +8070,6 @@ end\
 function ApplicationContainer:dispose()\
 \9self.super:dispose()\
 \9self.application:clearFocus()\
-end",["MaximiseWindowButton.lua"] = "\
-class \"MaximiseWindowButton\" extends \"WindowButton\" {}\
-\
-function MaximiseWindowButton:initialiseCanvas()\
-\9self.super:initialiseCanvas()\
-\
-\9local symbolObject = Path( 4, 3, 3, 3, 2, 1 )\
-    symbolObject:lineTo( 2, 3 )\
-    symbolObject:moveTo( 1, 2 )\
-    symbolObject:lineTo( 3, 2 )\
-    symbolObject:close( false )\
-    self.theme:connect( symbolObject, \"outlineColour\", \"symbolColour\" )\
-    self.symbolObject = self.canvas:insert( symbolObject )\
-end\
-\
-function MaximiseWindowButton:onMouseUp( event )    \
-    if self.window then\
-        self.window:close()\
-        return true\
-    end\
 end",["TextBox.lua"] = "\
 --[[\
 \9TODO\
@@ -8828,47 +8637,6 @@ function TextBox:onKeyboardShortcut( event )\
         end\
         return true\
     end\
-end",["IDraggableView.lua"] = "\
-interface \"IDraggableView\" {}",["SymbolButton.lua"] = "\
-class \"SymbolButton\" extends \"Button\" {\
-    \
-    symbol = false;\
-    symbolObject = false;\
-\
-}\
-\
-function SymbolButton:initialiseCanvas()\
-    self.super:initialiseCanvas()\
-    local canvas = self.canvas\
-    self.textObject.isVisible = false\
-    local symbolObject = canvas:insert( SymbolObject( 1 + self.leftMargin, 5, self.symbol ) )\
-    self.theme:connect( symbolObject, \"fillColour\", \"symbolColour\" )\
-    self.symbolObject = symbolObject\
-end\
-\
-function SymbolButton:setSymbol( symbol )\
-    if type( symbol ) == \"string\" then\
-        symbol = Symbol.fromName( symbol )\
-    end\
-    self.symbol = symbol\
-    self.symbolObject.symbol = symbol\
-    self.needsAutosize = true\
-end\
-\
-function SymbolButton:autosize()\
-    local symbol = self.symbol\
-    if symbol then\
-        self.width = symbol.width + self.leftMargin + self.rightMargin + 1\
-        self.height = symbol.height + 9\
-    end\
-    self.needsAutosize = false\
-end\
-\
-function SymbolButton:setIsPressed( isPressed )\
-    self.super:setIsPressed( isPressed )\
-    local symbolObject = self.symbolObject\
-    symbolObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1\
-    symbolObject.y = isPressed and 6 or 5\
 end",["SymbolSegmentButton.lua"] = "\
 class \"SymbolSegmentButton\" extends \"SegmentButton\" {\
     \
@@ -8925,45 +8693,47 @@ function SymbolSegmentButton:setIsPressed( isPressed )\
     local symbolObject = self.symbolObject\
     symbolObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1\
     symbolObject.y = isPressed and 6 or 5\
-end",["SeparatorMenuItem.lua"] = "\
-class \"SeparatorMenuItem\" extends \"MenuItem\" {\
-\9text = false;\
-\
-\9height = 3;\
-\9width = 51;\
-\
-\9textColour = Graphics.colours.LIGHT_GREY;\
-\
-    pressedTextColour = Graphics.colours.WHITE;\
-\
-    disabledTextColour = Graphics.colours.LIGHT_GREY;\
+end",["IDraggableView.lua"] = "\
+interface \"IDraggableView\" {}",["SymbolButton.lua"] = "\
+class \"SymbolButton\" extends \"Button\" {\
+    \
+    symbol = false;\
+    symbolObject = false;\
 \
 }\
 \
---[[\
-\9@constructor\
-\9@desc Initialise a application container instance\
-\9@param [table] properties -- the properties for the view\
-]]\
-function SeparatorMenuItem:initialise( ... )\
-\9self.super.super:initialise( ... )\
+function SymbolButton:initialiseCanvas()\
+    self.super:initialiseCanvas()\
+    local canvas = self.canvas\
+    self.textObject.isVisible = false\
+    local symbolObject = canvas:insert( SymbolObject( 1 + self.leftMargin, 5, self.symbol ) )\
+    self.theme:connect( symbolObject, \"fillColour\", \"symbolColour\" )\
+    self.symbolObject = symbolObject\
 end\
 \
-function SeparatorMenuItem:initialiseCanvas()\
-\9self.super.super:initialiseCanvas()\
-    self.backgroundObject = self.canvas:insert( Separator( 5, 2, self.width - 8, 1 ) )\
+function SymbolButton:setSymbol( symbol )\
+    if type( symbol ) == \"string\" then\
+        symbol = Symbol.fromName( symbol )\
+    end\
+    self.symbol = symbol\
+    self.symbolObject.symbol = symbol\
+    self.needsAutosize = true\
 end\
 \
-function SeparatorMenuItem:setIsPressed( isPressed )\
-    self.isPressed = false\
+function SymbolButton:autosize()\
+    local symbol = self.symbol\
+    if symbol then\
+        self.width = symbol.width + self.leftMargin + self.rightMargin + 1\
+        self.height = symbol.height + 9\
+    end\
+    self.needsAutosize = false\
 end\
 \
-function SeparatorMenuItem:updateWidth( width )\
-\9self.backgroundObject.width = width - 8\
-end\
-\
-function SeparatorMenuItem:updateHeight( height )\
-\9self.backgroundObject.height = 1\
+function SymbolButton:setIsPressed( isPressed )\
+    self.super:setIsPressed( isPressed )\
+    local symbolObject = self.symbolObject\
+    symbolObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1\
+    symbolObject.y = isPressed and 6 or 5\
 end",["Scrollbar.lua"] = "\
 class \"Scrollbar\" extends \"View\" {\
 \9width = 7;\
@@ -9113,56 +8883,143 @@ function Scrollbar:onGlobalMouseDrag( event )\
       \
         event:makeRelative( oldRelative )\
     end\
-end",["DragView.lua"] = "\
-local SHADOW_RATIO = 2/3\
-local MAX_SHADOW_SIZE = 3\
+end",["SeparatorMenuItem.lua"] = "\
+class \"SeparatorMenuItem\" extends \"MenuItem\" {\
+\9text = false;\
 \
-class \"DragView\" extends \"View\" {\
+\9height = 3;\
+\9width = 51;\
 \
-    imageObject = false;\
-    shadowObject = false;\
-    shadowSize = 0;\
-    image = false;\
-    shadowImage = false;\
+\9textColour = Graphics.colours.LIGHT_GREY;\
+\
+    pressedTextColour = Graphics.colours.WHITE;\
+\
+    disabledTextColour = Graphics.colours.LIGHT_GREY;\
+\
 }\
 \
-function DragView:initialiseCanvas()\
-    self.super:initialiseCanvas()\
-\
-    local width, height, canvas = self.width, self.height, self.canvas\
-\
-    local shadowObject = canvas:insert( ImageObject( 1, 1, width - SHADOW_RATIO * MAX_SHADOW_SIZE, height - MAX_SHADOW_SIZE, self.shadowImage ) )\
-    local imageObject = canvas:insert( ImageObject( 1, 1, width - SHADOW_RATIO * MAX_SHADOW_SIZE, height - MAX_SHADOW_SIZE, self.image ) )\
-\
-    self.shadowObject = shadowObject\
-    self.imageObject = imageObject\
+--[[\
+\9@constructor\
+\9@desc Initialise a application container instance\
+\9@param [table] properties -- the properties for the view\
+]]\
+function SeparatorMenuItem:initialise( ... )\
+\9self.super.super:initialise( ... )\
 end\
 \
-function DragView:setImage( image )\
-    self.image = image\
-    self.imageObject.image = image\
+function SeparatorMenuItem:initialiseCanvas()\
+\9self.super.super:initialiseCanvas()\
+    self.backgroundObject = self.canvas:insert( Separator( 5, 2, self.width - 8, 1 ) )\
 end\
 \
-function DragView:setShadowImage( shadowImage )\
-    self.shadowImage = shadowImage\
-    self.shadowObject.image = shadowImage\
+function SeparatorMenuItem:setIsPressed( isPressed )\
+    self.isPressed = false\
 end\
 \
-function DragView:setShadowSize( shadowSize )\
-    self.shadowSize = shadowSize\
-    local shadowObject = self.shadowObject\
-    shadowObject.x = 1 + math.floor( SHADOW_RATIO * shadowSize + 0.5 )\
-    shadowObject.y = 1 + math.floor( shadowSize + 0.5 )\
+function SeparatorMenuItem:updateWidth( width )\
+\9self.backgroundObject.width = width - 8\
 end\
 \
-function DragView:updateWidth( width )\
-    self.imageObject.width = width - SHADOW_RATIO * MAX_SHADOW_SIZE\
-    self.shadowObject.width = width - SHADOW_RATIO * MAX_SHADOW_SIZE\
+function SeparatorMenuItem:updateHeight( height )\
+\9self.backgroundObject.height = 1\
+end",["Exception.lua"] = "\
+local exceptionClasses = {}\
+local thrownExceptions = {}\
+local nextID = 1\
+\
+function try( func )\
+    local ok, err = pcall( func )\
+\
+    if not ok and type( err ) == \"string\" then\
+        local id = err:match( \"SilicaException: (%d+)\" )\
+        if id then\
+            local exception = thrownExceptions[tonumber( id )]\
+            return function( handles )\
+                for i, handle in ipairs( handles ) do\
+                    if exception:typeOf( handle.catch ) or handle.default then\
+                        return handle.handler( exception )\
+                    end\
+                end\
+            end\
+        end\
+    end\
+\
+    return error( err, 0 )\
 end\
 \
-function DragView:updateHeight( height )\
-    self.imageObject.height = height - MAX_SHADOW_SIZE\
-    self.shadowObject.height = height - MAX_SHADOW_SIZE\
+function catch( exceptionClass, handler )\
+    return { catch = exceptionClass, handler = handler }\
+end\
+\
+function default( handler )\
+    return { default = true, handler = handler }\
+end\
+\
+class \"Exception\" {\
+    \
+    message = false;\
+    level = false;\
+    id = false;\
+    traceback = {};\
+    exceptionType = false;\
+\
+}\
+\
+--[[\
+    @static\
+    @desc Registers an Exception subclass to a exception type\
+    @param [class] _class -- the class that was constructed\
+]]\
+function Exception.register( exceptionType, subclass )\
+    exceptionClasses[exceptionType] = subclass\
+end\
+\
+--[[\
+    @static\
+    @desc Registers an Exception subclass after it has just been constructed\
+    @param [class] _class -- the class that was constructed\
+]]\
+function Exception.constructed( _class )\
+    if _class.exceptionType then\
+        Exception.register( _class.exceptionType, _class )\
+    end\
+end\
+\
+function Exception:initialise( message, level )\
+    self.message = message\
+    level = (level or 1) + 1\
+    self.level = level\
+    self.id = nextID\
+    nextID = nextID + 1\
+\
+    local traceback = self.traceback\
+    for i = 1, 5 do\
+        local src = select( 2, pcall( error, \"\", i + level ) )\
+        if src == \"pcall: \" then\
+            break\
+        else\
+            traceback[i] = src:gsub( \":%s$\", \"\", 1 )\
+        end\
+    end\
+end\
+\
+function Exception:throw()\
+    -- TODO: check that these won't leak out of OS programs (maybe .. self.application and compare the application id)\
+    local id = self.id\
+    thrownExceptions[id] = self\
+    error( \"SilicaException: \" .. self.id, 0 )\
+end",["InterfaceEvent.lua"] = "\
+class \"InterfaceEvent\" extends \"Event\" {\
+\9owner = false;\
+}\
+\
+--[[\
+\9@constructor\
+\9@desc Creates an interface event from the arguments\
+\9@param [class] owner -- the owner view\
+]]\
+function InterfaceEvent:initialise( owner )\
+\9self.owner = owner\
 end",["Radio.lua"] = "\
 class \"Radio\" extends \"View\" {\
 \
@@ -9923,6 +9780,7 @@ end\
 class \"Bundle\" extends \"Folder\" {}",["FileSystemItem.lua"] = "\
 local function tidy( path )\
     if type(path)==\"boolean\" then logtraceback() end\
+    path = \"/\" .. path\
     return path\
         :gsub( \"/.-/%.%./\", \"/\" )\
         :gsub( \"^.-/%.%./\", \"\" )\
@@ -9930,7 +9788,7 @@ local function tidy( path )\
         :gsub( \"^%.%./\", \"\" )\
         :gsub( \"^%.%.$\", \"\" )\
         :gsub( \"//+\", \"/\" )\
-        :gsub( \"^[^/]\", \"/\" )\
+        -- :gsub( \"^[^/]\", \"/\" )\
         :gsub( \"/$\", \"\" )\
 end\
 \
@@ -9951,10 +9809,6 @@ class \"FileSystemItem\" {\
 }\
 \
 function FileSystemItem.mt:__call( path, ... )\
-    if not fs.exists( path ) then\
-        return false\
-    end\
-\
     if fs.isDir( path ) then\
         return Folder( path, ... )\
     else\
@@ -9975,6 +9829,7 @@ function FileSystemItem:setPath( path )\
     self.path = path\
 \
     local parentPath, fullName = path:match( \"(.*)/(.+)\" )\
+    fullName = fullName or \"\"\
     self.fullName = fullName\
     self.raw.parentPath = parentPath\
     local name, extension = fullName:match( \"^(.+)%.(%w-)$\" )\
@@ -10002,6 +9857,9 @@ end\
 function FileSystemItem:setSizeString( items )\
     error( \"FileSystemItem.sizeString is a read-only property.\", 2 )\
 end\
+\
+-- function FileSystemItem:{ Number, String }:doSomething( x, label )\
+-- end\
 \
 function FileSystemItem:getParent()\
     local parent = self.parent\
@@ -10034,6 +9892,7 @@ function FileSystemItem:moveTo( folder )\
     fs.move( self.path, newPath )\
     self.metadata:moveTo( folder )\
     self.raw.parentPath = folderPath\
+    self.raw.parent = false -- delete the cache of the old parent\
 end\
 \
 function FileSystemItem:copyTo( folder )\
@@ -10067,6 +9926,296 @@ end\
 \
 function FileSystemItem:setMetadata( items )\
     error( \"FileSystemItem.metadata is a read-only property.\", 2 )\
+end",["KeyUpEvent.lua"] = "\
+class \"KeyUpEvent\" extends \"KeyEvent\" {\
+\9eventType = KeyUpEvent;\
+}",["Canvas.lua"] = "\
+class \"Canvas\" extends \"GraphicsObject\" {\
+    fillColour = Graphics.colours.TRANSPARENT; -- The colour of the Canvas when it clears\
+    buffer = {};\
+    children = {};\
+    owner = false; -- @property [View] - The view that owns this objects\
+}\
+\
+--[[\
+    @constructor\
+    @desc Creates a canvas\
+    @param [number] width -- the width of the canvas\
+    @param [number] height -- the height of the canvas\
+]]\
+function Canvas:initialise( x, y, width, height, owner )\
+    self.super:initialise( x, y, width, height )\
+    self.owner = owner or false\
+end\
+\
+--[[\
+    @instance\
+    @desc Sets the pixel colour and the given coordinates\
+    @param [number] x -- the x coordinate of the pixel\
+    @param [number] y -- the y coordinate of the pixel\
+    @param [colour] colour -- the colour coordinate of the pixel\
+]]\
+function Canvas:setPixel( x, y, colour )\
+    if colour ~= Graphics.colours.TRANSPARENT and x >= 1 and y >= 1 and x <= self.width and y <= self.height then\
+        self.buffer[ ( y - 1 ) * self.width + x ] = colour\
+    end\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Gets the pixel colour and the given coordinates\
+    @param [number] x -- the x coordinate of the pixel\
+    @param [number] y -- the y coordinate of the pixel\
+    @return [colour] colour -- the colour of the pixel\
+]]\
+function Canvas:getPixel( x, y )\
+    return self.buffer[ ( y - 1 ) * self.width + x ] or self.fillColour\
+end\
+\
+--[[\
+    @instance\
+    @desc Clears the buffer\
+    @return self\
+]]\
+function Canvas:clear()\
+    self.buffer = {}\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Adds a shader to screen area\
+    @param [Canvas.shader] shader -- the shader to use\
+    @param [number] x -- default 1, the x coordinate of the area\
+    @param [number] y -- default 1, the y coordinate of the area\
+    @param [number] width -- default canvas width, the width of the area\
+    @param [number] height -- default canvas height, the height of the area\
+    @return self\
+]]\
+function Canvas:map( shader, x, y, width, height )\
+    local changes = {}\
+    for _x = x or 1, ( x or 1 ) + ( width or self.width ) - 1 do\
+        for _y = y or 1, ( x or 1 ) + ( height or self.height ) - 1 do\
+            local colour = shader( _x, _y, self:getPixel( _x, _y ) )\
+            if colour and colour ~= 0 then\
+                changes[#changes + 1] = { _x, _y, colour }\
+            end\
+        end\
+    end\
+    local buffer = self.buffer\
+    local width, height = self.width, self.height\
+    local TRANSPARENT = Graphics.colours.TRANSPARENT\
+    local function setPixel( x, y, colour )\
+        if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then\
+            buffer[ ( y - 1 ) * width + x ] = colour\
+        end\
+        return self\
+    end\
+    for i = 1, #changes do\
+        setPixel( unpack( changes[i] ) )\
+    end\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Adds a graphics object to the canvas\
+    @param [GraphicsObject] graphicsObject -- the graphics object to add\
+    @return self\
+]]\
+function Canvas:insert( graphicsObject )\
+    if not graphicsObject then\
+        error( \"GraphicsObject not supplied in canvas:insert\", 3 )\
+    end\
+    self.hasChanged = true\
+    if graphicsObject.parent then\
+        graphicsObject.parent:remove( graphicsObject )\
+    end\
+    graphicsObject.raw.parent = self\
+    self.children[#self.children + 1] = graphicsObject\
+    return graphicsObject\
+end\
+\
+--[[\
+    @instance\
+    @desc Removes a graphics object from the canvas\
+    @param [GraphicsObject] graphicsObject -- the graphics object to remove\
+    @return self\
+]]\
+function Canvas:remove( graphicsObject )\
+    local c = false\
+    for i = #self.children, 1, -1 do\
+        if self.children[i] == graphicsObject then\
+            table.remove( self.children, i )\
+            graphicsObject.raw.parent = false\
+            c = true\
+        end\
+    end\
+    if c then\
+        self.hasChanged = true\
+    end\
+    return graphicsObject\
+end\
+\
+--[[\
+    @instance\
+    @desc Clears the buffer then draws the objects of the canvas\
+    @return self\
+]]\
+function Canvas:draw( isShadow )\
+    if self.isVisible then\
+        self.buffer = {}\
+        local children = self.children\
+        for i = 1, #children do\
+            children[i]:drawTo( self, isShadow )\
+        end\
+        self.hasChanged = false\
+    end\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Draws the canvas to another canvas\
+    @param [Canvas] canvas -- the canvas to draw to\
+    @return self\
+]]\
+function Canvas:drawTo( canvas, isShadow )\
+    local drawsShadow = self.drawsShadow\
+    if self.isVisible then\
+        if isShadow or self.hasChanged then\
+            -- local drawdt = os.clock()\
+            self:draw( isShadow )\
+        end\
+        \
+        local width = self.width\
+        local height = self.height\
+        local fillColour = self.fillColour\
+        local buffer = self.buffer\
+        local _x = self.x - 1\
+        local _y = self.y\
+        \
+\
+        local setPixel\
+        local TRANSPARENT = Graphics.colours.TRANSPARENT\
+\
+        local canvasWidth = canvas.width\
+        local canvasHeight = canvas.height\
+        local canvasBuffer = canvas.buffer\
+        if isShadow then\
+            local shadowColour\
+            local owner = self.owner\
+            if owner then\
+                shadowColour = owner.theme.shadowColour\
+            else\
+                shadowColour = Graphics.colours.GREEN\
+            end\
+            setPixel = function( x, y, colour )\
+                if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= canvasWidth and y <= canvasHeight then\
+                    canvasBuffer[ ( y - 1 ) * canvasWidth + x ] = shadowColour\
+                end\
+            end\
+        else\
+            setPixel = function( x, y, colour )\
+                if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= canvasWidth and y <= canvasHeight then\
+                    canvasBuffer[ ( y - 1 ) * canvasWidth + x ] = colour\
+                end\
+            end\
+        end\
+\
+        -- local start = os.clock()\
+\
+        for x = 1, width do\
+            for y = 0, height - 1 do -- just so there's no need for y-1 below\
+                local colour = buffer[y * width + x] or fillColour\
+                local nx, ny = x + _x, y + _y\
+                setPixel( nx, ny, colour )\
+                -- if colour ~= TRANSPARENT and nx >= 1 and ny >= 1 and nx <= canvasWidth and ny <= canvasHeight then\
+                --     canvasBuffer[( ny - 1 ) * canvasWidth + nx] = colour\
+                -- end\
+            end\
+        end\
+\
+\
+    end\
+    return self\
+end\
+\
+--[[\
+    @instance\
+    @desc Hit tests the canvas' buffer to see if the colour is set (return false if transparent)\
+    @param [number] x -- the x coordinate to hit test\
+    @param [number] y -- the y coordinate to hit test\
+    @return [boolean] didHit -- whether the colour was set/not transparent\
+]]\
+function Canvas:hitTest( x, y )\
+    return self:getPixel( x, y ) ~= 0\
+end",["ClipboardData.lua"] = "\
+class \"ClipboardData\" {}\
+\
+function ClipboardData:initialise()\
+end",["ShadowObject.lua"] = "\
+class \"ShadowObject\" extends \"GraphicsObject\" {\
+\
+    views = {};\
+\
+}\
+\
+function ShadowObject:initialise( x, y, width, height, views )\
+    self.super:initialise( x, y, width, height )\
+    self.views = views or {}\
+end\
+\
+function ShadowObject:setViews( views )\
+    self.hasChanged = true\
+    self.views = views\
+end\
+\
+function ShadowObject:getFill()\
+    if self.fill then return self.fill end\
+    log('update fill')\
+    local fill = {}\
+    local width = self.width\
+    local height = self.height\
+    for i, object in ipairs( self.views ) do\
+        local objectFill = object.fill\
+        local objectX, objectY = object.x, object.y\
+        for x, row in pairs( objectFill ) do\
+            local fillX = fill[x + objectX - 1]\
+            if not fillX then\
+                fillX = {}\
+                fill[x + objectX - 1] = fillX\
+            end\
+\
+            for y, isFilled in pairs( row ) do\
+                fillX[y + objectY - 1] = isFilled\
+            end\
+        end\
+    end\
+\
+    self.fill = fill\
+    return fill\
+end",["WindowContainer.lua"] = "\
+class \"WindowContainer\" extends \"Container\" {\
+\9backgroundObject = false;\
+}\
+\
+function WindowContainer:initialise( ... )\
+\9self.super:initialise( ... )\
+end\
+\
+function WindowContainer:initialiseCanvas()\
+\9self.canvas = WindowCanvas( self.x, self.y, self.width, self.height )\
+\9self.backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, Graphics.colours.WHITE ) )\
+end\
+\
+function WindowContainer:updateHeight( height )\
+\9self.backgroundObject.height = height\
+end\
+\
+function WindowContainer:updateWidth( width )\
+\9self.backgroundObject.width = width\
 end",["Package.lua"] = "\
 local RESOURCE_PACKAGE_FOLDERS = { classes = true; fonts = true; interfaces = true; themes = true; resources = true; miscellaneous = true; }\
 \
@@ -10218,267 +10367,77 @@ function Package:make( path, overwrite, folder, isResourcePackage )\
     -- log( serialise( allItems, {} ) )\
     return File.make( Package, path, overwrite, isResourcePackage and Metadata.mimes.RESOURCEPKG or Metadata.mimes.PACKAGE, contents )\
 end\
-",["KeyUpEvent.lua"] = "\
-class \"KeyUpEvent\" extends \"KeyEvent\" {\
-\9eventType = KeyUpEvent;\
-}",["InterfaceEvent.lua"] = "\
-class \"InterfaceEvent\" extends \"Event\" {\
-\9owner = false;\
+",["InterfaceOutletChangedInterfaceEvent.lua"] = "\
+class \"InterfaceOutletChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
+\9eventType = \"interface_outlet_changed\";\
+\9interfaceOutlet = false;\
+\9oldView = false;\
+\9newView = false;\
+\9isSentToChildren = false;\
+\9isSentToSender = false;\
 }\
 \
 --[[\
 \9@constructor\
-\9@desc Creates an interface event from the arguments\
-\9@param [class] owner -- the owner view\
+\9@desc Creates a focus event from the arguments\
+\9@param interfaceOutlet -- the interface outlet that changed\
+\9@param newView -- the new view the outlet is bound to\
+\9@param oldView -- the old view the outlet was bound to\
 ]]\
-function InterfaceEvent:initialise( owner )\
-\9self.owner = owner\
-end",["ShadowObject.lua"] = "\
-class \"ShadowObject\" extends \"GraphicsObject\" {\
+function InterfaceOutletChangedInterfaceEvent:initialise( interfaceOutlet, newView, oldView )\
+\9self.interfaceOutlet = interfaceOutlet\
+\9self.newView = newView\
+\9self.oldView = oldView\
+end",["DragView.lua"] = "\
+local SHADOW_RATIO = 2/3\
+local MAX_SHADOW_SIZE = 3\
 \
-    views = {};\
+class \"DragView\" extends \"View\" {\
 \
+    imageObject = false;\
+    shadowObject = false;\
+    shadowSize = 0;\
+    image = false;\
+    shadowImage = false;\
 }\
 \
-function ShadowObject:initialise( x, y, width, height, views )\
-    self.super:initialise( x, y, width, height )\
-    self.views = views or {}\
+function DragView:initialiseCanvas()\
+    self.super:initialiseCanvas()\
+\
+    local width, height, canvas = self.width, self.height, self.canvas\
+\
+    local shadowObject = canvas:insert( ImageObject( 1, 1, width - SHADOW_RATIO * MAX_SHADOW_SIZE, height - MAX_SHADOW_SIZE, self.shadowImage ) )\
+    local imageObject = canvas:insert( ImageObject( 1, 1, width - SHADOW_RATIO * MAX_SHADOW_SIZE, height - MAX_SHADOW_SIZE, self.image ) )\
+\
+    self.shadowObject = shadowObject\
+    self.imageObject = imageObject\
 end\
 \
-function ShadowObject:setViews( views )\
-    self.hasChanged = true\
-    self.views = views\
+function DragView:setImage( image )\
+    self.image = image\
+    self.imageObject.image = image\
 end\
 \
-function ShadowObject:getFill()\
-    if self.fill then return self.fill end\
-    log('update fill')\
-    local fill = {}\
-    local width = self.width\
-    local height = self.height\
-    for i, object in ipairs( self.views ) do\
-        local objectFill = object.fill\
-        local objectX, objectY = object.x, object.y\
-        for x, row in pairs( objectFill ) do\
-            local fillX = fill[x + objectX - 1]\
-            if not fillX then\
-                fillX = {}\
-                fill[x + objectX - 1] = fillX\
-            end\
-\
-            for y, isFilled in pairs( row ) do\
-                fillX[y + objectY - 1] = isFilled\
-            end\
-        end\
-    end\
-\
-    self.fill = fill\
-    return fill\
-end",["WindowContainer.lua"] = "\
-class \"WindowContainer\" extends \"Container\" {\
-\9backgroundObject = false;\
-}\
-\
-function WindowContainer:initialise( ... )\
-\9self.super:initialise( ... )\
+function DragView:setShadowImage( shadowImage )\
+    self.shadowImage = shadowImage\
+    self.shadowObject.image = shadowImage\
 end\
 \
-function WindowContainer:initialiseCanvas()\
-\9self.canvas = WindowCanvas( self.x, self.y, self.width, self.height )\
-\9self.backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, Graphics.colours.WHITE ) )\
+function DragView:setShadowSize( shadowSize )\
+    self.shadowSize = shadowSize\
+    local shadowObject = self.shadowObject\
+    shadowObject.x = 1 + math.floor( SHADOW_RATIO * shadowSize + 0.5 )\
+    shadowObject.y = 1 + math.floor( shadowSize + 0.5 )\
 end\
 \
-function WindowContainer:updateHeight( height )\
-\9self.backgroundObject.height = height\
+function DragView:updateWidth( width )\
+    self.imageObject.width = width - SHADOW_RATIO * MAX_SHADOW_SIZE\
+    self.shadowObject.width = width - SHADOW_RATIO * MAX_SHADOW_SIZE\
 end\
 \
-function WindowContainer:updateWidth( width )\
-\9self.backgroundObject.width = width\
-end",["ScreenCanvas.lua"] = "\
-class \"ScreenCanvas\" extends \"Canvas\" {\
-\9fillColour = Graphics.colours.LIGHT_BLUE;\
-\9drawn = {};\
-}\
-\
-function ScreenCanvas:setHasChanged( hasChanged )\
-\9self.hasChanged = hasChanged\
-end\
-\
---[[\
-\9@instance\
-\9@desc Draws the canvas to the terminal/screen provided\
-\9@param [term] terminal -- the terminal object to draw to\
-\9@return self\
-]]\
-function ScreenCanvas:drawToTerminal( terminal )\9\
-    if self.isVisible then\
-\9\9if self.hasChanged then\
-\9        local s = os.clock()\
-\9\9\9self:draw()\
-\9\9\9terminal = terminal or term\
-\
-\9\9\9local currentLength, currentX, currentY, currentColour\
-\
-\9\9\9local sBC, sCP, w = term.setBackgroundColour, term.setCursorPos, term.write\
-\9\9\9local function draw()\
-\9\9\9\9if currentLength == 0 then return end\
-\9\9\9\9sBC( currentColour )\
-\9\9\9\9sCP( currentX, currentY )\
-\9\9\9\9w( (\" \"):rep( currentLength ) )\
-\9\9\9end\
-\
-\9\9\9local buffer = self.buffer\
-\9\9\9local colour = self.fillColour or 1\
-\9\9\9local width = self.width\
-\9\9\9local height = self.height\
-\9\9\9local drawn = self.drawn\
-\9\9\9-- the blacked out corners. if theres a faster way to do this then feel free to change it\
-\9\9\9local corner = { \
-\9\9\9\9[1]={ [1]=true, [2]=true, [3]=true, [4]=true, [height - 3]=true, [height - 2]=true, [height - 1]=true, [height]=true },\
-\9\9\9\9[2]={ [1]=true, [2]=true, [height - 1]=true, [height]=true },\
-\9\9\9\9[3]={ [1]=true, [height]=true },\
-\9\9\9\9[4]={ [1]=true, [height]=true },\
-\9\9\9\9[width - 3]={ [1]=true, [height]=true },\
-\9\9\9\9[width - 2]={ [1]=true, [height]=true },\
-\9\9\9\9[width - 1]={ [1]=true, [2]=true, [height - 1]=true, [height]=true },\
-\9\9\9\9[width]={ [1]=true, [2]=true, [3]=true, [4]=true, [height - 3]=true, [height - 2]=true, [height - 1]=true, [height]=true },\
-\9\9\9}\
-\9\9\9local cornerColour = Graphics.colours.BLACK\
-\9\9\9for x, v in pairs( corner ) do -- ipairs won't do the [height-3] indexes, for example\
-\9\9\9\9for y, v in pairs( v ) do\
-\9\9\9\9\9buffer[ ( y - 1 ) * width + x ] = cornerColour\
-\9\9\9\9end\
-\9\9\9end\
-\9        local blit = term.blit\
-\9        local hexes = { \
-\9        \9[2^0] = \"0\",\
-\9        \9[2^1] = \"1\",\
-\9        \9[2^2] = \"2\",\
-\9        \9[2^3] = \"3\",\
-\9        \9[2^4] = \"4\",\
-\9        \9[2^5] = \"5\",\
-\9        \9[2^6] = \"6\",\
-\9        \9[2^7] = \"7\",\
-\9        \9[2^8] = \"8\",\
-\9        \9[2^9] = \"9\",\
-\9        \9[2^10] = \"a\",\
-\9        \9[2^11] = \"b\",\
-\9        \9[2^12] = \"c\",\
-\9        \9[2^13] = \"d\",\
-\9        \9[2^14] = \"e\",\
-\9        \9[2^15] = \"f\"\
-\9        }\
-\
-\9\9\9for y = 1, self.height do\
-\9\9\9\9-- currentY = y\
-\9\9\9\9-- currentLength = 0\
-\9\9\9\9-- currentColour = nil\
-\9\9\9\9-- for x = 1, width do\
-\9\9\9\9-- \9local p = ( y - 1 ) * width + x\
-\9\9\9\9-- \9local c = buffer[p] or colour\
-\9\9\9\9-- \9if c ~= drawn[p] then\
-\9\9\9\9-- \9\9drawn[p] = c\
-\9\9\9\9-- \9\9if currentColour == c then\
-\9\9\9\9-- \9\9\9currentLength = currentLength + 1\
-\9\9\9\9-- \9\9else\
-\9\9\9\9-- \9\9\9draw()\
-\9\9\9\9-- \9\9\9currentLength = 1\
-\9\9\9\9-- \9\9\9currentX = x\
-\9\9\9\9-- \9\9\9currentColour = c\
-\9\9\9\9-- \9\9end\
-\9\9\9\9-- \9elseif currentLength ~= 0 then\
-\9\9\9\9-- \9\9draw()\
-\9\9\9\9-- \9\9currentLength = 0\
-\9\9\9\9-- \9\9currentColour = nil\
-\9\9\9\9-- \9else\
-\9\9\9\9-- \9\9currentColour = nil\
-\9\9\9\9-- \9end\
-\9\9\9\9-- end\
-\9\9\9\9-- draw()\
-\9\9\9\9local changed = false\
-\9\9\9\9local str = \"\"\
-\9\9\9\9for x = 1, width do\
-\9\9\9\9\9local p = ( y - 1 ) * width + x\
-\9\9\9\9\9local c = buffer[p] or colour\
-\9\9\9\9\9str = str .. hexes[c]\
-\9\9\9\9\9if not changed and c ~= drawn[p] then\
-\9\9\9\9\9\9changed = true\
-\9\9\9\9\9end\
-\9\9\9\9end\
-\9\9\9\9term.setCursorPos(1,y)\
-\9\9\9\9blit(str)\
-\9\9\9end\
-\9\9end\
-\9end\
-\9return self\
-end",["Cursor.lua"] = "\
-class \"Cursor\" extends \"GraphicsObject\" {\
-\9fillColour = Graphics.colours.BLACK;\
-}\
-\
-function Cursor:initialise( x, y, height )\
-\9self.super:initialise( x, y, 1, height )\
-end\
-\
---[[\
-    @instance\
-    @desc Gets the pixes to be filled\
-    @return [table] fill -- the pixels to fill\
-]]\
-function Cursor:getFill()\
-\9if self.fill then return self.fill end\
-\9local fill = {}\
-\9local fillX = {}\
-\9for y = 1, self.height do\
-\9\9fillX[y] = true\
-\9end\
-\9fill[1] = fillX\
-\9return fill\
-end",["Validator.lua"] = "\
--- validates and parses values (so BLUE becomes Graphics.colours.BLUE)\
-class \"Validator\" {}\
-\
---[[\
-\9@instance\
-\9@desc Gets a validation table from the given type name\
-\9@param [string] typeName -- the type to validate against\
-\9@return [Validator.validatorType] validatorType -- the table of valid values\
-]]\
-function Validator.validatorType( typeName )\
-\9-- TODO: make validator types dynamic\
-\9if typeName == \"Graphics.colours\" then\
-\9\9return function( k ) return Graphics.colours[k] end\
-\9elseif typeName == \"number\" then\
-\9\9return tonumber\
-\9elseif typeName == \"string\" then\
-\9\9return tostring\
-\9elseif typeName == \"boolean\" or typeName == \"bool\" then\
-\9\9return function( K ) local k = K:lower() if k == \"true\" then return true elseif k == \"false\" then return false end end\
-\9end\
-end\
-\
---[[\
-\9@instance\
-\9@desc Validate a value against the given type\
-\9@param value -- the value to validate\
-\9@param [string] typeName -- the type to validate against\
-\9@return [boolean] isValid -- whether the value is valid\
-]]\
-function Validator.isValid( value, typeName )\
-\9local validatorType = Validator.validatorType( typeName )\
-\9return validatorType( value ) ~= nil\
-end\
-\
---[[\
-\9@instance\
-\9@desc Parse a value to the given type\
-\9@param value -- the value to parse\
-\9@param [string] typeName -- the type to parse to\
-\9@return parsedValue -- the parsed value\
-]]\
-function Validator.parse( value, typeName )\
-\9local validatorType = Validator.validatorType( typeName )\
-\9return validatorType( value )\
+function DragView:updateHeight( height )\
+    self.imageObject.height = height - MAX_SHADOW_SIZE\
+    self.shadowObject.height = height - MAX_SHADOW_SIZE\
 end",["Metadata.lua"] = "\
 local DEFAULT_TIMESTAMP = 1417305600; -- default date 1/1/2015\
 \
@@ -10562,6 +10521,7 @@ local EXTENSION_MIMES = {\
     SFONT = \"silica/font\";\
     RESOURCEPKG = \"package/resource\";\
     PACKAGE = \"package/plain\";\
+    APPLICATION = \"silica/application\";\
 }\
 \
 class \"Metadata\" {\
@@ -10602,9 +10562,12 @@ function Metadata:load()\
         end\
     else\
         local metadataFolderPath = self.file.parentPath .. \"/.metadata\"\
-        if fs.exists( metadataFolderPath ) and not fs.isDir( metadataFolderPath ) then\
-            fs.delete( metadataFolderPath )\
+        if fs.exists( metadataFolderPath ) then\
+            if not fs.isDir( metadataFolderPath ) then\
+                fs.delete( metadataFolderPath )\
+            end\
         else\
+            log(\"make \"..metadataFolderPath)\
             fs.makeDir( metadataFolderPath )\
         end\
         self:create()\
@@ -10723,27 +10686,123 @@ end\
 function Metadata:setModifiedTimestamp( modifiedTimestamp )\
     self.modifiedTimestamp = modifiedTimestamp\
     self:save()\
-end",["InterfaceOutletChangedInterfaceEvent.lua"] = "\
-class \"InterfaceOutletChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_outlet_changed\";\
-\9interfaceOutlet = false;\
-\9oldView = false;\
-\9newView = false;\
-\9isSentToChildren = false;\
-\9isSentToSender = false;\
+end",["ScreenCanvas.lua"] = "\
+class \"ScreenCanvas\" extends \"Canvas\" {\
+\9fillColour = Graphics.colours.LIGHT_BLUE;\
+\9drawn = {};\
 }\
 \
+function ScreenCanvas:setHasChanged( hasChanged )\
+\9self.hasChanged = hasChanged\
+end\
+\
 --[[\
-\9@constructor\
-\9@desc Creates a focus event from the arguments\
-\9@param interfaceOutlet -- the interface outlet that changed\
-\9@param newView -- the new view the outlet is bound to\
-\9@param oldView -- the old view the outlet was bound to\
+\9@instance\
+\9@desc Draws the canvas to the terminal/screen provided\
+\9@param [term] terminal -- the terminal object to draw to\
+\9@return self\
 ]]\
-function InterfaceOutletChangedInterfaceEvent:initialise( interfaceOutlet, newView, oldView )\
-\9self.interfaceOutlet = interfaceOutlet\
-\9self.newView = newView\
-\9self.oldView = oldView\
+function ScreenCanvas:drawToTerminal( terminal )\9\
+    if self.isVisible then\
+\9\9if self.hasChanged then\
+\9        local s = os.clock()\
+\9\9\9self:draw()\
+\9\9\9terminal = terminal or term\
+\
+\9\9\9local currentLength, currentX, currentY, currentColour\
+\
+\9\9\9local sBC, sCP, w = term.setBackgroundColour, term.setCursorPos, term.write\
+\9\9\9local function draw()\
+\9\9\9\9if currentLength == 0 then return end\
+\9\9\9\9sBC( currentColour )\
+\9\9\9\9sCP( currentX, currentY )\
+\9\9\9\9w( (\" \"):rep( currentLength ) )\
+\9\9\9end\
+\
+\9\9\9local buffer = self.buffer\
+\9\9\9local colour = self.fillColour or 1\
+\9\9\9local width = self.width\
+\9\9\9local height = self.height\
+\9\9\9local drawn = self.drawn\
+\9\9\9-- the blacked out corners. if theres a faster way to do this then feel free to change it\
+\9\9\9local corner = { \
+\9\9\9\9[1]={ [1]=true, [2]=true, [3]=true, [4]=true, [height - 3]=true, [height - 2]=true, [height - 1]=true, [height]=true },\
+\9\9\9\9[2]={ [1]=true, [2]=true, [height - 1]=true, [height]=true },\
+\9\9\9\9[3]={ [1]=true, [height]=true },\
+\9\9\9\9[4]={ [1]=true, [height]=true },\
+\9\9\9\9[width - 3]={ [1]=true, [height]=true },\
+\9\9\9\9[width - 2]={ [1]=true, [height]=true },\
+\9\9\9\9[width - 1]={ [1]=true, [2]=true, [height - 1]=true, [height]=true },\
+\9\9\9\9[width]={ [1]=true, [2]=true, [3]=true, [4]=true, [height - 3]=true, [height - 2]=true, [height - 1]=true, [height]=true },\
+\9\9\9}\
+\9\9\9local cornerColour = Graphics.colours.BLACK\
+\9\9\9for x, v in pairs( corner ) do -- ipairs won't do the [height-3] indexes, for example\
+\9\9\9\9for y, v in pairs( v ) do\
+\9\9\9\9\9buffer[ ( y - 1 ) * width + x ] = cornerColour\
+\9\9\9\9end\
+\9\9\9end\
+\9        local blit = term.blit\
+\9        local hexes = { \
+\9        \9[2^0] = \"0\",\
+\9        \9[2^1] = \"1\",\
+\9        \9[2^2] = \"2\",\
+\9        \9[2^3] = \"3\",\
+\9        \9[2^4] = \"4\",\
+\9        \9[2^5] = \"5\",\
+\9        \9[2^6] = \"6\",\
+\9        \9[2^7] = \"7\",\
+\9        \9[2^8] = \"8\",\
+\9        \9[2^9] = \"9\",\
+\9        \9[2^10] = \"a\",\
+\9        \9[2^11] = \"b\",\
+\9        \9[2^12] = \"c\",\
+\9        \9[2^13] = \"d\",\
+\9        \9[2^14] = \"e\",\
+\9        \9[2^15] = \"f\"\
+\9        }\
+\
+\9\9\9for y = 1, self.height do\
+\9\9\9\9-- currentY = y\
+\9\9\9\9-- currentLength = 0\
+\9\9\9\9-- currentColour = nil\
+\9\9\9\9-- for x = 1, width do\
+\9\9\9\9-- \9local p = ( y - 1 ) * width + x\
+\9\9\9\9-- \9local c = buffer[p] or colour\
+\9\9\9\9-- \9if c ~= drawn[p] then\
+\9\9\9\9-- \9\9drawn[p] = c\
+\9\9\9\9-- \9\9if currentColour == c then\
+\9\9\9\9-- \9\9\9currentLength = currentLength + 1\
+\9\9\9\9-- \9\9else\
+\9\9\9\9-- \9\9\9draw()\
+\9\9\9\9-- \9\9\9currentLength = 1\
+\9\9\9\9-- \9\9\9currentX = x\
+\9\9\9\9-- \9\9\9currentColour = c\
+\9\9\9\9-- \9\9end\
+\9\9\9\9-- \9elseif currentLength ~= 0 then\
+\9\9\9\9-- \9\9draw()\
+\9\9\9\9-- \9\9currentLength = 0\
+\9\9\9\9-- \9\9currentColour = nil\
+\9\9\9\9-- \9else\
+\9\9\9\9-- \9\9currentColour = nil\
+\9\9\9\9-- \9end\
+\9\9\9\9-- end\
+\9\9\9\9-- draw()\
+\9\9\9\9local changed = false\
+\9\9\9\9local str = \"\"\
+\9\9\9\9for x = 1, width do\
+\9\9\9\9\9local p = ( y - 1 ) * width + x\
+\9\9\9\9\9local c = buffer[p] or colour\
+\9\9\9\9\9str = str .. hexes[c]\
+\9\9\9\9\9if not changed and c ~= drawn[p] then\
+\9\9\9\9\9\9changed = true\
+\9\9\9\9\9end\
+\9\9\9\9end\
+\9\9\9\9term.setCursorPos(1,y)\
+\9\9\9\9blit(str)\
+\9\9\9end\
+\9\9end\
+\9end\
+\9return self\
 end",["Animation.lua"] = "\
 local math, assert, tostring, type = math, assert, tostring, type\
 local pow, sin, cos, pi, sqrt, abs, asin = math.pow, math.sin, math.cos, math.pi, math.sqrt, math.abs, math.asin\
@@ -11868,295 +11927,51 @@ end\
 ]]\
 function GraphicsObject:toShadowImage()\
     return self:toImage( true )\
-end",["XML.lua"] = "\
--- TODO: XML bug. backslashes in attributes don't work. A single \"\\\" results in: expected '\"' to close string. While \"\\\\\"\" results in two backslashes being the parsed text\
-\
-local function fromXMLString( value )\
-\9value = string.gsub(value, \"&#x( [%x]+ )%;\",\
-\9\9function( h ) \
-\9\9\9return string.char( tonumber(h,16) )\
-\9\9end);\
-\9value = string.gsub(value, \"&#([0-9]+)%;\",\
-\9\9function( h )\
-\9\9\9return string.char( tonumber(h,10) )\
-\9\9end);\
-\9value = string.gsub (value, \"&quot;\", \"\\\"\");\
-\9value = string.gsub (value, \"&apos;\", \"'\");\
-\9value = string.gsub (value, \"&gt;\", \">\");\
-\9value = string.gsub (value, \"&lt;\", \"<\");\
-\9value = string.gsub (value, \"&amp;\", \"&\");\
-\9return value;\
-end\
-\
-local function lex( text )\
-\9local tokens = {}\
-\9local pos, line, char = 1, 1, 1\
-\9local function push( type, value )\
-\9\9tokens[#tokens + 1] = {\
-\9\9\9type = type;\
-\9\9\9value = value;\
-\9\9\9char = char;\
-\9\9\9line = line;\
-\9\9}\
-\9end\
-\9while pos <= #text do\
-\9\9local c = text:sub( pos, pos )\
-\9\9if c == \"\\n\" then\
-\9\9\9line = line + 1\
-\9\9\9char = 1\
-\9\9\9pos = pos + 1\
-\9\9elseif c:find \"%s\" then\
-\9\9\9pos = pos + #text:match( \"%s+\", pos )\
-\9\9elseif c == \"\\\"\" or c == \"'\" then\
-\9\9\9local e, f, l = false, false, line\
-\9\9\9for i = pos + 1, #text do\
-\9\9\9\9if e then\
-\9\9\9\9\9e = false\
-\9\9\9\9elseif text:sub( i, i ) == \"\\\\\" then\
-\9\9\9\9\9e = true\
-\9\9\9\9elseif text:sub( i, i ) == c then\
-\9\9\9\9\9push( \"string\", fromXMLString( text:sub( pos + 1, i - 1 ) ) )\
-\9\9\9\9\9pos = i + 1\
-\9\9\9\9\9f = true\
-\9\9\9\9\9break\
-\9\9\9\9elseif text:sub( i, i ) == \"\\n\" then\
-\9\9\9\9\9line = line + 1\
-\9\9\9\9end\
-\9\9\9end\
-\9\9\9if not f then\
-\9\9\9\9return false, \"[\" .. l .. \" (char:\" .. char .. \")]: expected '\" .. c .. \"' to close string\"\
-\9\9\9end\
-\9\9elseif c:find \"[a-zA-Z%-%._]\" then\
-\9\9\9local v = text:match( \"[a-zA-Z%d%-%._]+\", pos )\
-\9\9\9push( \"word\", v )\
-\9\9\9pos = pos + #v\
-\9\9elseif text:find( \"^#?%.?%d\", pos ) then\
-\9\9\9local v = text:match( \"^#?%d*%.?%d+%%?\", pos )\
-\9\9\9pos = pos + #v\
-\9\9\9local percentage = false\
-\9\9\9if v:sub( -1 ) == \"%\" then\
-\9\9\9\9v = v:sub( 1, -2 )\
-\9\9\9\9percentage = true\
-\9\9\9end\
-\9\9\9if v:sub( 1, 1 ) == \"#\" then\
-\9\9\9\9v = tonumber( v:sub( 2 ), 16 )\
-\9\9\9else\
-\9\9\9\9v = tonumber( v )\
-\9\9\9end\
-\9\9\9if percentage then\
-\9\9\9\9v = v / 100\
-\9\9\9end\
-\9\9\9push( \"number\", v )\
-\9\9elseif text:find( \"^<!%-%-.-%-%->\", pos ) then\
-\9\9\9pos = pos + #text:match( \"^<!%-%-.-%-%->\", pos )\
-\9\9else\
-\9\9\9push( \"symbol\", c )\
-\9\9\9pos = pos + 1\
-\9\9end\
-\9end\
-\9return tokens\
-end\
-\
-local parser = {}\
-function parser:new( tokens )\
-\9local t = setmetatable( {}, { __index = self } )\
-\9t.tokens = tokens\
-\9t.pos = 1\
-\9t.last = tokens[1]\
-\9t.exception = false\
-\9return t\
-end\
-\
-function parser:throw( message )\
-\9if self.last then\
-\9\9self.exception = \"[line \" .. self.last.line .. \", char \" .. self.last.char .. \"]: \" .. message\
-\9else\
-\9\9self.exception = \"[unknown]: \" .. message\
-\9end\
-\9return false, self.exception\
-end\
-\
-function parser:thrown()\
-\9return self.exception\
-end\
-\
-function parser:peek()\
-\9return self.tokens[self.pos]\
-end\
-\
-function parser:next()\
-\9self.pos = self.pos + 1\
-\9self.last = self.tokens[self.pos] or self.last\
-\9return self.tokens[self.pos]\
-end\
-\
-function parser:test( type, value )\
-\9local token = self:peek()\
-\9return token and token.type == type and ( not value or token.value == value )\
-end\
-\
-function parser:parseXMLInitialiser()\
-\9local closing = false\
-\
-\9if self:test( \"symbol\", \"/\" ) then\
-\9\9closing = true\
-\9\9self:next()\
-\9end\
-\
-\9if not self:test \"word\" then\
-\9\9return self:throw \"expected name of XML item\"\
-\9end\
-\
-\9local name = self:peek().value\
-\9self:next()\
-\
-\9if closing then\
-\9\9if self:test( \"symbol\", \">\" ) then\
-\9\9\9self:next()\
-\9\9else\
-\9\9\9return self:throw \"expected '>' to close closing tag\"\
-\9\9end\
-\9end\
-\
-\9return name, closing\
-end\
-\
-function parser:parseXMLAttributes()\
-\9local attributes = {}\
-\9while true do\
-\9\9if self:test \"word\" then\
-\9\9\9local name = self:peek().value\
-\9\9\9self:next()\
-\
-\9\9\9if self:test( \"symbol\", \"=\" ) or self:test( \"symbol\", \":\" ) then\
-\9\9\9\9local v = self:next()\
-\
-\9\9\9\9if v.type == \"number\" or v.type == \"string\" then\
-\9\9\9\9\9attributes[name] = v.value\
-\9\9\9\9elseif v.type == \"word\" then\
-\9\9\9\9\9local word = v.value\
-\9\9\9\9\9if word == \"true\" or word == \"false\" then\
-\9\9\9\9\9\9word = word == \"true\"\
-\9\9\9\9\9end\
-\9\9\9\9\9attributes[name] = word\
-\9\9\9\9else\
-\9\9\9\9\9return self:throw( \"unexpected \" .. v.type .. \" as attribute value\" )\
-\9\9\9\9end\
-\
-\9\9\9\9self:next()\
-\9\9\9else\
-\9\9\9\9attributes[name] = true\
-\9\9\9\9self:next()\
-\9\9\9end\
-\9\9elseif self:test( \"symbol\", \"/\" ) then\
-\9\9\9self:next()\
-\9\9\9if not self:test( \"symbol\", \">\" ) then\
-\9\9\9\9return self:throw \"expected '>' after '/' to close opening tag\"\
-\9\9\9end\
-\
-\9\9\9self:next()\
-\9\9\9return attributes, false\
-\9\9elseif self:test( \"symbol\", \">\" ) then\
-\9\9\9self:next()\
-\9\9\9return attributes, true\
-\9\9elseif not self:peek() then\
-\9\9\9return attributes, false\
-\9\9else\
-\9\9\9return self:throw( \"unexpected \" .. self:peek().type .. \" in attributes\" )\
-\9\9end\
-\9end\
-end\
-\
-function parser:parseXMLBody()\
-\9local blocks = {}\
-\
-\9while self:peek() do\
-\9\9while not self:test( \"symbol\", \"<\" ) do\
-\9\9\9self:next()\
-\9\9end\
-\
-\9\9self:next()\
-\9\9local type, isClosing = self:parseXMLInitialiser()\
-\9\9if self:thrown() then\
-\9\9\9return false, self.exception\
-\9\9end\
-\
-\9\9if isClosing then\
-\9\9\9return blocks, type\
-\9\9end\
-\
-\9\9local attributes, hasBody = self:parseXMLAttributes()\
-\9\9if self:thrown() then\
-\9\9\9return false, self.exception\
-\9\9end\
-\
-\9\9local body, closer\
-\9\9if hasBody then\
-\9\9\9body, closer = self:parseXMLBody()\
-\9\9\9if self:thrown() then\
-\9\9\9\9return false, self.exception\
-\9\9\9end\
-\9\9\9if not closer then\
-\9\9\9\9return self:throw( \"expected '</\" .. type .. \">' to close XML item, got nothing\" )\
-\9\9\9elseif closer ~= type then\
-\9\9\9\9return self:throw( \"expected '</\" .. type .. \">' to close XML item, got '</\" .. closer .. \">'\" )\
-\9\9\9end\
-\9\9end\
-\
-\9\9blocks[#blocks + 1] = {\
-\9\9\9type = type;\
-\9\9\9attributes = attributes;\
-\9\9\9body = body;\
-\9\9}\
-\9end\
-\
-\9return blocks\
-end\
-\
-class \"XML\" {}\
+end",["Validator.lua"] = "\
+-- validates and parses values (so BLUE becomes Graphics.colours.BLUE)\
+class \"Validator\" {}\
 \
 --[[\
-\9@static\
-\9@desc Loads XML from source text\
-\9@param [string] xmlText -- the XML text to parse\
-\9@return [table] xmlNodes -- the parsed XML nodes\
-\9on error:\
-\9@return false\
-\9@return [string] error -- the error message\
+\9@instance\
+\9@desc Gets a validation table from the given type name\
+\9@param [string] typeName -- the type to validate against\
+\9@return [Validator.validatorType] validatorType -- the table of valid values\
 ]]\
-function XML.fromText( xmlText )\
-\9local tokens, err = lex( xmlText )\
-\9if not tokens then\
-\9\9return false, err\
+function Validator.validatorType( typeName )\
+\9-- TODO: make validator types dynamic\
+\9if typeName == \"Graphics.colours\" then\
+\9\9return function( k ) return Graphics.colours[k] end\
+\9elseif typeName == \"number\" then\
+\9\9return tonumber\
+\9elseif typeName == \"string\" then\
+\9\9return tostring\
+\9elseif typeName == \"boolean\" or typeName == \"bool\" then\
+\9\9return function( K ) local k = K:lower() if k == \"true\" then return true elseif k == \"false\" then return false end end\
 \9end\
-\
-\9local p = parser:new( tokens )\
-\9local blocks, data = p:parseXMLBody()\
-\
-\9if not blocks then\
-\9\9return false, data\
-\9end\
-\9if data then -- if they put a </*> in the main body\
-\9\9return p:throw( \"unexpected '</\" .. data .. \">' in main body\" )\
-\9end\
-\9return blocks\
 end\
 \
 --[[\
-\9@static\
-\9@desc Loads an XML file\
-\9@param [string] filePath -- the path to the XML file\
-\9@return [table] xmlNodes -- the parsed XML nodes\
+\9@instance\
+\9@desc Validate a value against the given type\
+\9@param value -- the value to validate\
+\9@param [string] typeName -- the type to validate against\
+\9@return [boolean] isValid -- whether the value is valid\
 ]]\
-function XML.fromFile( filePath )\
-\9local h = fs.open( filePath, \"r\" )\
-\9if not h then\
-\9\9error( \"Failed to open XML file: \" .. filePath, 0 )\
-\9end\
+function Validator.isValid( value, typeName )\
+\9local validatorType = Validator.validatorType( typeName )\
+\9return validatorType( value ) ~= nil\
+end\
 \
-\9local text = h.readAll()\
-\9h.close()\
-\9return XML.fromText( text )\
+--[[\
+\9@instance\
+\9@desc Parse a value to the given type\
+\9@param value -- the value to parse\
+\9@param [string] typeName -- the type to parse to\
+\9@return parsedValue -- the parsed value\
+]]\
+function Validator.parse( value, typeName )\
+\9local validatorType = Validator.validatorType( typeName )\
+\9return validatorType( value )\
 end",["Container.lua"] = "\
 class \"Container\" extends \"View\" {\
 \9children = {};\
@@ -12546,8 +12361,11 @@ class \"File\" extends \"FileSystemItem\" implements \"IEditableFileSystemItem\"
 }\
 \
 function File.mt:__call( path, ... )\
-    if fs.exists( path ) and not fs.isDir( path ) then\
-        return self:new( true, path, ... )\
+    if fs.exists( path ) and not fs.isDir( path ) and not fs.isReadOnly( path ) then\
+        local name = fs.getName( path )\
+        if name ~= \".DS_Store\" and name ~= \".metadata\" then\
+            return self:new( true, path, ... )\
+        end\
     end\
     return false\
 end\
@@ -12646,84 +12464,295 @@ function AlertWindow:onReady( event )\
 \9self:centre()\
 \9self:focus()\
 \9self.okayButton:focus()\
-end",["Label.lua"] = "\
-class \"Label\" extends \"View\" {\
+end",["XML.lua"] = "\
+-- TODO: XML bug. backslashes in attributes don't work. A single \"\\\" results in: expected '\"' to close string. While \"\\\\\"\" results in two backslashes being the parsed text\
 \
-    text = false;\
-    isAutosizing = true;\
-    font = false;\
-    textObject = false;\
-    needsAutosize = false;\
-\9\
-}\
+local function fromXMLString( value )\
+\9value = string.gsub(value, \"&#x( [%x]+ )%;\",\
+\9\9function( h ) \
+\9\9\9return string.char( tonumber(h,16) )\
+\9\9end);\
+\9value = string.gsub(value, \"&#([0-9]+)%;\",\
+\9\9function( h )\
+\9\9\9return string.char( tonumber(h,10) )\
+\9\9end);\
+\9value = string.gsub (value, \"&quot;\", \"\\\"\");\
+\9value = string.gsub (value, \"&apos;\", \"'\");\
+\9value = string.gsub (value, \"&gt;\", \">\");\
+\9value = string.gsub (value, \"&lt;\", \"<\");\
+\9value = string.gsub (value, \"&amp;\", \"&\");\
+\9return value;\
+end\
+\
+local function lex( text )\
+\9local tokens = {}\
+\9local pos, line, char = 1, 1, 1\
+\9local function push( type, value )\
+\9\9tokens[#tokens + 1] = {\
+\9\9\9type = type;\
+\9\9\9value = value;\
+\9\9\9char = char;\
+\9\9\9line = line;\
+\9\9}\
+\9end\
+\9while pos <= #text do\
+\9\9local c = text:sub( pos, pos )\
+\9\9if c == \"\\n\" then\
+\9\9\9line = line + 1\
+\9\9\9char = 1\
+\9\9\9pos = pos + 1\
+\9\9elseif c:find \"%s\" then\
+\9\9\9pos = pos + #text:match( \"%s+\", pos )\
+\9\9elseif c == \"\\\"\" or c == \"'\" then\
+\9\9\9local e, f, l = false, false, line\
+\9\9\9for i = pos + 1, #text do\
+\9\9\9\9if e then\
+\9\9\9\9\9e = false\
+\9\9\9\9elseif text:sub( i, i ) == \"\\\\\" then\
+\9\9\9\9\9e = true\
+\9\9\9\9elseif text:sub( i, i ) == c then\
+\9\9\9\9\9push( \"string\", fromXMLString( text:sub( pos + 1, i - 1 ) ) )\
+\9\9\9\9\9pos = i + 1\
+\9\9\9\9\9f = true\
+\9\9\9\9\9break\
+\9\9\9\9elseif text:sub( i, i ) == \"\\n\" then\
+\9\9\9\9\9line = line + 1\
+\9\9\9\9end\
+\9\9\9end\
+\9\9\9if not f then\
+\9\9\9\9return false, \"[\" .. l .. \" (char:\" .. char .. \")]: expected '\" .. c .. \"' to close string\"\
+\9\9\9end\
+\9\9elseif c:find \"[a-zA-Z%-%._]\" then\
+\9\9\9local v = text:match( \"[a-zA-Z%d%-%._]+\", pos )\
+\9\9\9push( \"word\", v )\
+\9\9\9pos = pos + #v\
+\9\9elseif text:find( \"^#?%.?%d\", pos ) then\
+\9\9\9local v = text:match( \"^#?%d*%.?%d+%%?\", pos )\
+\9\9\9pos = pos + #v\
+\9\9\9local percentage = false\
+\9\9\9if v:sub( -1 ) == \"%\" then\
+\9\9\9\9v = v:sub( 1, -2 )\
+\9\9\9\9percentage = true\
+\9\9\9end\
+\9\9\9if v:sub( 1, 1 ) == \"#\" then\
+\9\9\9\9v = tonumber( v:sub( 2 ), 16 )\
+\9\9\9else\
+\9\9\9\9v = tonumber( v )\
+\9\9\9end\
+\9\9\9if percentage then\
+\9\9\9\9v = v / 100\
+\9\9\9end\
+\9\9\9push( \"number\", v )\
+\9\9elseif text:find( \"^<!%-%-.-%-%->\", pos ) then\
+\9\9\9pos = pos + #text:match( \"^<!%-%-.-%-%->\", pos )\
+\9\9else\
+\9\9\9push( \"symbol\", c )\
+\9\9\9pos = pos + 1\
+\9\9end\
+\9end\
+\9return tokens\
+end\
+\
+local parser = {}\
+function parser:new( tokens )\
+\9local t = setmetatable( {}, { __index = self } )\
+\9t.tokens = tokens\
+\9t.pos = 1\
+\9t.last = tokens[1]\
+\9t.exception = false\
+\9return t\
+end\
+\
+function parser:throw( message )\
+\9if self.last then\
+\9\9self.exception = \"[line \" .. self.last.line .. \", char \" .. self.last.char .. \"]: \" .. message\
+\9else\
+\9\9self.exception = \"[unknown]: \" .. message\
+\9end\
+\9return false, self.exception\
+end\
+\
+function parser:thrown()\
+\9return self.exception\
+end\
+\
+function parser:peek()\
+\9return self.tokens[self.pos]\
+end\
+\
+function parser:next()\
+\9self.pos = self.pos + 1\
+\9self.last = self.tokens[self.pos] or self.last\
+\9return self.tokens[self.pos]\
+end\
+\
+function parser:test( type, value )\
+\9local token = self:peek()\
+\9return token and token.type == type and ( not value or token.value == value )\
+end\
+\
+function parser:parseXMLInitialiser()\
+\9local closing = false\
+\
+\9if self:test( \"symbol\", \"/\" ) then\
+\9\9closing = true\
+\9\9self:next()\
+\9end\
+\
+\9if not self:test \"word\" then\
+\9\9return self:throw \"expected name of XML item\"\
+\9end\
+\
+\9local name = self:peek().value\
+\9self:next()\
+\
+\9if closing then\
+\9\9if self:test( \"symbol\", \">\" ) then\
+\9\9\9self:next()\
+\9\9else\
+\9\9\9return self:throw \"expected '>' to close closing tag\"\
+\9\9end\
+\9end\
+\
+\9return name, closing\
+end\
+\
+function parser:parseXMLAttributes()\
+\9local attributes = {}\
+\9while true do\
+\9\9if self:test \"word\" then\
+\9\9\9local name = self:peek().value\
+\9\9\9self:next()\
+\
+\9\9\9if self:test( \"symbol\", \"=\" ) or self:test( \"symbol\", \":\" ) then\
+\9\9\9\9local v = self:next()\
+\
+\9\9\9\9if v.type == \"number\" or v.type == \"string\" then\
+\9\9\9\9\9attributes[name] = v.value\
+\9\9\9\9elseif v.type == \"word\" then\
+\9\9\9\9\9local word = v.value\
+\9\9\9\9\9if word == \"true\" or word == \"false\" then\
+\9\9\9\9\9\9word = word == \"true\"\
+\9\9\9\9\9end\
+\9\9\9\9\9attributes[name] = word\
+\9\9\9\9else\
+\9\9\9\9\9return self:throw( \"unexpected \" .. v.type .. \" as attribute value\" )\
+\9\9\9\9end\
+\
+\9\9\9\9self:next()\
+\9\9\9else\
+\9\9\9\9attributes[name] = true\
+\9\9\9\9self:next()\
+\9\9\9end\
+\9\9elseif self:test( \"symbol\", \"/\" ) then\
+\9\9\9self:next()\
+\9\9\9if not self:test( \"symbol\", \">\" ) then\
+\9\9\9\9return self:throw \"expected '>' after '/' to close opening tag\"\
+\9\9\9end\
+\
+\9\9\9self:next()\
+\9\9\9return attributes, false\
+\9\9elseif self:test( \"symbol\", \">\" ) then\
+\9\9\9self:next()\
+\9\9\9return attributes, true\
+\9\9elseif not self:peek() then\
+\9\9\9return attributes, false\
+\9\9else\
+\9\9\9return self:throw( \"unexpected \" .. self:peek().type .. \" in attributes\" )\
+\9\9end\
+\9end\
+end\
+\
+function parser:parseXMLBody()\
+\9local blocks = {}\
+\
+\9while self:peek() do\
+\9\9while not self:test( \"symbol\", \"<\" ) do\
+\9\9\9self:next()\
+\9\9end\
+\
+\9\9self:next()\
+\9\9local type, isClosing = self:parseXMLInitialiser()\
+\9\9if self:thrown() then\
+\9\9\9return false, self.exception\
+\9\9end\
+\
+\9\9if isClosing then\
+\9\9\9return blocks, type\
+\9\9end\
+\
+\9\9local attributes, hasBody = self:parseXMLAttributes()\
+\9\9if self:thrown() then\
+\9\9\9return false, self.exception\
+\9\9end\
+\
+\9\9local body, closer\
+\9\9if hasBody then\
+\9\9\9body, closer = self:parseXMLBody()\
+\9\9\9if self:thrown() then\
+\9\9\9\9return false, self.exception\
+\9\9\9end\
+\9\9\9if not closer then\
+\9\9\9\9return self:throw( \"expected '</\" .. type .. \">' to close XML item, got nothing\" )\
+\9\9\9elseif closer ~= type then\
+\9\9\9\9return self:throw( \"expected '</\" .. type .. \">' to close XML item, got '</\" .. closer .. \">'\" )\
+\9\9\9end\
+\9\9end\
+\
+\9\9blocks[#blocks + 1] = {\
+\9\9\9type = type;\
+\9\9\9attributes = attributes;\
+\9\9\9body = body;\
+\9\9}\
+\9end\
+\
+\9return blocks\
+end\
+\
+class \"XML\" {}\
 \
 --[[\
-    @instance\
-    @desc Sets up the canvas and it's graphics objects\
+\9@static\
+\9@desc Loads XML from source text\
+\9@param [string] xmlText -- the XML text to parse\
+\9@return [table] xmlNodes -- the parsed XML nodes\
+\9on error:\
+\9@return false\
+\9@return [string] error -- the error message\
 ]]\
-function Label:initialiseCanvas()\
-    self.super:initialiseCanvas()\
-    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas\
-    local textObject = canvas:insert( Text( 1, 1, width, height, self.text ) )\
+function XML.fromText( xmlText )\
+\9local tokens, err = lex( xmlText )\
+\9if not tokens then\
+\9\9return false, err\
+\9end\
 \
-    theme:connect( textObject, \"textColour\" )\
-    theme:connect( canvas, \"fillColour\" )\
-    self.textObject = textObject\
+\9local p = parser:new( tokens )\
+\9local blocks, data = p:parseXMLBody()\
 \
-    if not self.font then\
-        self.font = Font.systemFont\
-    end\
-end\
-\
-function Label:updateThemeStyle()\
-    self.theme.style = self.isEnabled and \"default\" or \"disabled\"\
-end\
-\
-function Label:setFont( font )\
-    self.font = font\
-    local textObject = self.textObject\
-    if textObject then\
-        self.textObject.font = font\
-        self.needsAutosize = true\
-    end\
-end\
-\
-function Label:updateWidth( width )\
-    self.textObject.width = width\
-end\
-\
-function Label:setText( text )\
-    self.text = text\
-    self.textObject.text = text\
-    self.needsAutosize = true\
-end\
-\
-function Label:setIsEnabled( isEnabled )\
-    self.isEnabled = isEnabled\
-    self:updateThemeStyle()\
-end\
-\
-function Label:update( deltaTime )\
-    self.super:update( deltaTime )\
-    if self.needsAutosize then\
-        self:autosize()\
-    end\
+\9if not blocks then\
+\9\9return false, data\
+\9end\
+\9if data then -- if they put a </*> in the main body\
+\9\9return p:throw( \"unexpected '</\" .. data .. \">' in main body\" )\
+\9end\
+\9return blocks\
 end\
 \
 --[[\
-    @instance\
-    @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text\
+\9@static\
+\9@desc Loads an XML file\
+\9@param [string] filePath -- the path to the XML file\
+\9@return [table] xmlNodes -- the parsed XML nodes\
 ]]\
-function Label:autosize()\
-    -- TODO: support self.isAutosizing\
-    local font, text = self.font, self.text\
+function XML.fromFile( filePath )\
+\9local h = fs.open( filePath, \"r\" )\
+\9if not h then\
+\9\9error( \"Failed to open XML file: \" .. filePath, 0 )\
+\9end\
 \
-    if font and text then\
-        local fontWidth = font:getWidth( text )\
-        self.width = fontWidth\
-        self.height = font.height\
-    end\
-    self.needsAutosize = false\
+\9local text = h.readAll()\
+\9h.close()\
+\9return XML.fromText( text )\
 end",["RoundedRectangle.lua"] = "\
 -- draws a corner with the given radius for the corner given\
 local function corner( fill, width, height, radius, position ) -- position is a byte. first bit is 0 if top, second bit is 0 if left\
@@ -12909,7 +12938,85 @@ function RoundedRectangle:getFill()\
 \9self.fill = fill\
 \9return fill\
 end",["IToolbarItem.lua"] = "\
-interface \"IToolbarItem\" {}",["ListItem.lua"] = "\
+interface \"IToolbarItem\" {}",["Label.lua"] = "\
+class \"Label\" extends \"View\" {\
+\
+    text = false;\
+    isAutosizing = true;\
+    font = false;\
+    textObject = false;\
+    needsAutosize = false;\
+\9\
+}\
+\
+--[[\
+    @instance\
+    @desc Sets up the canvas and it's graphics objects\
+]]\
+function Label:initialiseCanvas()\
+    self.super:initialiseCanvas()\
+    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas\
+    local textObject = canvas:insert( Text( 1, 1, width, height, self.text ) )\
+\
+    theme:connect( textObject, \"textColour\" )\
+    theme:connect( canvas, \"fillColour\" )\
+    self.textObject = textObject\
+\
+    if not self.font then\
+        self.font = Font.systemFont\
+    end\
+end\
+\
+function Label:updateThemeStyle()\
+    self.theme.style = self.isEnabled and \"default\" or \"disabled\"\
+end\
+\
+function Label:setFont( font )\
+    self.font = font\
+    local textObject = self.textObject\
+    if textObject then\
+        self.textObject.font = font\
+        self.needsAutosize = true\
+    end\
+end\
+\
+function Label:updateWidth( width )\
+    self.textObject.width = width\
+end\
+\
+function Label:setText( text )\
+    self.text = text\
+    self.textObject.text = text\
+    self.needsAutosize = true\
+end\
+\
+function Label:setIsEnabled( isEnabled )\
+    self.isEnabled = isEnabled\
+    self:updateThemeStyle()\
+end\
+\
+function Label:update( deltaTime )\
+    self.super:update( deltaTime )\
+    if self.needsAutosize then\
+        self:autosize()\
+    end\
+end\
+\
+--[[\
+    @instance\
+    @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text\
+]]\
+function Label:autosize()\
+    -- TODO: support self.isAutosizing\
+    local font, text = self.font, self.text\
+\
+    if font and text then\
+        local fontWidth = font:getWidth( text )\
+        self.width = fontWidth\
+        self.height = font.height\
+    end\
+    self.needsAutosize = false\
+end",["ListItem.lua"] = "\
 local SIDE_MARGIN = 7\
 local TOP_BOTTOM_PADDING = 2\
 \
@@ -12995,10 +13102,6 @@ function ListItem:onMouseDown( event )\
         self.isSelected = not self.isSelected\
     end\
     return true\
-end",["ClipboardData.lua"] = "\
-class \"ClipboardData\" {}\
-\
-function ClipboardData:initialise()\
 end",["ScrollView.lua"] = "-- TODO: scrolling quickly then the opposite way reverses speed (not stops it)\
 \
 \
@@ -13300,7 +13403,7 @@ local function split(a,e)\
     return e\
 end\
 \
-local imageMimes = { \"image/paint\" }\
+local IMAGE_MIMES = { \"image/paint\" }\
 \
 class \"Image\" {\
     \
@@ -13343,7 +13446,7 @@ end\
 \
 function Image.fromName( name )\
     log(\"name \"..name)\
-    local resource = Resource( name, imageMimes )\
+    local resource = Resource( name, IMAGE_MIMES )\
     if resource then\
         return Image.fromResource( resource )\
     end\
@@ -13577,7 +13680,7 @@ function Application.load( path )\
 \9local function loadDir( _path )\
 \9\9local list = fs.list( _path )\
 \9\9for i, v in ipairs( list ) do\
-\9\9\9if v ~= '.DS_Store' then\
+\9\9\9if v ~= \".DS_Store\" and v ~= \".metadata\" then\
 \9\9\9\9local fpath = _path .. '/' .. v\
 \9\9\9\9if fs.isDir( fpath ) then\
 \9\9\9\9\9loadDir( fpath )\

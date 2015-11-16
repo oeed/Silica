@@ -28,7 +28,7 @@ local function split(a,e)
     return e
 end
 
-local imageMimes = { "image/paint" }
+local IMAGE_MIMES = { "image/paint" }
 
 class "Image" {
     
@@ -71,7 +71,7 @@ end
 
 function Image.fromName( name )
     log("name "..name)
-    local resource = Resource( name, imageMimes )
+    local resource = Resource( name, IMAGE_MIMES )
     if resource then
         return Image.fromResource( resource )
     end

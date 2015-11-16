@@ -1,5 +1,7 @@
 
 local function tidy( path )
+    if type(path)~="string" then logtraceback() end
+    path = "/" .. path
     return path
         :gsub( "/.-/%.%./", "/" )
         :gsub( "^.-/%.%./", "" )
@@ -7,7 +9,7 @@ local function tidy( path )
         :gsub( "^%.%./", "" )
         :gsub( "^%.%.$", "" )
         :gsub( "//+", "/" )
-        :gsub( "^[^/]", "/" )
+        -- :gsub( "^[^/]", "/" )
         :gsub( "/$", "" )
 end
 
@@ -23,8 +25,11 @@ class "Folder" extends "FileSystemItem" {
 }
 
 function Folder.mt:__call( path, ... )
-    if fs.exists( path ) and fs.isDir( path ) then
-        return self:new( true, path, ... )
+    if fs.exists( path ) and fs.isDir( path ) and not fs.isReadOnly( path ) then
+        local name = fs.getName( path )
+        if name ~= ".DS_Store" and name ~= ".metadata" then
+            return self:new( true, path, ... )
+        end
     end
     return false
 end
@@ -47,8 +52,8 @@ function Folder:serialise( flatten, metadataProperties )
 
     local path = self.path
     for i, name in ipairs( fs.list( path ) ) do
-        if name ~= ".DS_Store" and name ~= ".metadata" then
-            local item = FileSystemItem( path .. "/" .. name, self )
+        local item = FileSystemItem( path .. "/" .. name, self )
+        if item then
             local itemName = item.name
             local isFolder = item:typeOf( Folder )
             if not isFolder or not flatten then
@@ -143,7 +148,7 @@ function Folder:find( name, mimes, noSubfolders ) -- find a FileSystemItem with 
     end
 
     for i, folder in ipairs( folders ) do
-        local found = folder:find( name, mime )
+        local found = folder:find( name, mimes )
         if found then
             return found
         end
@@ -170,7 +175,9 @@ function Folder:getFs()
     for i, name in ipairs( resolveFunctions ) do
         local func = fs[name]
         _fs[name] = function ( path, ... )
-            func( resolve( path ), ... )
+            log("func "..name.." : "..tostring(path))
+            path = path and resolve( path ) or path
+            return func( path, ... )
         end
     end
 
@@ -178,13 +185,13 @@ function Folder:getFs()
     for i, name in ipairs( doubleResolveFunctions ) do
         local func = fs[name]
         _fs[name] = function ( fromPath, toPath, ... )
-            func( resolve( fromPath ), resolve( toPath ), ... )
+            return func( resolve( fromPath ), resolve( toPath ), ... )
         end
     end
 
-    function _fs.combine( partial, path, ... )
-        return fs.combine( partial, resolve( path), ... )
-    end
+    -- function _fs.combine( partial, path, ... )
+    --     return fs.combine( partial, resolve( path), ... )
+    -- end
 
     self.raw.fs = _fs
     return _fs

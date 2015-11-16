@@ -98,7 +98,7 @@ function Application.load( path )
 	local function loadDir( _path )
 		local list = fs.list( _path )
 		for i, v in ipairs( list ) do
-			if v ~= '.DS_Store' then
+			if v ~= ".DS_Store" and v ~= ".metadata" then
 				local fpath = _path .. '/' .. v
 				if fs.isDir( fpath ) then
 					loadDir( fpath )

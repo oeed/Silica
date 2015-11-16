@@ -416,7 +416,7 @@ function class:new( shouldCallUnchangedSetters, ... )
 		end
 	end
 
-	local proxyId = tostring( proxy):sub( 8 ) -- remove 'table: ' from the id
+	local proxyId = tostring( proxy ):sub( 8 ) -- remove 'table: ' from the id
 	function proxy.mt:__tostring()
 		local identifier = definedProperties['identifier'] and proxy.identifier
 		return "instance of `" .. _class.className .. "`" .. (identifier and " ('" .. identifier .. "')" or "") .. ": " .. proxyId
