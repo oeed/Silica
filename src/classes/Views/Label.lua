@@ -14,7 +14,7 @@ class "Label" extends "View" {
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Label:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
     local textObject = canvas:insert( Text( 1, 1, width, height, self.text ) )
 
@@ -31,7 +31,7 @@ function Label:updateThemeStyle()
     self.theme.style = self.isEnabled and "default" or "disabled"
 end
 
-function Label:setFont( font )
+function Label.font:set( font )
     self.font = font
     local textObject = self.textObject
     if textObject then
@@ -44,19 +44,19 @@ function Label:updateWidth( width )
     self.textObject.width = width
 end
 
-function Label:setText( text )
+function Label.text:set( text )
     self.text = text
     self.textObject.text = text
     self.needsAutosize = true
 end
 
-function Label:setIsEnabled( isEnabled )
+function Label.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self:updateThemeStyle()
 end
 
 function Label:update( deltaTime )
-    self.super:update( deltaTime )
+    self:super( deltaTime )
     if self.needsAutosize then
         self:autosize()
     end

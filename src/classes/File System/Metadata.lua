@@ -95,7 +95,7 @@ class "Metadata" {
     modifiedTimestamp = DEFAULT_TIMESTAMP;
     icon = false; -- by default, if this is empty it will get the default system icon for it. it allows for custom icons
 
-    mimes = EXTENSION_MIMES;
+    mimes = Enum( String, EXTENSION_MIMES );
 
 }
 
@@ -161,7 +161,7 @@ function Metadata:serialise( allowedProperties )
 end
 
 -- TODO: do function aliases work?
--- Metadata:alias( "serialise", "serialize" )
+Metadata:alias( Metadata.serialise, "serialize" )
 
 -- create metadata for the file based on it's content
 function Metadata:create()
@@ -233,17 +233,17 @@ function Metadata:updateModifiedTimestamp()
     self.modifiedTimestamp = os.time()
 end
 
-function Metadata:setCreatedTimestamp( createdTimestamp )
+function Metadata.createdTimestamp:set( createdTimestamp )
     self.createdTimestamp = createdTimestamp
     self:save()
 end
 
-function Metadata:setOpenedTimestamp( openedTimestamp )
+function Metadata.openedTimestamp:set( openedTimestamp )
     self.openedTimestamp = openedTimestamp
     self:save()
 end
 
-function Metadata:setModifiedTimestamp( modifiedTimestamp )
+function Metadata.modifiedTimestamp:set( modifiedTimestamp )
     self.modifiedTimestamp = modifiedTimestamp
     self:save()
 end

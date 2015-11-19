@@ -32,7 +32,7 @@ end
 	@param [string] keys -- the shortcut string
 	@return [KeyboardShortcut] keyboardShortcut -- the keyboard shortcut
 ]]
-function KeyboardShortcut.fromString( str )
+function KeyboardShortcut.static:fromString( str )
 	local parts = String( str ):split( " " )
 	local keys = {}
 

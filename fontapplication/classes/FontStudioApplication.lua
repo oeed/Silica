@@ -11,7 +11,7 @@ class "FontStudioApplication" extends "Application" {
 	@desc Initialise the custom application
 ]]
 function FontStudioApplication:initialise()
-	self.super:initialise()
+	self:super()
 	self:event( CharacterEvent, self.onChar )
 end
 

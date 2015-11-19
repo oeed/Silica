@@ -1,7 +1,7 @@
 
 class "Graphics" {
 	
-	colours = { -- @enum [Graphics.colours]
+	colours = Enum( Number, {
 		TRANSPARENT = 0;
 		WHITE = colours.white;
 		ORANGE = colours.orange;
@@ -23,6 +23,9 @@ class "Graphics" {
 		-- For those who can't spell.
 		GRAY = colours.grey;
 		LIGHT_GRAY = colours.lightGrey;
-	};
+	} );
 
 }
+
+-- TODO: alias
+-- Graphics:alias( Graphics.colours, "colors" )

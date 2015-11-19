@@ -46,7 +46,7 @@ class "Exception" {
     @desc Registers an Exception subclass to a exception type
     @param [class] _class -- the class that was constructed
 ]]
-function Exception.register( exceptionType, subclass )
+function Exception.static:register( exceptionType, subclass )
     exceptionClasses[exceptionType] = subclass
 end
 
@@ -55,7 +55,7 @@ end
     @desc Registers an Exception subclass after it has just been constructed
     @param [class] _class -- the class that was constructed
 ]]
-function Exception.constructed( _class )
+function Exception.static:constructed( _class )
     if _class.exceptionType then
         Exception.register( _class.exceptionType, _class )
     end

@@ -15,9 +15,9 @@ class "Radio" extends "View" {
     @desc Creates a button object and connects the event handlers
 ]]
 function Radio:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
     self:event( MouseDownEvent, self.onMouseDown )
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
     end
 
 --[[
@@ -25,7 +25,7 @@ function Radio:initialise( ... )
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Radio:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
     self.theme:connect( backgroundObject, "fillColour" )
     self.theme:connect( backgroundObject, "outlineColour" )
@@ -46,7 +46,7 @@ end
     @desc Sets the checked state of the radio button. Sets all other sibling (in the same container) radios to false if being set to true
     @param [boolean] isChecked -- the new checked state
 ]]
-function Radio:setIsChecked( isChecked )
+function Radio.isChecked:set( isChecked )
     self.isChecked = isChecked
     if isChecked then
         for i, sibling in ipairs( self:siblingsOfType( Radio ) ) do
@@ -62,7 +62,7 @@ function Radio:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or (self.isChecked and "checked" or "default" ) ) or ( self.isChecked and "disabledChecked" or "disabled" )
 end
 
-function Radio:setIsEnabled( isEnabled )
+function Radio.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self:updateThemeStyle()
 end
@@ -71,7 +71,7 @@ end
     @instance
     @desc Sets whether the button is pressed, changing the drawing state
 ]]
-function Radio:setIsPressed( isPressed )
+function Radio.isPressed:set( isPressed )
     self.isPressed = isPressed
     self:updateThemeStyle()
 end

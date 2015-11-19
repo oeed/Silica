@@ -4,7 +4,7 @@ class "Shader" extends "GraphicsObject" {
 }
 
 function Shader:initialise( x, y, width, height, shader )
-	self.super:initialise( x, y, width, height )
+	self:super( x, y, width, height )
 	self.shader = shader
 end
 --[[

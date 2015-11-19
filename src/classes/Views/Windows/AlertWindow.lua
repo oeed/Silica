@@ -5,7 +5,7 @@ class "AlertWindow" extends "Window" {
 }
 
 function AlertWindow:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
 
 	self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
 	self:event( ReadyInterfaceEvent, self.onReady )

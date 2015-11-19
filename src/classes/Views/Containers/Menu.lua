@@ -21,6 +21,7 @@ class "Menu" extends "Container" {
 	shadowTopMargin = 2;
 
     cornerRadius = 4;
+    isOpen = Boolean;
 
     shadowObject = false;
     backgroundObject = false;
@@ -37,9 +38,9 @@ class "Menu" extends "Container" {
 	@param [table] properties -- the properties for the view
 ]]
 function Menu:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
 
-    self.event:connectGlobal( MouseDownEvent, self.onGlobalMouseDown, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseDownEvent, self.onGlobalMouseDown, Event.phases.BEFORE )
 end
 
 --[[
@@ -47,7 +48,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Menu:initialiseCanvas()
-	self.super:initialiseCanvas()
+	self:super()
     local cornerRadius = self.cornerRadius
     local shadowObject = self.canvas:insert( RoundedRectangle( 1 + self.shadowRightMargin, 1 + self.shadowTopMargin, self.width - 1, self.height - 2 ) )
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 2 ) )
@@ -122,13 +123,13 @@ function Menu:updateLayout()
 end
 
 function Menu:update( deltaTime )
-    self.super:update( deltaTime )
+    self:super( deltaTime )
     if self.needsLayoutUpdate then
         self:updateLayout()
     end
 end
 
-function Menu:setIsVisible( isVisible )
+function Menu.isVisible:set( isVisible )
 	self.super:setIsVisible( isVisible )
 	if isVisible then
 		self.needsLayoutUpdate = true
@@ -136,12 +137,12 @@ function Menu:setIsVisible( isVisible )
 end
 
 function Menu:insert( ... )
-	self.super:insert( ... )
+	self:super( ... )
 	self.needsLayoutUpdate = true
 end
 
 function Menu:removeChild( ... )
-	self.super:removeChild( ... )
+	self:super( ... )
 	self.needsLayoutUpdate = true
 end
 
@@ -169,7 +170,7 @@ end
 	@desc Sets the open state of the menu
 	@param [boolean] isOpen -- whether the menu should be open
 ]]
-function Menu:setIsOpen( isOpen )
+function Menu.isOpen:set( isOpen )
 	if isOpen then
 		self:open()
 	else
@@ -180,9 +181,8 @@ end
 --[[
 	@instance
 	@desc The open state of the menu
-	@return [boolean] isOpen -- whether the menu is open
 ]]
-function Menu:getIsOpen( isOpen )
+function Menu.isOpen:get()
 	return self.isVisible
 end
 

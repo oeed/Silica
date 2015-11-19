@@ -1,4 +1,4 @@
 
 class "KeyUpEvent" extends "KeyEvent" {
-	eventType = KeyUpEvent;
+	eventType = "key_up";
 }

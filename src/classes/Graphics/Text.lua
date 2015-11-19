@@ -7,7 +7,7 @@ class "Text" extends "GraphicsObject" {
 }
 
 function Text:initialise( x, y, width, height, text, alignment, font )
-	self.super:initialise( x, y, width, height )
+	self:super( x, y, width, height )
 	self.text = text or ""
 	self.font = font or Font.systemFont
 	self.alignment = alignment or Font.alignments.LEFT
@@ -18,7 +18,7 @@ end
 	@desc Sets the font of the text object
 	@param [number] font -- the font of the text object
 ]]
-function Text:setFont( font )
+function Text.font:set( font )
 	self.hasChanged = true
 	self.font = font
 end
@@ -28,7 +28,7 @@ end
 	@desc Sets the text of the text object
 	@param [number] text -- the text of the text object
 ]]
-function Text:setText( text )
+function Text.text:set( text )
 	self.hasChanged = true
 	self.text = text or ""
 end

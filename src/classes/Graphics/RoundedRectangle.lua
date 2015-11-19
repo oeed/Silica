@@ -25,10 +25,11 @@ end
 
 class "RoundedRectangle" extends "GraphicsObject" {
 	fillColour = Graphics.colours.RED;
-
 	radius = false;
 	leftRadius = false;
 	rightRadius = false;
+	topRadius = false;
+	bottomRadius = false;
 	topLeftRadius = 1;
 	topRightRadius = 1;
 	bottomLeftRadius = 1;
@@ -48,7 +49,7 @@ class "RoundedRectangle" extends "GraphicsObject" {
 	@param [number] bottomRightRadius -- the radius of the bottom right corner
 ]]
 function RoundedRectangle:initialise( x, y, width, height, fillColour, outlineColour, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius )
-	self.super:initialise( x, y, width, height )
+	self:super( x, y, width, height )
 	self.fillColour = fillColour or Graphics.colours.TRANSPARENT
 	self.outlineColour = outlineColour or Graphics.colours.TRANSPARENT
 	topLeftRadius = topLeftRadius or 0
@@ -64,74 +65,74 @@ end
 	@param [number] radius -- the new radius
 	@return [type] returnedValue -- description
 ]]
-function RoundedRectangle:setRadius( radius )
+function RoundedRectangle.radius:set( radius )
 	self.topLeftRadius = radius
 	self.topRightRadius = radius
 	self.bottomLeftRadius = radius
 	self.bottomRightRadius = radius
 end
 
-function RoundedRectangle:setTopLeftRadius( radius )
-	if radius then self.topLeftRadius = math.floor( radius ) end
+function RoundedRectangle.topLeftRadius:set( topLeftRadius )
+	if topLeftRadius then self.topLeftRadius = math.floor( topLeftRadius ) end
 end
 
-function RoundedRectangle:setTopRightRadius( radius )
-	if radius then self.topRightRadius = math.floor( radius ) end
+function RoundedRectangle.topRightRadius:set( topRightRadius )
+	if topRightRadius then self.topRightRadius = math.floor( topRightRadius ) end
 end
 
-function RoundedRectangle:setBottomLeftRadius( radius )
-	if radius then self.bottomLeftRadius = math.floor( radius ) end
+function RoundedRectangle.bottomLeftRadius:set( bottomLeftRadius )
+	if bottomLeftRadius then self.bottomLeftRadius = math.floor( bottomLeftRadius ) end
 end
 
-function RoundedRectangle:setBottomRightRadius( radius )
-	if radius then self.bottomRightRadius = math.floor( radius ) end
+function RoundedRectangle.bottomRightRadius:set( bottomRightRadius )
+	if bottomRightRadius then self.bottomRightRadius = math.floor( bottomRightRadius ) end
 end
 
-function RoundedRectangle:setLeftRadius( radius )
-	if radius then
-		self.bottomLeftRadius = math.floor( radius )
-		self.topLeftRadius = math.floor( radius )
+function RoundedRectangle.leftRadius:set( leftRadius )
+	if leftRadius then
+		self.bottomLeftRadius = math.floor( leftRadius )
+		self.topLeftRadius = math.floor( leftRadius )
 	end
 end
 
-function RoundedRectangle:setRightRadius( radius )
-	if radius then
-		self.bottomRightRadius = math.floor( radius )
-		self.topRightRadius = math.floor( radius )
+function RoundedRectangle.rightRadius:set( rightRadius )
+	if rightRadius then
+		self.bottomRightRadius = math.floor( rightRadius )
+		self.topRightRadius = math.floor( rightRadius )
 	end
 end
 
-function RoundedRectangle:setTopRadius( radius )
-	if radius then
-		self.topLeftRadius = math.floor( radius )
-		self.topRightRadius = math.floor( radius )
+function RoundedRectangle.topRadius:set( topRadius )
+	if topRadius then
+		self.topLeftRadius = math.floor( topRadius )
+		self.topRightRadius = math.floor( topRadius )
 	end
 end
 
-function RoundedRectangle:setBottomRadius( radius )
-	if radius then
-		self.bottomLeftRadius = math.floor( radius )
-		self.bottomRightRadius = math.floor( radius )
+function RoundedRectangle.bottomRadius:set( bottomRadius )
+	if bottomRadius then
+		self.bottomLeftRadius = math.floor( bottomRadius )
+		self.bottomRightRadius = math.floor( bottomRadius )
 	end
 end
 
-function RoundedRectangle:getRadius( radius )
+function RoundedRectangle.radius:get()
 	return math.max( self.topLeftRadius, self.topRightRadius, self.bottomLeftRadius, self.bottomRightRadius )
 end
 
-function RoundedRectangle:getLeftRadius( radius )
+function RoundedRectangle.leftRadius:get()
 	return math.max( self.topLeftRadius, self.bottomLeftRadius )
 end
 
-function RoundedRectangle:getRightRadius( radius )
+function RoundedRectangle.rightRadius:get()
 	return math.max( self.topRightRadius, self.bottomRightRadius )
 end
 
-function RoundedRectangle:getTopRadius( radius )
+function RoundedRectangle.topRadius:get()
 	return math.max( self.topLeftRadius, self.topRightRadius )
 end
 
-function RoundedRectangle:getBottomRadius( radius )
+function RoundedRectangle.bottomRadius:get()
 	return math.max( self.bottomLeftRadius, self.bottomRightRadius )
 end
 
@@ -141,7 +142,7 @@ end
     @desc Gets the pixels to be filled
     @return [table] fill -- the pixels to fill
 ]]
-function RoundedRectangle:getFill()
+function RoundedRectangle.fill:get()
 	if self.fill then return self.fill end
 	local fill = {}
 

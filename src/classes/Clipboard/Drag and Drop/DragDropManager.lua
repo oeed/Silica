@@ -14,11 +14,11 @@ class "DragDropManager" {
     sourceViews = false;
     completion = false;
 
-    dropStyles = {
+    dropStyles = Enum( Number, {
         DISAPPEAR = 0;
         SHRINK = 1;
         RETURN = 2;
-    }
+    } )
 
 }
 
@@ -95,7 +95,7 @@ function DragDropManager:start( views, data, relativeX, relativeY, hideSource, c
     self.completion = completion or false
     self.sourceViews = views
 
-    dragView:animate( "shadowSize", MAX_SHADOW_SIZE, 0.2, nil, Animation.easing.IN_SINE )
+    dragView:animate( "shadowSize", MAX_SHADOW_SIZE, 0.2, nil, Animation.easings.IN_SINE )
 end
 
 --[[
@@ -106,7 +106,7 @@ end
 function DragDropManager:cancel()
     local dragView = self.dragView
     if dragView then
-        local time, easing = 0.7, Animation.easing.OUT_SINE
+        local time, easing = 0.7, Animation.easings.OUT_SINE
         local didHideSource, completion = self.didHideSource, self.completion
 
         local sourceViews = self.sourceViews
@@ -137,7 +137,7 @@ end
     @desc Sets the destination, informing the new and old destinations if they've changed
     @param [IDragDropDestination] destination
 ]]
-function DragDropManager:setDestination( destination )
+function DragDropManager.destination:set( destination )
     local oldDestination = self.destination
     if oldDestination ~= destination then
         if oldDestination then
@@ -198,7 +198,7 @@ function DragDropManager:onMouseUp( event )
                 if completion then completion( destination ) end
             end
             if dropStyle == dropStyles.SHRINK then
-                local time, easing = 0.5, Animation.easing.OUT_SINE
+                local time, easing = 0.5, Animation.easings.OUT_SINE
                 local x, y, width, height = dragView.x, dragView.y, dragView.width, dragView.height
                 dragView:animateWidth( 1, time, done, easing )
                 dragView:animateHeight( 1, time, nil, easing )
@@ -206,7 +206,7 @@ function DragDropManager:onMouseUp( event )
                 dragView:animateY( math.ceil( y + self.relativeY - 1), time, nil, easing )
                 dragView.shadowObject.isVisible = false
             elseif dropStyle == dropStyles.RETURN then
-                local time, easing = 0.5, Animation.easing.OUT_SINE
+                local time, easing = 0.5, Animation.easings.OUT_SINE
                 local originalX, originalY = self.owner.container.width, self.owner.container.height
                 for i, view in ipairs( self.sourceViews ) do
                     local viewX, viewY = view:position()

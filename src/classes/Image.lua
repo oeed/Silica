@@ -42,7 +42,7 @@ class "Image" {
 
 }
 
-function Image.blank( width, height )
+function Image.static:blank( width, height )
     local image = Image()
     image.width = width
     image.height = height
@@ -59,7 +59,7 @@ function Image.blank( width, height )
     return image
 end
 
-function Image.fromPath( path )
+function Image.static:fromPath( path )
     local file = File( path )
     if file then
         local image = Image()
@@ -69,7 +69,7 @@ function Image.fromPath( path )
     end
 end
 
-function Image.fromName( name )
+function Image.static:fromName( name )
     log("name "..name)
     local resource = Resource( name, IMAGE_MIMES )
     if resource then
@@ -77,14 +77,14 @@ function Image.fromName( name )
     end
 end
 
-function Image.fromResource( resource )
+function Image.static:fromResource( resource )
     local image = Image()
     image.contents = resource.contents
     image:loadPaintFormat()
     return image
 end
 
-function Image.fromPixels( pixels, width, height )
+function Image.static:fromPixels( pixels, width, height )
     local image = Image()
     image.width = width
     image.height = height
@@ -139,7 +139,7 @@ function Image:toPaintFormat()
     return paintFormat
 end
 
-function Image:setPixels( pixels )
+function Image.pixels:set( pixels )
     self.pixels = pixels
     self.scaledCache = {
         [self.width .. ":" .. self.height] = pixels;

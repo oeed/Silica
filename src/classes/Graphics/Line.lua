@@ -15,7 +15,7 @@ class "Line" extends "GraphicsObject" {
 	@param [number] isFromTopLeft -- whether the line is from the top left to bottom right
 ]]
 function Line:initialise( x, y, width, height, isFromTopLeft )
-	self.super:initialise( x, y, width, height )
+	self:super( x, y, width, height )
 	self.isFromTopLeft = isFromTopLeft ~= nil and isFromTopLeft or true
 end
 
@@ -24,7 +24,7 @@ end
     @desc Gets the pixes to be filled
     @return [table] fill -- the pixels to fill
 ]]
-function Line:getFill()
+function Line.fill:get()
 	-- TODO: why was this commented out?
 	if self.fill then return self.fill end
 

@@ -13,15 +13,15 @@ class "WindowButton" extends "View" {
     @desc Creates a button object and connects the event handlers
 ]]
 function WindowButton:initialise( ... )
-    self.super:initialise( ... )
+    self:super( ... )
     
     self:event( MouseDownEvent, self.onMouseDown )
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
     if self.onMouseUp then self:event( MouseUpEvent, self.onMouseUp ) end
 end
 
 function WindowButton:initialiseCanvas()
-	self.super:initialiseCanvas()
+	self:super()
 
     local backgroundObject = self.canvas:insert( Circle( 3, 2, 5, 5 ) )
     self.theme:connect( backgroundObject, "fillColour" )
@@ -39,12 +39,12 @@ function WindowButton:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
 end
 
-function WindowButton:setIsEnabled( isEnabled )
+function WindowButton.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self:updateThemeStyle()
 end
 
-function WindowButton:setIsPressed( isPressed )
+function WindowButton.isPressed:set( isPressed )
     self.isPressed = isPressed
     self:updateThemeStyle()
 end

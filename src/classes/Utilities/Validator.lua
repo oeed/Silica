@@ -8,7 +8,7 @@ class "Validator" {}
 	@param [string] typeName -- the type to validate against
 	@return [Validator.validatorType] validatorType -- the table of valid values
 ]]
-function Validator.validatorType( typeName )
+function Validator.static:validatorType( typeName )
 	-- TODO: make validator types dynamic
 	if typeName == "Graphics.colours" then
 		return function( k ) return Graphics.colours[k] end
@@ -28,7 +28,7 @@ end
 	@param [string] typeName -- the type to validate against
 	@return [boolean] isValid -- whether the value is valid
 ]]
-function Validator.isValid( value, typeName )
+function Validator.static:isValid( value, typeName )
 	local validatorType = Validator.validatorType( typeName )
 	return validatorType( value ) ~= nil
 end
@@ -40,7 +40,7 @@ end
 	@param [string] typeName -- the type to parse to
 	@return parsedValue -- the parsed value
 ]]
-function Validator.parse( value, typeName )
+function Validator.static:parse( value, typeName )
 	local validatorType = Validator.validatorType( typeName )
 	return validatorType( value )
 end

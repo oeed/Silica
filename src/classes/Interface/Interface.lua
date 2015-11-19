@@ -32,7 +32,7 @@ function Interface:initialise( interfaceName, extend )
 	local resource = Resource( interfaceName, Metadata.mimes.SINTERFACE, "interfaces" )
 	local contents = resource.contents
 	if contents then
-		local nodes, err = XML.fromText( contents )
+		local nodes, err = XML.static:fromText( contents )
 		if not err and #nodes ~= 1 then err = "Interfaces must only have 1 root element." end
 		if not nodes or err then
 			error( "Interface XML invaid: " .. interfaceName .. ".sinterface. Error: " .. tostring( err ), 0 )
@@ -65,13 +65,13 @@ end
 	@desc Returns and generates if needed a container from the interface.
 	@return [Container] container -- the container
 ]]
-function Interface:getContainer()
+function Interface.container:get()
 	local container = self.container
 	if container then return container end
 
 	local containerProperties = self.containerProperties
 	local containerClass = self.containerClass
-	container = containerClass:new( false, containerProperties )
+	container = containerClass.spawn( false, containerProperties )
 	container.interfaceProperties = containerProperties
 	if not container then
 		error( "Interface XML invaid: " .. self.name .. ".sinterface. Error: Failed to initialise Container class: " .. tostring( self.class ) .. ". Identifier: " .. tostring( properties.identifier ), 0 )
@@ -96,7 +96,7 @@ end
 	@desc Creates a table of children from the interface file
 	@return [table] children -- the table of child views
 ]]
-function Interface:getChildren()
+function Interface.children:get()
 	local children = self.children
 	if children then return children end
 	local function insertTo( childNode, parentContainer )

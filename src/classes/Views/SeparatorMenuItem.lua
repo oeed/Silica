@@ -27,7 +27,7 @@ function SeparatorMenuItem:initialiseCanvas()
     self.backgroundObject = self.canvas:insert( Separator( 5, 2, self.width - 8, 1 ) )
 end
 
-function SeparatorMenuItem:setIsPressed( isPressed )
+function SeparatorMenuItem.isPressed:set( isPressed )
     self.isPressed = false
 end
 

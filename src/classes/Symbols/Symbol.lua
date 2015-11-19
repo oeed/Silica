@@ -10,7 +10,7 @@ class "Symbol" {
 
 local symbolClasses = {}
 
-function Symbol.register( symbolName, subclass )
+function Symbol.static:register( symbolName, subclass )
     if not symbolName then
         error( "Symbol subclass '" .. tostring( subclass ) .. "' does not have a symbolName.", 0 )
     end
@@ -22,13 +22,13 @@ function Symbol.register( symbolName, subclass )
     symbolClasses[symbolName] = subclass
 end
 
-function Symbol.constructed( _class )
+function Symbol.static:constructed( _class )
     if _class ~= Symbol then
         Symbol.register( _class.symbolName, _class )
     end
 end
 
-function Symbol.fromName( name )
+function Symbol.static:fromName( name )
     local symbol = symbolClasses[name]
     if not symbol then
         error( "Unable to find symbol with name '" .. name .. "'", 3 )

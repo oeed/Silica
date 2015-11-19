@@ -3,8 +3,11 @@ class "Theme" {
 	name = false;
 	extends = false; -- the name of the theme this one extends
 	classes = {};
-	active = false; -- @static  the current theme
-	themes = { 1 }; -- @static  a cache of already created themes
+	
+	static = {
+		active = false; -- @static  the current theme
+		themes = { 1 }; -- @static  a cache of already created themes
+	}
 }
 
 --[[
@@ -25,7 +28,7 @@ function Theme:initialise( themeName, cantExtend )
 	local resource = Resource( themeName, Metadata.mimes.STHEME, "themes" )
 	local contents = resource.contents
 	if contents then
-		local nodes, err = XML.fromText( contents )
+		local nodes, err = XML.static:fromText( contents )
 		if not nodes then
 			error( "Theme XML invaid: " .. themeName .. ".stheme. Error: " .. err, 0 )
 		end
@@ -48,7 +51,7 @@ end
 	@table [table] cantExtend -- a table of the theme names that the theme can't extend (as they are currently extending, which would cause recussursion)
 	@return [Theme] theme -- the theme with the given name
 ]]
-function Theme.named( themeName, cantExtend )
+function Theme.static:named( themeName, cantExtend )
 	return Theme.themes[themeName] or Theme( themeName, cantExtend )
 end
 

@@ -5,15 +5,15 @@ class "TestView" extends "View" {
 }
 
 function TestView:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
 end
 
 function TestView:initialiseCanvas( ... )
-	self.super:initialiseCanvas( ... )
+	self:super( ... )
 	self.canvas.fillColour = Graphics.colours.RED
 end
 
-function TestView:setWidth( width )
+function TestView.width:set( width )
 	self.super:setWidth( width )
     width = self.width
 end

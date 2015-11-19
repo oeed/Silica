@@ -7,7 +7,7 @@ class "SymbolSegmentButton" extends "SegmentButton" {
 }
 
 function SymbolSegmentButton:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local canvas = self.canvas
     canvas:remove( self.textObject )
     self.textObject = false
@@ -16,7 +16,7 @@ function SymbolSegmentButton:initialiseCanvas()
     self.symbolObject = symbolObject
 end
 
-function SymbolSegmentButton:setSymbol( symbol )
+function SymbolSegmentButton.symbol:set( symbol )
     if type( symbol ) == "string" then
         symbol = Symbol.fromName( symbol )
     end
@@ -26,13 +26,13 @@ function SymbolSegmentButton:setSymbol( symbol )
 end
 
 function SymbolSegmentButton:updateWidth( width )
-    self.super:updateWidth( width )
+    self:super( width )
     local leftMargin, rightMargin = self.leftMargin, self.rightMargin
     self.symbolObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1
 end
 
 function SymbolSegmentButton:onSiblingOrParentChanged( event )
-    self.super:onSiblingOrParentChanged( event )
+    self:super( event )
     local isFirst = self.isFirst
     local isLast = self.isLast 
     local symbolObject = self.symbolObject
@@ -49,7 +49,7 @@ function SymbolSegmentButton:autosize()
     self.needsAutosize = false
 end
 
-function SymbolSegmentButton:setIsPressed( isPressed )
+function SymbolSegmentButton.isPressed:set( isPressed )
     self.super:setIsPressed( isPressed )
     local symbolObject = self.symbolObject
     symbolObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1

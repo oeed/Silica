@@ -36,18 +36,99 @@ function _G.logtraceback( level )
 	log( "Start of traceback:\n" .. ("-"):rep( 20 ) .. "\nin " .. table.concat( traceback, "\nin ") .. "\n" .. ("-"):rep( 20 ) .. "\nEnd of traceback" )
 end
 
--- function _G.error(...)
--- 	term.setBackgroundColor(colors.red)
--- 	term.clear()
--- 	logtraceback()
--- 	_error(...)
--- 	while true do
--- 		local event, key = os.pullEvent("char")
--- 		if key == "\\" then
--- 			os.reboot()
--- 		end
--- 	end
--- end
+function _G.error(m,l)
+	term.setBackgroundColor(colors.red)
+	term.clear()
+	logtraceback( 2 )
+	_error(m,l and (l == 0 and l or l + 1) or 2)
+	while true do
+		local event, key = os.pullEvent("char")
+		if key == "\\" then
+			os.reboot()
+		end
+	end
+end
+
+local g_tLuaKeywords = {
+    [ "and" ] = true,
+    [ "break" ] = true,
+    [ "do" ] = true,
+    [ "else" ] = true,
+    [ "elseif" ] = true,
+    [ "end" ] = true,
+    [ "false" ] = true,
+    [ "for" ] = true,
+    [ "function" ] = true,
+    [ "if" ] = true,
+    [ "in" ] = true,
+    [ "local" ] = true,
+    [ "nil" ] = true,
+    [ "not" ] = true,
+    [ "or" ] = true,
+    [ "repeat" ] = true,
+    [ "return" ] = true,
+    [ "then" ] = true,
+    [ "true" ] = true,
+    [ "until" ] = true,
+    [ "while" ] = true,
+}
+
+local function serializeImpl( t, tTracking, sIndent )
+    local sType = type(t)
+    if sType == "table" then
+        if tTracking[t] ~= nil then
+            -- for k, v in pairs(t) do
+                -- print(k)
+            -- end
+            -- logtraceback()
+            -- error( "Cannot serialize table with recursive entries ", 0 )
+            return "RECURSIVE"
+        end
+        tTracking[t] = true
+
+        if next(t) == nil then
+            -- Empty tables are simple
+            return "{}"
+        else
+            -- Other tables take more work
+            local sResult = "{\n"
+            local sSubIndent = sIndent .. "  "
+            local tSeen = {}
+            for k,v in ipairs(t) do
+                tSeen[k] = true
+                sResult = sResult .. sSubIndent .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+            end
+            for k,v in pairs(t) do
+                if not tSeen[k] then
+                    local sEntry
+                    if type(k) == "string" and not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
+                        sEntry = k .. " = " .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+                    else
+                        sEntry = "[ " .. serializeImpl( k, tTracking, sSubIndent ) .. " ] = " .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+                    end
+                    sResult = sResult .. sSubIndent .. sEntry
+                end
+            end
+            sResult = sResult .. sIndent .. "}"
+            return sResult
+        end
+        
+    elseif sType == "string" then
+        return string.format( "%q", t )
+    
+    elseif sType == "number" or sType == "boolean" or sType == "nil" or sType == "function" then
+        return tostring(t)
+        
+    else
+        error( "Cannot serialize type "..sType, 0 )
+        
+    end
+end
+
+function _G.serialise( t )
+    local tTracking = {}
+    return serializeImpl( t, tTracking, "" )
+end
 
 -- if not fs.exists( "oeed" ) then
 -- 	shell.run "NewRendering/test.lua"
@@ -62,14 +143,17 @@ end
 term.redirect(term.native())
 
 if fs.exists("Silica.resourcepkg") then
+    print("Using built package")
 	local _, err = pcall(function() dofile( "Silica.resourcepkg" ) end)
     fs.delete("Old-Silica.resourcepkg")
 	fs.move("Silica.resourcepkg","Old-Silica.resourcepkg")
 	if err then error(err,2) end
 else
+    print("Using old style package")
 	shell.run( "package /src Silica" )
 	dofile( "Silica" )
 
+    print("Building")
 	local folder = Folder( "/src" )
 	log(folder)
 	local package = folder:package( "/Silica.resourcepkg", true, true )
@@ -83,8 +167,7 @@ end
 
 
 -- dofile( "app" )
--- Application.load( "/fontapplication" )
-Application.load( "/filesapplication" )
+Application.static:load( "/filesapplication" )
 
 -- BitmapFont.convertFile( "font src/auckland", "src/fonts/Auckland.sfont", 32, 8, {
 -- 	name = "Auckland";

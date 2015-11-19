@@ -14,8 +14,6 @@ class "Application" {
 	document = false;
 	event = false;
 	schedules = {};
-	resourceDirectories = { _ = true }; -- the folders in which the applications resources are
-	resourceTables = false; -- the tables of files where resources are
 	keyboardShortcutManager = false;
 	dragDropManager = false;
 	focuses = {};
@@ -23,119 +21,86 @@ class "Application" {
 	interfaceName = false;
 
 	-- TODO: exit codes
-	exitCode = {
-		OKAY = 1;
-	ERROR = 2;
-		-- etc
-	};
+	-- exitCode = {
+	-- 	OKAY = 1;
+	-- ERROR = 2;
+	-- 	-- etc
+	-- };
+
+    static = {
+        resourceFolders = {}; -- the folders in which the applications resources are
+        resourceTables = false; -- the tables of files where resources are
+    }
+
 }
 
---[[
-	@static
-	@desc Adds the given directory to the resource listing and loads any classes
-	@param [string] path -- the path to the directory of resources
-]]
-function Application.load( path )
-	-- TODO: path tidying
-	path = path:gsub( "/$", "/" )
-
-	table.insert( Application.resourceDirectories, path )
-	local loaded = {}
-	local loadClass
-	function _G.__loadClassNamed( name )
-		local function checkDir( _path )
-			if fs.exists( _path .. "/" .. name .. ".lua" ) then
-				loadClass( _path .. "/" .. name .. ".lua" )
-				return true
-			end
-
-			local list = fs.list( _path )
-			for i, v in ipairs( list ) do
-				if fs.isDir( _path .. '/' .. v ) then
-					if checkDir( _path .. '/' .. v) then return true end
-				end
-			end
-		end
-		checkDir( path .. "/classes" )
-	end
-
-	loadClass = function( _path, content )
-		local name = fs.getName( _path )
-		if not loaded[name] then
-			local f, err = loadfile( _path )
-			if err then error( err, 0 ) end
-			local ok, err = pcall( f )
-			if err then error( err, 0 ) end
-			loaded[name] = true
-			local _class = class.get( name:gsub(".lua", ""))
-            if _class then 
-                _class:cement()
-            else
-                local _interface = interface.get( name:gsub(".lua", ""))
-                if _interface then
-                    _interface:cement()
-                else
-                    error( "File '" .. name .. "' did not define class or interface '" .. name:gsub(".lua", "") .. "'. Check your syntax/spelling or remove it from the classes folder if it does not define a class.", 0)
-                end
-            end
-		end
-	end
-
-	if fs.exists( path .. "/loadfirst.scfg") then
-		local f = fs.open( path .. "/loadfirst.scfg", "r" )
-		if not f then error( "Failed to read loadfirst.scfg", 2 ) end
-
-		local line
-		repeat
-			line = h.readLine()
-			if line and #line > 0 then
-				__loadClassNamed( line )
-			end
-		until not line
-		f.close()
-	end
-
-	local function loadDir( _path )
-		local list = fs.list( _path )
-		for i, v in ipairs( list ) do
-			if v ~= ".DS_Store" and v ~= ".metadata" then
-				local fpath = _path .. '/' .. v
-				if fs.isDir( fpath ) then
-					loadDir( fpath )
-				else
-					loadClass( fpath )
-				end
-			end
-		end
-	end
-
-	loadDir( path .. "/classes" )
-
-	_G.__loadClassNamed = nil
+function Application.static:initialise( ... )
+    self.resourceTables = __resourceTables or {}
+    _G.__resourceTables = nil
 end
 
 --[[
-	@constructor
-	@desc Creates the application runtime for the Silica program. Call :run() on this to start it.
-	@param [table] resourceDirectories -- a table of paths in which the applications resources are (classes, themes, etc.)
+    @static
+    @desc Adds the given directory to the resource listing and loads any classes
+    @param [string] path -- the path to the directory of resources
 ]]
-function Application:initialise()
-	log('initialised')
-	self.resourceTables = __resourceTables or {}
-	_G.__resourceTables = nil
-	class.application = self
+function Application.static:load( path )
+    print("load "..path)
+    local folder = Folder( path )
+    print(folder)
+    if folder then
+        table.insert( self.resourceFolders, folder )
+        local classesFolder = folder:folderFromPath( "classes" )
+        print(classesFolder)
+        if classesFolder then
+            table.insert( class.folders, classesFolder )
+            local luaMime = Metadata.mimes.LUA
+            local function loadFolder( folder )
+                log("Load folder "..folder.name)
+                for i, fileSystemItem in ipairs( folder.items ) do
+                    if fileSystemItem.metadata.mime == luaMime then
+                        log("Load file "..fileSystemItem.name)
+                        class.load( fileSystemItem.name, fileSystemItem.contents )
+                    elseif fileSystemItem:typeOf( Folder ) then
+                        loadFolder( fileSystemItem )
+                    end
+                end
+            end
+            loadFolder( folder )
+        end
+    end
+end
 
+function Application:initialise( ... )
+	class.setApplication( self )
 	self.event = ApplicationEventManager( self )
 	self.keyboardShortcutManager = KeyboardShortcutManager( self )
 	self.dragDropManager = DragDropManager( self )
 
-
-	Font.initialisePresets()
+	Font.static:initialisePresets()
 	
 	self:reloadInterface()
 
 	self.event:connect( TimerEvent, self.onTimer )
+end
 
+--[[
+	@instance
+	@desc Runs the application runtime with the supplied arguments
+	@param ... -- the arguments feed to the program (simply use ... for the arguments)
+	@return [number] exitCode -- returns the exit code of the application
+]]
+function Application:run( ... )
+	self.arguments = { ... }
+	self.isRunning = true
+
+	self:update()
+
+	while self.isRunning do
+		local event = Event.create( coroutine.yield() )
+		event.relativeView = self.container
+		self.event:handleEvent( event )
+	end
 end
 
 --[[
@@ -143,7 +108,7 @@ end
 	@desc Changes the interface name, reloading the interface
 	@param [string] interfaceName -- the name of the interface (the file name without extension)
 ]]
-function Application:setInterfaceName( interfaceName )
+function Application.interfaceName:set( interfaceName )
 	if interfaceName and self.interfaceName ~= interfaceName then
 		self.interfaceName = interfaceName
 		self:reloadInterface()
@@ -170,7 +135,7 @@ function Application:reloadInterface()
 	self.event:handleEvent( ReadyInterfaceEvent( true ) )
 end
 
-function Application:setContainer( container )
+function Application.container:set( container )
 	self.container = container
 end
 
@@ -362,24 +327,5 @@ function Application:onTimer( event )
 	if event.timer and event.timer == self.updateTimer then
 		self:update()
 		return true
-	end
-end
-
---[[
-	@instance
-	@desc Runs the application runtime with the supplied arguments
-	@param ... -- the arguments feed to the program (simply use ... for the arguments)
-	@return [number] exitCode -- returns the exit code of the application
-]]
-function Application:run( ... )
-	self.arguments = { ... }
-	self.isRunning = true
-
-	self:update()
-
-	while self.isRunning do
-		local event = Event.create( coroutine.yield() )
-		event.relativeView = self.container
-		self.event:handleEvent( event )
 	end
 end

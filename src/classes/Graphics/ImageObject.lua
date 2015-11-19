@@ -6,14 +6,14 @@ class "ImageObject" extends "GraphicsObject" {
 }
 
 function ImageObject:initialise( x, y, width, height, image )
-    self.super:initialise( x, y, width, height )
+    self:super( x, y, width, height )
 
     if image then
         self.image = image
     end
 end
 
-function ImageObject:setImage( image )
+function ImageObject.image:set( image )
     self.hasChanged = true
     if type( image ) == "string" then
         self.image = Image.fromName( image ) or false
@@ -22,7 +22,7 @@ function ImageObject:setImage( image )
     end
 end
 
-function ImageObject:getFill()
+function ImageObject.fill:get()
     if self.fill then return self.fill end
 
     local fill, image = {}, self.image

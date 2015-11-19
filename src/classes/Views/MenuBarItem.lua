@@ -13,6 +13,7 @@ class "MenuBarItem" extends "View" {
     menu = false;
     menuName = false;
     isFlashing = false;
+    isActive = Boolean; -- TODO: readonly
 
 }
 
@@ -22,7 +23,7 @@ class "MenuBarItem" extends "View" {
 	@param [table] properties -- the properties for the view
 ]]
 function MenuBarItem:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
 
     local menuName = self.menuName
     if not menuName then error( "MenuBarItems must specify the property menuName (the name of the interface file to use).", 0 ) end
@@ -35,7 +36,7 @@ function MenuBarItem:initialise( ... )
     self.menu = menu
     self:event( MenuChangedInterfaceEvent, self.onMenuChanged )
     self:event( MouseDownEvent, self.onMouseDown )
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
     self:event( ReadyInterfaceEvent, self.onInterfaceReady )
 end
 
@@ -59,7 +60,7 @@ function MenuBarItem:onInterfaceReady( event )
 end
 
 function MenuBarItem:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
     local textObject = self.canvas:insert( Text( TEXT_MARGIN / 2 + 1, 3, self.height, self.width - TEXT_MARGIN, self.text ) )
 
@@ -74,7 +75,7 @@ function MenuBarItem:initialiseCanvas()
     end
 end
 
-function MenuBarItem:setFont( font )
+function MenuBarItem.font:set( font )
     self.font = font
     local textObject = self.textObject
     if textObject then
@@ -88,7 +89,7 @@ function MenuBarItem:setFont( font )
     end
 end
 
-function MenuBarItem:setText( text )
+function MenuBarItem.text:set( text )
     self.text = text
     local textObject = self.textObject
     if textObject then
@@ -126,7 +127,7 @@ function MenuBarItem:updateHeight( height )
 end
 
 function MenuBarItem:update( deltaTime )
-    self.super:update( deltaTime )
+    self:super( deltaTime )
     local isFlashing = self.isFlashing
     if isFlashing then
         if isFlashing <= 0 then
@@ -145,7 +146,7 @@ function MenuBarItem:flash()
     self.isFlashing = 0.2
 end
 
-function MenuBarItem:setIsFlashing( isFlashing )
+function MenuBarItem.isFlashing:set( isFlashing )
     self.isFlashing = isFlashing
     self:updateThemeStyle()
 end
@@ -155,7 +156,7 @@ end
     @desc Whether the button is pressed or open
     @return [boolean] isActive -- whether the button is active
 ]]
-function MenuBarItem:getIsActive()
+function MenuBarItem.isActive:get()
     return self.isPressed or self.isFlashing or self.menu.isOpen
 end
 
@@ -163,12 +164,12 @@ function MenuBarItem:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isActive and "pressed" or "default" ) or "disabled"
 end
 
-function MenuBarItem:setIsEnabled( isEnabled )
+function MenuBarItem.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self:updateThemeStyle()
 end
 
-function MenuBarItem:setIsPressed( isPressed )
+function MenuBarItem.isPressed:set( isPressed )
     self.isPressed = isPressed
     self:updateThemeStyle()
 end

@@ -178,6 +178,7 @@ class "Path" extends "GraphicsObject" {
 	currentX = 0;
 	currentY = 0;
 	outlinePoints = {}; -- the generic outline pixels used for fill and outline
+	serialisedPath = Table; --TODO: read-only
 }
 
 --[[
@@ -191,7 +192,7 @@ class "Path" extends "GraphicsObject" {
 	@param [number] currentY -- the starting y coordinate
 ]]
 function Path:initialise( x, y, width, height, currentX, currentY, lines )
-	self.super:initialise( x, y, width, height )
+	self:super( x, y, width, height )
 	self.currentX = currentX or 1
 	self.currentY = currentY or 1
 	if lines then
@@ -206,7 +207,7 @@ end
 	@param [table] serialisedPath -- the serialised path table
 	@return [Path] path -- the path
 ]]
-function Path.fromSerialisedPath( serialisedPath )
+function Path.static:fromSerialisedPath( serialisedPath )
 	return Path( serialisedPath.x, serialisedPath.y, serialisedPath.width, serialisedPath.height, 1, 1, serialisedPath.lines )
 end
 
@@ -215,7 +216,7 @@ end
 	@desc Returns a serialised copy of the path which can be used to load from later
 	@return [table] path -- the copied path table
 ]]
-function Path:getSerialisedPath()
+function Path.serialisedPath:get()
 	local lines, pathCopy = self.lines, { x = self.x, y = self.y, width = self.width, height = self.height, lines = {} }
 	local linesCopy = pathCopy.lines
 
@@ -429,7 +430,7 @@ end
     @return [number] minY -- the minimum Y coord
     @return [number] maxY -- the maximum Y coord
 ]]
-function Path:getFill()
+function Path.fill:get()
 	if self.fill then return self.fill end
 
 	local minY, maxY, minX, maxX = 1, self.height, 1, self.width
@@ -465,7 +466,7 @@ function Path:getFill()
 end
 
 
-function Path:getOutline()
+function Path.outline:get()
 	if self.outline then return self.outline end
 
 	local minY, maxY, minX, maxX = 1, self.height, 1, self.width

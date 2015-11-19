@@ -7,7 +7,7 @@ class "SearchBox" extends "TextBox" {
 }
 
 function SearchBox:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
 
     local symbolObject = SymbolObject( 8, 4, SearchSymbol )
     self.canvas:insert( symbolObject )

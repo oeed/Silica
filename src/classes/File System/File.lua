@@ -7,17 +7,17 @@ class "File" extends "FileSystemItem" implements "IEditableFileSystemItem" {
     
 }
 
-function File.mt:__call( path, ... )
+function File.metatable:__call( path, ... )
     if fs.exists( path ) and not fs.isDir( path ) and not fs.isReadOnly( path ) then
         local name = fs.getName( path )
         if name ~= ".DS_Store" and name ~= ".metadata" then
-            return self:new( true, path, ... )
+            return self.spawn( path, ... )
         end
     end
     return false
 end
 
-function File:make( path, mime, overwrite, contents )
+function File.static:make( path, mime, overwrite, contents )
     local exists = fs.exists( path )
     if overwrite and exists then
         fs.delete( path )
@@ -28,13 +28,13 @@ function File:make( path, mime, overwrite, contents )
         local h = fs.open( path, "w" )
         h.write( contents or "" )
         h.close()
-        local file = self( path )
+        local file = self.class( path )
         file.metadata.mime = mime
         return file
     end
 end
 
-function File:setContents( contents )
+function File.contents:set( contents )
     local handle = fs.open( self.path, "w" )
     if handle then
         handle.write( contents )
@@ -44,11 +44,11 @@ function File:setContents( contents )
     end
 end
 
-function File:setSerialiseContents( serialisedContents )
+function File.serialisedContents:set( serialisedContents )
     self.contents = textutils.serialize( serialisedContents )
 end
 
-function File:setBinaryContents( binaryContents )
+function File.binaryContents:set( binaryContents )
     if type( binaryContents ) ~= "binaryContents" then error( "File.binaryContents must be set with a table of bytes.", 2 ) end
     local handle = fs.open( self.path, "wb" )
     if handle then
@@ -61,7 +61,7 @@ function File:setBinaryContents( binaryContents )
     end
 end
 
-function File:getContents()
+function File.contents:get()
     local handle = fs.open( self.path, "r" )
     if handle then
         local contents = handle.readAll( contents )
@@ -72,11 +72,11 @@ function File:getContents()
     end
 end
 
-function File:getSerialiseContents()
+function File.serialisedContents:get()
     return textutils.unserialize( self.contents )
 end
 
-function File:getBinaryContents( binaryContents )
+function File.binaryContents:get()
     local handle = fs.open( self.path, "rb" )
     if handle then
         local contents = {}

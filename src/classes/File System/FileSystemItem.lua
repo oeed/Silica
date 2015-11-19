@@ -29,7 +29,7 @@ class "FileSystemItem" {
 
 }
 
-function FileSystemItem.mt:__call( path, ... )
+function FileSystemItem.metatable:__call( path, ... )
     if fs.isDir( path ) then
         return Folder( path, ... )
     else
@@ -44,7 +44,7 @@ function FileSystemItem:initialise( path, parent )
     end
 end
 
-function FileSystemItem:setPath( path )
+function FileSystemItem.path:set( path )
     path = tidy( path )
     if not fs.exists( path ) then error( "Attempted to set FileSystemItem.path to non-existant path '" .. path .. "'.", 2 ) end
     self.path = path
@@ -58,15 +58,15 @@ function FileSystemItem:setPath( path )
     self.extension = extension or false
 end
 
-function FileSystemItem:getSize()
+function FileSystemItem.size:get()
     return fs.getSize( self.path )
 end
 
-function FileSystemItem:setSize( items )
+function FileSystemItem.size:set( size )
     error( "FileSystemItem.size is a read-only property.", 2 )
 end
 
-function FileSystemItem:getSizeString()
+function FileSystemItem.sizeString:get()
     local size = fs.getSize( self.path )
     if size == 0 then return "0 B" end
     local prefixes = { [0] = ""; "k"; "M"; "G"; "T"; "P"; }
@@ -75,14 +75,14 @@ function FileSystemItem:getSizeString()
     return bytes / 100 .. " " .. prefixes[order] .. "B"
 end
 
-function FileSystemItem:setSizeString( items )
+function FileSystemItem.sizeString:set( sizeString )
     error( "FileSystemItem.sizeString is a read-only property.", 2 )
 end
 
 -- function FileSystemItem:{ Number, String }:doSomething( x, label )
 -- end
 
-function FileSystemItem:getParent()
+function FileSystemItem.parent:get()
     local parent = self.parent
     if parent then return parent end
     if self.path == "" then return false end
@@ -91,11 +91,11 @@ function FileSystemItem:getParent()
     return Folder( parentPath )
 end
 
-function FileSystemItem:setParent( items )
+function FileSystemItem.parent:set( parent )
     error( "FileSystemItem.parent is a read-only property. To move a FileSystemItem use :moveTo", 2 )
 end
 
-function FileSystemItem:setParentPath( items )
+function FileSystemItem.parentPath:set( parentPath )
     error( "FileSystemItem.parentPath is a read-only property. To move a FileSystemItem use :moveTo", 2 )
 end
 
@@ -119,7 +119,7 @@ end
 function FileSystemItem:copyTo( folder )
     local folderPath = folder.path
     if folderPath == self.parentPath then return end
-
+    
     local newPath = folderPath .. "/" .. self.fullName
     fs.copy( self.path, newPath )
     local newFile = FileSystemItem( newPath )
@@ -132,11 +132,11 @@ function FileSystemItem:rename( fullName )
     self.metadata:rename( fullName )
 end
 
-function FileSystemItem:getMetadataPath()
+function FileSystemItem.metadataPath:get()
     return self.parentPath .. "/.metadata/" ..self.fullName
 end
 
-function FileSystemItem:getMetadata()
+function FileSystemItem.metadata:get()
     local metadata = self.metadata
     if metadata then return metadata end
 
@@ -145,6 +145,6 @@ function FileSystemItem:getMetadata()
     return metadata
 end
 
-function FileSystemItem:setMetadata( items )
+function FileSystemItem.metadata:set( metadata )
     error( "FileSystemItem.metadata is a read-only property.", 2 )
 end

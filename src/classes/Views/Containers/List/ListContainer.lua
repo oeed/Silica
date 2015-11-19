@@ -14,7 +14,7 @@ class "ListContainer" extends "ScrollContainer" implements "IDragDropDestination
 }
 
 function ListContainer:initialise( ... )
-    self.super:initialise( ... )
+    self:super( ... )
     self:event( ChildAddedInterfaceEvent, self.onChildAdded )
     self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
     self:event( ReadyInterfaceEvent, self.onReady )
@@ -25,7 +25,7 @@ function ListContainer:onReady( event )
 end
 
 function ListContainer:update( deltaTime )
-    self.super:update( deltaTime )
+    self:super( deltaTime )
     if self.needsLayoutUpdate then
         self:updateLayout()
     end
@@ -46,7 +46,7 @@ function ListContainer:updateLayout( dontAnimate )
     local children, width = self.children, self.width
     local y = TOP_MARGIN + 1
 
-    local time, easing = 0.5, Animation.easing.SINE_IN_OUT
+    local time, easing = 0.5, Animation.easings.SINE_IN_OUT
 
     for i, childView in ipairs( children ) do
         if dontAnimate then

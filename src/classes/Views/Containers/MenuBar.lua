@@ -5,7 +5,7 @@ class "MenuBar" extends "Container" {
 }
 
 function MenuBar:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local separatorObject = self.canvas:insert( Rectangle( 1, self.height, self.width, 1 ) )
     self.theme:connect( separatorObject, "fillColour", "separatorColour" )
     self.theme:connect( self.canvas, "fillColour" )
@@ -33,7 +33,7 @@ function MenuBar:updateLayout()
 end
 
 function MenuBar:update( deltaTime )
-    self.super:update( deltaTime )
+    self:super( deltaTime )
     if self.needsLayoutUpdate then
         self:updateLayout()
     end
@@ -47,12 +47,12 @@ function MenuBar:updateHeight( Height )
 	self.separatorObject.y = Height
 end
 
-function MenuBar:setIsEnabled( isEnabled )
+function MenuBar.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self:updateThemeStyle()
 end
 
-function MenuBar:setIsVisible( isVisible )
+function MenuBar.isVisible:set( isVisible )
 	self.super:setIsVisible( isVisible )
 	if isVisible then
 		self.needsLayoutUpdate = true
@@ -60,11 +60,11 @@ function MenuBar:setIsVisible( isVisible )
 end
 
 function MenuBar:insert( ... )
-	self.super:insert( ... )
+	self:super( ... )
 	self.needsLayoutUpdate = true
 end
 
 function MenuBar:removeChild( ... )
-	self.super:removeChild( ... )
+	self:super( ... )
 	self.needsLayoutUpdate = true
 end

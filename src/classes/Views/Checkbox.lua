@@ -17,9 +17,9 @@ class "Checkbox" extends "View" {
     @desc Creates a button object and connects the event handlers
 ]]
 function Checkbox:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
     self:event( MouseDownEvent, self.onMouseDown )
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
 --[[
@@ -27,7 +27,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Checkbox:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
     
     local checkObject = Path( 2, 2, self.width - 2, self.height - 2, 1, 4 )
@@ -61,7 +61,7 @@ end
     @instance
     @desc Sets whether the button is pressed, changing the drawing state
 ]]
-function Checkbox:setIsPressed( isPressed )
+function Checkbox.isPressed:set( isPressed )
     self.isPressed = isPressed
     self:updateThemeStyle()
 end
@@ -70,7 +70,7 @@ end
     @instance
     @desc Sets whether the button is pressed, changing the drawing state
 ]]
-function Checkbox:setIsEnabled( isEnabled )
+function Checkbox.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self:updateThemeStyle()
 end
@@ -79,7 +79,7 @@ end
     @instance
     @desc Sets whether the button is pressed, changing the drawing state
 ]]
-function Checkbox:setIsChecked( isChecked )
+function Checkbox.isChecked:set( isChecked )
     self.isChecked = isChecked
     self:updateThemeStyle()
 end

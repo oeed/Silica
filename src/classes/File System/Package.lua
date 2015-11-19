@@ -14,49 +14,20 @@ local loaded = {}
 local classes = files["classes"]
 local loadClass
 
-function _G.__loadClassNamed( name )
-    loadClass( name )
-end
 
-loadClass = function( name, content )
-    if not loaded[name] then
-        content = content or ( classes[name] and classes[name]["text/lua"] )
-        if not content then return end
-        local f, err = loadstring( content, name )
-        if err then error( err, 0 ) end
-        local ok, err = pcall( f )
-        if err then error( err, 0 ) end
-        loaded[name] = true
-        if class and interface and name ~= "class" and name ~= "interface" then
-            local _class = class.get( name )
-            if _class then 
-                _class:cement()
-            else
-                local _interface = interface.get( name )
-                if _interface then
-                    _interface:cement()
-                else
-                    error( "File '" .. name .. "' did not define class or interface '" .. name .. "'. Check your syntax/spelling or remove it from the classes folder if it does not define a class.", 0)
-                end
-            end
-        end
+local f, err = loadstring( classes["class"]["text/lua"], "class.lua" )
+if err then error( err, 0 ) end
+local ok, err = pcall( f )
+if err then error( err, 0 ) end
+
+table.insert( class.tables, classes )
+
+for name, contents in pairs( classes ) do
+    if name ~= "class" then
+        class.get( name )
     end
 end
 
-if classes then
-    local loadFirst = files["loadfirst"]["silica/config"]
-    if loadFirst then
-        for name in loadFirst:gmatch( "[^\n]+" ) do
-            loadClass( name )
-        end
-    end
-
-    for name, contents in pairs( classes ) do
-        loadClass( name, content )
-    end
-end
-
-_G.__loadClassNamed = nil
 ]]
 
 local g_tLuaKeywords = {
@@ -84,7 +55,7 @@ local g_tLuaKeywords = {
 }
 
 -- A modified textutils.serialise that is slightly smaller (no indents, etc.)
-local function serialise( t, tTracking )
+local function serialise_( t, tTracking )
     local sType = type(t)
     if sType == "table" then
         if tTracking[t] ~= nil then
@@ -126,7 +97,7 @@ end
 
 class "Package" extends "File" {}
 
-function Package:make( path, overwrite, folder, isResourcePackage )
+function Package.static:make( path, overwrite, Folder folder, isResourcePackage )
     local contents = ""
     if isResourcePackage then
         local folders = {}
@@ -138,15 +109,17 @@ function Package:make( path, overwrite, folder, isResourcePackage )
                 folders["loadfirst"] = { [Metadata.mimes.SCFG] = item.contents }
             end
         end
-        contents = "local files = " .. serialise(folders, {}) .. RESOURCE_PACKAGE_TEMPLATE
+        contents = "local files = " .. serialise_(folders, {}) .. RESOURCE_PACKAGE_TEMPLATE
         -- contents = textutils.serialize(folders)
     else
         local allItems = folder:serialise( false )
-        contents = serialise(allItems, {})
+        contents = serialise_(allItems, {})
         -- contents = textutils.serialize(allItems)
     end
     -- log(contents)
     -- log( serialise( allItems, {} ) )
-    return File.make( Package, path, overwrite, isResourcePackage and Metadata.mimes.RESOURCEPKG or Metadata.mimes.PACKAGE, contents )
+    print(serialise(self.super))
+    print(self.super)
+    return self:super( path, overwrite, isResourcePackage and Metadata.mimes.RESOURCEPKG or Metadata.mimes.PACKAGE, contents )
 end
 

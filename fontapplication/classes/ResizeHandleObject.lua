@@ -9,12 +9,12 @@ class "ResizeHandleObject" extends "GraphicsObject" {
 }
 
 function ResizeHandleObject:initialise( x, y, isLeft, isTop )
-    self.super:initialise( x, y, HANDLE_SIZE, HANDLE_SIZE )
+    self:super( x, y, HANDLE_SIZE, HANDLE_SIZE )
     self.isLeft = isLeft
     self.isTop = isTop
 end
 
-function ResizeHandleObject:getFill()
+function ResizeHandleObject.fill:get()
     if self.fill then return self.fill end
 
     local fill = {}

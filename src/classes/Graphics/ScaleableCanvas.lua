@@ -6,14 +6,14 @@ class "ScaleableCanvas" extends "Canvas" {
 
 }
 
-function ScaleableCanvas:setScaleX( scaleX )
+function ScaleableCanvas.scaleX:set( scaleX )
     if self.scaleX ~= scaleX then
         self.hasChanged = true
         self.scaleX = scaleX
     end
 end
 
-function ScaleableCanvas:setScaleY( scaleY )
+function ScaleableCanvas.scaleY:set( scaleY )
     if self.scaleY ~= scaleY then
         self.hasChanged = true
         self.scaleY = scaleY

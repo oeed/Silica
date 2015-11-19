@@ -10,11 +10,11 @@ class "Scrollbar" extends "View" {
 }
 
 function Scrollbar:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
     -- self:event( MouseScrollEvent, self.onMouseScroll )
     self:event( MouseDownEvent, self.onMouseDown )
     self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
 --[[
@@ -22,7 +22,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Scrollbar:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
 
     self.theme:connect( self.canvas, "fillColour" )
 
@@ -48,12 +48,12 @@ function Scrollbar:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
 end
 
-function Scrollbar:setIsEnabled( isEnabled )
+function Scrollbar.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self:updateThemeStyle()
 end
 
-function Scrollbar:setIsPressed( isPressed )
+function Scrollbar.isPressed:set( isPressed )
     self.isPressed = isPressed
     self:updateThemeStyle()
 end

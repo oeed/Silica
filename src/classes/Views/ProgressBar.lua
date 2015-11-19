@@ -22,7 +22,7 @@ class "ProgressBar" extends "View" {
     @desc Sets up the canvas and it's graphics objects
 ]]
 function ProgressBar:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
     local stripesObject = self.canvas:insert( ProgressBarStripes( 1, 1, math.floor( ( self.value/self.maximum ) * self.width + 0.5 ), self.height, self.theme.barColour, self.theme.barColour, self.theme.stripeColour, self.theme.cornerRadius ) )
     self.theme:connect( backgroundObject, "fillColour" )
@@ -47,7 +47,7 @@ function ProgressBar:updateHeight( height )
     self.stripesObject.height = height
 end
 
-function ProgressBar:setIsEnabled( isEnabled )
+function ProgressBar.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self.theme.style = self.isEnabled and "default" or "disabled"
 end
@@ -57,7 +57,7 @@ end
     @desc Set the value of the progress bar
     @param [number] value -- the value
 ]]
-function ProgressBar:setValue( value )
+function ProgressBar.value:set( value )
     self.value = math.min( math.max( value, 0 ), self.maximum )
     self.stripesObject.width = math.floor( ( self.value / self.maximum ) * self.width + 0.5 )
 end
@@ -67,7 +67,7 @@ end
     @desc Set the maximum value of the progress bar
     @param [number] maximum -- the maximum value
 ]]
-function ProgressBar:setMaximum( maximum )
+function ProgressBar.maximum:set( maximum )
     self.maximum = math.max( maximum, 0 )
     self.stripesObject.width = math.floor( ( self.value / self.maximum ) * self.width + 0.5 )
 end

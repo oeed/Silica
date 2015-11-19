@@ -5,14 +5,15 @@ class "ProgressBarStripes" extends "RoundedRectangle" {
 	stripeWidth = 9;
 }
 
-function ProgressBarStripes:initialise( x, y, width, height, fillColour, outlineColour, stripeColour, radius ) -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )
-	self.super:initialise( x, y, width, height, fillColour, outlineColour, radius, 0, radius, 0 )
+ -- @constructor( number x, number y, number width, number height, graphics.fillColour fillColour )
+function ProgressBarStripes:initialise( x, y, width, height, fillColour, outlineColour, stripeColour, radius )
+	self:super( x, y, width, height, fillColour, outlineColour, radius, 0, radius, 0 )
 	self.fillColour = fillColour
 	self.outlineColour = fillColour
 	self.stripeColour = stripeColour
 end
 
-function ProgressBarStripes:setAnimationStep( animationStep )
+function ProgressBarStripes.animationStep:set( animationStep )
 	self.hasChanged = true
 	self.animationStep = math.floor( animationStep )
 end

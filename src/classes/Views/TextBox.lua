@@ -31,6 +31,11 @@ class "TextBox" extends "View" {
 	selectionObject = false;
 	cursorFlashCounter = 0;
 
+	cursorX = Number;
+	selectionX = Number;
+	selectionWidth = Number;
+
+	margin = Number;
 	leftMargin = 0;
 	rightMargin = 0;
 	isFocused = false;
@@ -49,7 +54,7 @@ class "TextBox" extends "View" {
 	@desc Creates a text box view and connects the event handlers
 ]]
 function TextBox:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
 	self:event( KeyUpEvent, self.onKeyUp )
 	self:event( KeyDownEvent, self.onKeyDown )
 	self:event( CharacterEvent, self.onCharacter )
@@ -57,7 +62,7 @@ function TextBox:initialise( ... )
 	self:event( MouseUpEvent, self.onMouseUp )
 	self:event( MouseDragEvent, self.onMouseDrag )
     self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
-	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
 --[[
@@ -65,7 +70,7 @@ end
 	@desc Sets up the canvas and it's graphics objects
 ]]
 function TextBox:initialiseCanvas()
-	self.super:initialiseCanvas()
+	self:super()
 	local width, height, theme = self.width, self.height, self.theme
 	local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, width, height ) )
 	local selectionObject = self.canvas:insert( Rectangle( 0, 4, 1, self.height - 6 ) )
@@ -97,7 +102,7 @@ function TextBox:initialiseCanvas()
 end
 
 function TextBox:update( deltaTime )
-	self.super:update( deltaTime )
+	self:super( deltaTime )
 
 	if self.isFocused then
 		local cursorFlashCounter = self.cursorFlashCounter
@@ -134,7 +139,7 @@ function TextBox:updateWidth( width )
 	placeholderObject.width = width - self.leftMargin - self.rightMargin
 end
 
-function TextBox:setLeftMargin( leftMargin )
+function TextBox.leftMargin:set( leftMargin )
 	self.leftMargin = leftMargin
 	local textObject = self.textObject
 	if textObject then
@@ -174,8 +179,8 @@ function TextBox:updateSelection()
 			selectionObject.x = x
 			selectionObject.width = width
 		else
-			self:animate( "selectionX", x, CURSOR_ANIMATION_SPEED, f, Animation.easing.OUT_QUART )
-			self:animate( "selectionWidth", width, CURSOR_ANIMATION_SPEED, nil, Animation.easing.OUT_QUART )
+			self:animate( "selectionX", x, CURSOR_ANIMATION_SPEED, f, Animation.easings.OUT_QUART )
+			self:animate( "selectionWidth", width, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
 		end
 	end
 end
@@ -218,14 +223,14 @@ function TextBox:isValidChar( character )
 	return true
 end
 
-function TextBox:setScroll( scroll )
+function TextBox.scroll:set( scroll )
 	self.scroll = scroll
 	self.textObject.x = self.leftMargin + 1 - self.scroll
 	self:updateSelection()
 	self:updateCursorPosition()
 end
 
-function TextBox:setCursorPosition( cursorPosition )
+function TextBox.cursorPosition:set( cursorPosition )
 	cursorPosition = math.max( math.min( cursorPosition, #self.text + 1 ), 1 )
 	self.cursorPosition = cursorPosition
 	self.cursorFlashCounter = 0
@@ -238,36 +243,36 @@ function TextBox:setCursorPosition( cursorPosition )
 	self:updateCursorPosition()
 end
 
-function TextBox:setCursorX( x )
-	self.cursorObject.x = x
+function TextBox.cursorX:set( cursorX )
+	self.cursorObject.x = cursorX
 end
 
-function TextBox:getCursorX()
+function TextBox.cursorX:get()
 	return self.cursorObject.x
 end
 
-function TextBox:setSelectionX( x )
-	self.selectionObject.x = x
+function TextBox.selectionX:set( selectionX )
+	self.selectionObject.x = selectionX
 end
 
-function TextBox:getSelectionX()
+function TextBox.selectionX:get()
 	return self.selectionObject.x
 end
 
-function TextBox:setSelectionWidth( width )
-	self.selectionObject.width = width
+function TextBox.selectionWidth:set( selectionWidth )
+	self.selectionObject.width = selectionWidth
 end
 
-function TextBox:getSelectionWidth()
+function TextBox.selectionWidth:get()
 	return self.selectionObject.width
 end
 
 function TextBox:updateCursorPosition()
 	local value = self.leftMargin + math.max( self:charToViewCoords( self.selectionPosition or self.cursorPosition ) - 1, 1 ) - self.scroll
-	self:animate( "cursorX", value, CURSOR_ANIMATION_SPEED, nil, Animation.easing.OUT_QUART )
+	self:animate( "cursorX", value, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
 end
 
-function TextBox:setSelectionPosition( selectionPosition )
+function TextBox.selectionPosition:set( selectionPosition )
 	self.selectionPosition = selectionPosition
 	self.cursorFlashCounter = 0
 	self:updateSelection()
@@ -343,13 +348,13 @@ end
 	@desc Set the text of the text box.
 	@param [string] text -- the text of the text box
 ]]
-function TextBox:setText( text )
+function TextBox.text:set( text )
 	self.text = text
 	self.textObject.text = self.isMasked and string.rep( string.char( 149 ), #text ) or text
 	self.placeholderObject.isVisible = #text == 0
 end
 
-function TextBox:setPlaceholder( placeholder )
+function TextBox.placeholder:set( placeholder )
 	self.placeholder = placeholder
 	local placeholderObject = self.placeholderObject
 	if placeholderObject then
@@ -357,7 +362,7 @@ function TextBox:setPlaceholder( placeholder )
 	end
 end
 
-function TextBox:setIsMasked( isMasked )
+function TextBox.isMasked:set( isMasked )
 	self.isMasked = isMasked
 	self.text = self.text
 end
@@ -367,12 +372,12 @@ end
 	@desc Set the margin on either side of the text
 	@param [number] margin -- the space around the text
 ]]
-function TextBox:setMargin( margin )
+function TextBox.margin:set( margin )
 	self.leftMargin = margin
 	self.rightMargin = margin
 end
 
-function TextBox:setFont( font )
+function TextBox.font:set( font )
 	self.font = font
 	local textObject = self.textObject
 	if textObject then
@@ -387,12 +392,12 @@ function TextBox:updateThemeStyle()
 	self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or ( self.isFocused and "focused" or "default" ) ) or "disabled"
 end
 
-function TextBox:setIsPressed( isPressed )
+function TextBox.isPressed:set( isPressed )
 	self.isPressed = isPressed
 	self:updateThemeStyle()
 end
 
-function TextBox:setIsEnabled( isEnabled )
+function TextBox.isEnabled:set( isEnabled )
 	self.isEnabled = isEnabled
 	if not isEnabled then
 		self:unfocus( TextBox )
@@ -400,7 +405,7 @@ function TextBox:setIsEnabled( isEnabled )
 	self:updateThemeStyle()
 end
 
-function TextBox:setIsFocused( isFocused )
+function TextBox.isFocused:set( isFocused )
 	self.isFocused = isFocused
 	self.cursorObject.isVisible = isFocused
 	self.cursorPosition = self.cursorPosition or 1

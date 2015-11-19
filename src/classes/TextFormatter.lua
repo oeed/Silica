@@ -34,7 +34,8 @@ function TextFormatter:initialise( text, width, height )
 	self.height = height
 end
 
-function TextFormatter:set() -- this is called when a variable is set right?:  Yes, arguments are key, value if you want them
+ -- this is called when a variable is set right?:  Yes, arguments are key, value if you want them
+function TextFormatter:set()
 	self.changed = true
 end
 

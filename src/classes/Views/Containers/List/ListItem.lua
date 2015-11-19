@@ -15,15 +15,15 @@ class "ListItem" extends "View" implements "IDraggableView" {
 }
 
 function ListItem:initialise( ... )
-    self.super:initialise( ... )
+    self:super( ... )
 
     self:event( MouseDownEvent, self.onMouseDown )
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
     self:event( MouseHeldEvent, self.onMouseHeld )
 end
 
 function ListItem:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local width, height, canvas = self.width, self.height, self.canvas
     local backgroundObject = canvas:insert( RoundedRectangle( 2, 1, width - 2, height ) )
     local textObject = canvas:insert( Text( 1 + SIDE_MARGIN, 1 + TOP_BOTTOM_PADDING, 8, width - 2 * SIDE_MARGIN, self.text ) )
@@ -40,7 +40,7 @@ function ListItem:updateWidth( width )
     self.backgroundObject.width = width - 2
 end
 
-function ListItem:setText( text )
+function ListItem.text:set( text )
     self.text = text
     self.textObject.text = text
 end
@@ -49,12 +49,12 @@ function ListItem:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isSelected and "selected" or "default" ) or "disabled"
 end
 
-function ListItem:setIsEnabled( isEnabled )
+function ListItem.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self:updateThemeStyle()
 end
 
-function ListItem:setIsSelected( isSelected )
+function ListItem.isSelected:set( isSelected )
     self.isSelected = isSelected
     self:updateThemeStyle()
 end

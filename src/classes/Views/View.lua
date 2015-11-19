@@ -1,6 +1,6 @@
 
 local DEFAULT_TIME = .3
-local DEFAULT_EASING = Animation.easing.IN_OUT_SINE
+local DEFAULT_EASING = Animation.easings.IN_OUT_SINE
 
 local function newAnimation( self, label, time, values, easing, onFinish, round )
 	local animations = self.animations
@@ -46,6 +46,9 @@ class "View" {
 	isSingleFocusOnly = false; -- whether only this view can be in-focus when focused (i.e. so 3 textboxes aren't focused at the same time)
 	isFocusDismissable = true; -- whether clicking away from the view when focused will unfocus it
 	isEnabled = true;
+
+	isFirst = Boolean;
+	isLast = Boolean; -- TODO: .isReadOnly
 
 	stringConstraints = {}; -- the constraints strings
 	loadedConstraints = {}; -- the parsed constraints
@@ -119,7 +122,7 @@ end
 	@desc Returns the view's siblings in it's container
 	@return [table] siblings -- an array of the siblings
 ]]
-function View:getSiblings()
+function View.siblings:get()
 	local siblings = {}
 
 	if self.parent then
@@ -138,7 +141,7 @@ end
 	@desc Returns true if the view is the first child of it's parent
 	@return [boolean] isFirst -- whether  the view is the first child of it's parent
 ]]
-function View:getIsFirst()
+function View.isFirst:get()
     return self.index == 1
 end
 
@@ -147,7 +150,7 @@ end
 	@desc Returns true if the view is the last child of it's parent
 	@return [boolean] isLast -- whether  the view is the last child of it's parent
 ]]
-function View:getIsLast()
+function View.isLast:get()
     local parent = self.parent
     return parent and (self.index == #parent.children) or false
 end
@@ -157,7 +160,7 @@ end
 	@desc Returns whether the control is enabled, rising up to the parent containers as well
 	@return [boolean] isEnabled -- whether the view is enabled
 ]]
-function View:getIsEnabled()
+function View.isEnabled:get()
 	if not self.isEnabled then
 		return false
 	else
@@ -175,7 +178,7 @@ end
 	@desc Returns the index of the view in it's parent. 1 is the bottom most view
 	@return [number] index -- an array of the siblings
 ]]
-function View:getIndex()
+function View.index:get()
 	if self.parent then
 		for i, child in ipairs( self.parent.children ) do
 			if child == self then
@@ -191,7 +194,7 @@ end
 	@desc Sets the z index of the view in it's parent container
 	@param [number] index
 ]]
-function View:setIndex( index )
+function View.index:set( index )
 	local parent = self.parent
 	if parent then
 		local containerChildren = parent.children
@@ -230,8 +233,8 @@ function View:siblingsOfType( _class )
 	return siblings
 end
 
-View:alias( "x", "left" )
-View:alias( "y", "top" )
+View:alias( View.x, "left" )
+View:alias( View.y, "top" )
 
 -- object.left is the raw left value (i.e. a number, or nil if not yet calculated)
 -- object.loadedConstraints.left is the parsed and simplified left value
@@ -407,12 +410,12 @@ function View:reloadConstraint( property, isReferenceChange )
 end
 
 -- @instance
-function View:getTop()
+function View.top:get()
 	return self.top or self:evalConstraint "top"
 end
 
 -- @instance
-function View:setTop( top )
+function View.top:set( top )
 	if top then
 		self.stringConstraints.top = top
 		self:reloadConstraint "top"
@@ -421,34 +424,34 @@ function View:setTop( top )
 	end
 end
 
--- @instance
-function View:getBottom()
-	return self.bottom or self:evalConstraint "bottom"
-end
+-- -- @instance
+-- function View.bottom:get()
+-- 	return self.bottom or self:evalConstraint "bottom"
+-- end
+
+-- -- @instance
+-- function View.bottom:set( bottom )
+-- 	if bottom then
+-- 		local stringConstraints = self.stringConstraints
+-- 		stringConstraints.bottom = bottom
+-- 		self:reloadConstraint "bottom"
+-- 		if stringConstraints.height then
+-- 			stringConstraints.top = nil
+-- 		elseif stringConstraints.top then
+-- 			stringConstraints.height = nil
+-- 		end
+-- 	else
+-- 		self.stringConstraints.top = nil
+-- 	end
+-- end
 
 -- @instance
-function View:setBottom( bottom )
-	if bottom then
-		local stringConstraints = self.stringConstraints
-		stringConstraints.bottom = bottom
-		self:reloadConstraint "bottom"
-		if stringConstraints.height then
-			stringConstraints.top = nil
-		elseif stringConstraints.top then
-			stringConstraints.height = nil
-		end
-	else
-		self.stringConstraints.top = nil
-	end
-end
-
--- @instance
-function View:getLeft()
+function View.left:get()
 	return self.left or self:evalConstraint "left"
 end
 
 -- @instance
-function View:setLeft( left )
+function View.left:set( left )
 	local value
 	if left then
 		local stringConstraints = self.stringConstraints
@@ -465,36 +468,36 @@ function View:setLeft( left )
 	return value
 end
 
--- @instance 
-function View:getRight()
-	return self.right or self:evalConstraint "right"
-end
+-- -- @instance 
+-- function View.right:get()
+-- 	return self.right or self:evalConstraint "right"
+-- end
+
+-- -- @instance 
+-- function View.right:set( right )
+-- 	local value
+-- 	if right then
+-- 		local stringConstraints = self.stringConstraints
+-- 		stringConstraints.right = right
+-- 		value = self:reloadConstraint "right"
+-- 		if stringConstraints.width then
+-- 			stringConstraints.left = nil
+-- 		elseif stringConstraints.left then
+-- 			stringConstraints.width = nil
+-- 		end
+-- 	else
+-- 		self.stringConstraints.right = nil
+-- 	end
+-- 	return value
+-- end
 
 -- @instance 
-function View:setRight( right )
-	local value
-	if right then
-		local stringConstraints = self.stringConstraints
-		stringConstraints.right = right
-		value = self:reloadConstraint "right"
-		if stringConstraints.width then
-			stringConstraints.left = nil
-		elseif stringConstraints.left then
-			stringConstraints.width = nil
-		end
-	else
-		self.stringConstraints.right = nil
-	end
-	return value
-end
-
--- @instance 
-function View:getWidth()
+function View.width:get()
 	return self.width or self:evalConstraint "width"
 end
 
 -- @instance 
-function View:setWidth( width )
+function View.width:set( width )
 	local value
 	if width then
 		local stringConstraints = self.stringConstraints
@@ -512,12 +515,12 @@ function View:setWidth( width )
 end
 
 -- @instance 
-function View:getHeight()
+function View.height:get()
 	return self.height or self:evalConstraint "height"
 end
 
 -- @instance 
-function View:setHeight( height )
+function View.height:set( height )
 	local value
 	if height then
 		local stringConstraints = self.stringConstraints
@@ -534,12 +537,12 @@ function View:setHeight( height )
 	return value
 end
 
-function View:setIsVisible( isVisible )
+function View.isVisible:set( isVisible )
 	self.canvas.isVisible = isVisible
 	self.isVisible = isVisible
 end
 
-function View:getIsVisible()
+function View.isVisible:get()
 	return self.parent and self.isVisible -- if we don't have a parent we're effectively not visible
 end
 
@@ -870,7 +873,7 @@ function View:startDragDrop( event, data, hideSource, completion, views )
     self.application.dragDropManager:start( views or { self }, data, event.globalX, event.globalY, hideSource, completion )
 end
 
-function View:setIsFocused( isFocused )
+function View.isFocused:set( isFocused )
     local wasFocused = self.isFocused
     if wasFocused ~= isFocused then
         self.isFocused = isFocused

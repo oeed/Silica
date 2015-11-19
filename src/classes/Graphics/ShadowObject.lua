@@ -6,16 +6,16 @@ class "ShadowObject" extends "GraphicsObject" {
 }
 
 function ShadowObject:initialise( x, y, width, height, views )
-    self.super:initialise( x, y, width, height )
+    self:super( x, y, width, height )
     self.views = views or {}
 end
 
-function ShadowObject:setViews( views )
+function ShadowObject.views:set( views )
     self.hasChanged = true
     self.views = views
 end
 
-function ShadowObject:getFill()
+function ShadowObject.fill:get()
     if self.fill then return self.fill end
     log('update fill')
     local fill = {}

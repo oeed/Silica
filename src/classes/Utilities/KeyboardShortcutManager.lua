@@ -71,7 +71,7 @@ end
 	@return [string] keyString -- the string value of the key
 	@return [string] symbol -- the symbol
 ]]
-function KeyboardShortcutManager.symbol( keyString )
+function KeyboardShortcutManager.static:symbol( keyString )
 	return ( not keyString and "" or keySymbols[keyString] or keyString:upper() )
 end
 
@@ -81,7 +81,7 @@ end
 	@param [number] keyCode -- the numerical value of the key
 	@return [string] keyString -- the string value of the key
 ]]
-function KeyboardShortcutManager.convert( keyCode )
+function KeyboardShortcutManager.static:convert( keyCode )
 	return keyStrings[keyCode]
 end
 
@@ -91,7 +91,7 @@ end
 	@param [string] keyString -- the string value of the key
 	@return [boolean] isValid -- whether the key string is valid
 ]]
-function KeyboardShortcutManager.isValid( keyString )
+function KeyboardShortcutManager.static:isValid( keyString )
 	if not keyString then return false end
 	for i, _keyString in pairs( keyStrings ) do
 		if _keyString == keyString then

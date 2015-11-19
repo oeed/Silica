@@ -4,7 +4,7 @@ class "ScreenCanvas" extends "Canvas" {
 	drawn = {};
 }
 
-function ScreenCanvas:setHasChanged( hasChanged )
+function ScreenCanvas.hasChanged:set( hasChanged )
 	self.hasChanged = hasChanged
 end
 

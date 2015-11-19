@@ -396,6 +396,7 @@ local function group( tokens )
 	return tokens
 end
 
+--FIX:
 function eval.knownList( list )
 	local n = eval.knownValue( list[1] )
 	for i = 1, ( #list - 1 ) / 2 do
@@ -418,6 +419,7 @@ function eval.knownList( list )
 	return n
 end
 
+-- FIX:
 function eval.knownValue( token )
 	if type( token ) == "number" then
 		return math.floor( token + .5 )
@@ -438,14 +440,14 @@ end
 
 class "MathParser" {} -- I think it's best just to make it a class so it's loaded properly (when we make the loader). Happy to change it though.
 
-function MathParser.parseString( str )
+function MathParser.static:parseString( str )
 	local tokens = lex( str )
 	parseRelativeIndexes( tokens )
 	parseMathConstants( tokens )
 	return group( checkFunctionCalls( parse( tokens ) ) )
 end
 
-function MathParser.simplify( tokens )
+function MathParser.static:simplify( tokens )
 	for i = 1, #tokens do
 		if type( tokens[i] ) ~= "string" then
 			if isKnownValue( tokens[i] ) then
@@ -475,7 +477,7 @@ end
 
 -- solve percentages
 -- plug in relative indexes
-function MathParser.resolve( tokens, object, property, references )
+function MathParser.static:resolve( tokens, object, property, references )
 	references = references or {}
 	local parent = object.parent
 	local parentSize = parent and ( ( property == "left" or property == "right" or property == "width" ) and parent.width or parent.height ) or 0
@@ -530,6 +532,6 @@ function MathParser.resolve( tokens, object, property, references )
 	return t, references
 end
 
-function MathParser.eval( list )
+function MathParser.static:eval( list )
 	return eval.knownList( list )
 end

@@ -254,7 +254,7 @@ class "XML" {}
 	@return false
 	@return [string] error -- the error message
 ]]
-function XML.fromText( xmlText )
+function XML.static:fromText( xmlText )
 	local tokens, err = lex( xmlText )
 	if not tokens then
 		return false, err
@@ -278,7 +278,7 @@ end
 	@param [string] filePath -- the path to the XML file
 	@return [table] xmlNodes -- the parsed XML nodes
 ]]
-function XML.fromFile( filePath )
+function XML.static:fromFile( filePath )
 	local h = fs.open( filePath, "r" )
 	if not h then
 		error( "Failed to open XML file: " .. filePath, 0 )

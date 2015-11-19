@@ -10,6 +10,11 @@ class "Event" {
 	isSentToChildren = true; -- whether the event will be passed to children
 	isSentToSender = true; -- whether the event will be handled by the sender
 
+	-- functions can be called either before or after tickle down
+	phases = Enum( Number, {
+		BEFORE = 1;
+		AFTER = 2;
+	} );
 }
 
 --[[
@@ -17,7 +22,7 @@ class "Event" {
 	@desc Registers an Event subclass to a event type name (e.g. MouseDownEvent links with "mouse_down")
 	@param [class] _class -- the class that was constructed
 ]]
-function Event.register( eventType, subclass )
+function Event.static:register( eventType, subclass )
 	eventClasses[eventType] = subclass
 end
 
@@ -26,7 +31,7 @@ end
 	@desc Registers an Event subclass after it has just been constructed
 	@param [class] _class -- the class that was constructed
 ]]
-function Event.constructed( _class )
+function Event.static:constructed( _class )
 	if _class.eventType then
 		Event.register( _class.eventType, _class )
 	end
@@ -39,7 +44,7 @@ end
 	@param ... -- the event arguments
 	@return [Event] event
 ]]
-function Event.create( eventType, ... )
+function Event.static:create( eventType, ... )
 	if not eventType then error( "No event type given to Event.create!", 0 ) end
 
 	local eventClass = eventClasses[eventType]

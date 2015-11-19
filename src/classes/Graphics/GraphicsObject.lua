@@ -6,11 +6,12 @@ class "GraphicsObject" {
 	height = 0; -- @property height [number] - The height of the object
 	hasChanged = false; -- @property hasChanged [boolean] - Whether or not the object's internals have hasChanged since it was last drawn
 	parent = false; -- @property parent [Canvas] - The parent of the object, if it exists
-	outlineColour = Graphics.colours.TRANSPARENT; -- @property [Graphics.colours] -- The colour of the outline
+	outlineColour = Graphics.colours(); -- @property [Graphics.colours] -- The colour of the outline
 	leftOutlineWidth = 1; -- @property [number] -- The thickness of the outline
 	topOutlineWidth = 1; -- @property [number] -- The thickness of the outline
 	rightOutlineWidth = 1; -- @property [number] -- The thickness of the outline
 	bottomOutlineWidth = 1; -- @property [number] -- The thickness of the outline
+	outlineWidth = Number( 1 ); -- @property [number] -- The thickness of the outline
 	fillColour = Graphics.colours.TRANSPARENT; -- @property [Graphics.colours] -- The fill colour of the object
 	isVisible = true;
 	fill = false;
@@ -38,7 +39,7 @@ end
 	@desc Sets the x coordinate of the graphics object
 	@param [number] x -- the x coordinate of the graphics object
 ]]
-function GraphicsObject:setX( x )
+function GraphicsObject.x:set( x )
 	if self.parent then
 		self.parent.hasChanged = true
 	end
@@ -50,7 +51,7 @@ end
 	@desc Sets the y coordinate of the graphics object
 	@param [number] y -- the y coordinate of the graphics object
 ]]
-function GraphicsObject:setY( y )
+function GraphicsObject.y:set( y )
 	if self.parent then
 		self.parent.hasChanged = true
 	end
@@ -62,7 +63,7 @@ end
 	@desc Sets the width of the graphics object
 	@param [number] width -- the width of the graphics object
 ]]
-function GraphicsObject:setWidth( width )
+function GraphicsObject.width:set( width )
 	if self.width ~= width then
 		self.hasChanged = true
 		self.width = width
@@ -74,7 +75,7 @@ end
 	@desc Sets the height of the graphics object
 	@param [number] height -- the height of the graphics object
 ]]
-function GraphicsObject:setHeight( height )
+function GraphicsObject.height:set( height )
 	if self.height ~= height then
 		self.hasChanged = true
 		self.height = height
@@ -86,7 +87,7 @@ end
 	@desc Sets the outlineWidth of the graphics object
 	@param [number] outlineWidth -- the outlineWidth of the graphics object
 ]]
-function GraphicsObject:setOutlineWidth( outlineWidth )
+function GraphicsObject.outlineWidth:set( outlineWidth )
 	self.leftOutlineWidth = outlineWidth
 	self.topOutlineWidth = outlineWidth
 	self.rightOutlineWidth = outlineWidth
@@ -98,9 +99,9 @@ end
 	@desc Sets the outlineWidth of the graphics object
 	@param [number] outlineWidth -- the outlineWidth of the graphics object
 ]]
-function GraphicsObject:setLeftOutlineWidth( outlineWidth )
+function GraphicsObject.leftOutlineWidth:set( leftOutlineWidth )
 	self.hasChanged = true
-	self.leftOutlineWidth = outlineWidth
+	self.leftOutlineWidth = leftOutlineWidth
 end
 
 --[[
@@ -108,9 +109,9 @@ end
 	@desc Sets the outlineWidth of the graphics object
 	@param [number] outlineWidth -- the outlineWidth of the graphics object
 ]]
-function GraphicsObject:setTopOutlineWidth( outlineWidth )
+function GraphicsObject.topOutlineWidth:set( topOutlineWidth )
 	self.hasChanged = true
-	self.topOutlineWidth = outlineWidth
+	self.topOutlineWidth = topOutlineWidth
 end
 
 --[[
@@ -118,9 +119,9 @@ end
 	@desc Sets the outlineWidth of the graphics object
 	@param [number] outlineWidth -- the outlineWidth of the graphics object
 ]]
-function GraphicsObject:setRightOutlineWidth( outlineWidth )
+function GraphicsObject.rightOutlineWidth:set( rightOutlineWidth )
 	self.hasChanged = true
-	self.rightOutlineWidth = outlineWidth
+	self.rightOutlineWidth = rightOutlineWidth
 end
 
 --[[
@@ -128,9 +129,9 @@ end
 	@desc Sets the outlineWidth of the graphics object
 	@param [number] outlineWidth -- the outlineWidth of the graphics object
 ]]
-function GraphicsObject:setBottomOutlineWidth( outlineWidth )
+function GraphicsObject.bottomOutlineWidth:set( bottomOutlineWidth )
 	self.hasChanged = true
-	self.bottomOutlineWidth = outlineWidth
+	self.bottomOutlineWidth = bottomOutlineWidth
 end
 
 --[[
@@ -138,7 +139,7 @@ end
 	@desc Sets the fillColour of the graphics object
 	@param [number] fillColour -- the fillColour of the graphics object
 ]]
-function GraphicsObject:setFillColour( fillColour )
+function GraphicsObject.fillColour:set( fillColour )
 	-- assert( type( fillColour ) == "number", "fillColour must be a valid colour.")
 	self.hasChanged = true
 	self.fillColour = fillColour
@@ -149,7 +150,7 @@ end
 	@desc Sets the outlineColour of the graphics object
 	@param [number] outlineColour -- the outlineColour of the graphics object
 ]]
-function GraphicsObject:setOutlineColour( outlineColour )
+function GraphicsObject.outlineColour:set( outlineColour )
 	-- assert( type( outlineColour ) == "number", "outlineColour must be a valid colour.")
 	self.hasChanged = true
 	self.outlineColour = outlineColour
@@ -160,7 +161,7 @@ end
 	@desc Sets the visibility of the graphics object
 	@param [boolean] isVisible -- whether the graphics object is visible
 ]]
-function GraphicsObject:setIsVisible( isVisible )
+function GraphicsObject.isVisible:set( isVisible )
 	self.hasChanged = true
 	self.isVisible = isVisible
 end
@@ -170,7 +171,7 @@ end
 	@desc Sets the changed state of the graphics object, applying it to the parent too
 	@param [boolean] hasChanged -- the changed state
 ]]
-function GraphicsObject:setHasChanged( hasChanged )
+function GraphicsObject.hasChanged:set( hasChanged )
 	if hasChanged then
 		local parent = self.parent
 		if parent then
@@ -188,7 +189,7 @@ end
 	@desc Sets the parent of the graphics object, removing the old one if it exists
 	@param [boolean] hasChanged -- the parent
 ]]
-function GraphicsObject:setParent( parent )
+function GraphicsObject.parent:set( parent )
 	if self.parent then
 		self.parent:remove( self )
 	end

@@ -26,18 +26,18 @@ function SegmentContainer:updateLayout()
 end
 
 function SegmentContainer:update( deltaTime )
-    self.super:update( deltaTime )
+    self:super( deltaTime )
     if self.needsLayoutUpdate then
         self:updateLayout()
     end
 end
 
 function SegmentContainer:insert( ... )
-	self.super:insert( ... )
+	self:super( ... )
 	self.needsLayoutUpdate = true
 end
 
 function SegmentContainer:removeChild( ... )
-	self.super:removeChild( ... )
+	self:super( ... )
 	self.needsLayoutUpdate = true
 end

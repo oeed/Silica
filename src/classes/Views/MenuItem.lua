@@ -23,15 +23,15 @@ class "MenuItem" extends "View" {
 	@param [table] properties -- the properties for the view
 ]]
 function MenuItem:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
 
     self:event( MouseDownEvent, self.onMouseDown )
     self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
 function MenuItem:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local width, height, canvas = self.width, self.height, self.canvas
     local backgroundObject = canvas:insert( Rectangle( 1, 1, width, height, self.fillColour ) )
     local textObject = canvas:insert( Text( 7, 3, height, width - TEXT_MARGIN, self.text ) )
@@ -51,15 +51,15 @@ function MenuItem:initialiseCanvas()
     end
 end
 
-function MenuItem:setShortcut( shortcut )
-    if shortcut and #shortcut > 0 then
-        self.keyboardShortcut = KeyboardShortcut.fromString( shortcut ) or false
-    else
-        self.keyboardShortcut = false
-    end
-end
+-- function MenuItem.shortcut:set( shortcut )
+--     if shortcut and #shortcut > 0 then
+--         self.keyboardShortcut = KeyboardShortcut.fromString( shortcut ) or false
+--     else
+--         self.keyboardShortcut = false
+--     end
+-- end
 
-function MenuItem:setFont( font )
+function MenuItem.font:set( font )
     self.font = font
     local textObject = self.textObject
     local shortcutObject = self.shortcutObject
@@ -91,12 +91,17 @@ function MenuItem:updateText()
     end
 end
 
-function MenuItem:setText( text )
+function MenuItem.text:set( text )
     self.text = text
     self:updateText()
 end
 
-function MenuItem:setKeyboardShortcut( keyboardShortcut )
+function MenuItem.keyboardShortcut:set( keyboardShortcut )
+    if type( keyboardShortcut ) == "string" and #keyboardShortcut > 0 then
+        self.keyboardShortcut = KeyboardShortcut.fromString( keyboardShortcut ) or false
+    elseif not keyboardShortcut then
+        self.keyboardShortcut = false
+    end
     self.keyboardShortcut = keyboardShortcut
     self:updateText()
 end
@@ -116,12 +121,12 @@ function MenuItem:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
 end
 
-function MenuItem:setIsEnabled( isEnabled )
+function MenuItem.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self:updateThemeStyle()
 end
 
-function MenuItem:setIsPressed( isPressed )
+function MenuItem.isPressed:set( isPressed )
     self.isPressed = isPressed
     self:updateThemeStyle()
 end

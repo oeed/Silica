@@ -25,7 +25,8 @@ class "InterfaceOutlet" {
 	@param [boolean] trackAll -- whether to track all view with the identifier, or just one
 	@param [Container] container -- the container that owns the outlet
 ]]
-function InterfaceOutlet:initialise( viewIdentifier, trackAll, key, container ) -- if you change this you need to change it in class.lua uniqueTable() too
+ -- if you change this you need to change it in class.lua uniqueTable() too
+function InterfaceOutlet:initialise( viewIdentifier, trackAll, key, container )
 	trackAll = trackAll or false
 	self.viewIdentifier = viewIdentifier or false
 	self.trackAll = trackAll or false
@@ -44,7 +45,7 @@ end
 	@desc Sets the current views the outlet points to
 	@param [table/View] views -- the view or views
 ]]
-function InterfaceOutlet:setViews( views )
+function InterfaceOutlet.views:set( views )
 	local oldViews = self.views
 	self.views = views
 

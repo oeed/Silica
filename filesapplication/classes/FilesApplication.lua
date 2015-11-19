@@ -11,7 +11,7 @@ class "FilesApplication" extends "Application" {
 	@desc Initialise the custom application
 ]]
 function FilesApplication:initialise()
-	self.super:initialise()
+	self:super( fs )
 	self:event( CharacterEvent, self.onChar )
 
 	try( function() 

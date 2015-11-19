@@ -24,7 +24,7 @@ class "ScrollView" extends "Container" {
 	@param [table] properties -- the properties for the view
 ]]
 function ScrollView:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
 
 	local width, height = self.width, self.height
 	self.verticalScrollbar = self:insert( Scrollbar( { isHorizontal = false, x = width - Scrollbar.width + 1, height = height } ) )
@@ -37,7 +37,7 @@ function ScrollView:initialise( ... )
 end
 
 function ScrollView:initialiseCanvas()
-	self.super:initialiseCanvas()
+	self:super()
 
 	self.theme:connect( self.canvas, "fillColour" )
 end
@@ -109,7 +109,7 @@ end
 
 
 function ScrollView:update( deltaTime )
-	self.super:update( deltaTime )
+	self:super( deltaTime )
 	local verticalVelocity = self.verticalVelocity
 	if verticalVelocity ~= 0 then
 		local startTime

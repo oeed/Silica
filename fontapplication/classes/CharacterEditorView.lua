@@ -21,12 +21,12 @@ class "CharacterEditorView" extends "View" {
 }
 
 function CharacterEditorView:initialise( ... )
-    self.super:initialise( ... )
+    self:super( ... )
 
     self:event( MouseDownEvent, self.onMouseDownOrMove )
     self:event( MouseDragEvent, self.onMouseDownOrMove )
-    self.event:connectGlobal( MouseDownEvent, self.onGlobalMouseDownOrMove, EventManager.phase.BEFORE )
-    self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDownOrMove, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseDownEvent, self.onGlobalMouseDownOrMove, Event.phases.BEFORE )
+    self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDownOrMove, Event.phases.BEFORE )
     self:event( ReadyInterfaceEvent, self.onReady)
 end
 
@@ -37,7 +37,7 @@ function CharacterEditorView:onReady()
 end
 
 function CharacterEditorView:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
 
     local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
     local artboardObject = canvas:insert( Rectangle( 1 + RESIZE_MARGIN_SIZE - RESIZE_PADDING_SIZE, 1 + RESIZE_MARGIN_SIZE - RESIZE_PADDING_SIZE, 1, 1 ) )
@@ -71,9 +71,9 @@ function CharacterEditorView:initialiseCanvas()
     self.borderRightObject = borderRightObject
 end
 
-function CharacterEditorView:setAnimationPercentage( percentage )
+function CharacterEditorView.animationPercentage:set( animationPercentage )
 
-    if percentage == 0 then
+    if animationPercentage == 0 then
         self.scaledCharacterObject.x = 1 + RESIZE_MARGIN_SIZE
         self.width = self.character.width * self.scale + 2 * RESIZE_MARGIN_SIZE
         return
@@ -81,7 +81,7 @@ function CharacterEditorView:setAnimationPercentage( percentage )
 
     local startWidth, endWidth = self.startWidth, self.endWidth
 
-    if percentage < 1 and not startWidth then
+    if animationPercentage < 1 and not startWidth then
         local scale = self.scale
         startWidth = self.character.width * scale + 2 * RESIZE_MARGIN_SIZE
         endWidth = self.nextCharacter.width * scale + 2 * RESIZE_MARGIN_SIZE
@@ -89,11 +89,11 @@ function CharacterEditorView:setAnimationPercentage( percentage )
         self.endWidth = endWidth
     end
 
-    if percentage <= 0.5 then
+    if animationPercentage <= 0.5 then
         local scaledCharacterObject = self.scaledCharacterObject
         local endX = -scaledCharacterObject.width + 1 + RESIZE_MARGIN_SIZE
-        scaledCharacterObject.x = math.floor( endX * percentage * 2 + 0.5 ) + 1 + RESIZE_MARGIN_SIZE
-    elseif percentage <= 1 then
+        scaledCharacterObject.x = math.floor( endX * animationPercentage * 2 + 0.5 ) + 1 + RESIZE_MARGIN_SIZE
+    elseif animationPercentage <= 1 then
         local nextCharacter = self.nextCharacter
         local scaledCharacterObject = self.scaledCharacterObject
         if nextCharacter then
@@ -103,14 +103,14 @@ function CharacterEditorView:setAnimationPercentage( percentage )
         end
 
         local startX = 1 + scaledCharacterObject.width
-        scaledCharacterObject.x = math.floor( startX * (1 - (percentage - 0.5) * 2) + 0.5 ) + 1 + RESIZE_MARGIN_SIZE
+        scaledCharacterObject.x = math.floor( startX * (1 - (animationPercentage - 0.5) * 2) + 0.5 ) + 1 + RESIZE_MARGIN_SIZE
     end
 
-    if percentage >= 1 then
+    if animationPercentage >= 1 then
         self.startWidth = false
         self.endWidth = false
     else
-        self.width = startWidth + ( endWidth - startWidth ) * percentage
+        self.width = startWidth + ( endWidth - startWidth ) * animationPercentage
     end
 end
 
@@ -139,7 +139,7 @@ function CharacterEditorView:updateHeight( height )
     self.y = math.ceil( ( self.parent.height - height ) / 2 )
 end
 
-function CharacterEditorView:setScale( scale )
+function CharacterEditorView.scale:set( scale )
     self.scale = scale
     local scaledCharacterObject = self.scaledCharacterObject
     scaledCharacterObject.scale = scale
@@ -147,7 +147,7 @@ function CharacterEditorView:setScale( scale )
     self.height = scaledCharacterObject.height + 2 * RESIZE_MARGIN_SIZE
 end
 
-function CharacterEditorView:setCharacter( character )
+function CharacterEditorView.character:set( character )
     self.character = character
     local scaledCharacterObject = self.scaledCharacterObject
     scaledCharacterObject.character = character

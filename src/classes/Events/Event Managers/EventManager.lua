@@ -3,12 +3,6 @@ class "EventManager" {
 	owner = false;
 	handles = {};
 	handlesGlobal = {};
-
-	-- functions can be called either before or after tickle down
-	phase = {
-		BEFORE = 1;
-		AFTER = 2;
-	};
 }
 
 
@@ -20,10 +14,9 @@ class "EventManager" {
 function EventManager:initialise( owner )
 	self.owner = owner or self
 	self.owner = self.owner
-
 	-- allow the class to be called as a shorthand for :connect
-	self.mt.__call = function(self, _, ...) return self:connect( ... ) end
-	setmetatable( self, self.mt )
+	self.metatable.__call = function(self, _, ...) return self:connect( ... ) end
+	-- setmetatable( self, self.mt )
 end
 
 --[[
@@ -39,7 +32,7 @@ function EventManager:connect( eventType, func, phase, eventManager, sender )
 	if type( eventType ) == "table" and eventType:typeOf( Event ) then eventType = eventType.eventType end
 	
 	if func and type( func ) == "function" then
-		phase = phase or EventManager.phase.BEFORE
+		phase = phase or Event.phases.BEFORE
 		eventManager = eventManager or self
 		self:disconnect( eventType, func, phase, eventManager, sender ) -- ensure duplicates won't be made
 
@@ -61,7 +54,7 @@ end
 	@param [class] sender -- the value passed as self. defaults to eventManager.owner
 ]]
 function EventManager:disconnect( eventType, func, phase, eventManager, sender )
-	phase = phase or EventManager.phase.BEFORE
+	phase = phase or Event.phases.BEFORE
 	eventManager = eventManager or self
 	sender = sender or eventManager.owner
 
@@ -82,7 +75,7 @@ end
 ]]
 function EventManager:connectGlobal( eventType, func, phase, sender )
 	if func and type( func ) == "function" then
-		phase = phase or EventManager.phase.BEFORE
+		phase = phase or Event.phases.BEFORE
 		sender = sender or self.owner
 		self:disconnectGlobal( eventType, func, phase, sender ) -- ensure duplicates won't be made
 
@@ -104,7 +97,7 @@ end
 	@param [function] func -- the function called when the event occurs
 ]]
 function EventManager:disconnectGlobal( eventType, func, phase, sender, eventManager )
-	phase = phase or EventManager.phase.BEFORE
+	phase = phase or Event.phases.BEFORE
 	sender = sender or self.owner
 	self.application.event:disconnect( eventType, func, phase, self, sender )
 

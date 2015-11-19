@@ -25,7 +25,7 @@ class "BitmapFont" extends "Font" {
 	
 }
 
-function BitmapFont.decodeCharacter( bytes, width, height )
+function BitmapFont.static:decodeCharacter( bytes, width, height )
 	local character = {}
 	local s = ceil( height / 8 )
 	local function hasbit( x, y )
@@ -49,7 +49,7 @@ function BitmapFont.decodeCharacter( bytes, width, height )
 	return character
 end
 
-function BitmapFont.encodeCharacter( character, width, height )
+function BitmapFont.static:encodeCharacter( character, width, height )
 	local bytes = {}
 	for x = 1, width do
 		local byte = {}
@@ -80,7 +80,7 @@ function BitmapFont.encodeCharacter( character, width, height )
 	return bytes
 end
 
-function BitmapFont.encodeSet( characters, height )
+function BitmapFont.static:encodeSet( characters, height )
 	local bytes = {}
 	for k, v in pairs( characters ) do
 		local width = v.width or ( v[1] and #v[1] or 0 )
@@ -93,7 +93,7 @@ function BitmapFont.encodeSet( characters, height )
 	return bytes
 end
 
-function BitmapFont.decodeSet( bytes, height )
+function BitmapFont.static:decodeSet( bytes, height )
 	local hf = ceil( height / 8 )
 	local characters = {}
 	while bytes[1] do
@@ -102,7 +102,7 @@ function BitmapFont.decodeSet( bytes, height )
 		table.remove( bytes, 1 )
 		table.remove( bytes, 1 )
 		local bitmapcount = hf * width
-		characters[character] = BitmapFont.decodeCharacter( bytes, width, height )
+		characters[character] = BitmapFont.static:decodeCharacter( bytes, width, height )
 		for i = 1, bitmapcount do
 			table.remove( bytes, 1 )
 		end
@@ -110,7 +110,7 @@ function BitmapFont.decodeSet( bytes, height )
 	return characters
 end
 
-function BitmapFont.encodeFile( file, characters, height, metadata )
+function BitmapFont.static:encodeFile( file, characters, height, metadata )
 	local h = fs.open( file, "wb" )
 	if h then
 		for k, v in pairs( metadata or {} ) do
@@ -122,7 +122,7 @@ function BitmapFont.encodeFile( file, characters, height, metadata )
 		end
 		h.write( 1 )
 		h.write( height )
-		for _, byte in ipairs( BitmapFont.encodeSet( characters, height ) ) do
+		for _, byte in ipairs( BitmapFont.static:encodeSet( characters, height ) ) do
 			h.write( byte )
 		end
 		h.close()
@@ -130,7 +130,7 @@ function BitmapFont.encodeFile( file, characters, height, metadata )
 	end
 end
 
-function BitmapFont.decodeFile( file )
+function BitmapFont.static:decodeFile( file )
 	local h = fs.open( file, "rb" )
 	if h then
 		local metadata = {}
@@ -145,12 +145,12 @@ function BitmapFont.decodeFile( file )
 		for byte in h.read do
 			bytes[#bytes + 1] = byte
 		end
-		local characters = BitmapFont.decodeSet( bytes, height )
+		local characters = BitmapFont.static:decodeSet( bytes, height )
 		return characters, height, metadata
 	end
 end
 
-function BitmapFont.convertFile( input, output, charsetStart, height, metadata )
+function BitmapFont.static:convertFile( input, output, charsetStart, height, metadata )
 	local newchar = colours.red
 	local filled = colours.white
 	local image = paintutils.loadImage( input )

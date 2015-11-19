@@ -8,7 +8,7 @@ class "ScrollbarGrabber" extends "GraphicsObject" {
     @desc Gets the pixes to be filled
     @return [table] fill -- the pixels to fill
 ]]
-function ScrollbarGrabber:getFill()
+function ScrollbarGrabber.fill:get()
 	local height = self.height
 	local width = self.width
 	local lines = self.lines

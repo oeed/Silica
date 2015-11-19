@@ -7,6 +7,6 @@ class "FileClipboardData" extends "ClipboardData" {
 }
 
 function FileClipboardData:initialise( path )
-    self.super:initialise()
+    self:super()
     self.path = path
 end

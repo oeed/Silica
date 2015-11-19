@@ -14,7 +14,7 @@ class "Container" extends "View" {
 	@param ...
 ]]
 function Container:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
 	self:loadInterface()
 	self:event( InterfaceOutletChangedInterfaceEvent, self.onInterfaceOutletChanged )
 end
@@ -26,7 +26,7 @@ end
 	@param [class] _class -- the class that the container must extend (e.g. ApplicationContainer). If this is being called on a subclass you MUST pass in the class.
 	@return [Container or _class] container -- the container
 ]]
-function Container.fromInterface( interfaceName, _class )
+function Container.static:fromInterface( interfaceName, _class )
 	local interface = Interface( interfaceName, _class or Container )
 	if interface then
 		local container = interface.container
@@ -62,7 +62,7 @@ function Container:onInterfaceOutletChanged( event )
 	local oldView = false
 	local newView = false
 	local interfaceOutletActions = self.interfaceOutletActions
-	local BEFORE = EventManager.phase.BEFORE
+	local BEFORE = Event.phases.BEFORE
 	local ACTION = ActionInterfaceEvent
 
 	for k, outlet in pairs( self.interfaceOutlets ) do
@@ -109,7 +109,7 @@ end
 	@param [number] deltaTime -- the time since last update
 ]]
 function Container:update( deltaTime )
-	self.super:update( deltaTime )
+	self:super( deltaTime )
 	for i, childView in ipairs( self.children ) do
 		childView:update( deltaTime )
 	end
@@ -127,7 +127,7 @@ function Container:onParentResizedConstraintUpdateAfter( arg1, arg2, arg3 )
 	return returnedValue
 end
 
-function Container:setWidth( width )
+function Container.width:set( width )
 	self.super:setWidth( width )
     width = self.width
 	local event = self.event
@@ -136,7 +136,7 @@ function Container:setWidth( width )
 	end
 end
 
-function Container:setHeight( height )
+function Container.height:set( height )
 	self.super:setHeight( height )
     height = self.height
 	local event = self.event
@@ -145,7 +145,7 @@ function Container:setHeight( height )
 	end
 end
 
-function Container:setIsEnabled( isEnabled )
+function Container.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     for i, childView in ipairs( self.children ) do
     	-- we need to update the isEnabled value for all children, the best way is just to send the current value
@@ -333,7 +333,7 @@ function Container:findChildren( identifier, descendTree )
 end
 
 function Container:dispose()
-	self.super:dispose()
+	self:super()
 	for i, childView in ipairs( self.children ) do
 		childView:dispose()
 	end

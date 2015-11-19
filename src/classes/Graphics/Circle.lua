@@ -1,5 +1,7 @@
 
-class "Circle" extends "GraphicsObject" {}
+class "Circle" extends "GraphicsObject" {
+	diameter = Number( 1 );
+}
 
 --[[
 	@static
@@ -9,7 +11,7 @@ class "Circle" extends "GraphicsObject" {}
 	@param [number] diameter -- the diameter of the circle
 ]]
 function Circle:initialise( x, y, diameter )
-	self.super:initialise( x, y, diameter, diameter )
+	self:super( x, y, diameter, diameter )
 end
 
 --[[
@@ -17,7 +19,7 @@ end
 	@desc Sets the diamater of the circle
 	@param [number] diameter -- the diameter of the circle
 ]]
-function Circle:setDiameter( diameter )
+function Circle.diameter:set( diameter )
 	self.width = diameter
 	self.height = diameter
 end
@@ -27,7 +29,7 @@ end
 	@desc Gets the diameter of the circle
 	@return [number] diameter -- the diameter
 ]]
-function Circle:getDiameter()
+function Circle.diameter:get()
 	return self.height
 end
 
@@ -36,7 +38,7 @@ end
     @desc Gets the pixes to be filled
     @return [table] fill -- the pixels to fill
 ]]
-function Circle:getFill()
+function Circle.fill:get()
 	-- TODO: why was this commented out?
 	if self.fill then return self.fill end
 

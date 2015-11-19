@@ -19,7 +19,7 @@ function SymbolObject:initialise( x, y, symbol )
     self.symbol = symbol
 end
 
-function SymbolObject:setSymbol( symbol )
+function SymbolObject.symbol:set( symbol )
     self.symbol = symbol
     for i, child in ipairs( self.children ) do
         self:remove( child )
@@ -36,43 +36,43 @@ function SymbolObject:setSymbol( symbol )
     end
 end
 
-function SymbolObject:setFillColour( fillColour )
+function SymbolObject.fillColour:set( fillColour )
     for i, path in ipairs( self.paths ) do
         path.fillColour = fillColour
     end
 end
 
-function SymbolObject:setOutlineColour( outlineColour )
+function SymbolObject.outlineColour:set( outlineColour )
     for i, path in ipairs( self.paths ) do
         path.outlineColour = outlineColour
     end
 end
 
-function SymbolObject:setOutlineWidth( outlineWidth )
+function SymbolObject.outlineWidth:set( outlineWidth )
     for i, path in ipairs( self.paths ) do
         path.outlineWidth = outlineWidth
     end
 end
 
-function SymbolObject:setLeftOutlineWidth( leftOutlineWidth )
+function SymbolObject.leftOutlineWidth:set( leftOutlineWidth )
     for i, path in ipairs( self.paths ) do
         path.leftOutlineWidth = leftOutlineWidth
     end
 end
 
-function SymbolObject:setRightOutlineWidth( rightOutlineWidth )
+function SymbolObject.rightOutlineWidth:set( rightOutlineWidth )
     for i, path in ipairs( self.paths ) do
         path.rightOutlineWidth = rightOutlineWidth
     end
 end
 
-function SymbolObject:setTopOutlineWidth( topOutlineWidth )
+function SymbolObject.topOutlineWidth:set( topOutlineWidth )
     for i, path in ipairs( self.paths ) do
         path.topOutlineWidth = topOutlineWidth
     end
 end
 
-function SymbolObject:setBottomOutlineWidth( bottomOutlineWidth )
+function SymbolObject.bottomOutlineWidth:set( bottomOutlineWidth )
     for i, path in ipairs( self.paths ) do
         path.bottomOutlineWidth = bottomOutlineWidth
     end

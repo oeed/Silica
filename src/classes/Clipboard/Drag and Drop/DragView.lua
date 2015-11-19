@@ -12,7 +12,7 @@ class "DragView" extends "View" {
 }
 
 function DragView:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
 
     local width, height, canvas = self.width, self.height, self.canvas
 
@@ -23,17 +23,17 @@ function DragView:initialiseCanvas()
     self.imageObject = imageObject
 end
 
-function DragView:setImage( image )
+function DragView.image:set( image )
     self.image = image
     self.imageObject.image = image
 end
 
-function DragView:setShadowImage( shadowImage )
+function DragView.shadowImage:set( shadowImage )
     self.shadowImage = shadowImage
     self.shadowObject.image = shadowImage
 end
 
-function DragView:setShadowSize( shadowSize )
+function DragView.shadowSize:set( shadowSize )
     self.shadowSize = shadowSize
     local shadowObject = self.shadowObject
     shadowObject.x = 1 + math.floor( SHADOW_RATIO * shadowSize + 0.5 )

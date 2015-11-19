@@ -5,7 +5,7 @@ class "Separator" extends "GraphicsObject" {
 }
 
 function Separator:initialise( x, y, width, height, isDashed )
-	self.super:initialise( x, y, width, height )
+	self:super( x, y, width, height )
 	
 	if isDashed ~= nil then
 		self.isDashed = isDashed
@@ -17,7 +17,7 @@ end
     @desc Gets the pixes to be filled
     @return [table] fill -- the pixels to fill
 ]]
-function Separator:getFill()
+function Separator.fill:get()
 	local fill = self.fill
 	if fill then return fill end
 	local isDashed, height = self.isDashed, self.height

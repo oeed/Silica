@@ -7,7 +7,7 @@ class "SymbolButton" extends "Button" {
 }
 
 function SymbolButton:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local canvas = self.canvas
     self.textObject.isVisible = false
     local symbolObject = canvas:insert( SymbolObject( 1 + self.leftMargin, 5, self.symbol ) )
@@ -15,7 +15,7 @@ function SymbolButton:initialiseCanvas()
     self.symbolObject = symbolObject
 end
 
-function SymbolButton:setSymbol( symbol )
+function SymbolButton.symbol:set( symbol )
     if type( symbol ) == "string" then
         symbol = Symbol.fromName( symbol )
     end
@@ -33,7 +33,7 @@ function SymbolButton:autosize()
     self.needsAutosize = false
 end
 
-function SymbolButton:setIsPressed( isPressed )
+function SymbolButton.isPressed:set( isPressed )
     self.super:setIsPressed( isPressed )
     local symbolObject = self.symbolObject
     symbolObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1

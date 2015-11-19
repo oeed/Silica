@@ -12,7 +12,7 @@ class "SegmentButton" extends "Button" {
 }
 
 function SegmentButton:initialise( ... )
-    self.super:initialise( ... )
+    self:super( ... )
     self:event( ParentChangedInterfaceEvent, self.onSiblingOrParentChanged )
     self:event( SiblingAddedInterfaceEvent, self.onSiblingOrParentChanged )
     self:event( SiblingAddedInterfaceEvent, self.onSiblingOrParentChanged )
@@ -23,7 +23,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function SegmentButton:initialiseCanvas()
-	self.super:initialiseCanvas()
+	self:super()
     local separatorBackgroundObject = self.canvas:insert( Rectangle( self.width, 1, 1, self.height -1 ) )
     local separatorObject = self.canvas:insert( Separator( self.width, 3, 1, self.height - 4 ) )
     separatorBackgroundObject.leftOutlineWidth = 0
@@ -40,7 +40,8 @@ function SegmentButton:initialiseCanvas()
     theme:disconnect( self.shadowObject, "radius", "cornerRadius" )
 end
 
-function SegmentButton:setWidth( width ) -- yes, set, not update
+ -- yes, set, not update
+function SegmentButton.width:set( width )
     self.super:setWidth( width )
     local isFirst = self.isFirst
     local isLast = self.isLast
@@ -58,15 +59,15 @@ function SegmentButton:setWidth( width ) -- yes, set, not update
     self.parent.needsLayoutUpdate = true
 end
 
-function SegmentButton:getRightMargin()
+function SegmentButton.rightMargin:get()
     return self.isLast and self.rightMargin or self.centerMargin
 end
 
-function SegmentButton:getLeftMargin()
+function SegmentButton.leftMargin:get()
     return self.isFirst and self.leftMargin or self.centerMargin
 end
 
-function SegmentButton:setIsPressed( isPressed )
+function SegmentButton.isPressed:set( isPressed )
     self.super:setIsPressed( isPressed )
     local isFirst = self.isFirst
     local isLast = self.isLast

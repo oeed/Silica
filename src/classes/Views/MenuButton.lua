@@ -8,6 +8,8 @@ class "MenuButton" extends "Button" {
 
     menuMargin = 5;
 
+    isActive = Boolean; -- TODO: isReadOnly
+
     closeArrowObject = false;
     openArrowObject = false;
     needsArrowUpdate = false;
@@ -18,7 +20,7 @@ class "MenuButton" extends "Button" {
     @desc Creates a MenuButton object and connects the event handlers
 ]]
 function MenuButton:initialise( ... )
-    self.super:initialise( ... )
+    self:super( ... )
     local menuName = self.menuName
     if not menuName then error( "MenuButtons must specify the property menuName (the name of the interface file to use).", 0 ) end
     menu = Menu.fromInterface( menuName )
@@ -64,7 +66,7 @@ function MenuButton:updateHeight( height )
 end
 
 function MenuButton:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local arrowX, arrowY = self.width - 12, math.ceil( ( self.height - 4 ) / 2 )
 
     local closeArrowObject = Path( 1, 1, 7, 4, 1, 4 )
@@ -92,7 +94,7 @@ end
     @desc Whether the button is pressed or open
     @return [boolean] isActive -- whether the button is active
 ]]
-function MenuButton:getIsActive()
+function MenuButton.isActive:get()
     return self.isPressed or self.menu.isOpen
 end
 
@@ -101,7 +103,7 @@ function MenuButton:updateThemeStyle()
 end
 
 function MenuButton:update()
-    self.super:update()
+    self:super()
     if self.needsArrowUpdate then
         self:updateArrows()
     end
@@ -128,7 +130,7 @@ function MenuButton:updateArrows()
     self.needsArrowUpdate = false
 end
 
-function MenuButton:setIsPressed( isPressed )
+function MenuButton.isPressed:set( isPressed )
     self.super:setIsPressed( isPressed )
     self.needsArrowUpdate = true
 end

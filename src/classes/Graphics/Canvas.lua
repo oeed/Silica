@@ -13,7 +13,7 @@ class "Canvas" extends "GraphicsObject" {
     @param [number] height -- the height of the canvas
 ]]
 function Canvas:initialise( x, y, width, height, owner )
-    self.super:initialise( x, y, width, height )
+    self:super( x, y, width, height )
     self.owner = owner or false
 end
 

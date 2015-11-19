@@ -81,7 +81,7 @@ end
 	@desc Sets the current style (pressed, checked, disabled, etc) for the owner
 	@param [string] style -- the style name
 ]]
-function ThemeOutlet:setStyle( style )
+function ThemeOutlet.style:set( style )
 	self.style = style
 	for i, connection in pairs( self.connections ) do
 		connection[1][connection[2]] = self:themeValue( connection[3], style )

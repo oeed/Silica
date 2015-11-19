@@ -7,6 +7,6 @@ class "ListClipboardData" extends "ClipboardData" {
 }
 
 function ListClipboardData:initialise( listItem )
-    self.super:initialise()
+    self:super()
     self.listItem = listItem
 end

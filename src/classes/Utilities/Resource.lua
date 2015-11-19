@@ -24,7 +24,7 @@ function Resource:initialise( name, mimes, category, allowDirectories )
 	-- TODO: path tidying
 	-- TODO: maybe do this backwards? so you can override files in other libraries
 	-- search the resource tables
-	local resourceTables = self.application.resourceTables
+	local resourceTables = Application.static.resourceTables
 	if #resourceTables > 0 then
 		for i = 1, #resourceTables do
 			local categoryFiles = resourceTables[i][category]
@@ -46,26 +46,20 @@ function Resource:initialise( name, mimes, category, allowDirectories )
 	end
 
 	-- otherwise search the resource directories
-	local function searchDirectories( path )
-		if type( path ) == "table" then
-			for i, _path in ipairs( path ) do
-				local value = searchDirectories( _path .. "/" .. category )
-				if value then return value end
-			end
-		else
-			local folder = Folder( path )
-			if folder then
-				return folder:find( name, mimes )
-			end
+	local function searchFolders( folders )
+		for i, folder in ipairs( folders ) do
+			print(folder)
+			print(folder.name)
+			return folder:find( name, mimes )
 		end
 	end
 
-	local file = searchDirectories( self.application.resourceDirectories )
+	local file = searchFolders( Application.static.resourceFolders )
 	self.file = file or false
 	if file then
 		self.contents = file.contents
 	else
-		error('File not found: '..name)
+		error('File not found: '..name.." of mime "..serialise(mimes))
 		-- TODO: error, file not found
 	end
 end

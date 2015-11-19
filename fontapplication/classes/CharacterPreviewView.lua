@@ -13,7 +13,7 @@ class "CharacterPreviewView" extends "View" {
 }
 
 function CharacterPreviewView:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local width, height, theme, canvas, character, characterByte = self.width, self.height, self.theme, self.canvas, self.character, self.characterByte
     local scaledCharacterObject = canvas:insert( ScaledCharacterObject( 1, 1, character, self.scale ) )
     local labelObject = canvas:insert( Text( 1, 1 + (character and (#character + LABEL_MARGIN) or LABEL_MARGIN), width, Font.systemFont.height, characterByte and string.char( character ) or " ", Font.alignments.CENTER ) )
@@ -29,17 +29,17 @@ function CharacterPreviewView:updateThemeStyle()
     self.theme.style = self.isActive and "active" or "default"
 end
 
-function CharacterPreviewView:setCharacterByte( characterByte )
+function CharacterPreviewView.characterByte:set( characterByte )
     self.labelObject.text = string.char( characterByte )
     self.character = self.application.document.contents.characters[characterByte]
 end
 
-function CharacterPreviewView:setIsActive( isActive )
+function CharacterPreviewView.isActive:set( isActive )
     self.isActive = isActive
     self:updateThemeStyle()
 end
 
-function CharacterPreviewView:setScale( scale )
+function CharacterPreviewView.scale:set( scale )
     self.scale = scale
     local scaledCharacterObject = self.scaledCharacterObject
     scaledCharacterObject.scale = scale
@@ -47,7 +47,7 @@ function CharacterPreviewView:setScale( scale )
     self.height = scaledCharacterObject.height
 end
 
-function CharacterPreviewView:setCharacter( character )
+function CharacterPreviewView.character:set( character )
     self.character = character
     local scaledCharacterObject = self.scaledCharacterObject
     scaledCharacterObject.character = character

@@ -31,17 +31,17 @@ class "Window" extends "Container" {
 	@param [table] properties -- the properties for the view
 ]]
 function Window:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
     self.closeButton = self:insert( CloseWindowButton( { x = 1, y = 1, window = self } ))
     self.minimiseButton = self:insert( MinimiseWindowButton( { x = 9, y = 1, window = self } ))
     self.maximiseButton = self:insert( MaximiseWindowButton( { x = 17, y = 1, window = self } ))
 
     self:loadInterface()
     
-    self:event( MouseDownEvent, self.onMouseDownBefore, EventManager.phase.BEFORE )
-    self:event( MouseDownEvent, self.onMouseDownAfter, EventManager.phase.AFTER )
+    self:event( MouseDownEvent, self.onMouseDownBefore, Event.phases.BEFORE )
+    self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
     self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
     self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
 end
 
@@ -50,7 +50,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Window:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     -- self.canvas.fillColour = Graphics.colours.GREEN
 	local barHeight = self.barHeight
     local shadowObject = self.canvas:insert( RoundedRectangle( 3, 4, self.width - 2, self.height - 3 ) )
@@ -88,7 +88,7 @@ function Window:loadInterface()
     end
 end
 
-function Window:setHeight( height )
+function Window.height:set( height )
     height = math.max( math.min( height, self.maxHeight ), self.minHeight )
     self.super:setHeight( height )
     self.shadowObject.height = height - 3
@@ -96,7 +96,7 @@ function Window:setHeight( height )
     if container then container.height = height - self.barHeight - 5 end
 end
 
-function Window:setWidth( width )
+function Window.width:set( width )
     width = math.max( math.min( width, self.maxWidth ), self.minWidth )
     self.super:setWidth( width )
     self.shadowObject.width = width - 2
@@ -125,7 +125,7 @@ function Window:updateThemeStyle()
     self.theme.style = self.isEnabled and "default" or "disabled"
 end
 
-function Window:setIsEnabled( isEnabled )
+function Window.isEnabled:set( isEnabled )
     self.super:setIsEnabled( isEnabled )
     self:updateThemeStyle()
 end
@@ -142,11 +142,7 @@ function Window:centre()
     end
 end
 
---[[
-    @instance
-    @desc Synonym for Window:centre
-]]
-Window.center = Window.centre
+Window:alias( Window.centre, "center" )
 
 --[[
     @instance

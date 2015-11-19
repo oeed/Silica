@@ -54,7 +54,7 @@ end
 	@param [Document] documentClass -- the type of Document class you want to use (it's probably easier to do MyDocument:open)
 	@param [string] path -- the path of the document. if empty an open file dialouge will be shown
 ]]
-function Document.open( documentClass, path )
+function Document.static:open( documentClass, path )
 	local function f( path )
 		local document = documentClass( path )
 		if document.contents then
@@ -116,7 +116,7 @@ function Document:onError( err )
 	error( err )
 end
 
-function Document:setContents( contents )
+function Document.contents:set( contents )
 	self.contents = contents
 	if self.hasInitialised then
 		self.isModified = true
@@ -170,7 +170,7 @@ end
 function Document:serialiseHandle( handle )
 end
 
-Document:alias( "serializeHandle", "serialieHandle" )
+Document:alias( Document.serialiseHandle, "serializeHandle" )
 
 --[[
 	@instance
@@ -183,7 +183,7 @@ function Document:serialise( contents )
 	return contents
 end
 
-Document:alias( "serialize", "serialise" )
+Document:alias( Document.serialise, "serialize" )
 
 --[[
 	@instance

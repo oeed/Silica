@@ -45,7 +45,6 @@ class "Font" {
 	spacing = 1;
 	characters = false;
 	scale = false;
-	systemFont = false;
 
 	alignments = {
 		LEFT = 0;
@@ -53,6 +52,10 @@ class "Font" {
 		CENTRE = 1;
 		RIGHT = 2;
 		JUSTIFIED = 3;
+	};
+
+	static = {
+		systemFont = Font;
 	};
 }
 
@@ -70,7 +73,7 @@ function Font:initialise( name, desiredHeight, reload )
 		characters, height = cache[name][desiredHeight][1], cache[name][desiredHeight][2]
 	else
 		local resource = Resource( name, Metadata.mimes.SFONT, "fonts" )
-		characters, height = BitmapFont.decodeResource( resource )
+		characters, height = BitmapFont.static:decodeResource( resource )
 		cache[name] = cache[name] or {}
 		cache[name][desiredHeight] = { characters, height }
 	end
@@ -80,13 +83,13 @@ function Font:initialise( name, desiredHeight, reload )
 	self.scale = ( desiredHeight or height ) / height
 end
 
-function Font.initialisePresets()
+function Font.static:initialisePresets()
 	-- TODO: make this come from the theme
 	-- Font.systemFont = Font( "Napier" )
-	Font.systemFont = Font( "Auckland" )
+	Font.static.systemFont = Font( "Auckland" )
 end
 
-function Font.readMetadata( file )
+function Font.static:readMetadata( file )
 	local h = fs.open( file, "rb" )
 	if h then
 		local metadata = {}
@@ -101,12 +104,12 @@ function Font.readMetadata( file )
 	end
 end
 
-function Font.encodeFile( file, characters, height, metadata )
+function Font.static:encodeFile( file, characters, height, metadata )
 	local h = fs.open( file, "wb" )
 	return Font.encodeHandle( handle, characters, height, metadata)
 end
 
-function Font.encodeHandle( h, characters, height, metadata )
+function Font.static:encodeHandle( h, characters, height, metadata )
 	if h then
 		for k, v in pairs( metadata or {} ) do
 			h.write( 0 )
@@ -119,9 +122,9 @@ function Font.encodeHandle( h, characters, height, metadata )
 		h.write( height )
 		local bytes
 		if metadata.fontType == "vector" then
-			bytes = VectorFont.encodeSet( characters, height )
+			bytes = VectorFont.static:encodeSet( characters, height )
 		else
-			bytes = BitmapFont.encodeSet( characters, height )
+			bytes = BitmapFont.static:encodeSet( characters, height )
 		end
 		for _, byte in ipairs( bytes ) do
 			h.write( byte )
@@ -131,7 +134,7 @@ function Font.encodeHandle( h, characters, height, metadata )
 	end
 end
 
-function Font.decodeResource( resource )
+function Font.static:decodeResource( resource )
 	-- log(resource)
 	local contents = resource.contents
 	-- log(resource.path)
@@ -151,16 +154,16 @@ function Font.decodeResource( resource )
 			end
 		end
 
-		return Font.decodeHandle( h )
+		return Font.static:decodeHandle( h )
 	end
 end
 
-function Font.decodeFile( file )
+function Font.static:decodeFile( file )
 	local h = fs.open( file, "rb" )
-	return Font.decodeHandle( h )
+	return Font.static:decodeHandle( h )
 end
 
-function Font.decodeHandle( h )
+function Font.static:decodeHandle( h )
 	if h then
 		local metadata = {}
 		local v = h.read()
@@ -179,15 +182,15 @@ function Font.decodeHandle( h )
 		local characters
 
 		if fontType == "bitmap" then
-			characters = BitmapFont.decodeSet( bytes, height )
+			characters = BitmapFont.static:decodeSet( bytes, height )
 		else
-			characters = VectorFont.decodeSet( bytes, height )
+			characters = VectorFont.static:decodeSet( bytes, height )
 		end
 		return characters, height, metadata
 	end
 end
 
-function Font:getHeight()
+function Font.height:get()
 	return self.height
 end
 

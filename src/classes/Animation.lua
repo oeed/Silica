@@ -65,7 +65,7 @@ local function performEasingOnSubject(subject, targetValues, initialValues, time
 end
 
 class "Animation" {
-	easing = {};
+	easings = Enum( Function, {} );
 	duration = false;
 	subject = false;
 	targetValues = false; -- if a targetValue is an array, not a single value, the values are used as evenly spaced 'keyframes'. This can be used for colours.
@@ -99,7 +99,7 @@ end
 	@param [number] time -- the time point
 	@return [boolean] isComplete -- whether the animation is complete
 ]]
-function Animation:setTime( time )
+function Animation.time:set( time )
 	assert( type(time ) == "number" and time >= 0, "time must be a positive number or 0")
 
     local duration
@@ -141,122 +141,122 @@ end
 -- easing functions --
 
 -- linear
-function Animation.easing.LINEAR( t, b, c, d )
+function Animation.easings.LINEAR( t, b, c, d )
 	return c * t / d + b
 end
 
 -- quad
-function Animation.easing.IN_QUAD( t, b, c, d )
+function Animation.easings.IN_QUAD( t, b, c, d )
 	return c * pow(t / d, 2) + b
 end
 
-function Animation.easing.OUT_QUAD( t, b, c, d )
+function Animation.easings.OUT_QUAD( t, b, c, d )
 	t = t / d
 	return -c * t * (t - 2) + b
 end
 
-function Animation.easing.IN_OUT_QUAD( t, b, c, d )
+function Animation.easings.IN_OUT_QUAD( t, b, c, d )
 	t = t / d * 2
 	if t < 1 then return c / 2 * pow(t, 2) + b end
 	return -c / 2 * ((t - 1) * (t - 3) - 1) + b
 end
 
-function Animation.easing.OUT_IN_QUAD( t, b, c, d )
+function Animation.easings.OUT_IN_QUAD( t, b, c, d )
 	if t < d / 2 then return outQuad(t * 2, b, c / 2, d) end
 	return inQuad((t * 2) - d, b + c / 2, c / 2, d)
 end
 
 -- cubic
-function Animation.easing.IN_CUBIC ( t, b, c, d )
+function Animation.easings.IN_CUBIC ( t, b, c, d )
 	return c * pow(t / d, 3) + b
 end
 
-function Animation.easing.OUT_CUBIC( t, b, c, d )
+function Animation.easings.OUT_CUBIC( t, b, c, d )
 	return c * (pow(t / d - 1, 3) + 1) + b
 end
 
-function Animation.easing.IN_OUT_CUBIC( t, b, c, d )
+function Animation.easings.IN_OUT_CUBIC( t, b, c, d )
 	t = t / d * 2
 	if t < 1 then return c / 2 * t * t * t + b end
 	t = t - 2
 	return c / 2 * (t * t * t + 2) + b
 end
 
-function Animation.easing.OUT_IN_CUBIC( t, b, c, d )
+function Animation.easings.OUT_IN_CUBIC( t, b, c, d )
 	if t < d / 2 then return outCubic(t * 2, b, c / 2, d) end
 	return inCubic((t * 2) - d, b + c / 2, c / 2, d)
 end
 
 -- quart
-function Animation.easing.IN_QUART( t, b, c, d )
+function Animation.easings.IN_QUART( t, b, c, d )
 	return c * pow(t / d, 4) + b
 end
 
-function Animation.easing.OUT_QUART( t, b, c, d )
+function Animation.easings.OUT_QUART( t, b, c, d )
 	return -c * (pow(t / d - 1, 4) - 1) + b
 end
 
-function Animation.easing.IN_OUT_QUART( t, b, c, d )
+function Animation.easings.IN_OUT_QUART( t, b, c, d )
 	t = t / d * 2
 	if t < 1 then return c / 2 * pow(t, 4) + b end
 	return -c / 2 * (pow(t - 2, 4) - 2) + b
 end
 
-function Animation.easing.OUT_IN_QUART( t, b, c, d )
+function Animation.easings.OUT_IN_QUART( t, b, c, d )
 	if t < d / 2 then return outQuart(t * 2, b, c / 2, d) end
 	return inQuart((t * 2) - d, b + c / 2, c / 2, d)
 end
 
 -- quint
-function Animation.easing.IN_QUINT( t, b, c, d )
+function Animation.easings.IN_QUINT( t, b, c, d )
 	return c * pow(t / d, 5) + b
 end
 
-function Animation.easing.OUT_QUINT( t, b, c, d )
+function Animation.easings.OUT_QUINT( t, b, c, d )
 	return c * (pow(t / d - 1, 5) + 1) + b
 end
 
-function Animation.easing.IN_OUT_QUINT( t, b, c, d )
+function Animation.easings.IN_OUT_QUINT( t, b, c, d )
 	t = t / d * 2
 	if t < 1 then return c / 2 * pow(t, 5) + b end
 	return c / 2 * (pow(t - 2, 5) + 2) + b
 end
 
-function Animation.easing.OUT_IN_QUINT( t, b, c, d )
+function Animation.easings.OUT_IN_QUINT( t, b, c, d )
 	if t < d / 2 then return outQuint(t * 2, b, c / 2, d) end
 	return inQuint((t * 2) - d, b + c / 2, c / 2, d)
 end
 
 -- sine
-function Animation.easing.IN_SINE( t, b, c, d )
+function Animation.easings.IN_SINE( t, b, c, d )
 	return -c * cos(t / d * (pi / 2)) + c + b
 end
 
-function Animation.easing.OUT_SINE( t, b, c, d )
+function Animation.easings.OUT_SINE( t, b, c, d )
 	return c * sin(t / d * (pi / 2)) + b
 end
 
-function Animation.easing.IN_OUT_SINE( t, b, c, d )
+function Animation.easings.IN_OUT_SINE( t, b, c, d )
 	return -c / 2 * (cos(pi * t / d) - 1) + b
 end
 
-function Animation.easing.OUT_IN_SINE( t, b, c, d )
+function Animation.easings.OUT_IN_SINE( t, b, c, d )
 	if t < d / 2 then return outSine(t * 2, b, c / 2, d) end
 	return inSine((t * 2) -d, b + c / 2, c / 2, d)
 end
 
 -- expo
-function Animation.easing.IN_EXPO( t, b, c, d )
+function Animation.easings.IN_EXPO( t, b, c, d )
 	if t == 0 then return b end
 	return c * pow(2, 10 * (t / d - 1)) + b - c * 0.001
 end
 
-function Animation.easing.OUT_EXPO( t, b, c, d )
+function Animation.easings.OUT_EXPO( t, b, c, d )
 	if t == d then return b + c end
 	return c * 1.001 * (-pow(2, -10 * t / d) + 1) + b
 end
 
-function Animation.easing.IN_OUT_EXPO( t, b, c, d )
+function Animation.easings.IN_OUT_EXPO( t, b, c, d )
 	if t == 0 then return b end
 	if t == d then return b + c end
 	t = t / d * 2
@@ -264,40 +264,40 @@ function Animation.easing.IN_OUT_EXPO( t, b, c, d )
 	return c / 2 * 1.0005 * (-pow(2, -10 * (t - 1)) + 2) + b
 end
 
-function Animation.easing.OUT_IN_EXPO( t, b, c, d )
+function Animation.easings.OUT_IN_EXPO( t, b, c, d )
 	if t < d / 2 then return outExpo(t * 2, b, c / 2, d) end
 	return inExpo((t * 2) - d, b + c / 2, c / 2, d)
 end
 
 -- circ
-function Animation.easing.IN_CIRC( t, b, c, d )
+function Animation.easings.IN_CIRC( t, b, c, d )
 	return(-c * (sqrt(1 - pow(t / d, 2)) - 1) + b)
 end
 
-function Animation.easing.OUT_CIRC( t, b, c, d )
+function Animation.easings.OUT_CIRC( t, b, c, d )
 	return(c * sqrt(1 - pow(t / d - 1, 2)) + b)
 end
 
-function Animation.easing.IN_OUT_CIRC( t, b, c, d )
+function Animation.easings.IN_OUT_CIRC( t, b, c, d )
 	t = t / d * 2
 	if t < 1 then return -c / 2 * (sqrt(1 - t * t) - 1) + b end
 	t = t - 2
 	return c / 2 * (sqrt(1 - t * t) + 1) + b
 end
 
-function Animation.easing.OUT_IN_CIRC( t, b, c, d )
+function Animation.easings.OUT_IN_CIRC( t, b, c, d )
 	if t < d / 2 then return outCirc(t * 2, b, c / 2, d) end
 	return inCirc((t * 2) - d, b + c / 2, c / 2, d)
 end
 
 -- elastic
-function Animation.easing.CALCULATE_P_A_S( p,a,c,d )
+function Animation.easings.CALCULATE_P_A_S( p,a,c,d )
 	p, a = p or d * 0.3, a or 0
 	if a < abs( c ) then return p, c, p / 4 end -- p, a, s
 	return p, a, p / (2 * pi) * asin( c/a ) -- p,a,s
 end
 
-function Animation.easing.IN_ELASTIC( t, b, c, d, a, p )
+function Animation.easings.IN_ELASTIC( t, b, c, d, a, p )
 	local s
 	if t == 0 then return b end
 	t = t / d
@@ -307,7 +307,7 @@ function Animation.easing.IN_ELASTIC( t, b, c, d, a, p )
 	return -(a * pow(2, 10 * t) * sin((t * d - s) * (2 * pi) / p)) + b
 end
 
-function Animation.easing.OUT_ELASTIC( t, b, c, d, a, p )
+function Animation.easings.OUT_ELASTIC( t, b, c, d, a, p )
 	local s
 	if t == 0 then return b end
 	t = t / d
@@ -316,7 +316,7 @@ function Animation.easing.OUT_ELASTIC( t, b, c, d, a, p )
 	return a * pow(2, -10 * t) * sin((t * d - s) * (2 * pi) / p) + c + b
 end
 
-function Animation.easing.IN_OUT_ELASTIC( t, b, c, d, a, p )
+function Animation.easings.IN_OUT_ELASTIC( t, b, c, d, a, p )
 	local s
 	if t == 0 then return b end
 	t = t / d * 2
@@ -327,25 +327,25 @@ function Animation.easing.IN_OUT_ELASTIC( t, b, c, d, a, p )
 	return a * pow(2, -10 * t) * sin((t * d - s) * (2 * pi) / p ) * 0.5 + c + b
 end
 
-function Animation.easing.OUT_IN_ELASTIC( t, b, c, d, a, p )
+function Animation.easings.OUT_IN_ELASTIC( t, b, c, d, a, p )
 	if t < d / 2 then return outElastic(t * 2, b, c / 2, d, a, p) end
 	return inElastic((t * 2) - d, b + c / 2, c / 2, d, a, p)
 end
 
 -- back
-function Animation.easing.IN_BACK( t, b, c, d, s )
+function Animation.easings.IN_BACK( t, b, c, d, s )
 	s = s or 1.70158
 	t = t / d
 	return c * t * t * ((s + 1) * t - s) + b
 end
 
-function Animation.easing.OUT_BACK( t, b, c, d, s )
+function Animation.easings.OUT_BACK( t, b, c, d, s )
 	s = s or 1.70158
 	t = t / d - 1
 	return c * (t * t * ((s + 1) * t + s) + 1) + b
 end
 
-function Animation.easing.IN_OUT_BACK( t, b, c, d, s )
+function Animation.easings.IN_OUT_BACK( t, b, c, d, s )
 	s = (s or 1.70158) * 1.525
 	t = t / d * 2
 	if t < 1 then return c / 2 * (t * t * ((s + 1) * t - s)) + b end
@@ -353,13 +353,13 @@ function Animation.easing.IN_OUT_BACK( t, b, c, d, s )
 	return c / 2 * (t * t * ((s + 1) * t + s) + 2) + b
 end
 
-function Animation.easing.OUT_IN_BACK( t, b, c, d, s )
+function Animation.easings.OUT_IN_BACK( t, b, c, d, s )
 	if t < d / 2 then return outBack(t * 2, b, c / 2, d, s) end
 	return inBack((t * 2) - d, b + c / 2, c / 2, d, s)
 end
 
 -- bounce
-function Animation.easing.OUT_BOUNCE( t, b, c, d )
+function Animation.easings.OUT_BOUNCE( t, b, c, d )
 	t = t / d
 	if t < 1 / 2.75 then return c * (7.5625 * t * t) + b end
 	if t < 2 / 2.75 then
@@ -373,16 +373,16 @@ function Animation.easing.OUT_BOUNCE( t, b, c, d )
 	return c * (7.5625 * t * t + 0.984375) + b
 end
 
-function Animation.easing.IN_BOUNCE( t, b, c, d )
+function Animation.easings.IN_BOUNCE( t, b, c, d )
 	return c - outBounce(d - t, 0, c, d) + b
 end
 
-function Animation.easing.IN_OUT_BOUNCE( t, b, c, d )
+function Animation.easings.IN_OUT_BOUNCE( t, b, c, d )
 	if t < d / 2 then return inBounce(t * 2, 0, c, d) * 0.5 + b end
 	return outBounce(t * 2 - d, 0, c, d) * 0.5 + c * .5 + b
 end
 
-function Animation.easing.OUT_IN_BOUNCE( t, b, c, d )
+function Animation.easings.OUT_IN_BOUNCE( t, b, c, d )
 	if t < d / 2 then return outBounce(t * 2, b, c / 2, d) end
 	return inBounce((t * 2) - d, b + c / 2, c / 2, d)
 end

@@ -16,7 +16,7 @@ class "Button" extends "View" {
     textObject = false;
 
     needsAutosize = false;
-
+    margin = Number;
     leftMargin = 0;
     rightMargin = 0;
 }
@@ -29,12 +29,12 @@ class "Button" extends "View" {
     @desc Creates a button object and connects the event handlers
 ]]
 function Button:initialise( ... )
-    self.super:initialise( ... )
+    self:super( ... )
 
     self:event( MouseDownEvent, self.onMouseDown )
     self:event( KeyDownEvent, self.onKeyDown )
     self:event( KeyUpEvent, self.onKeyUp )
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
 --[[
@@ -42,7 +42,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Button:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
     local shadowObject = canvas:insert( RoundedRectangle( 2, 2, width - 1, height - 1, theme.shadowColour ) )
     local backgroundObject = canvas:insert( RoundedRectangle( 1, 1, width - 1, height - 1, theme.fillColour, theme.outlineColour, cornerRadius ) )
@@ -83,7 +83,7 @@ function Button:updateWidth( width )
     end
 end
 
-function Button:setText( text )
+function Button.text:set( text )
     self.text = text
     local textObject = self.textObject
     if textObject then
@@ -97,7 +97,7 @@ end
     @desc Set the margin on either side of the text
     @param [number] margin -- the space around the text
 ]]
-function Button:setMargin( margin )
+function Button.margin:set( margin )
     self.leftMargin = margin
     self.rightMargin = margin
 end
@@ -107,7 +107,7 @@ end
     @desc Set the margin on the left side of the text
     @param [number] margin -- the space around the left side of the text
 ]]
-function Button:setLeftMargin( leftMargin )
+function Button.leftMargin:set( leftMargin )
     self.leftMargin = leftMargin
     self.needsAutosize = true
 end
@@ -117,19 +117,19 @@ end
     @desc Set the margin on the left side of the text
     @param [number] margin -- the space around the left side of the text
 ]]
-function Button:setRightMargin( rightMargin )
+function Button.rightMargin:set( rightMargin )
     self.rightMargin = rightMargin
     self.needsAutosize = true
 end
 
 function Button:update( deltaTime )
-    self.super:update( deltaTime )
+    self:super( deltaTime )
     if self.needsAutosize then
         self:autosize()
     end
 end
 
-function Button:setFont( font )
+function Button.font:set( font )
     self.font = font
     local textObject = self.textObject
     if textObject then
@@ -138,7 +138,7 @@ function Button:setFont( font )
     end
 end
 
-function Button:setNeedsAutosize( needsAutosize )
+function Button.needsAutosize:set( needsAutosize )
     self.needsAutosize = needsAutosize
 end
 
@@ -164,12 +164,12 @@ function Button:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or ( self.isFocused and "focused" or "default" ) ) or "disabled"
 end
 
-function Button:setIsEnabled( isEnabled )
+function Button.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self:updateThemeStyle()
 end
 
-function Button:setIsPressed( isPressed )
+function Button.isPressed:set( isPressed )
     self.isPressed = isPressed
     self:updateThemeStyle()
     local backgroundObject = self.backgroundObject
@@ -182,7 +182,7 @@ function Button:setIsPressed( isPressed )
     end
 end
 
-function Button:setIsFocused( isFocused )
+function Button.isFocused:set( isFocused )
     self.isFocused = isFocused
     self:updateThemeStyle()
 end

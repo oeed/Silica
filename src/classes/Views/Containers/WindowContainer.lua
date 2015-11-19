@@ -4,7 +4,7 @@ class "WindowContainer" extends "Container" {
 }
 
 function WindowContainer:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
 end
 
 function WindowContainer:initialiseCanvas()

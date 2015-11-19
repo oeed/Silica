@@ -13,12 +13,12 @@ function ScaledCharacterObject:initialise( x, y, character, scale )
     self.scale = scale
 end
 
-function ScaledCharacterObject:setCharacter( character )
+function ScaledCharacterObject.character:set( character )
     self.character = character
     self:updateSize()
 end
 
-function ScaledCharacterObject:setScale( scale )
+function ScaledCharacterObject.scale:set( scale )
     self.scale = scale
     self:updateSize()
 end
@@ -32,7 +32,7 @@ function ScaledCharacterObject:updateSize()
     end
 end
 
-function ScaledCharacterObject:setIsFilled( isFilled, x, y )
+function ScaledCharacterObject.isFilled:set( isFilled, x, y )
     local fill, scale = self.fill, self.scale
 
     if fill then
@@ -50,7 +50,7 @@ function ScaledCharacterObject:setIsFilled( isFilled, x, y )
     self.hasChanged = true
 end
 
-function ScaledCharacterObject:getFill()
+function ScaledCharacterObject.fill:get()
     if self.fill then return self.fill end
 
     local fill, character = {}, self.character

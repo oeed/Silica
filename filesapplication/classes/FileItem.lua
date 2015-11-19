@@ -43,21 +43,21 @@ class "FileItem" extends "View" implements "IDraggableView" implements "IFlowIte
 }
 
 function FileItem:initialise( ... )
-    self.super:initialise( ... )
+    self:super( ... )
 
     self:event( MouseDownEvent, self.onMouseDown )
     self:event( MouseHeldEvent, self.onMouseHeld )
     self:event( MouseDoubleClickEvent, self.onMouseDoubleClick )
     -- self:event( Event.KEY_DOWN, self.onKeyDown )
     -- self:event( Event.KEY_UP, self.onKeyUp )
-    -- self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, EventManager.phase.BEFORE )
+    -- self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 
     folderIcon = Image.fromPath( "folder" )
     folderSmallIcon = Image.fromPath( "folder-small" )
 end
 
 function FileItem:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
 
     local width, height, canvas, theme = self.width, self.height, self.canvas, self.theme
     local focusObject = canvas:insert( RoundedRectangle( SIDE_MARGIN + LARGE_ICON_SIZE + 3, 7, 2 * FOCUS_PADDING, 12 ) )
@@ -112,13 +112,13 @@ function FileItem:updateIdealSize()
     end
 end
 
-function FileItem:setTitle( title )
+function FileItem.title:set( title )
     self.title = title
     self.titleObject.text = title
     self:updateIdealSize()
 end
 
-function FileItem:setSubtitle( subtitle )
+function FileItem.subtitle:set( subtitle )
     self.subtitle = subtitle
     self.subtitleObject.text = subtitle
     self:updateIdealSize()
@@ -148,7 +148,7 @@ function FileItem:updateHeight( height )
     focusObject.y = textY - 2
 end
 
-function FileItem:setStyle( style )
+function FileItem.style:set( style )
     self.style = style
     self:updateIdealSize()
 end
@@ -197,7 +197,7 @@ function FileItem:onMouseDoubleClick( event )
     return true
 end
 
-function FileItem:setIsDropHovering( isDropHovering )
+function FileItem.isDropHovering:set( isDropHovering )
     self.isDropHovering = isDropHovering
     self:updateThemeStyle()
 end
@@ -211,11 +211,13 @@ function FileItem:dragDropEntered( data, dragView )
     self.imageObject.image = "folder-open"
 end
 
-function FileItem:dragDropMoved( data, dragView ) end
+function FileItem:dragDropMoved( data, dragView )
+end
 
 function FileItem:dragDropExited( data, dragView )
     self.isDropHovering = false
     self.imageObject.image = "folder"
 end
 
-function FileItem:dragDropDropped( data ) end
+function FileItem:dragDropDropped( data )
+end

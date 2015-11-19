@@ -10,14 +10,14 @@ class "ToolbarContainer" extends "Container" {
 }
 
 function ToolbarContainer:initialise( ... )
-    self.super:initialise( ... )
+    self:super( ... )
 
     self:event( ChildAddedInterfaceEvent, self.onChildAdded )
     self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
 end
 
 function ToolbarContainer:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
     local separatorObject = canvas:insert( Separator( 1, 1, width, height ) )
 
@@ -38,7 +38,7 @@ function ToolbarContainer:updateHeight( height )
 end
 
 function ToolbarContainer:update( deltaTime )
-    self.super:update( deltaTime )
+    self:super( deltaTime )
     if self.needsLayoutUpdate then
         self:updateLayout()
     end

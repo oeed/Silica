@@ -20,7 +20,7 @@ function ApplicationContainer:initialise( ... )
 
 	self.super:initialise( ... )
 
-    self:event( MouseDownEvent, self.onMouseDownAfter, EventManager.phase.AFTER )
+    self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
 end
 
 function ApplicationContainer:initialiseCanvas()
@@ -29,7 +29,7 @@ function ApplicationContainer:initialiseCanvas()
     self.theme:connect( self.canvas, "fillColour" )
 end
 
-function ApplicationContainer:setTheme( theme )
+function ApplicationContainer.theme:set( theme )
 	if type( theme ) == "string" then error( "To the set the theme of an ApplicationContainer using a string, use the property 'themeName', rather than 'theme'. Most likely cause: you have use theme=\"" .. theme .. "\" in an interface file, rather than themeName=\"" .. theme .. "\"", 0 ) end
 	self.theme = theme
 end
@@ -39,10 +39,10 @@ end
 	@desc Sets the container's theme based upon it's name
 	@return [string] themeName -- the name of the theme
 ]]
-function ApplicationContainer:setThemeName( themeName )
+function ApplicationContainer.themeName:set( themeName )
 	local oldThemeName = self.themeName
 	self.themeName = themeName
-	Theme.active = Theme.named( themeName )
+	Theme.static.active = Theme.static:named( themeName )
 	self.application.event:handleEvent( ThemeChangedInterfaceEvent( themeName, oldThemeName ) )
 end
 
@@ -69,6 +69,6 @@ function ApplicationContainer:onMouseDownAfter( event )
 end
 
 function ApplicationContainer:dispose()
-	self.super:dispose()
+	self:super()
 	self.application:clearFocus()
 end

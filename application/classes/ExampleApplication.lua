@@ -11,7 +11,7 @@ class "ExampleApplication" extends "Application" {
 	@desc Initialise the custom application
 ]]
 function ExampleApplication:initialise()
-	self.super:initialise()
+	self:super()
 	self:event( CharacterEvent, self.onChar )
 
 end

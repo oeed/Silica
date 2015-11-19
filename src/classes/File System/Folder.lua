@@ -24,17 +24,17 @@ class "Folder" extends "FileSystemItem" {
 
 }
 
-function Folder.mt:__call( path, ... )
+function Folder.metatable:__call( path, ... )
     if fs.exists( path ) and fs.isDir( path ) and not fs.isReadOnly( path ) then
         local name = fs.getName( path )
         if name ~= ".DS_Store" and name ~= ".metadata" then
-            return self:new( true, path, ... )
+            return self.spawn( path, ... )
         end
     end
     return false
 end
 
-function Folder.make( path, overwrite )
+function Folder.static:make( path, overwrite )
     local exists = fs.exists( path )
     if overwrite and exists then
         fs.delete( path )
@@ -97,39 +97,54 @@ function Folder:getItems( noFiles, noFolders )
     return items
 end
 
-function Folder:getFiles()
+function Folder.items:get()
+    return self:getItems( false, false )
+end
+
+function Folder.files:get()
     return self:getItem( false, true )
 end
 
-function Folder:getFolders()
+function Folder.folders:get()
     return self:getItem( true, false )
 end
 
-function Folder:setItems( items )
+function Folder.items:set( items )
     error( "Folder.items is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
 end
 
-function Folder:setFiles( items )
+function Folder.files:set( files )
     error( "Folder.files is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
 end
 
-function Folder:setFolders( items )
+function Folder.folders:set( folders )
     error( "Folder.folders is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
+end
+
+function Folder:itemFromPath( path )
+    return FileSystemItem( self.path .. tidy( path ) )
+end
+
+function Folder:fileFromPath( path )
+    return File( self.path .. tidy( path ) )
+end
+
+function Folder:folderFromPath( path )
+    return Folder( self.path .. tidy( path ) )
 end
 
 --[[
     @instance
-    @desc Find an IEditableFileSystemItem that matches the name (without the extension) and
-    @param [string] name -- the exact name of the file to match
+    @desc Find an IEditableFileSystemItem that matches the name (without the extension) and the mime type.
+    @param [string] name -- the exact name of the file without extension to match
     @param [Metatable.mimes/table{Metatable.mimes}] mimes -- a mime or table of mimes
     @param [boolean] noSubfolders -- whether to not look in subfolders, by default subfolders will be searched
     @return [IEditableFileSystemItem] returnedValue -- description
 ]]
-function Folder:find( name, mimes, noSubfolders ) -- find a FileSystemItem with the name that matches (with or without the extension) and the mime type.
+function Folder:find( name, mimes, noSubfolders )
     local items = self.items
     local folders = {}
     if type( mimes ) == "string" then mimes = { mimes } end
-
     for i, fileSystemItem in ipairs( items ) do
         if fileSystemItem:typeOf( IEditableFileSystemItem ) then
             if --[[(]] name == fileSystemItem.name --[[ or name == fileSystemItem.fullName )]] then
@@ -156,7 +171,7 @@ function Folder:find( name, mimes, noSubfolders ) -- find a FileSystemItem with 
     return false
 end
 
-function Folder:getFs()
+function Folder.fs:get()
     local _fs = self.fs
     if _fs then return _fs end
     _fs = {
@@ -197,11 +212,11 @@ function Folder:getFs()
     return _fs
 end
 
-function Folder:setFs( fs )
+function Folder.fs:set( fs )
     error( "Folder.fs is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
 end
 
-function Folder:getIo()
+function Folder.io:get()
     local _io = self.io
     if _io then return _io end
     _io = {
@@ -223,10 +238,10 @@ function Folder:getIo()
     return _io
 end
 
-function Folder:setIo( io )
+function Folder.io:set( io )
     error( "Folder.io is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
 end
 
 function Folder:package( path, overwrite, isResourcePackage )
-    return Package:make( path, overwrite, self, isResourcePackage )
+    return Package.static:make( path, overwrite, self, isResourcePackage )
 end

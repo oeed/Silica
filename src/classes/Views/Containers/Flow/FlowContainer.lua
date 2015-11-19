@@ -11,14 +11,14 @@ class "FlowContainer" extends "Container" {
 }
 
 function FlowContainer:initialise( ... )
-    self.super:initialise( ... )
+    self:super( ... )
     self:event( ChildAddedInterfaceEvent, self.onChildAdded )
     self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
     self:event( ReadyInterfaceEvent, self.onReady )
 end
 
 function FlowContainer:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
 
     self.theme:connect( self.canvas, "fillColour" )
 end
@@ -36,7 +36,7 @@ function FlowContainer:onReady( event )
 end
 
 function FlowContainer:update( deltaTime )
-    self.super:update( deltaTime )
+    self:super( deltaTime )
     if self.needsLayoutUpdate then
         self:updateLayout()
     end
@@ -62,7 +62,7 @@ function FlowContainer:updateLayout( dontAnimate )
         end
     end
 
-    local time, easing = 0.5, Animation.easing.SINE_IN_OUT
+    local time, easing = 0.5, Animation.easings.SINE_IN_OUT
 
     local nChildren = #children
     local totalWidth = 0

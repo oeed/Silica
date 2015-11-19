@@ -20,7 +20,7 @@ class "FontStudioApplicationContainer" extends "ApplicationContainer" {
 }
 
 function FontStudioApplicationContainer:initialise( ... )
-	self.super:initialise( ... )
+	self:super( ... )
 	self:event( ReadyInterfaceEvent, self.onReady)
     self:event( Event.KEY_DOWN, self.onKeyDown )
 end
@@ -49,7 +49,7 @@ function FontStudioApplicationContainer:onKeyDown( event )
     end
 end
 
-function FontStudioApplicationContainer:setCurrentCharacter( currentCharacter )
+function FontStudioApplicationContainer.currentCharacter:set( currentCharacter )
     local oldCharacter = self.currentCharacter
     if oldCharacter == currentCharacter or currentCharacter < MIN_CHAR or currentCharacter > MAX_CHAR then return end
     self.currentCharacter = currentCharacter
@@ -119,9 +119,9 @@ function FontStudioApplicationContainer:setCurrentCharacter( currentCharacter )
     self:sendToFront( characterEditorView )
 end
 
-function FontStudioApplicationContainer:setAnimationPercentage( percentage )
-    self.animationPercentage = percentage
-    self.characterEditorView.animationPercentage = percentage
+function FontStudioApplicationContainer.animationPercentage:set( animationPercentage )
+    self.animationPercentage = animationPercentage
+    self.characterEditorView.animationPercentage = animationPercentage
 end
 
 function FontStudioApplicationContainer:onSaveButton()

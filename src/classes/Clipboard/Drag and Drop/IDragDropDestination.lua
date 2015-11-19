@@ -12,33 +12,31 @@ interface "IDragDropDestination" {
     @return [boolean] canAccept
 ]]
 function IDragDropDestination:canAcceptDragDrop( data )
-    return canAccept
-end
 
 --[[
     @instance
     @desc Fired when a drag and drop view is dragged over your view. Update the view's apperance if desired
     @param [ClipboardData] data -- the clipboard data
 ]]
-function IDragDropDestination:dragDropEntered( data, dragView ) end
+function IDragDropDestination:dragDropEntered( data, dragView )
 
 --[[
     @instance
     @desc Fired when a drag and drop view is moved over your view (this is also fired after immediately :dragDropEntered). Update the view's apperance if desired
     @param [ClipboardData] data -- the clipboard data
 ]]
-function IDragDropDestination:dragDropMoved( data, dragView ) end
+function IDragDropDestination:dragDropMoved( data, dragView )
 
 --[[
     @instance
     @desc Fired when a drag and drop view is dragged over your view. Update the view's apperance if desired
     @param [ClipboardData] data -- the clipboard data
 ]]
-function IDragDropDestination:dragDropExited( data, dragView ) end
+function IDragDropDestination:dragDropExited( data, dragView )
 
 --[[
     @instance
     @desc Fired when a drag and drop view is dropped on your view. Do NOT remove the drop apperance here, :dragDropExited is called immediately after.
     @param [ClipboardData] data -- the incomming clipboard data
 ]]
-function IDragDropDestination:dragDropDropped( data ) end
+function IDragDropDestination:dragDropDropped( data )

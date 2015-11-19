@@ -6,7 +6,7 @@ class "SeparatorView" extends "View" {
 }
 
 function SeparatorView:initialiseCanvas()
-    self.super:initialiseCanvas()
+    self:super()
     local theme = self.theme
     local separatorObject = self.canvas:insert( Separator( 1, 1, self.width, self.height ) )
 
