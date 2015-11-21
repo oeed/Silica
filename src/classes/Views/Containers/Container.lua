@@ -122,7 +122,7 @@ function Container:draw()
 	-- then draw the children
 	for i, childView in ipairs( self.children ) do
 		-- only draw if something changed
-		if childView.needsDraw then
+		if childView.isVisible and childView.needsDraw then
 			local x, y = childView.x, childView.y
 			-- first draw the contents
 			childView:draw()

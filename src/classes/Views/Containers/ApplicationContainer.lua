@@ -24,9 +24,7 @@ function ApplicationContainer:initialise( ... )
 end
 
 function ApplicationContainer:initialiseCanvas()
-	local canvas = ScreenCanvas( self.x, self.y, self.width, self.height )
-    self.canvas = canvas
-    -- self.theme:connect( self.canvas, "fillColour" )
+	self.canvas = ScreenCanvas( self.x, self.y, self.width, self.height, self )
 end
 
 function ApplicationContainer.theme:set( theme )
@@ -50,9 +48,9 @@ end
 	@desc Redraws the container and draws it to the screen if neccesary
 ]]
 function ApplicationContainer:draw()
-	if self.needsDraw then
+	if self.isVisible and self.needsDraw then
 		self:super()
-		self.canvas:drawToScreen()
+		self.canvas:drawToScreen( term )
 	end
 end
 
