@@ -40,6 +40,7 @@ class "View" {
 	event = false;
 	canvas = Canvas;
 	shadowMask = Mask; -- TODO: .isReadOnly
+	needsDraw = Boolean( true );
 	theme = false;
 	isCanvasHitTested = true;
 	isVisible = true;
@@ -140,6 +141,13 @@ end
 ]]
 function View:onDraw()
 
+end
+
+function View.needsDraw:set( needsDraw )
+	self.needsDraw = needsDraw
+	if needsDraw then
+		self.parent.needsDraw = needsDraw -- if we need to draw the parent also has to redraw
+	end
 end
 
 -- Location --
