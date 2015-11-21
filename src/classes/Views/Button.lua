@@ -1,8 +1,8 @@
 
 class "Button" extends "View" {
 
-    height = 16; -- the default height
-    width = 36;
+    height = Number( 16 ); -- the default height
+    width = Number( 36 );
     text = false;
 
     isPressed = false;

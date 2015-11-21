@@ -3,8 +3,8 @@ local TEXT_MARGIN = 12
 
 class "MenuItem" extends "View" {
 
-	height = 12;
-	width = 40;
+	height = Number( 12 );
+	width = Number( 40 );
 
     isPressed = false;
     isEnabled = true;

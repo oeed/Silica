@@ -26,8 +26,8 @@ class "Menu" extends "Container" {
     shadowObject = false;
     backgroundObject = false;
 
-    width = 40;
-    height = 40;
+    width = Number( 40 );
+    height = Number( 40 );
 
 	needsLayoutUpdate = false;	
 }

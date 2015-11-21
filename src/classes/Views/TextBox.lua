@@ -17,8 +17,8 @@ local floor = math.floor
 
 class "TextBox" extends "View" {
 
-	height = 15; -- the default height
-	width = 120;
+	height = Number( 15 );
+	width = Number( 120 );
 	text = "";
 	placeholder = "";
 

@@ -25,10 +25,11 @@ local function newAnimation( self, label, time, values, easing, onFinish, round 
 end
 
 class "View" {
-	x = false;
-	y = false;
-	width = false;
-	height = false;
+
+	x = Number( 1 );
+	y = Number( 1 );
+	width = Number( 1 );
+	height = Number( 1 );
 	index = false; -- the z index in its parent
 	parent = false;
 	siblings = false;
@@ -41,6 +42,7 @@ class "View" {
 	canvas = Canvas;
 	shadowMask = Mask; -- TODO: .isReadOnly
 	needsDraw = Boolean( true );
+
 	theme = false;
 	isCanvasHitTested = true;
 	isVisible = true;

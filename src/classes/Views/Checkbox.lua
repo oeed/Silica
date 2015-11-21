@@ -1,8 +1,8 @@
 
 class "Checkbox" extends "View" {
 
-    width = 7;
-    height = 7;
+    width = Number( 7 );
+    height = Number( 7 );
 
     isPressed = false;
     isEnabled = true;

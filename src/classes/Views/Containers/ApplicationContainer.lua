@@ -1,11 +1,11 @@
 
 class "ApplicationContainer" extends "Container" {
 	-- TODO: make this use a Constraint
-	x = 1;
-	y = 1;
-	width = 320;
-	height = 200;
-	themeName = false;
+	x = Number( 1 );
+	y = Number( 1 );
+	width = Number( 320 );
+	height = Number( 200 );
+	themeName = String( "default" );
 }
 
 --[[
@@ -14,10 +14,6 @@ class "ApplicationContainer" extends "Container" {
 	@param [table] properties -- the properties for the view
 ]]
 function ApplicationContainer:initialise( ... )
-	if not self.themeName then
-		self.themeName = "default"
-	end
-
 	self:super( ... )
 
     self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
@@ -55,7 +51,7 @@ function ApplicationContainer:draw()
 end
 
 --[[
-	@desc Description
+	@desc Update the container than draw the changes (if any) to the screen
 ]]
 function ApplicationContainer:update( ... )
 	self:super( ... )

@@ -1,8 +1,8 @@
 
 class "ProgressBar" extends "View" {
     
-    height = 7;
-    width = 100;
+    height = Number( 7 );
+    width = Number( 100 );
 
     isEnabled = true;
     isIndeterminate = true;

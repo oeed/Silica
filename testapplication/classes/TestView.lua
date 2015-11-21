@@ -1,0 +1,4 @@
+
+class "TestView" extends "View" {
+    
+}

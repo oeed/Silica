@@ -3,7 +3,7 @@ local TEXT_MARGIN = 12
 
 class "MenuBarItem" extends "View" {
 
-	height = 12;
+	height = Number( 12 );
     isPressed = false;
     isEnabled = true;
 	isCanvasHitTested = false;

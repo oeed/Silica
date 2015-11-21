@@ -1,7 +1,7 @@
 
 class "MenuButton" extends "Button" {
 
-    width = 45;
+    width = Number( 45 );
 
     menu = false;
     menuName = false;

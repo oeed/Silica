@@ -2,8 +2,8 @@
 class "SeparatorMenuItem" extends "MenuItem" {
 	text = false;
 
-	height = 3;
-	width = 51;
+	height = Number( 3 );
+	width = Number( 51 );
 
 	textColour = Graphics.colours.LIGHT_GREY;
 

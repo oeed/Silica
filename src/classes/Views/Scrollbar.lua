@@ -1,6 +1,6 @@
 
 class "Scrollbar" extends "View" {
-	width = 7;
+	width = Number( 7 );
     isHorizontal = false;
 	scrollerObject = false;
 	grabberObject = false;

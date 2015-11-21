@@ -4,7 +4,7 @@ local TOP_BOTTOM_PADDING = 2
 
 class "ListItem" extends "View" implements "IDraggableView" {
     
-    height = 12;
+    height = Number( 12 );
     isSelected = false;
     isCanvasHitTested = false;
 
