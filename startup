@@ -167,7 +167,7 @@ end
 
 
 -- dofile( "app" )
-Application.static:load( "/filesapplication" )
+Application.static:load( "/testapplication" )
 
 -- BitmapFont.convertFile( "font src/auckland", "src/fonts/Auckland.sfont", 32, 8, {
 -- 	name = "Auckland";
