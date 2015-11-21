@@ -24,6 +24,7 @@ local VALUE_TYPE_UID = {} -- just a unique identifier to indicate that this is a
 local REFERENCE_UID = {} -- just a unique identifier to indicate that this is a valueType
 
 local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true }
+local DISALLOWED_CLASS_NAMES = { Number = true, String = true, Boolean = true, Any = true, Table = true, Function = true, Thread = true, Enum = true }
 
 -- Create the value types --
 
@@ -235,6 +236,9 @@ end
 function class.load( name, contents )
     if classes[name] or interfaces[name] then
         error( "class already loaded: "..name)
+    end
+    if DISALLOWED_CLASS_NAMES[name] then
+        error( "reserved class name "..name )
     end
     local oldConstructing, oldEnvironment, oldConstructorProxy, oldIsLoadingProperties, oldConstructingFunctionArguments, oldCurrentCompiled, oldIsInterface, oldExpectedName = currentlyConstructing, constructingEnvironment, constructorProxy, isLoadingProperties, constructingFunctionArguments, currentCompiledClass, isInterface, expectedName
     isLoadingProperties = false
