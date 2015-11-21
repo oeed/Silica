@@ -38,7 +38,7 @@ class "View" {
 	animations = {};
 
 	event = false;
-	canvas = false;
+	canvas = Canvas;
 	theme = false;
 	isCanvasHitTested = true;
 	isVisible = true;
@@ -117,7 +117,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function View:initialiseCanvas()
-	self.canvas = Canvas( self.x or 1, self.y or 1, self.width or 1, self.height or 1, self )
+	self.canvas = Canvas( self.x, self.y, self.width, self.height, self )
 end
 
 --[[
