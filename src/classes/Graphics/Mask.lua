@@ -8,7 +8,7 @@ class "Mask" {
 
 }
 
-function Mask:initialise( Number x, Number y, Table pixels )
+function Mask:initialise( Number x, Number y, Table( {} ) pixels )
     self.x = x    
     self.y = y    
     self.pixels = pixels    

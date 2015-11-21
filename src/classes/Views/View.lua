@@ -114,10 +114,18 @@ function View:initialiseEventManager()
 end
 
 --[[
-    @desc Sets up the canvas and it's graphics objects
+    @desc Sets up the canvas and it's graphics objects (used for overriding)
 ]]
 function View:initialiseCanvas()
 	self.canvas = Canvas( self.x, self.y, self.width, self.height, self )
+end
+
+--[[
+	@desc Returns the Mask to use for the View's shadow
+	@return Mask shadowMask
+]]
+function View:getShadowMask( Mask canvasMask )
+	return canvasMask -- canvasMask is the mask of the currently drawn pixels to the canvas, i.e. everything will cast a shadow
 end
 
 --[[
