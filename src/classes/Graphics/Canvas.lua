@@ -1,9 +1,23 @@
 
 class "Canvas" {
     
-    buffer = Table( {} );
+    x = Number;
+    y = Number;
+    width = Number;
+    height = Number;
+    owner = View.allowsNil;
+
+    pixels = Table( {} );
 
 }
+
+function Canvas:initialise( Number x, Number y, Number width, Number height, View.allowsNil owner )
+    self.x = x
+    self.y = y
+    self.width = width
+    self.height = height
+    self.owner = owner
+end
 
 --[[
     @desc Fills an area in the given mask with the given colour
