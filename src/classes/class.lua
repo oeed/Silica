@@ -256,9 +256,13 @@ function class.load( name, contents )
     local metatable = {}
     local selfPseudoReference = pseudoReference( "self" )
     function metatable:__index( key )
+        if isLoadingProperties then
+            if key == "self" then return selfPseudoReference end
+            local valueTypeValue = valueTypes[key]
+            if valueTypeValue ~= nil then return valueTypeValue end
+        end
         local globalValue = _G[key]
-        if globalValue then return globalValue end
-        if key == "self" then return selfPseudoReference end
+        if globalValue ~= nil then return globalValue end
         -- if the value is nil see if we can find a class with that name and load it
         if class.exists( key ) then
             -- there should be a class with that name, load it
@@ -370,10 +374,12 @@ function stripFunctionArguments( name, contents )
             local pseudoReferences = {}
             local metatable = {}
             function metatable:__index( key )
-                local globalValue = valueTypes[key]
-                if globalValue then return globalValue end
+                local valueTypeValue = valueTypes[key]
+                if valueTypeValue ~= nil then return valueTypeValue end
+                local globalValue = _G[key]
+                if globalValue ~= nil then return globalValue end
                 local pseudoReferenceValue = pseudoReferences[key]
-                if pseudoReferenceValue then print("using pseudo "..key) return pseudoReferenceValue end
+                if pseudoReferenceValue ~= nil then return pseudoReferenceValue end
                 -- if we're loading properties and the value is nil, see if we can find a class with that name and load it
                 if class.exists( key ) then
                     -- there should be a class with that name, load it
@@ -451,9 +457,6 @@ function stripFunctionArguments( name, contents )
                         elseif value[TYPETABLE_HAS_DEFAULT_VALUE] then -- this was created like String(), not String, so it created its own instance. hence we can use the value directly
                             value[TYPETABLE_NAME] = argumentName
                             typeTable = value
-                            if argumentName == "width" then
-                                print(serialise(value[TYPETABLE_DEFAULT_VALUE]))
-                            end
                         else
                             -- this is the actual valueType table, we can't use it. we need to make a copy AND set allowsNil back to false as it may have been changed
                             typeTable = {
@@ -568,11 +571,6 @@ local function constructClass( _, name )
     currentlyConstructing = constructing
     isLoadingProperties = true
 
-    -- insert all the valueTypes in to the environment for property loading
-    for name, valueType in pairs( valueTypes ) do
-        constructingEnvironment[name] = valueType
-    end
-
     return loadProperties
 end
 
@@ -645,11 +643,6 @@ end
 
 function loadProperties( propertiesTable )
     -- take all the valueTypes back out of the environment
-    for name, valueType in pairs( valueTypes ) do
-        constructingEnvironment[name] = nil
-    end
-    constructingEnvironment.self = nil -- and remove the pseudo type
-
     isLoadingProperties = false
     local staticPropertiesTable = propertiesTable.static
     local metatableProxy = {}
@@ -840,7 +833,7 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                         -- TODO: type of!
                         if classType and classType == compiledClass then --classType:typeOf( "self??" ) then
                             -- don't allow value types that is type of self or are subclasses of self for non-static properties, that would cause an infinite loop
-                            error( "self refernce not in static" , 2 )
+                            error( "self refernce only in static" , 2 )
                         end
                     end
                     if value[TYPETABLE_HAS_DEFAULT_VALUE] then -- this was created like String(), not String. hence we can use the value table directly
@@ -1256,12 +1249,11 @@ local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, 
 
                 local context = { self = self }
                 local values = { checkValue( self, selfTypeTable, true, context, functionName ) }
-
                 local argumentCount = (argumentsLength > minChecked and argumentsLength or minChecked)
                 for i = 1 + FUNCTIONTABLE_FUNCTION, argumentCount + FUNCTIONTABLE_FUNCTION do
                     local valueType = (i > functionTableLength) and varargTypeTable or functionTable[i]
                     local valueName = valueType[TYPETABLE_NAME]
-                    local value = checkValue( arguments[i - FUNCTIONTABLE_FUNCTION], valueType, context, valueName )
+                    local value = checkValue( arguments[i - FUNCTIONTABLE_FUNCTION], valueType, nil, context, valueName )
                     values[i] = value
                     if i < functionTableLength then
                         context[valueName] = value
