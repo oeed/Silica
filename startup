@@ -145,8 +145,8 @@ term.redirect(term.native())
 if fs.exists("Silica.resourcepkg") then
     print("Using built package")
 	local _, err = pcall(function() dofile( "Silica.resourcepkg" ) end)
-    fs.delete("Old-Silica.resourcepkg")
-	fs.move("Silica.resourcepkg","Old-Silica.resourcepkg")
+    fs.delete("OldSilica.resourcepkg")
+	fs.move("Silica.resourcepkg","OldSilica.resourcepkg")
 	if err then error(err,2) end
 else
     print("Using old style package")
@@ -180,4 +180,5 @@ Application.static:load( "/testapplication" )
 -- ExampleApplication():run( ... )
 -- Program functions...
 -- FontStudioApplication():run( ... )
-FilesApplication():run( ... )
+-- FilesApplication():run( ... )
+TestApplication():run( ... )
