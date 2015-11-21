@@ -1,6 +1,8 @@
 
 class "SiblingAddedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = "interface_sibling_added";
+    static = {
+        eventType = "interface_sibling_added";
+    };
 	view = false; -- the new sibling that was added
 	isSentToChildren = false;
 }

@@ -34,7 +34,7 @@ function SymbolButton:autosize()
 end
 
 function SymbolButton.isPressed:set( isPressed )
-    self.super:setIsPressed( isPressed )
+    self:super( isPressed )
     local symbolObject = self.symbolObject
     symbolObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1
     symbolObject.y = isPressed and 6 or 5

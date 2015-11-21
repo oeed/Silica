@@ -1,4 +1,6 @@
 
 class "LoadedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = "interface_loaded";
+    static = {
+        eventType = "interface_loaded";
+    };
 }

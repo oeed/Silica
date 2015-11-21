@@ -1,6 +1,8 @@
 
 class "ParentChangedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = "interface_parent_changed";
+    static = {
+        eventType = "interface_parent_changed";
+    };
 	newParent = false; -- the new parent
 	oldParent = false; -- the old parent
 	isSentToChildren = false;

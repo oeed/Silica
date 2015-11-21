@@ -8,4 +8,8 @@
         <subtitleColour type="Graphics.colours" default="LIGHT_GREY" />
     </FileItem>
 
+    <Container>
+        <fillColour type="Graphics.colours" default="BLUE" focused="BLUE" />
+    </Container>
+
 </Theme>

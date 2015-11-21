@@ -3,7 +3,7 @@ local exceptionClasses = {}
 local thrownExceptions = {}
 local nextID = 1
 
-function try( func )
+function _G.try( func )
     local ok, err = pcall( func )
 
     if not ok and type( err ) == "string" then
@@ -23,11 +23,11 @@ function try( func )
     return error( err, 0 )
 end
 
-function catch( exceptionClass, handler )
+function _G.catch( exceptionClass, handler )
     return { catch = exceptionClass, handler = handler }
 end
 
-function default( handler )
+function _G.default( handler )
     return { default = true, handler = handler }
 end
 

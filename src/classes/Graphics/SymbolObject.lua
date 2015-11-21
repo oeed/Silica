@@ -8,14 +8,14 @@ class "SymbolObject" extends "Canvas" {
 
 function SymbolObject:initialise( x, y, symbol )
     if not symbol then
-        self.super:initialise( x, y, 1, 1 )
+        self:super( x, y, 1, 1 )
         return
     end
     
     if not symbol:typeOf( Symbol ) then
         error( "SymbolObject must be given a class that extends Symbol.", 4 )
     end
-    self.super:initialise( x, y, symbol.width, symbol.height )
+    self:super( x, y, symbol.width, symbol.height )
     self.symbol = symbol
 end
 

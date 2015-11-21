@@ -23,10 +23,10 @@ end
 	@param [string] key -- the key of the value
 	@return value -- the value
 ]]
-function ThemeOutlet:get( key )
-	if key == "class" or self.definedBoth[key] or class.defined[key] then return false end
-	return true, self:themeValue( key, self.style )
-end
+-- function ThemeOutlet:get( key )
+-- 	if key == "class" or self.definedBoth[key] or class.defined[key] then return false end
+-- 	return true, self:themeValue( key, self.style )
+-- end
 
 --[[
 	@instance
@@ -42,7 +42,7 @@ function ThemeOutlet:connect( _class, classKey, key )
 		error( "Attempted to connect theme to undefined property '" .. classKey .. "' for object '" .. tostring( _class ) .. "'", 4 )
 	end
 	table.insert( self.connections, { _class, classKey, key, _class[classKey] } )
-	_class[classKey] = self:themeValue( key, style )
+	_class[classKey] = self:value( key, style )
 end
 
 --[[
@@ -68,10 +68,10 @@ end
 	@desc Fired when the theme changes, updates the value
 	@param [string] style -- the style name
 ]]
-function ThemeOutlet:onThemeChange( event )
+function ThemeOutlet:onThemeChange( Event event, Event.phases phase )
 	local style = self.style
 	for i, connection in pairs( self.connections ) do
-		connection[1][connection[2]] = self:themeValue( connection[3], style )
+		connection[1][connection[2]] = self:value( connection[3], style )
 	end
 
 end
@@ -84,7 +84,7 @@ end
 function ThemeOutlet.style:set( style )
 	self.style = style
 	for i, connection in pairs( self.connections ) do
-		connection[1][connection[2]] = self:themeValue( connection[3], style )
+		connection[1][connection[2]] = self:value( connection[3], style )
 	end
 end
 
@@ -92,9 +92,9 @@ end
 	@instance
 	@desc Returns the value for the current theme given the property name and style)
 	@param [string] propertyName -- the name of the property
-	@param [string] styleName -- default is "default", the name of the style
+	@param [string] styleName -- defaults to the current style
 	@return themeValue -- the theme value
 ]]
-function ThemeOutlet:themeValue( valueName, styleName )
-	return Theme.active:value( self.ownerClass, valueName, styleName )
+function ThemeOutlet:value( valueName, styleName )
+	return Theme.static.active:value( self.ownerClass, valueName, styleName or self.style )
 end

@@ -1,6 +1,8 @@
 
 class "MouseScrollEvent" extends "MouseEvent" {
-	eventType = "mouse_scroll";
+    static = {
+        eventType = "mouse_scroll";
+    };
 	direction = false;
 }
 

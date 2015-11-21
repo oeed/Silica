@@ -14,6 +14,6 @@ function TestView:initialiseCanvas( ... )
 end
 
 function TestView.width:set( width )
-	self.super:setWidth( width )
+	self:super( width )
     width = self.width
 end

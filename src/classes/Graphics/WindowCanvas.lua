@@ -4,7 +4,7 @@ class "WindowCanvas" extends "Canvas" { }
 -- function WindowCanvas:drawTo( ... )
 --     if self.isVisible then
 --         local hasChanged = self.hasChanged
---         self.super:drawTo( ... )
+--         self:super( ... )
 --         if hasChanged then
 --         	self.
 --         end
@@ -16,7 +16,7 @@ class "WindowCanvas" extends "Canvas" { }
 
 function WindowCanvas:draw( ... )
     if self.isVisible then
-    	self.super:draw( ... )
+    	self:super( ... )
        
     	local y = self.height - 1
     	local width = self.width

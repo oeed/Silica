@@ -44,14 +44,14 @@ function ToolbarContainer:update( deltaTime )
     end
 end
 
-function ToolbarContainer:onChildAdded( event )
+function ToolbarContainer:onChildAdded( Event event, Event.phases phase )
     if not event.childView:typeOf( IToolbarItem ) then
         error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not implement IToolbarItem to '" .. tostring( self ) .. "'", 0 )
     end
     self.needsLayoutUpdate = true
 end
 
-function ToolbarContainer:onChildRemoved( event )
+function ToolbarContainer:onChildRemoved( Event event, Event.phases phase )
     self.needsLayoutUpdate = true
 end
 

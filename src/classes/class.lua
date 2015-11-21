@@ -21,7 +21,7 @@ local application -- the running application
 local TYPETABLE_NAME, TYPETABLE_TYPE, TYPETABLE_CLASS, TYPETABLE_ALLOWS_NIL, TYPETABLE_IS_VAR_ARG, TYPETABLE_IS_ENUM, TYPETABLE_ENUM_ITEM_TYPE, TYPETABLE_HAS_DEFAULT_VALUE, TYPETABLE_DEFAULT_VALUE = 1, 2, 3, 4, 5, 6, 7, 8, 9
 local FUNCTIONTABLE_FUNCTION = 1
 
-local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true }
+local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true }
 
 -- Create the value types --
 
@@ -570,7 +570,12 @@ function extends( name )
     end
     if name ~= currentlyConstructing.name then
         local ext = class.get( name )
-        currentlyConstructing.typeOfCache[ext] = true
+        local typeOfCache = currentlyConstructing.typeOfCache
+        typeOfCache[ext] = true
+        for k, v in pairs( compiledClassDetails[name].typeOfCache ) do
+            typeOfCache[k] = v
+        end
+
         currentlyConstructing.superName = name
     else
         error( "can't extend self" , 2 )
@@ -706,7 +711,7 @@ function loadProperties( propertiesTable )
         if currentlyConstructing[aliasTag[3]][newName] then
             error( "attempt to overwrite property/function with alias "..newName)
         else
-            aliases[aliasTag[1]] = oldName
+            mainTable[aliasTag[1]] = oldName
         end
 
         -- add the proxy item for the new alias
@@ -907,6 +912,9 @@ function checkValue( value, typeTable, isSelf ) -- TODO: error level and message
         -- if a default value couldn't be loaded and the argument doesn't accept nil then error
         if not typeTable[TYPETABLE_ALLOWS_NIL] then
             error("can't be nil", 2 )
+        else
+            -- otherwise, if nil is okay, continue with nil
+            return nil
         end
     end
 
@@ -925,7 +933,7 @@ function checkValue( value, typeTable, isSelf ) -- TODO: error level and message
         if isSelf then
             error("self not passed to function, you probably used . instead of :", 3)
         else
-            error("wrong type, expected "..expectedType .. " got " .. type( value ), 4)
+            error(typeTable[TYPETABLE_NAME] .. " was wrong type, expected "..expectedType .. " got " .. type( value ), 4)
         end
     end
     return value
@@ -961,7 +969,6 @@ function compileClass( compiledClass, name )
             return __tostring
         end } )
     else
-        local compiledStatic = {}
         currentlyConstructing.typeTable = { "self", "table", type, false, false, false }
 
         local superName = currentlyConstructing.superName
@@ -1005,6 +1012,7 @@ function compileClass( compiledClass, name )
         compiledClass.static = static
         compiledClass.metatable = metatable
         compiledClass.className = name
+        compiledClass.super = classes[superName]
 
         local enumTypes = currentlyConstructing.enumTypes 
         for k, enum in pairs( currentlyConstructing.enums  ) do
@@ -1029,7 +1037,6 @@ function compileClass( compiledClass, name )
                 itemValueType = createValueType( fullEnumName, itemValueType[TYPETABLE_TYPE], itemValueType[TYPETABLE_CLASS], enumName, valueTypes[ownerName] )
 
                 for k, v in pairs( enum ) do -- we need to add the enum's values so they can be used as default values
-
                     rawset( itemValueType, k, v )
                 end
                 rawset( valueTypes[ownerName], enumName, itemValueType )
@@ -1089,8 +1096,8 @@ function compileClass( compiledClass, name )
 
 
         compileInstanceClass( name, compiledClass, static )
-        static = compileAndSpawnStatic( static, name, compiledClass )
         classes[name] = compiledClass
+        static = compileAndSpawnStatic( static, name, compiledClass )
     end
     currentlyConstructing = nil
     _G[name] = compiledClass
@@ -1116,14 +1123,14 @@ end
 
 -- return the minimum and maximum number of arguments that can be usd on a function
 local function argumentLimits( functionTable )
-    local functionsTableLength = #functionTable
-    local maxArgs = functionsTableLength - FUNCTIONTABLE_FUNCTION
+    local functionTableLength = #functionTable
+    local maxArgs = functionTableLength - FUNCTIONTABLE_FUNCTION
     if maxArgs == 0 then return 0, 0, 0 end
-    if functionTable[functionsTableLength][TYPETABLE_IS_VAR_ARG] then -- the last value is ..., so there is no maximum
+    if functionTable[functionTableLength][TYPETABLE_IS_VAR_ARG] then -- the last value is ..., so there is no maximum
         maxArgs = math.huge
     end
     local minChecked = 0 -- the minimum number of arguments that need to be checkValued (so optionals can be loaded)
-    for i = functionsTableLength, FUNCTIONTABLE_FUNCTION + 1, -1 do
+    for i = functionTableLength, FUNCTIONTABLE_FUNCTION + 1, -1 do
         local funcTbl = functionTable[i]
         if funcTbl[TYPETABLE_IS_VAR_ARG] then -- varargs are always optional
         elseif funcTbl[TYPETABLE_HAS_DEFAULT_VALUE] then
@@ -1156,7 +1163,7 @@ local function addMissingSuper( superPrebuilt, prebuiltFunctions, outValues, def
         for functionName, funcs in pairs( superPrebuilt ) do
             if not prebuiltFunctions[functionName] then
                 prebuiltFunctions[functionName] = funcs -- TODO: check this doesn't cause issues due to using the same table
-                if definedIndexes then definedIndexes[functionName] = true end
+                if definedIndexes then definedIndexes[functionName] = functionName end
                 outValues[functionName] = funcs[#funcs]( constructSuper( funcs ) )
             end
         end
@@ -1165,7 +1172,7 @@ end
 
 local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, superPrebuiltFunctions, outValues, selfTypeTable )
     for functionName, functionTable in pairs( classFunctions ) do
-        definedIndexes[functionName] = true
+        definedIndexes[functionName] = functionName
         local func = functionTable[FUNCTIONTABLE_FUNCTION]
         local minArgs, maxArgs, minChecked = argumentLimits( functionTable )
         local varargTypeTable
@@ -1178,7 +1185,10 @@ local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, 
                 local arguments = { ... }
                 local argumentsLength = #arguments
                 if argumentsLength < minArgs or argumentsLength > maxArgs then
-                    error( "wrong number of arguments, got "..argumentsLength.." expected between ".. minArgs .. " and " .. maxArgs, 3 )
+                    for i, v in ipairs(arguments) do
+                        print(i .. ": "..tostring(v))
+                    end
+                    error( functionName .. ": wrong number of arguments, got "..argumentsLength.." expected between ".. minArgs .. " and " .. maxArgs, 2 )
                 end
 
                 local values = { checkValue( self, selfTypeTable, true ) }
@@ -1241,6 +1251,84 @@ local function addSetter( setters, properties, outSetters, prebuiltSetters, supe
     addMissingSuper( superPrebuiltSetters, prebuiltSetters, outSetters )
 end
 
+function compileInstanceClass( name, compiledClass, static )
+    local initialValues, prebuiltGetters, prebuiltSetters, requireDefaultGeneration, definedIndexes, definedProperties = { static = static, class = compiledClass, }, {}, {}, {}, { static = "static", class = "class", typeOf = "typeOf", isDefined = "isDefined", isDefinedProperty = "isDefinedProperty", isDefinedFunction = "isDefinedFunction" }, { static = "static", class = "class" }
+    local classDetails = compiledClassDetails[name]
+    local superName = classDetails.superName
+    local compiledSuperDetails = superName and compiledClassDetails[superName]
+    local instanceProperties = classDetails.instanceProperties
+    local selfTypeTable = classDetails.typeTable
+
+
+    -- add default property values if they have them
+    for propertyName, typeTable in pairs( instanceProperties ) do
+        definedIndexes[propertyName] = propertyName
+        definedProperties[propertyName] = propertyName
+
+        if typeTable[TYPETABLE_HAS_DEFAULT_VALUE] then
+            local defaultValue = typeTable[TYPETABLE_DEFAULT_VALUE]
+            if ( typeTable[TYPETABLE_TYPE] or type( defaultValue ) ) ~= "table" then
+                if typeTable[TYPETABLE_ALLOWS_NIL] and defaultValue ~= nil then -- there isn't a value here yet. don't assign the value yet, but if after initialisation there isn't a value an error will be thrown if it doesn't allow nil
+                    initialValues[propertyName] = defaultValue
+                end
+            else
+                requireDefaultGeneration[propertyName] = typeTable
+            end
+        end
+    end
+
+    local aliases = classDetails.aliases.instance
+    for k, v in pairs( aliases ) do -- copy the aliases to definedIndexes
+        definedIndexes[k] = v
+        if definedProperties[v] then
+            definedProperties[k] = v
+        end
+    end
+
+    -- add the instance functions
+    addFunctions( classDetails.instanceFunctions, definedIndexes, currentlyConstructing.prebuiltInstanceFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceFunctions, initialValues, selfTypeTable )
+
+    addGetter( classDetails.instanceGetters, instanceProperties, prebuiltGetters, currentlyConstructing.prebuiltInstanceGetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceGetters )
+    addSetter( classDetails.instanceSetters, instanceProperties, prebuiltSetters, currentlyConstructing.prebuiltInstanceSetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceSetters )
+
+    local typeOfCache = classDetails.typeOfCache
+    function initialValues:typeOf( object )
+        if not object then return false
+        elseif type( object ) ~= "table" then
+            return false
+        elseif object == compiledClass then
+            return true
+        elseif typeOfCache[object] then
+            return true
+        elseif self == object then
+            return true
+        end
+        return false
+    end
+
+    function initialValues:isDefined( key )
+        return definedIndexes[key] ~= nil
+    end
+
+    function initialValues:isDefinedProperty( key )
+        return definedProperties[key] ~= nil
+    end
+
+    function initialValues:isDefinedFunction( key )
+        return definedProperties[key] ~= nil and definedIndexes[key] ~= nil
+    end
+
+    compiledInstances[name] = {
+        initialValues = initialValues;
+        prebuiltFunctions = prebuiltFunctions;
+        prebuiltGetters = prebuiltGetters;
+        prebuiltSetters = prebuiltSetters;
+        requireDefaultGeneration = requireDefaultGeneration;
+        definedIndexes = definedIndexes;
+        definedProperties = definedProperties;
+    }
+end
+
 function compileAndSpawnStatic( static, name, compiledClass )
     local classDetails = compiledClassDetails[name]
     local staticProperties = classDetails.staticProperties
@@ -1250,16 +1338,25 @@ function compileAndSpawnStatic( static, name, compiledClass )
 
     local values, getters, setters = { class = compiledClass }, {}, {}
 
-    local definedIndexes, definedProperties = { typeOf = true, class = true }, { class = true }
+    local definedIndexes, definedProperties = { typeOf = "typeOf", class = "class", isDefinedProperty = "isDefinedProperty", isDefinedFunction = "isDefinedFunction" }, { class = "class" }
     for propertyName, typeTable in pairs( staticProperties ) do
-        definedIndexes[propertyName] = true
-        definedProperties[propertyName] = true
+        definedIndexes[propertyName] = propertyName
+        definedProperties[propertyName] = propertyName
         if typeTable[TYPETABLE_HAS_DEFAULT_VALUE] then
-            if typeTable[TYPETABLE_TYPE] ~= "table" then
+            local defaultValue = typeTable[TYPETABLE_DEFAULT_VALUE]
+            if ( typeTable[TYPETABLE_TYPE] or type( defaultValue ) ) ~= "table" then
                 values[propertyName] = typeTable[TYPETABLE_DEFAULT_VALUE]
             else
                 values[propertyName] = generateDefaultValue( typeTable )
             end
+        end
+    end
+
+    local aliases = classDetails.aliases.static
+    for k, v in pairs( aliases ) do -- copy the aliases to definedIndexes
+        definedIndexes[k] = v
+        if definedProperties[v] then
+            definedProperties[k] = v
         end
     end
 
@@ -1271,10 +1368,6 @@ function compileAndSpawnStatic( static, name, compiledClass )
 
     addGetter( classDetails.staticGetters, staticProperties, getters, currentlyConstructing.prebuiltInstanceGetters, compiledSuperDetails and compiledSuperDetails.prebuiltStaticGetters )
     addSetter( classDetails.staticSetters, staticProperties, setters, currentlyConstructing.prebuiltInstanceSetters, compiledSuperDetails and compiledSuperDetails.prebuiltStaticSetters )
-
-    local aliases = {
-        color = "colour"
-    }
 
     local typeOfCache = classDetails.typeOfCache
     function static:typeOf( object )
@@ -1291,17 +1384,29 @@ function compileAndSpawnStatic( static, name, compiledClass )
         return false
     end
 
+    function static:isDefined( key )
+        return definedIndexes[key] ~= nil
+    end
+
+    function static:isDefinedProperty( key )
+        return definedProperties[key] ~= nil
+    end
+
+    function static:isDefinedFunction( key )
+        return definedProperties[key] ~= nil and definedIndexes[key] ~= nil
+    end
+
     local metatable = {}
     function metatable:__newindex( key, value )
         if RESERVED_NAMES[key] then error( "reserved name" , 2 ) end
 
-        key = aliases[key] or key
-        if definedProperties[key] then
-            local setter = setters[key]
-            if setter and not lockedSetters[key] then
+        local locatedKey = definedProperties[key]
+        if locatedKey then
+            local setter = setters[locatedKey]
+            if setter and not lockedSetters[locatedKey] then
                 setter( self, value )
             else
-                values[key] = checkValue( value, staticProperties[key] )
+                values[locatedKey] = checkValue( value, staticProperties[locatedKey] )
             end
         else
             error("attempt to set undefined property or function", 2 )
@@ -1309,13 +1414,13 @@ function compileAndSpawnStatic( static, name, compiledClass )
     end
 
     function metatable:__index( key )
-        key = aliases[key] or key
-        if definedIndexes[key] then
-            local getter = getters[key]
-            if getter and not lockedGetters[key] then
+        local locatedKey = definedIndexes[key]
+        if locatedKey then
+            local getter = getters[locatedKey]
+            if getter and not lockedGetters[locatedKey] then
                 return getter( self )
             else
-                return values[key]
+                return values[locatedKey]
             end
         elseif key == "application" then
             return application
@@ -1350,62 +1455,6 @@ function compileAndSpawnStatic( static, name, compiledClass )
     return static
 end
 
-function compileInstanceClass( name, compiledClass, static )
-    local initialValues, prebuiltGetters, prebuiltSetters, requireDefaultGeneration, definedIndexes, definedProperties = { static = static, class = compiledClass, }, {}, {}, {}, { static = true, class = true, typeOf = true }, { static = true, class = true }
-    local classDetails = compiledClassDetails[name]
-    local superName = classDetails.superName
-    local compiledSuperDetails = superName and compiledClassDetails[superName]
-    local instanceProperties = classDetails.instanceProperties
-    local selfTypeTable = classDetails.typeTable
-
-
-    -- add default property values if they have them
-    for propertyName, typeTable in pairs( instanceProperties ) do
-        definedIndexes[propertyName] = true
-        definedProperties[propertyName] = true
-        if typeTable[TYPETABLE_HAS_DEFAULT_VALUE] then
-            if typeTable[TYPETABLE_TYPE] ~= "table" then
-                local defaultValue = typeTable[TYPETABLE_DEFAULT_VALUE]
-                if typeTable[TYPETABLE_ALLOWS_NIL] and defaultValue ~= nil then -- there isn't a value here yet. don't assign the value yet, but if after initialisation there isn't a value an error will be thrown if it doesn't allow nil
-                    initialValues[propertyName] = defaultValue
-                end
-            else
-                requireDefaultGeneration[propertyName] = typeTable
-            end
-        end
-    end
-
-    -- add the instance functions
-    addFunctions( classDetails.instanceFunctions, definedIndexes, currentlyConstructing.prebuiltInstanceFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceFunctions, initialValues, selfTypeTable )
-
-    addGetter( classDetails.instanceGetters, instanceProperties, prebuiltGetters, currentlyConstructing.prebuiltInstanceGetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceGetters )
-    addSetter( classDetails.instanceSetters, instanceProperties, prebuiltSetters, currentlyConstructing.prebuiltInstanceSetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceSetters )
-
-    local typeOfCache = classDetails.typeOfCache
-    function initialValues:typeOf( object )
-        if not object then return false
-        elseif type( object ) ~= "table" then
-            return false
-        elseif object == compiledClass then
-            return true
-        elseif typeOfCache[object] then
-            return true
-        elseif self == object then
-            return true
-        end
-        return false
-    end
-
-    compiledInstances[name] = {
-        initialValues = initialValues;
-        prebuiltFunctions = prebuiltFunctions;
-        prebuiltGetters = prebuiltGetters;
-        prebuiltSetters = prebuiltSetters;
-        requireDefaultGeneration = requireDefaultGeneration;
-        definedIndexes = definedIndexes;
-        definedProperties = definedProperties;
-    }
-end
 
 function spawnInstance( name, ... )
     local compiledInstance = compiledInstances[name]
@@ -1420,6 +1469,7 @@ function spawnInstance( name, ... )
 
     -- for default values that are tables make them unique or create class instances
     for propertyName, typeTable in pairs( compiledInstance.requireDefaultGeneration ) do
+        if propertyName == "handles" then log "Generating" end
         values[propertyName] = generateDefaultValue( typeTable )
     end
 
@@ -1444,13 +1494,13 @@ function spawnInstance( name, ... )
     function metatable:__newindex( key, value )
         if RESERVED_NAMES[key] then error( "reserved name" , 2 ) end
 
-        key = aliases[key] or key
-        if definedProperties[key] then
-            local setter = setters[key]
-            if setter and not lockedSetters[key] then
+        local locatedKey = definedProperties[key]
+        if locatedKey then
+            local setter = setters[locatedKey]
+            if setter and not lockedSetters[locatedKey] then
                 setter( self, value )
             else
-                values[key] = checkValue( value, instanceProperties[key] )
+                values[locatedKey] = checkValue( value, instanceProperties[locatedKey] )
             end
         else
             error("attempt to set undefined property or function", 2 )
@@ -1458,13 +1508,13 @@ function spawnInstance( name, ... )
     end
 
     function metatable:__index( key )
-        key = aliases[key] or key
-        if definedIndexes[key] then
-            local getter = getters[key]
-            if getter and not lockedGetters[key] then
+        local locatedKey = definedIndexes[key]
+        if locatedKey then
+            local getter = getters[locatedKey]
+            if getter and not lockedGetters[locatedKey] then
                 return getter( self )
             else
-                return values[key]
+                return values[locatedKey]
             end
         elseif key == "application" then
             return application

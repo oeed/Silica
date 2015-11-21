@@ -14,7 +14,7 @@ function CloseWindowButton:initialiseCanvas()
     self.symbolObject = self.canvas:insert( symbolObject )
 end
 
-function CloseWindowButton:onMouseUp( event )    
+function CloseWindowButton:onMouseUp( Event event, Event.phases phase )    
     if self.window then
         self.window:close()
         return true

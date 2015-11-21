@@ -42,7 +42,7 @@ function ScrollView:initialiseCanvas()
 	self.theme:connect( self.canvas, "fillColour" )
 end
 
-function ScrollView:onInterfaceLoaded( event )
+function ScrollView:onInterfaceLoaded( Event event, Event.phases phase )
     local currentContainer = self.container
     for i, childView in ipairs( self.children ) do
         if childView ~= currentContainer and childView:typeOf( ScrollContainer ) then
@@ -154,7 +154,7 @@ end
 	@param [Event] event -- the mouse scroll event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function ScrollView:onMouseScroll( event )
+function ScrollView:onMouseScroll( Event event, Event.phases phase )
 	if self.isEnabled then
 		local direction = event.direction
 		local verticalVelocity = self.verticalVelocity

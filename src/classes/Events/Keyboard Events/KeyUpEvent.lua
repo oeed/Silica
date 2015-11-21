@@ -1,4 +1,6 @@
 
 class "KeyUpEvent" extends "KeyEvent" {
-	eventType = "key_up";
+    static = {
+        eventType = "key_up";
+    };
 }

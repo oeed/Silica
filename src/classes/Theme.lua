@@ -41,7 +41,7 @@ function Theme:initialise( themeName, cantExtend )
 		error( "Theme file not found: " .. themeName .. ".stheme", 0 )
 	end
 
-	Theme.themes[themeName] = self
+	Theme.static.themes[themeName] = self
 end
 
 --[[
@@ -52,7 +52,7 @@ end
 	@return [Theme] theme -- the theme with the given name
 ]]
 function Theme.static:named( themeName, cantExtend )
-	return Theme.themes[themeName] or Theme( themeName, cantExtend )
+	return Theme.static.themes[themeName] or Theme( themeName, cantExtend )
 end
 
 --[[
@@ -72,7 +72,7 @@ function Theme:initialiseTheme( nodes, cantExtend )
 
 	local classes = {}
 	if extends then
-		local extendingTheme = Theme.named( extends, cantExtend )
+		local extendingTheme = Theme.static:named( extends, cantExtend )
 		if not extendingTheme then return "Tried to extend a non-existant theme: " .. extends
 		elseif extendingTheme == self.name then return "Tried to extend self" end
 		local extendsClasses = extendingTheme.classes
@@ -98,8 +98,8 @@ function Theme:initialiseTheme( nodes, cantExtend )
 			local validationTypeName = propertyNode.attributes.type
 			for styleName, styleValue in pairs( propertyNode.attributes ) do
 				if styleName ~= "type" then
-					if Validator.isValid( styleValue, validationTypeName ) then
-						propertyTheme[styleName] = Validator.parse( styleValue, validationTypeName )
+					if Validator.static:isValid( styleValue, validationTypeName ) then
+						propertyTheme[styleName] = Validator.static:parse( styleValue, validationTypeName )
 					else
 						return "Style value '" .. tostring( styleValue ) .. "' is invalid for type '" .. validationTypeName .. "' : '" .. styleName .. "' (of property: " .. propertyNode.type .. " and of class: " .. classNode.type .. ")" 
 					end
@@ -147,8 +147,9 @@ function Theme:value( _class, propertyName, styleName, noError )
 	end
 
 	-- an error occured, try to see if the value was defined for a super class
-	if _class._extends then
-		local themeValue = self:value( _class._extends, propertyName, styleName, true )
+	local super = _class.super
+	if super then
+		local themeValue = self:value( super, propertyName, styleName, true )
 		if themeValue then
 			return themeValue
 		end

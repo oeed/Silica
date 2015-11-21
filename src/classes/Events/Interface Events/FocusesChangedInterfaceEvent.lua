@@ -1,6 +1,8 @@
 
 class "FocusesChangedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = "interface_focuses_changed";
+    static = {
+        eventType = "interface_focuses_changed";
+    };
 	newFocuses = false; -- the new views that are being focused on. doesn't lose it's focus when it recieves this event.
     oldFocuses = false; -- the old views that previously were focused
 }

@@ -34,7 +34,7 @@ function MenuButton:initialise( ... )
     self:event( ParentChangedInterfaceEvent, self.onParentChanged )
 end
 
-function MenuButton:onParentChanged( event )
+function MenuButton:onParentChanged( Event event, Event.phases phase )
     local menu = self.menu
     if menu then
         menu = self.menu
@@ -131,7 +131,7 @@ function MenuButton:updateArrows()
 end
 
 function MenuButton.isPressed:set( isPressed )
-    self.super:setIsPressed( isPressed )
+    self:super( isPressed )
     self.needsArrowUpdate = true
 end
 
@@ -140,7 +140,7 @@ end
     @desc Fired when the mouse is released while over the button. Toggles the menu if it hit tests.
     @param [Event] event -- the mouse up event
 ]]
-function MenuButton:onGlobalMouseUp( event )
+function MenuButton:onGlobalMouseUp( Event event, Event.phases phase )
     if self.isEnabled and self.isPressed then
         self.isPressed = false
         if self:hitTestEvent( event ) then
@@ -156,7 +156,7 @@ end
     @param [Event] event -- the menu changed event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function MenuButton:onMenuChanged( event )
+function MenuButton:onMenuChanged( Event event, Event.phases phase )
     self:updateArrows()
     self:updateThemeStyle()
 

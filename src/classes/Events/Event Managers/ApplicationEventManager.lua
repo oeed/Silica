@@ -11,7 +11,7 @@ class "ApplicationEventManager" extends "EventManager" {
 ]]
 function ApplicationEventManager:handleEvent( event )
 	-- run the before phase handles first
-	if self:handleEventPhase( event, self.phase.BEFORE ) then
+	if self:handleEventPhase( event, Event.phases.BEFORE ) then
 		return true
 	end
 
@@ -22,7 +22,7 @@ function ApplicationEventManager:handleEvent( event )
 	end
 
 	-- if nothing has killed the flow yet run the after phases
-	return self:handleEventPhase( event, self.phase.AFTER )
+	return self:handleEventPhase( event, Event.phases.AFTER )
 end
 
 function ApplicationEventManager:connectGlobal()

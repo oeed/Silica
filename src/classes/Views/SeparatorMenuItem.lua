@@ -19,11 +19,11 @@ class "SeparatorMenuItem" extends "MenuItem" {
 	@param [table] properties -- the properties for the view
 ]]
 function SeparatorMenuItem:initialise( ... )
-	self.super.super:initialise( ... )
+	self.super:super( ... )
 end
 
 function SeparatorMenuItem:initialiseCanvas()
-	self.super.super:initialiseCanvas()
+	self.super:super()
     self.backgroundObject = self.canvas:insert( Separator( 5, 2, self.width - 8, 1 ) )
 end
 

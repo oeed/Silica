@@ -118,9 +118,9 @@ end
 
 function Document.contents:set( contents )
 	self.contents = contents
-	if self.hasInitialised then
+	-- if self.hasInitialised then
 		self.isModified = true
-	end
+	-- end
 end
 
 

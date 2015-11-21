@@ -1,4 +1,6 @@
 
 class "TerminateEvent" extends "Event" {
-	eventType = "terminate";
+    static = {
+        eventType = "terminate";
+    };
 }

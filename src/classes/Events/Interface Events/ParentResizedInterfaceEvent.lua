@@ -1,6 +1,8 @@
 
 class "ParentResizedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = "interface_parent_resized";
+    static = {
+        eventType = "interface_parent_resized";
+    };
 	isHorizontal = false;
 	isVertical = false;
 	isSentToSender = false;

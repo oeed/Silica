@@ -53,7 +53,7 @@ function MenuBar.isEnabled:set( isEnabled )
 end
 
 function MenuBar.isVisible:set( isVisible )
-	self.super:setIsVisible( isVisible )
+	self:super( isVisible )
 	if isVisible then
 		self.needsLayoutUpdate = true
 	end

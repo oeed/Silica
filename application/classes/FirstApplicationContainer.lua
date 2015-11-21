@@ -8,7 +8,7 @@ function FirstApplicationContainer:initialise( ... )
 	self:event( ReadyInterfaceEvent, self.onReady)
 end
 
-function FirstApplicationContainer:onReady( event )
+function FirstApplicationContainer:onReady( Event event, Event.phases phase )
 	-- self.firstButton:focus()
 
 
@@ -20,6 +20,6 @@ function FirstApplicationContainer:onReady( event )
 	-- document:save()
 end
 
-function FirstApplicationContainer:onFirstButton( event )
+function FirstApplicationContainer:onFirstButton( Event event, Event.phases phase )
 	self.application.interfaceName = "second"
 end

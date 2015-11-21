@@ -934,7 +934,7 @@ end\
 \9@param [Event] event -- the mouse up event\
 \9@return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function TextBox:onGlobalMouseUp( event )\
+function TextBox:onGlobalMouseUp( Event event, Event.phases phase )\
 \9if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
 \9\9self.isPressed = false\
 \9\9if self.isEnabled and self:hitTestEvent( event ) then\
@@ -949,7 +949,7 @@ end\
 \9@param [MouseDownEvent] event -- the mouse down event\
 \9@return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function TextBox:onMouseUp( event )\
+function TextBox:onMouseUp( Event event, Event.phases phase )\
 \9if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
 \9\9self:focus( TextBox )\
 \9end\
@@ -962,7 +962,7 @@ end\
 \9@param [MouseDownEvent] event -- the mouse down event\
 \9@return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function TextBox:onMouseDown( event )\
+function TextBox:onMouseDown( Event event, Event.phases phase )\
 \9if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
 \9\9self.isPressed = true\
 \9\9self.cursorPosition = self:viewToCharCoords( event.x - self.leftMargin + self.scroll )\
@@ -971,7 +971,7 @@ function TextBox:onMouseDown( event )\
 \9return true\
 end\
 \
-function TextBox:onMouseDrag( event )\
+function TextBox:onMouseDrag( Event event, Event.phases phase )\
 \9if self.isPressed and self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
 \9\9self.isPressed = true\
 \9\9self.selectionPosition = self:viewToCharCoords( event.x - self.leftMargin + self.scroll )\
@@ -979,7 +979,7 @@ function TextBox:onMouseDrag( event )\
 \9return true\
 end\
 \
-function TextBox:onKeyDown( event )\
+function TextBox:onKeyDown( Event event, Event.phases phase )\
 \9if self.isFocused then\
 \9\9local keyCode = event.keyCode\
 \9\9local text = self.text\
@@ -1021,13 +1021,13 @@ function TextBox:onKeyDown( event )\
 \9end\
 end\
 \
-function TextBox:onKeyUp( event )\
+function TextBox:onKeyUp( Event event, Event.phases phase )\
 \9if self.isFocused then\
 \9\9\
 \9end\
 end\
 \
-function TextBox:onCharacter( event )\
+function TextBox:onCharacter( Event event, Event.phases phase )\
 \9if self.isFocused then\
 \9\9local text = self.text\
 \9\9self:write( CharacterEvent )\
@@ -1040,7 +1040,7 @@ end\
     @param [Event] event -- the keyboard shortcut\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function TextBox:onKeyboardShortcut( event )\
+function TextBox:onKeyboardShortcut( Event event, Event.phases phase )\
     if self.isFocused then\
         if event:matchesKeys( { \"ctrl\", \"left\" } ) or event:matchesKeys( { \"home\" } ) then\
         \9self.selectionPosition = false\
@@ -1132,21 +1132,16 @@ end\
     @param [string] path -- the path to the directory of resources\
 ]]\
 function Application.static:load( path )\
-    print(\"load \"..path)\
     local folder = Folder( path )\
-    print(folder)\
     if folder then\
         table.insert( self.resourceFolders, folder )\
         local classesFolder = folder:folderFromPath( \"classes\" )\
-        print(classesFolder)\
         if classesFolder then\
             table.insert( class.folders, classesFolder )\
             local luaMime = Metadata.mimes.LUA\
             local function loadFolder( folder )\
-                log(\"Load folder \"..folder.name)\
                 for i, fileSystemItem in ipairs( folder.items ) do\
                     if fileSystemItem.metadata.mime == luaMime then\
-                        log(\"Load file \"..fileSystemItem.name)\
                         class.load( fileSystemItem.name, fileSystemItem.contents )\
                     elseif fileSystemItem:typeOf( Folder ) then\
                         loadFolder( fileSystemItem )\
@@ -1184,7 +1179,7 @@ function Application:run( ... )\
 \9self:update()\
 \
 \9while self.isRunning do\
-\9\9local event = Event.create( coroutine.yield() )\
+\9\9local event = Event.static:create( coroutine.yield() )\
 \9\9event.relativeView = self.container\
 \9\9self.event:handleEvent( event )\
 \9end\
@@ -1410,14 +1405,16 @@ end\
 \9@param [TimerEvent] event -- the timer event\
 \9@return [boolean] stopPropagation -- whether following handlers should not recieve this event\
 ]]\
-function Application:onTimer( event )\
+function Application:onTimer( Event event, Event.phases phase )\
 \9if event.timer and event.timer == self.updateTimer then\
 \9\9self:update()\
 \9\9return true\
 \9end\
 end",},MouseScrollEvent = {["text/lua"] = "\
 class \"MouseScrollEvent\" extends \"MouseEvent\" {\
-\9eventType = \"mouse_scroll\";\
+    static = {\
+        eventType = \"mouse_scroll\";\
+    };\
 \9direction = false;\
 }\
 \
@@ -1437,7 +1434,9 @@ function MouseScrollEvent:initialise( direction, x, y )\
 end\
 ",},MouseUpEvent = {["text/lua"] = "\
 class \"MouseUpEvent\" extends \"MouseEvent\" {\
-\9eventType = \"mouse_up\";\
+    static = {\
+        eventType = \"mouse_up\";\
+    };\
 \9mouseButton = false;\
 }\
 \
@@ -1622,7 +1621,9 @@ function ScaleableCanvas:drawTo( canvas, isShadow )\
     return self\
 end",},SiblingAddedInterfaceEvent = {["text/lua"] = "\
 class \"SiblingAddedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_sibling_added\";\
+    static = {\
+        eventType = \"interface_sibling_added\";\
+    };\
 \9view = false; -- the new sibling that was added\
 \9isSentToChildren = false;\
 }\
@@ -1726,7 +1727,7 @@ end\
 \
 function Window.height:set( height )\
     height = math.max( math.min( height, self.maxHeight ), self.minHeight )\
-    self.super:setHeight( height )\
+    self:super( height )\
     self.shadowObject.height = height - 3\
     local container = self.container\
     if container then container.height = height - self.barHeight - 5 end\
@@ -1734,7 +1735,7 @@ end\
 \
 function Window.width:set( width )\
     width = math.max( math.min( width, self.maxWidth ), self.minWidth )\
-    self.super:setWidth( width )\
+    self:super( width )\
     self.shadowObject.width = width - 2\
     self.barObject.width = width - 2\
     self.separatorObject.width = width - 2\
@@ -1742,7 +1743,7 @@ function Window.width:set( width )\
     if container then container.width = width - 2 end\
 end\
 \
-function Window:onInterfaceLoaded( event )\
+function Window:onInterfaceLoaded( Event event, Event.phases phase )\
     local currentContainer = self.container\
     for i, childView in ipairs( self.children ) do\
         if childView ~= currentContainer and childView:typeOf( WindowContainer ) then\
@@ -1762,7 +1763,7 @@ function Window:updateThemeStyle()\
 end\
 \
 function Window.isEnabled:set( isEnabled )\
-    self.super:setIsEnabled( isEnabled )\
+    self:super( isEnabled )\
     self:updateThemeStyle()\
 end\
 \
@@ -1809,7 +1810,7 @@ end\
     @param [MouseDownEvent] event -- the mouse down event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Window:onMouseDownBefore( event )\
+function Window:onMouseDownBefore( Event event, Event.phases phase )\
     self:focus()\
 end\
 \
@@ -1819,7 +1820,7 @@ end\
     @param [MouseDownEvent] event -- the mouse down event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Window:onMouseDownAfter( event )\
+function Window:onMouseDownAfter( Event event, Event.phases phase )\
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         x = event.x\
         y = event.y\
@@ -1842,7 +1843,7 @@ end\
     @param [Event] event -- the mouse drag event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Window:onGlobalMouseDrag( event )\
+function Window:onGlobalMouseDrag( Event event, Event.phases phase )\
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         local preventPropagation = false\
         if self.isDragging then\
@@ -1869,7 +1870,7 @@ end\
     @param [Event] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Window:onGlobalMouseUp( event )\
+function Window:onGlobalMouseUp( Event event, Event.phases phase )\
     if (self.isDragging or self.isResizingX or self.isResizingY ) and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.dragX = false\
         self.dragY = false\
@@ -1952,7 +1953,7 @@ end\
 \
  -- yes, set, not update\
 function SegmentButton.width:set( width )\
-    self.super:setWidth( width )\
+    self:super( width )\
     local isFirst = self.isFirst\
     local isLast = self.isLast\
     self.backgroundObject.width = isLast and width - 1 or width - 1\
@@ -1978,7 +1979,7 @@ function SegmentButton.leftMargin:get()\
 end\
 \
 function SegmentButton.isPressed:set( isPressed )\
-    self.super:setIsPressed( isPressed )\
+    self:super( isPressed )\
     local isFirst = self.isFirst\
     local isLast = self.isLast\
     if isLast then\
@@ -1993,7 +1994,7 @@ end\
     @desc Fired when it's siblings changed or it is added/removed from it's parent\
     @param [Event] event -- the event\
 ]]\
-function SegmentButton:onSiblingOrParentChanged( event )\
+function SegmentButton:onSiblingOrParentChanged( Event event, Event.phases phase )\
     local backgroundObject = self.backgroundObject\
     local shadowObject = self.shadowObject\
     local isFirst = self.isFirst\
@@ -2149,7 +2150,7 @@ function MenuButton:initialise( ... )\
     self:event( ParentChangedInterfaceEvent, self.onParentChanged )\
 end\
 \
-function MenuButton:onParentChanged( event )\
+function MenuButton:onParentChanged( Event event, Event.phases phase )\
     local menu = self.menu\
     if menu then\
         menu = self.menu\
@@ -2246,7 +2247,7 @@ function MenuButton:updateArrows()\
 end\
 \
 function MenuButton.isPressed:set( isPressed )\
-    self.super:setIsPressed( isPressed )\
+    self:super( isPressed )\
     self.needsArrowUpdate = true\
 end\
 \
@@ -2255,7 +2256,7 @@ end\
     @desc Fired when the mouse is released while over the button. Toggles the menu if it hit tests.\
     @param [Event] event -- the mouse up event\
 ]]\
-function MenuButton:onGlobalMouseUp( event )\
+function MenuButton:onGlobalMouseUp( Event event, Event.phases phase )\
     if self.isEnabled and self.isPressed then\
         self.isPressed = false\
         if self:hitTestEvent( event ) then\
@@ -2271,7 +2272,7 @@ end\
     @param [Event] event -- the menu changed event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function MenuButton:onMenuChanged( event )\
+function MenuButton:onMenuChanged( Event event, Event.phases phase )\
     self:updateArrows()\
     self:updateThemeStyle()\
 \
@@ -2282,7 +2283,9 @@ function MenuButton:onMenuChanged( event )\
     return true\
 end",},ThemeChangedInterfaceEvent = {["text/lua"] = "\
 class \"ThemeChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_theme_changed\";\
+    static = {\
+        eventType = \"interface_theme_changed\";\
+    };\
 \9newThemeName = false;\
 \9oldThemeName = false;\
 }\
@@ -3067,7 +3070,7 @@ function Container:loadInterface()\
     end\
 end\
 \
-function Container:onInterfaceOutletChanged( event )\
+function Container:onInterfaceOutletChanged( Event event, Event.phases phase )\
 \9local interfaceOutlet = event.interfaceOutlet\
 \9local oldView = false\
 \9local newView = false\
@@ -3138,7 +3141,7 @@ function Container:onParentResizedConstraintUpdateAfter( arg1, arg2, arg3 )\
 end\
 \
 function Container.width:set( width )\
-\9self.super:setWidth( width )\
+\9self:super( width )\
     width = self.width\
 \9local event = self.event\
 \9if event then\
@@ -3147,7 +3150,7 @@ function Container.width:set( width )\
 end\
 \
 function Container.height:set( height )\
-\9self.super:setHeight( height )\
+\9self:super( height )\
     height = self.height\
 \9local event = self.event\
 \9if event then\
@@ -3217,6 +3220,8 @@ function Container:insert( childView, position )\
 \9if not childView:typeOf( View ) then\
 \9\9error( \"Attempted to insert non-View to Container\", 4 )\
 \9end\
+\
+\9log(\"insert \"..tostring(childView))\
 \
 \9local children = self.children\
 \9if position then\
@@ -3353,7 +3358,7 @@ class \"WindowCanvas\" extends \"Canvas\" { }\
 -- function WindowCanvas:drawTo( ... )\
 --     if self.isVisible then\
 --         local hasChanged = self.hasChanged\
---         self.super:drawTo( ... )\
+--         self:super( ... )\
 --         if hasChanged then\
 --         \9self.\
 --         end\
@@ -3365,7 +3370,7 @@ class \"WindowCanvas\" extends \"Canvas\" { }\
 \
 function WindowCanvas:draw( ... )\
     if self.isVisible then\
-    \9self.super:draw( ... )\
+    \9self:super( ... )\
        \
     \9local y = self.height - 1\
     \9local width = self.width\
@@ -3531,7 +3536,9 @@ function ProgressBar:update( deltaTime )\
     end\
 end",},ParentResizedInterfaceEvent = {["text/lua"] = "\
 class \"ParentResizedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_parent_resized\";\
+    static = {\
+        eventType = \"interface_parent_resized\";\
+    };\
 \9isHorizontal = false;\
 \9isVertical = false;\
 \9isSentToSender = false;\
@@ -3623,7 +3630,9 @@ class \"Graphics\" {\
 -- TODO: alias\
 -- Graphics:alias( Graphics.colours, \"colors\" )",},MouseDragEvent = {["text/lua"] = "\
 class \"MouseDragEvent\" extends \"MouseEvent\" {\
-\9eventType = \"mouse_drag\";\
+    static = {\
+        eventType = \"mouse_drag\";\
+    };\
 \9mouseButton = false;\
 }\
 \
@@ -3644,7 +3653,9 @@ end\
 ",},ToolbarButton = {["text/lua"] = "\
 class \"ToolbarButton\" extends \"Button\" implements \"IToolbarItem\" implements \"IToolbarPressableItem\" {}",},ParentChangedInterfaceEvent = {["text/lua"] = "\
 class \"ParentChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_parent_changed\";\
+    static = {\
+        eventType = \"interface_parent_changed\";\
+    };\
 \9newParent = false; -- the new parent\
 \9oldParent = false; -- the old parent\
 \9isSentToChildren = false;\
@@ -3661,7 +3672,9 @@ function ParentChangedInterfaceEvent:initialise( newParent, oldParent )\
 \9self.oldParent = oldParent\
 end",},InterfaceOutletChangedInterfaceEvent = {["text/lua"] = "\
 class \"InterfaceOutletChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_outlet_changed\";\
+    static = {\
+        eventType = \"interface_outlet_changed\";\
+    };\
 \9interfaceOutlet = false;\
 \9oldView = false;\
 \9newView = false;\
@@ -3841,7 +3854,7 @@ end\
     @param [MouseDragEvent] event -- the mouse dragged event\
     @return [boolean] shouldCancel -- whether other events handlers should not recieve this event\
 ]]\
-function DragDropManager:onMouseDrag( event )\
+function DragDropManager:onMouseDrag( Event event, Event.phases phase )\
     local dragView = self.dragView\
     if dragView then\
         dragView.x = event.x - self.relativeX + 1\
@@ -3857,7 +3870,7 @@ end\
     @param [MouseUpEvent] event -- the mouse up event\
     @return [boolean] shouldCancel -- whether other events handlers should not recieve this event\
 ]]\
-function DragDropManager:onMouseUp( event )\
+function DragDropManager:onMouseUp( Event event, Event.phases phase )\
     local dragView = self.dragView\
     if dragView then\
         local destination = self.destination\
@@ -4358,7 +4371,9 @@ function ScrollContainer:updateWidth( width )\
     self.parent:updateContainerSize()\
 end",},MenuChangedInterfaceEvent = {["text/lua"] = "\
 class \"MenuChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_menu_changed\";\
+    static = {\
+        eventType = \"interface_menu_changed\";\
+    };\
 \9isSentToChildren = false;\
 }",},KeyboardShortcutManager = {["text/lua"] = "\
 local keyStrings = {\
@@ -4402,12 +4417,12 @@ class \"KeyboardShortcutManager\" {\
 \
 function KeyboardShortcutManager:initialise( owner )\
 \9self.owner = owner\
-\9self.event = EventManager( self )\
-\9self.event:connectGlobal( KeyDownEvent, self.onGlobalKeyDown )\
-\9self.event:connectGlobal( KeyUpEvent, self.onGlobalKeyUp )\
+\9-- self.event = EventManager( self )\
+\9-- self.event:connectGlobal( KeyDownEvent, self.onGlobalKeyDown )\
+\9-- self.event:connectGlobal( KeyUpEvent, self.onGlobalKeyUp )\
 end\
 \
-function KeyboardShortcutManager:onGlobalKeyDown( event )\
+function KeyboardShortcutManager:onGlobalKeyDown( Event event, Event.phases phase )\
 \9local keyString = event.keyString\
 \9if keyString then\
 \9\9self.keysDown[keyString] = true\
@@ -4417,7 +4432,7 @@ function KeyboardShortcutManager:onGlobalKeyDown( event )\
 \9end\
 end\
 \
-function KeyboardShortcutManager:onGlobalKeyUp( event )\
+function KeyboardShortcutManager:onGlobalKeyUp( Event event, Event.phases phase )\
 \9local keyString = event.keyString\
 \9self.keysDown[keyString] = nil\
 \9self.keysUpdates[keyString] = os.clock()\
@@ -4494,7 +4509,7 @@ function MinimiseWindowButton:initialiseCanvas()\
     self.symbolObject = self.canvas:insert( symbolObject )\
 end\
 \
-function MinimiseWindowButton:onMouseUp( event )    \
+function MinimiseWindowButton:onMouseUp( Event event, Event.phases phase )    \
     if self.window then\
         self.window:close()\
         return true\
@@ -4533,7 +4548,7 @@ function SymbolSegmentButton:updateWidth( width )\
     self.symbolObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1\
 end\
 \
-function SymbolSegmentButton:onSiblingOrParentChanged( event )\
+function SymbolSegmentButton:onSiblingOrParentChanged( Event event, Event.phases phase )\
     self:super( event )\
     local isFirst = self.isFirst\
     local isLast = self.isLast \
@@ -4552,7 +4567,7 @@ function SymbolSegmentButton:autosize()\
 end\
 \
 function SymbolSegmentButton.isPressed:set( isPressed )\
-    self.super:setIsPressed( isPressed )\
+    self:super( isPressed )\
     local symbolObject = self.symbolObject\
     symbolObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1\
     symbolObject.y = isPressed and 6 or 5\
@@ -4602,14 +4617,14 @@ function ToolbarContainer:update( deltaTime )\
     end\
 end\
 \
-function ToolbarContainer:onChildAdded( event )\
+function ToolbarContainer:onChildAdded( Event event, Event.phases phase )\
     if not event.childView:typeOf( IToolbarItem ) then\
         error( \"Attempted to add view '\" .. tostring( event.childView ) .. \"' that does not implement IToolbarItem to '\" .. tostring( self ) .. \"'\", 0 )\
     end\
     self.needsLayoutUpdate = true\
 end\
 \
-function ToolbarContainer:onChildRemoved( event )\
+function ToolbarContainer:onChildRemoved( Event event, Event.phases phase )\
     self.needsLayoutUpdate = true\
 end\
 \
@@ -4685,11 +4700,11 @@ class \"SeparatorMenuItem\" extends \"MenuItem\" {\
 \9@param [table] properties -- the properties for the view\
 ]]\
 function SeparatorMenuItem:initialise( ... )\
-\9self.super.super:initialise( ... )\
+\9self.super:super( ... )\
 end\
 \
 function SeparatorMenuItem:initialiseCanvas()\
-\9self.super.super:initialiseCanvas()\
+\9self.super:super()\
     self.backgroundObject = self.canvas:insert( Separator( 5, 2, self.width - 8, 1 ) )\
 end\
 \
@@ -4713,14 +4728,14 @@ class \"SymbolObject\" extends \"Canvas\" {\
 \
 function SymbolObject:initialise( x, y, symbol )\
     if not symbol then\
-        self.super:initialise( x, y, 1, 1 )\
+        self:super( x, y, 1, 1 )\
         return\
     end\
     \
     if not symbol:typeOf( Symbol ) then\
         error( \"SymbolObject must be given a class that extends Symbol.\", 4 )\
     end\
-    self.super:initialise( x, y, symbol.width, symbol.height )\
+    self:super( x, y, symbol.width, symbol.height )\
     self.symbol = symbol\
 end\
 \
@@ -4783,7 +4798,9 @@ function SymbolObject.bottomOutlineWidth:set( bottomOutlineWidth )\
     end\
 end",},LoadedInterfaceEvent = {["text/lua"] = "\
 class \"LoadedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_loaded\";\
+    static = {\
+        eventType = \"interface_loaded\";\
+    };\
 }",},Menu = {["text/lua"] = "\
 local MENU_OWNER_LEFT_OFFSET = 5\
 local MENU_OWNER_TOP_OFFSET = 9\
@@ -4916,7 +4933,7 @@ function Menu:update( deltaTime )\
 end\
 \
 function Menu.isVisible:set( isVisible )\
-\9self.super:setIsVisible( isVisible )\
+\9self:super( isVisible )\
 \9if isVisible then\
 \9\9self.needsLayoutUpdate = true\
 \9end\
@@ -4937,7 +4954,7 @@ end\
 \9@param [Event] -- the mouse down event\
 \9@desc Closes the menu when somewhere other than the menu is clicked, otherwise handles the event\
 ]]\
-function Menu:onGlobalMouseDown( event )\
+function Menu:onGlobalMouseDown( Event event, Event.phases phase )\
 \9if self.isVisible then\
 \9\9if self.hitTestOwner and self.owner and self.owner:hitTestEvent( event ) then\
 \9\9\9self.owner.event:handleEvent( event )\
@@ -5107,7 +5124,7 @@ end\
     @param [Event] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Scrollbar:onGlobalMouseUp( event )\
+function Scrollbar:onGlobalMouseUp( Event event, Event.phases phase )\
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = false\
     end\
@@ -5119,7 +5136,7 @@ end\
     @param [MouseDownEvent] event -- the mouse down event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Scrollbar:onMouseDown( event )\
+function Scrollbar:onMouseDown( Event event, Event.phases phase )\
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = true\
         local position, size = self:getScroller( true )\
@@ -5134,7 +5151,7 @@ end\
     @param [Event] event -- the mouse drag event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Scrollbar:onGlobalMouseDrag( event )\
+function Scrollbar:onGlobalMouseDrag( Event event, Event.phases phase )\
     if self.isPressed and self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         local oldRelative = event.relativeView\
         event:makeRelative( self )\
@@ -5163,7 +5180,7 @@ class \"ApplicationContainer\" extends \"Container\" {\
 }\
 \
 --[[\
-\9@constructor\
+\9@constructo\
 \9@desc Initialise a application container instance\
 \9@param [table] properties -- the properties for the view\
 ]]\
@@ -5172,7 +5189,7 @@ function ApplicationContainer:initialise( ... )\
 \9\9self.themeName = \"default\"\
 \9end\
 \
-\9self.super:initialise( ... )\
+\9self:super( ... )\
 \
     self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )\
 end\
@@ -5180,7 +5197,7 @@ end\
 function ApplicationContainer:initialiseCanvas()\
 \9local canvas = ScreenCanvas( self.x, self.y, self.width, self.height )\
     self.canvas = canvas\
-    self.theme:connect( self.canvas, \"fillColour\" )\
+    -- self.theme:connect( self.canvas, \"fillColour\" )\
 end\
 \
 function ApplicationContainer.theme:set( theme )\
@@ -5210,7 +5227,7 @@ end\
     @param [MouseDownEvent] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function ApplicationContainer:onMouseDownAfter( event )\
+function ApplicationContainer:onMouseDownAfter( Event event, Event.phases phase )\
 \9local application = self.application\
 \9\
 \9if application:hasFocus() then\
@@ -5272,17 +5289,13 @@ function Resource:initialise( name, mimes, category, allowDirectories )\
 \9\9\9end\
 \9\9end\
 \9end\
-\
-\9-- otherwise search the resource directories\
-\9local function searchFolders( folders )\
-\9\9for i, folder in ipairs( folders ) do\
-\9\9\9print(folder)\
-\9\9\9print(folder.name)\
-\9\9\9return folder:find( name, mimes )\
-\9\9end\
+\9\
+\9local file\
+\9for i, folder in ipairs( Application.static.resourceFolders ) do\
+\9\9file = folder:find( name, mimes )\
+\9\9break\
 \9end\
-\
-\9local file = searchFolders( Application.static.resourceFolders )\
+\9\
 \9self.file = file or false\
 \9if file then\
 \9\9self.contents = file.contents\
@@ -5292,7 +5305,9 @@ function Resource:initialise( name, mimes, category, allowDirectories )\
 \9end\
 end",},TerminateEvent = {["text/lua"] = "\
 class \"TerminateEvent\" extends \"Event\" {\
-\9eventType = \"terminate\";\
+    static = {\
+        eventType = \"terminate\";\
+    };\
 }",},ListContainer = {["text/lua"] = "\
 local SIDE_MARGIN = 6\
 local TOP_MARGIN = 5\
@@ -5315,7 +5330,7 @@ function ListContainer:initialise( ... )\
     self:event( ReadyInterfaceEvent, self.onReady )\
 end\
 \
-function ListContainer:onReady( event )\
+function ListContainer:onReady( Event event, Event.phases phase )\
     self:updateLayout( true )\
 end\
 \
@@ -5326,14 +5341,14 @@ function ListContainer:update( deltaTime )\
     end\
 end\
 \
-function ListContainer:onChildAdded( event )\
+function ListContainer:onChildAdded( Event event, Event.phases phase )\
     if not event.childView:typeOf( ListItem ) then\
         error( \"Attempted to add view '\" .. tostring( event.childView ) .. \"' that does not extend ListItem to '\" .. tostring( self ) .. \"'\", 0 )\
     end\
     self.needsLayoutUpdate = true\
 end\
 \
-function ListContainer:onChildRemoved( event )\
+function ListContainer:onChildRemoved( Event event, Event.phases phase )\
     self.needsLayoutUpdate = true\
 end\
 \
@@ -5398,7 +5413,9 @@ function InterfaceEvent:initialise( owner )\
 \9self.owner = owner\
 end",},MouseDownEvent = {["text/lua"] = "\
 class \"MouseDownEvent\" extends \"MouseEvent\" {\
-\9eventType = \"mouse_click\";\
+    static = {\
+        eventType = \"mouse_click\";\
+    };\
 \9mouseButton = false;\
 }\
 \
@@ -5417,8 +5434,19 @@ function MouseDownEvent:initialise( mouseButton, x, y )\
 \9self.globalY = y\
 end",},KeyDownEvent = {["text/lua"] = "\
 class \"KeyDownEvent\" extends \"KeyEvent\" {\
-\9eventType = \"key\";\
-}",},SearchSymbol = {["text/lua"] = "\
+    \
+    isRepeat = Boolean;\
+    \
+    static = {\
+        eventType = \"key\"\
+    };\
+\
+}\
+\
+function KeyDownEvent:initialise( Number keyCode, Boolean isRepeat )\
+    self:super( keyCode )\
+    self.isRepeat = isRepeat\
+end",},SearchSymbol = {["text/lua"] = "\
 class \"SearchSymbol\" extends \"Symbol\" {\
 \
     symbolName =  \"search\";\
@@ -5527,7 +5555,7 @@ function MaximiseWindowButton:initialiseCanvas()\
     self.symbolObject = self.canvas:insert( symbolObject )\
 end\
 \
-function MaximiseWindowButton:onMouseUp( event )    \
+function MaximiseWindowButton:onMouseUp( Event event, Event.phases phase )    \
     if self.window then\
         self.window:close()\
         return true\
@@ -5568,14 +5596,16 @@ function SymbolButton:autosize()\
 end\
 \
 function SymbolButton.isPressed:set( isPressed )\
-    self.super:setIsPressed( isPressed )\
+    self:super( isPressed )\
     local symbolObject = self.symbolObject\
     symbolObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1\
     symbolObject.y = isPressed and 6 or 5\
 end",},ToolbarSegmentContainer = {["text/lua"] = "\
 class \"ToolbarSegmentContainer\" extends \"SegmentContainer\" implements \"IToolbarItem\" implements \"IToolbarPressableItem\" {}",},ChildAddedInterfaceEvent = {["text/lua"] = "\
 class \"ChildAddedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_child_added\";\
+    static = {\
+        eventType = \"interface_child_added\";\
+    };\
 \9childView = false; -- the added child\
 \9isSentToChildren = false;\
 }\
@@ -5784,7 +5814,7 @@ class \"ContainerEventManager\" extends \"EventManager\" {}\
 function ContainerEventManager:handleEvent( event )\
 \9local sender = event.sender\
 \9local isSentToSender = not sender or ( self == sender and event.isSentToSender )\
-\9if isSentToSender and self:handleEventPhase( event, self.phase.BEFORE ) then\
+\9if isSentToSender and self:handleEventPhase( event, Event.phases.BEFORE ) then\
 \9\9return true\
 \9end\
 \
@@ -5806,7 +5836,7 @@ function ContainerEventManager:handleEvent( event )\
 \9\9\9end\
 \9\9end\
 \9end\
-\9if isSentToSender and self:handleEventPhase( event, self.phase.AFTER ) then\
+\9if isSentToSender and self:handleEventPhase( event, Event.phases.AFTER ) then\
 \9\9return true\
 \9end\
 end",},ToolbarSegmentButton = {["text/lua"] = "\
@@ -5974,7 +6004,7 @@ function ListItem.isSelected:set( isSelected )\
     self:updateThemeStyle()\
 end\
 \
-function ListItem:onMouseHeld( event )\
+function ListItem:onMouseHeld( Event event, Event.phases phase )\
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then\
         self.isSelected = true\
         self:startDragDrop( event, ListClipboardData( self ), true, function()self.isSelected = false end )\
@@ -5982,7 +6012,7 @@ function ListItem:onMouseHeld( event )\
     return true\
 end\
 \
-function ListItem:onGlobalMouseUp( event )\
+function ListItem:onGlobalMouseUp( Event event, Event.phases phase )\
     if self.isSelected and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isSelected = false\
         if self.isEnabled and self:hitTestEvent( event ) then\
@@ -5994,7 +6024,7 @@ function ListItem:onGlobalMouseUp( event )\
     end\
 end\
 \
-function ListItem:onMouseDown( event )\
+function ListItem:onMouseDown( Event event, Event.phases phase )\
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isSelected = not self.isSelected\
     end\
@@ -6128,7 +6158,7 @@ function MenuBarItem:initialise( ... )\
     self:event( ReadyInterfaceEvent, self.onInterfaceReady )\
 end\
 \
-function MenuBarItem:onInterfaceReady( event )\
+function MenuBarItem:onInterfaceReady( Event event, Event.phases phase )\
     local menu = self.menu\
     if menu then\
         menu = self.menu\
@@ -6268,7 +6298,7 @@ end\
     @param [Event] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function MenuBarItem:onGlobalMouseUp( event )\
+function MenuBarItem:onGlobalMouseUp( Event event, Event.phases phase )\
     if self.isEnabled and self.isPressed then\
         self.isPressed = false\
         if self:hitTestEvent( event ) then\
@@ -6283,7 +6313,7 @@ end\
     @param [Event] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function MenuBarItem:onMouseDown( event )\
+function MenuBarItem:onMouseDown( Event event, Event.phases phase )\
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = true\
     end\
@@ -6296,7 +6326,7 @@ end\
     @param [Event] event -- the menu changed event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function MenuBarItem:onMenuChanged( event )\
+function MenuBarItem:onMenuChanged( Event event, Event.phases phase )\
     self:updateThemeStyle()\
     \
     local menu = self.menu\
@@ -6307,7 +6337,9 @@ function MenuBarItem:onMenuChanged( event )\
     return true\
 end",},ReadyInterfaceEvent = {["text/lua"] = "\
 class \"ReadyInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_ready\";\
+    static = {\
+        eventType = \"interface_ready\";\
+    };\
 \9isInit = false; -- whether the event is the first one called in Application:initialise\
 }\
 \
@@ -6363,7 +6395,7 @@ function ScrollView:initialiseCanvas()\
 \9self.theme:connect( self.canvas, \"fillColour\" )\
 end\
 \
-function ScrollView:onInterfaceLoaded( event )\
+function ScrollView:onInterfaceLoaded( Event event, Event.phases phase )\
     local currentContainer = self.container\
     for i, childView in ipairs( self.children ) do\
         if childView ~= currentContainer and childView:typeOf( ScrollContainer ) then\
@@ -6475,7 +6507,7 @@ end\
 \9@param [Event] event -- the mouse scroll event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function ScrollView:onMouseScroll( event )\
+function ScrollView:onMouseScroll( Event event, Event.phases phase )\
 \9if self.isEnabled then\
 \9\9local direction = event.direction\
 \9\9local verticalVelocity = self.verticalVelocity\
@@ -6494,8 +6526,13 @@ local eventClasses = {}\
 \
 class \"Event\" {\
 \9\
-\9relativeView = false; -- the view that the event is relative of\
 \9eventType = false;\
+\
+\9static = {\
+\9\9eventType = false;\
+\9};\
+\
+\9relativeView = false; -- the view that the event is relative of\
     sender = false;\
 \
 \9isSentToChildren = true; -- whether the event will be passed to children\
@@ -6520,11 +6557,11 @@ end\
 --[[\
 \9@static\
 \9@desc Registers an Event subclass after it has just been constructed\
-\9@param [class] _class -- the class that was constructed\
 ]]\
-function Event.static:constructed( _class )\
-\9if _class.eventType then\
-\9\9Event.register( _class.eventType, _class )\
+function Event.static:initialise()\
+\9local eventType = self.eventType\
+\9if eventType then\
+\9\9Event.static:register( self.eventType, self.class )\
 \9end\
 end\
 \
@@ -6539,11 +6576,14 @@ function Event.static:create( eventType, ... )\
 \9if not eventType then error( \"No event type given to Event.create!\", 0 ) end\
 \
 \9local eventClass = eventClasses[eventType]\
+\9local event\
 \9if eventClass then\
-\9\9return eventClass( ... )\
+\9\9event = eventClass( ... )\
 \9else\
-\9\9return Event()\
+\9\9event = Event()\
 \9end\
+\9event.eventType = eventType\
+\9return event\
 end\
 \
 --[[\
@@ -6555,7 +6595,9 @@ function Event:makeRelative( view )\
 \9self.relativeView = view\
 end",},TimerEvent = {["text/lua"] = "\
 class \"TimerEvent\" extends \"Event\" {\
-\9eventType = \"timer\";\
+    static = {\
+        eventType = \"timer\";\
+    };\
 \9timer = false;\
 }\
 \
@@ -6589,7 +6631,7 @@ local application -- the running application\
 local TYPETABLE_NAME, TYPETABLE_TYPE, TYPETABLE_CLASS, TYPETABLE_ALLOWS_NIL, TYPETABLE_IS_VAR_ARG, TYPETABLE_IS_ENUM, TYPETABLE_ENUM_ITEM_TYPE, TYPETABLE_HAS_DEFAULT_VALUE, TYPETABLE_DEFAULT_VALUE = 1, 2, 3, 4, 5, 6, 7, 8, 9\
 local FUNCTIONTABLE_FUNCTION = 1\
 \
-local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true }\
+local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true }\
 \
 -- Create the value types --\
 \
@@ -7138,7 +7180,12 @@ function extends( name )\
     end\
     if name ~= currentlyConstructing.name then\
         local ext = class.get( name )\
-        currentlyConstructing.typeOfCache[ext] = true\
+        local typeOfCache = currentlyConstructing.typeOfCache\
+        typeOfCache[ext] = true\
+        for k, v in pairs( compiledClassDetails[name].typeOfCache ) do\
+            typeOfCache[k] = v\
+        end\
+\
         currentlyConstructing.superName = name\
     else\
         error( \"can't extend self\" , 2 )\
@@ -7274,7 +7321,7 @@ function loadProperties( propertiesTable )\
         if currentlyConstructing[aliasTag[3]][newName] then\
             error( \"attempt to overwrite property/function with alias \"..newName)\
         else\
-            aliases[aliasTag[1]] = oldName\
+            mainTable[aliasTag[1]] = oldName\
         end\
 \
         -- add the proxy item for the new alias\
@@ -7475,6 +7522,9 @@ function checkValue( value, typeTable, isSelf ) -- TODO: error level and message
         -- if a default value couldn't be loaded and the argument doesn't accept nil then error\
         if not typeTable[TYPETABLE_ALLOWS_NIL] then\
             error(\"can't be nil\", 2 )\
+        else\
+            -- otherwise, if nil is okay, continue with nil\
+            return nil\
         end\
     end\
 \
@@ -7493,7 +7543,7 @@ function checkValue( value, typeTable, isSelf ) -- TODO: error level and message
         if isSelf then\
             error(\"self not passed to function, you probably used . instead of :\", 3)\
         else\
-            error(\"wrong type, expected \"..expectedType .. \" got \" .. type( value ), 4)\
+            error(typeTable[TYPETABLE_NAME] .. \" was wrong type, expected \"..expectedType .. \" got \" .. type( value ), 4)\
         end\
     end\
     return value\
@@ -7529,7 +7579,6 @@ function compileClass( compiledClass, name )\
             return __tostring\
         end } )\
     else\
-        local compiledStatic = {}\
         currentlyConstructing.typeTable = { \"self\", \"table\", type, false, false, false }\
 \
         local superName = currentlyConstructing.superName\
@@ -7573,6 +7622,7 @@ function compileClass( compiledClass, name )\
         compiledClass.static = static\
         compiledClass.metatable = metatable\
         compiledClass.className = name\
+        compiledClass.super = classes[superName]\
 \
         local enumTypes = currentlyConstructing.enumTypes \
         for k, enum in pairs( currentlyConstructing.enums  ) do\
@@ -7597,7 +7647,6 @@ function compileClass( compiledClass, name )\
                 itemValueType = createValueType( fullEnumName, itemValueType[TYPETABLE_TYPE], itemValueType[TYPETABLE_CLASS], enumName, valueTypes[ownerName] )\
 \
                 for k, v in pairs( enum ) do -- we need to add the enum's values so they can be used as default values\
-\
                     rawset( itemValueType, k, v )\
                 end\
                 rawset( valueTypes[ownerName], enumName, itemValueType )\
@@ -7657,8 +7706,8 @@ function compileClass( compiledClass, name )\
 \
 \
         compileInstanceClass( name, compiledClass, static )\
-        static = compileAndSpawnStatic( static, name, compiledClass )\
         classes[name] = compiledClass\
+        static = compileAndSpawnStatic( static, name, compiledClass )\
     end\
     currentlyConstructing = nil\
     _G[name] = compiledClass\
@@ -7684,14 +7733,14 @@ end\
 \
 -- return the minimum and maximum number of arguments that can be usd on a function\
 local function argumentLimits( functionTable )\
-    local functionsTableLength = #functionTable\
-    local maxArgs = functionsTableLength - FUNCTIONTABLE_FUNCTION\
+    local functionTableLength = #functionTable\
+    local maxArgs = functionTableLength - FUNCTIONTABLE_FUNCTION\
     if maxArgs == 0 then return 0, 0, 0 end\
-    if functionTable[functionsTableLength][TYPETABLE_IS_VAR_ARG] then -- the last value is ..., so there is no maximum\
+    if functionTable[functionTableLength][TYPETABLE_IS_VAR_ARG] then -- the last value is ..., so there is no maximum\
         maxArgs = math.huge\
     end\
     local minChecked = 0 -- the minimum number of arguments that need to be checkValued (so optionals can be loaded)\
-    for i = functionsTableLength, FUNCTIONTABLE_FUNCTION + 1, -1 do\
+    for i = functionTableLength, FUNCTIONTABLE_FUNCTION + 1, -1 do\
         local funcTbl = functionTable[i]\
         if funcTbl[TYPETABLE_IS_VAR_ARG] then -- varargs are always optional\
         elseif funcTbl[TYPETABLE_HAS_DEFAULT_VALUE] then\
@@ -7724,7 +7773,7 @@ local function addMissingSuper( superPrebuilt, prebuiltFunctions, outValues, def
         for functionName, funcs in pairs( superPrebuilt ) do\
             if not prebuiltFunctions[functionName] then\
                 prebuiltFunctions[functionName] = funcs -- TODO: check this doesn't cause issues due to using the same table\
-                if definedIndexes then definedIndexes[functionName] = true end\
+                if definedIndexes then definedIndexes[functionName] = functionName end\
                 outValues[functionName] = funcs[#funcs]( constructSuper( funcs ) )\
             end\
         end\
@@ -7733,7 +7782,7 @@ end\
 \
 local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, superPrebuiltFunctions, outValues, selfTypeTable )\
     for functionName, functionTable in pairs( classFunctions ) do\
-        definedIndexes[functionName] = true\
+        definedIndexes[functionName] = functionName\
         local func = functionTable[FUNCTIONTABLE_FUNCTION]\
         local minArgs, maxArgs, minChecked = argumentLimits( functionTable )\
         local varargTypeTable\
@@ -7746,7 +7795,10 @@ local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, 
                 local arguments = { ... }\
                 local argumentsLength = #arguments\
                 if argumentsLength < minArgs or argumentsLength > maxArgs then\
-                    error( \"wrong number of arguments, got \"..argumentsLength..\" expected between \".. minArgs .. \" and \" .. maxArgs, 3 )\
+                    for i, v in ipairs(arguments) do\
+                        print(i .. \": \"..tostring(v))\
+                    end\
+                    error( functionName .. \": wrong number of arguments, got \"..argumentsLength..\" expected between \".. minArgs .. \" and \" .. maxArgs, 2 )\
                 end\
 \
                 local values = { checkValue( self, selfTypeTable, true ) }\
@@ -7809,6 +7861,84 @@ local function addSetter( setters, properties, outSetters, prebuiltSetters, supe
     addMissingSuper( superPrebuiltSetters, prebuiltSetters, outSetters )\
 end\
 \
+function compileInstanceClass( name, compiledClass, static )\
+    local initialValues, prebuiltGetters, prebuiltSetters, requireDefaultGeneration, definedIndexes, definedProperties = { static = static, class = compiledClass, }, {}, {}, {}, { static = \"static\", class = \"class\", typeOf = \"typeOf\", isDefined = \"isDefined\", isDefinedProperty = \"isDefinedProperty\", isDefinedFunction = \"isDefinedFunction\" }, { static = \"static\", class = \"class\" }\
+    local classDetails = compiledClassDetails[name]\
+    local superName = classDetails.superName\
+    local compiledSuperDetails = superName and compiledClassDetails[superName]\
+    local instanceProperties = classDetails.instanceProperties\
+    local selfTypeTable = classDetails.typeTable\
+\
+\
+    -- add default property values if they have them\
+    for propertyName, typeTable in pairs( instanceProperties ) do\
+        definedIndexes[propertyName] = propertyName\
+        definedProperties[propertyName] = propertyName\
+\
+        if typeTable[TYPETABLE_HAS_DEFAULT_VALUE] then\
+            local defaultValue = typeTable[TYPETABLE_DEFAULT_VALUE]\
+            if ( typeTable[TYPETABLE_TYPE] or type( defaultValue ) ) ~= \"table\" then\
+                if typeTable[TYPETABLE_ALLOWS_NIL] and defaultValue ~= nil then -- there isn't a value here yet. don't assign the value yet, but if after initialisation there isn't a value an error will be thrown if it doesn't allow nil\
+                    initialValues[propertyName] = defaultValue\
+                end\
+            else\
+                requireDefaultGeneration[propertyName] = typeTable\
+            end\
+        end\
+    end\
+\
+    local aliases = classDetails.aliases.instance\
+    for k, v in pairs( aliases ) do -- copy the aliases to definedIndexes\
+        definedIndexes[k] = v\
+        if definedProperties[v] then\
+            definedProperties[k] = v\
+        end\
+    end\
+\
+    -- add the instance functions\
+    addFunctions( classDetails.instanceFunctions, definedIndexes, currentlyConstructing.prebuiltInstanceFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceFunctions, initialValues, selfTypeTable )\
+\
+    addGetter( classDetails.instanceGetters, instanceProperties, prebuiltGetters, currentlyConstructing.prebuiltInstanceGetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceGetters )\
+    addSetter( classDetails.instanceSetters, instanceProperties, prebuiltSetters, currentlyConstructing.prebuiltInstanceSetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceSetters )\
+\
+    local typeOfCache = classDetails.typeOfCache\
+    function initialValues:typeOf( object )\
+        if not object then return false\
+        elseif type( object ) ~= \"table\" then\
+            return false\
+        elseif object == compiledClass then\
+            return true\
+        elseif typeOfCache[object] then\
+            return true\
+        elseif self == object then\
+            return true\
+        end\
+        return false\
+    end\
+\
+    function initialValues:isDefined( key )\
+        return definedIndexes[key] ~= nil\
+    end\
+\
+    function initialValues:isDefinedProperty( key )\
+        return definedProperties[key] ~= nil\
+    end\
+\
+    function initialValues:isDefinedFunction( key )\
+        return definedProperties[key] ~= nil and definedIndexes[key] ~= nil\
+    end\
+\
+    compiledInstances[name] = {\
+        initialValues = initialValues;\
+        prebuiltFunctions = prebuiltFunctions;\
+        prebuiltGetters = prebuiltGetters;\
+        prebuiltSetters = prebuiltSetters;\
+        requireDefaultGeneration = requireDefaultGeneration;\
+        definedIndexes = definedIndexes;\
+        definedProperties = definedProperties;\
+    }\
+end\
+\
 function compileAndSpawnStatic( static, name, compiledClass )\
     local classDetails = compiledClassDetails[name]\
     local staticProperties = classDetails.staticProperties\
@@ -7818,16 +7948,25 @@ function compileAndSpawnStatic( static, name, compiledClass )\
 \
     local values, getters, setters = { class = compiledClass }, {}, {}\
 \
-    local definedIndexes, definedProperties = { typeOf = true, class = true }, { class = true }\
+    local definedIndexes, definedProperties = { typeOf = \"typeOf\", class = \"class\", isDefinedProperty = \"isDefinedProperty\", isDefinedFunction = \"isDefinedFunction\" }, { class = \"class\" }\
     for propertyName, typeTable in pairs( staticProperties ) do\
-        definedIndexes[propertyName] = true\
-        definedProperties[propertyName] = true\
+        definedIndexes[propertyName] = propertyName\
+        definedProperties[propertyName] = propertyName\
         if typeTable[TYPETABLE_HAS_DEFAULT_VALUE] then\
-            if typeTable[TYPETABLE_TYPE] ~= \"table\" then\
+            local defaultValue = typeTable[TYPETABLE_DEFAULT_VALUE]\
+            if ( typeTable[TYPETABLE_TYPE] or type( defaultValue ) ) ~= \"table\" then\
                 values[propertyName] = typeTable[TYPETABLE_DEFAULT_VALUE]\
             else\
                 values[propertyName] = generateDefaultValue( typeTable )\
             end\
+        end\
+    end\
+\
+    local aliases = classDetails.aliases.static\
+    for k, v in pairs( aliases ) do -- copy the aliases to definedIndexes\
+        definedIndexes[k] = v\
+        if definedProperties[v] then\
+            definedProperties[k] = v\
         end\
     end\
 \
@@ -7839,10 +7978,6 @@ function compileAndSpawnStatic( static, name, compiledClass )\
 \
     addGetter( classDetails.staticGetters, staticProperties, getters, currentlyConstructing.prebuiltInstanceGetters, compiledSuperDetails and compiledSuperDetails.prebuiltStaticGetters )\
     addSetter( classDetails.staticSetters, staticProperties, setters, currentlyConstructing.prebuiltInstanceSetters, compiledSuperDetails and compiledSuperDetails.prebuiltStaticSetters )\
-\
-    local aliases = {\
-        color = \"colour\"\
-    }\
 \
     local typeOfCache = classDetails.typeOfCache\
     function static:typeOf( object )\
@@ -7859,17 +7994,29 @@ function compileAndSpawnStatic( static, name, compiledClass )\
         return false\
     end\
 \
+    function static:isDefined( key )\
+        return definedIndexes[key] ~= nil\
+    end\
+\
+    function static:isDefinedProperty( key )\
+        return definedProperties[key] ~= nil\
+    end\
+\
+    function static:isDefinedFunction( key )\
+        return definedProperties[key] ~= nil and definedIndexes[key] ~= nil\
+    end\
+\
     local metatable = {}\
     function metatable:__newindex( key, value )\
         if RESERVED_NAMES[key] then error( \"reserved name\" , 2 ) end\
 \
-        key = aliases[key] or key\
-        if definedProperties[key] then\
-            local setter = setters[key]\
-            if setter and not lockedSetters[key] then\
+        local locatedKey = definedProperties[key]\
+        if locatedKey then\
+            local setter = setters[locatedKey]\
+            if setter and not lockedSetters[locatedKey] then\
                 setter( self, value )\
             else\
-                values[key] = checkValue( value, staticProperties[key] )\
+                values[locatedKey] = checkValue( value, staticProperties[locatedKey] )\
             end\
         else\
             error(\"attempt to set undefined property or function\", 2 )\
@@ -7877,13 +8024,13 @@ function compileAndSpawnStatic( static, name, compiledClass )\
     end\
 \
     function metatable:__index( key )\
-        key = aliases[key] or key\
-        if definedIndexes[key] then\
-            local getter = getters[key]\
-            if getter and not lockedGetters[key] then\
+        local locatedKey = definedIndexes[key]\
+        if locatedKey then\
+            local getter = getters[locatedKey]\
+            if getter and not lockedGetters[locatedKey] then\
                 return getter( self )\
             else\
-                return values[key]\
+                return values[locatedKey]\
             end\
         elseif key == \"application\" then\
             return application\
@@ -7918,62 +8065,6 @@ function compileAndSpawnStatic( static, name, compiledClass )\
     return static\
 end\
 \
-function compileInstanceClass( name, compiledClass, static )\
-    local initialValues, prebuiltGetters, prebuiltSetters, requireDefaultGeneration, definedIndexes, definedProperties = { static = static, class = compiledClass, }, {}, {}, {}, { static = true, class = true, typeOf = true }, { static = true, class = true }\
-    local classDetails = compiledClassDetails[name]\
-    local superName = classDetails.superName\
-    local compiledSuperDetails = superName and compiledClassDetails[superName]\
-    local instanceProperties = classDetails.instanceProperties\
-    local selfTypeTable = classDetails.typeTable\
-\
-\
-    -- add default property values if they have them\
-    for propertyName, typeTable in pairs( instanceProperties ) do\
-        definedIndexes[propertyName] = true\
-        definedProperties[propertyName] = true\
-        if typeTable[TYPETABLE_HAS_DEFAULT_VALUE] then\
-            if typeTable[TYPETABLE_TYPE] ~= \"table\" then\
-                local defaultValue = typeTable[TYPETABLE_DEFAULT_VALUE]\
-                if typeTable[TYPETABLE_ALLOWS_NIL] and defaultValue ~= nil then -- there isn't a value here yet. don't assign the value yet, but if after initialisation there isn't a value an error will be thrown if it doesn't allow nil\
-                    initialValues[propertyName] = defaultValue\
-                end\
-            else\
-                requireDefaultGeneration[propertyName] = typeTable\
-            end\
-        end\
-    end\
-\
-    -- add the instance functions\
-    addFunctions( classDetails.instanceFunctions, definedIndexes, currentlyConstructing.prebuiltInstanceFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceFunctions, initialValues, selfTypeTable )\
-\
-    addGetter( classDetails.instanceGetters, instanceProperties, prebuiltGetters, currentlyConstructing.prebuiltInstanceGetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceGetters )\
-    addSetter( classDetails.instanceSetters, instanceProperties, prebuiltSetters, currentlyConstructing.prebuiltInstanceSetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceSetters )\
-\
-    local typeOfCache = classDetails.typeOfCache\
-    function initialValues:typeOf( object )\
-        if not object then return false\
-        elseif type( object ) ~= \"table\" then\
-            return false\
-        elseif object == compiledClass then\
-            return true\
-        elseif typeOfCache[object] then\
-            return true\
-        elseif self == object then\
-            return true\
-        end\
-        return false\
-    end\
-\
-    compiledInstances[name] = {\
-        initialValues = initialValues;\
-        prebuiltFunctions = prebuiltFunctions;\
-        prebuiltGetters = prebuiltGetters;\
-        prebuiltSetters = prebuiltSetters;\
-        requireDefaultGeneration = requireDefaultGeneration;\
-        definedIndexes = definedIndexes;\
-        definedProperties = definedProperties;\
-    }\
-end\
 \
 function spawnInstance( name, ... )\
     local compiledInstance = compiledInstances[name]\
@@ -7988,6 +8079,7 @@ function spawnInstance( name, ... )\
 \
     -- for default values that are tables make them unique or create class instances\
     for propertyName, typeTable in pairs( compiledInstance.requireDefaultGeneration ) do\
+        if propertyName == \"handles\" then log \"Generating\" end\
         values[propertyName] = generateDefaultValue( typeTable )\
     end\
 \
@@ -8012,13 +8104,13 @@ function spawnInstance( name, ... )\
     function metatable:__newindex( key, value )\
         if RESERVED_NAMES[key] then error( \"reserved name\" , 2 ) end\
 \
-        key = aliases[key] or key\
-        if definedProperties[key] then\
-            local setter = setters[key]\
-            if setter and not lockedSetters[key] then\
+        local locatedKey = definedProperties[key]\
+        if locatedKey then\
+            local setter = setters[locatedKey]\
+            if setter and not lockedSetters[locatedKey] then\
                 setter( self, value )\
             else\
-                values[key] = checkValue( value, instanceProperties[key] )\
+                values[locatedKey] = checkValue( value, instanceProperties[locatedKey] )\
             end\
         else\
             error(\"attempt to set undefined property or function\", 2 )\
@@ -8026,13 +8118,13 @@ function spawnInstance( name, ... )\
     end\
 \
     function metatable:__index( key )\
-        key = aliases[key] or key\
-        if definedIndexes[key] then\
-            local getter = getters[key]\
-            if getter and not lockedGetters[key] then\
+        local locatedKey = definedIndexes[key]\
+        if locatedKey then\
+            local getter = getters[locatedKey]\
+            if getter and not lockedGetters[locatedKey] then\
                 return getter( self )\
             else\
-                return values[key]\
+                return values[locatedKey]\
             end\
         elseif key == \"application\" then\
             return application\
@@ -8086,7 +8178,7 @@ function AlertWindow:initialise( ... )\
 \9self.height = 40\
 end\
 \
-function AlertWindow:onReady( event )\
+function AlertWindow:onReady( Event event, Event.phases phase )\
 \9self:centre()\
 \9self:focus()\
 \9self.okayButton:focus()\
@@ -8147,7 +8239,7 @@ end\
     @param [Event] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function WindowButton:onGlobalMouseUp( event )\
+function WindowButton:onGlobalMouseUp( Event event, Event.phases phase )\
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = false\
         if self.isEnabled and self:hitTestEvent( event ) then\
@@ -8162,7 +8254,7 @@ end\
     @param [MouseDownEvent] event -- the mouse down event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function WindowButton:onMouseDown( event )\
+function WindowButton:onMouseDown( Event event, Event.phases phase )\
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = true\
     end\
@@ -8714,7 +8806,7 @@ class \"ApplicationEventManager\" extends \"EventManager\" {\
 ]]\
 function ApplicationEventManager:handleEvent( event )\
 \9-- run the before phase handles first\
-\9if self:handleEventPhase( event, self.phase.BEFORE ) then\
+\9if self:handleEventPhase( event, Event.phases.BEFORE ) then\
 \9\9return true\
 \9end\
 \
@@ -8725,7 +8817,7 @@ function ApplicationEventManager:handleEvent( event )\
 \9end\
 \
 \9-- if nothing has killed the flow yet run the after phases\
-\9return self:handleEventPhase( event, self.phase.AFTER )\
+\9return self:handleEventPhase( event, Event.phases.AFTER )\
 end\
 \
 function ApplicationEventManager:connectGlobal()\
@@ -8750,7 +8842,7 @@ function CloseWindowButton:initialiseCanvas()\
     self.symbolObject = self.canvas:insert( symbolObject )\
 end\
 \
-function CloseWindowButton:onMouseUp( event )    \
+function CloseWindowButton:onMouseUp( Event event, Event.phases phase )    \
     if self.window then\
         self.window:close()\
         return true\
@@ -8844,7 +8936,12 @@ function View:initialise( properties )\
 \9-- } )\
 \9\
 \9if properties and type( properties ) == \"table\" then\
-\9\9self:properties( properties )\
+\9\9-- TODO: replace\
+\9\9for k, v in pairs(properties) do\
+\9\9\9self[k] = v\
+\9\9\9-- Code here...\
+\9\9end\
+\9\9-- self:properties( properties )\
 \9end\
 \
     self:event( ParentResizedInterfaceEvent, self.onParentResizedConstraintUpdate )\
@@ -8871,7 +8968,7 @@ end\
     @desc Sets up the canvas and it's graphics objects\
 ]]\
 function View:initialiseCanvas()\
-\9self.canvas = Canvas( self.x, self.y, self.width, self.height, self )\
+\9self.canvas = Canvas( self.x or 1, self.y or 1, self.width or 1, self.height or 1, self )\
 end\
 \
 --[[\
@@ -8990,8 +9087,8 @@ function View:siblingsOfType( _class )\
 \9return siblings\
 end\
 \
-View:alias( View.x, \"left\" )\
-View:alias( View.y, \"top\" )\
+-- View:alias( View.x, \"left\" )\
+-- View:alias( View.y, \"top\" )\
 \
 -- object.left is the raw left value (i.e. a number, or nil if not yet calculated)\
 -- object.loadedConstraints.left is the parsed and simplified left value\
@@ -9031,8 +9128,8 @@ function View:parseConstraint( property )\
 \9\9end\
 \9end\
 \
-\9local parsed = MathParser.parseString( tostring( constraintString ) )\
-\9MathParser.simplify( parsed )\
+\9local parsed = MathParser.static:parseString( tostring( constraintString ) )\
+\9MathParser.static:simplify( parsed )\
 \
 \9loaded[property] = parsed\
 \9return parsed\
@@ -9047,8 +9144,8 @@ end\
 function View:evalConstraint( property )\
 \9local references = {}\
 \9local parsed = self:parseConstraint( property )\
-\9local resolved = MathParser.resolve( parsed, self, property, references )\
-\9local value = MathParser.eval( resolved )\
+\9local resolved = MathParser.static:resolve( parsed, self, property, references )\
+\9local value = MathParser.static:eval( resolved )\
 \
 \9local oldValue = self.raw[property]\
 \9if oldValue ~= value then\
@@ -9111,7 +9208,7 @@ end\
 \9@desc Called when the parent changes. This updates constraints.\
 \9@param [ParentChangedInterfaceEvent] event -- the event\
 ]]\
-function View:onParentChangedConstraintUpdate( event )\
+function View:onParentChangedConstraintUpdate( Event event, Event.phases phase )\
 \9for k, v in pairs( self.stringConstraints ) do\
 \9\9self.constraintsNeedingUpdate[k] = true\
 \9end\
@@ -9122,7 +9219,7 @@ end\
 \9@desc Called when the interface is loaded and ready. This updates constraints.\
 \9@param [ReadyInterfaceEvent] event -- the event\
 ]]\
-function View:onReadyConstraintUpdate( event )\
+function View:onReadyConstraintUpdate( Event event, Event.phases phase )\
 \9if event.isInit then\
 \9\9for k, v in pairs( self.stringConstraints ) do\
 \9\9\9self.constraintsNeedingUpdate[k] = true\
@@ -9135,7 +9232,7 @@ end\
 \9@desc Called when the parent resizes. This updates constraints.\
 \9@param [ParentResizedInterfaceEvent] event -- the event\
 ]]\
-function View:onParentResizedConstraintUpdate( event )\
+function View:onParentResizedConstraintUpdate( Event event, Event.phases phase )\
 \9local isHorizontal = event.isHorizontal\
 \9local isVertical = event.isVertical\
 \9local ident = self.identifier\
@@ -9167,19 +9264,19 @@ function View:reloadConstraint( property, isReferenceChange )\
 end\
 \
 -- @instance\
-function View.top:get()\
-\9return self.top or self:evalConstraint \"top\"\
-end\
+-- function View.top:get()\
+-- \9return self.top or self:evalConstraint \"top\"\
+-- end\
 \
--- @instance\
-function View.top:set( top )\
-\9if top then\
-\9\9self.stringConstraints.top = top\
-\9\9self:reloadConstraint \"top\"\
-\9else\
-\9\9self.stringConstraints.top = nil\
-\9end\
-end\
+-- -- @instance\
+-- function View.top:set( top )\
+\9-- if top then\
+\9-- \9self.stringConstraints.top = top\
+\9-- \9self:reloadConstraint \"top\"\
+\9-- else\
+\9-- \9self.stringConstraints.top = nil\
+\9-- end\
+-- end\
 \
 -- -- @instance\
 -- function View.bottom:get()\
@@ -9203,27 +9300,27 @@ end\
 -- end\
 \
 -- @instance\
-function View.left:get()\
-\9return self.left or self:evalConstraint \"left\"\
-end\
+-- function View.left:get()\
+-- \9return self.left or self:evalConstraint \"left\"\
+-- end\
 \
--- @instance\
-function View.left:set( left )\
-\9local value\
-\9if left then\
-\9\9local stringConstraints = self.stringConstraints\
-\9\9stringConstraints.left = left\
-\9\9value = self:reloadConstraint \"left\"\
-\9\9if stringConstraints.width then\
-\9\9\9stringConstraints.right = nil\
-\9\9elseif stringConstraints.right then\
-\9\9\9stringConstraints.width = nil\
-\9\9end\
-\9else\
-\9\9self.stringConstraints.left = nil\
-\9end\
-\9return value\
-end\
+-- -- @instance\
+-- function View.left:set( left )\
+\9-- local value\
+\9-- if left then\
+\9-- \9local stringConstraints = self.stringConstraints\
+\9-- \9stringConstraints.left = left\
+\9-- \9value = self:reloadConstraint \"left\"\
+\9-- \9if stringConstraints.width then\
+\9-- \9\9stringConstraints.right = nil\
+\9-- \9elseif stringConstraints.right then\
+\9-- \9\9stringConstraints.width = nil\
+\9-- \9end\
+\9-- else\
+\9-- \9self.stringConstraints.left = nil\
+\9-- end\
+\9-- return value\
+-- end\
 \
 -- -- @instance \
 -- function View.right:get()\
@@ -9423,7 +9520,7 @@ function View:update( dt )\
 \9\9end\
 \9end\
 \
-\9if self.hasInitialised then\
+\9-- if self.hasInitialised then\
 \9\9local needsConstraintUpdate = self.needsConstraintUpdate\
 \9\9for k, isChanged in pairs( needsConstraintUpdate ) do\
 \9\9\9if isChanged then\
@@ -9434,7 +9531,7 @@ function View:update( dt )\
 \9\9\9\9needsConstraintUpdate[k] = false\
 \9\9\9end\
 \9\9end\
-\9end\
+\9-- end\
 end\
 \
 --[[/\
@@ -9578,7 +9675,7 @@ local MIN_MOUSE_HOLD_TIME = 0.3\
 \9@desc Detects when the mouse is pressed. Used to fire mouse held and double click\
 \9@param [MouseDownEvent] event\
 ]]\
-function View:onMouseDownMetaEvents( event )\
+function View:onMouseDownMetaEvents( Event event, Event.phases phase )\
 \9local mouseButton, time = event.mouseButton, os.time()\
 \9local lastMouseDown, lastMouseUp = self.lastMouseDown, self.lastMouseUp\
 \
@@ -9613,7 +9710,7 @@ end\
 \9@desc Detects when the mouse is released. Used to fire mouse held and double click\
 \9@param [MouseUpEvent] event\
 ]]\
-function View:onGlobalMouseUpMetaEvents( event )\
+function View:onGlobalMouseUpMetaEvents( Event event, Event.phases phase )\
 \9self.lastMouseUp[event.mouseButton] = os.time()\
 end\
 \
@@ -9709,13 +9806,15 @@ function SearchBox:initialiseCanvas()\
 end",},IToolbarPressableItem = {["text/lua"] = "\
 interface \"IToolbarPressableItem\" {}",},KeyUpEvent = {["text/lua"] = "\
 class \"KeyUpEvent\" extends \"KeyEvent\" {\
-\9eventType = \"key_up\";\
+    static = {\
+        eventType = \"key_up\";\
+    };\
 }",},Exception = {["text/lua"] = "\
 local exceptionClasses = {}\
 local thrownExceptions = {}\
 local nextID = 1\
 \
-function try( func )\
+function _G.try( func )\
     local ok, err = pcall( func )\
 \
     if not ok and type( err ) == \"string\" then\
@@ -9735,11 +9834,11 @@ function try( func )\
     return error( err, 0 )\
 end\
 \
-function catch( exceptionClass, handler )\
+function _G.catch( exceptionClass, handler )\
     return { catch = exceptionClass, handler = handler }\
 end\
 \
-function default( handler )\
+function _G.default( handler )\
     return { default = true, handler = handler }\
 end\
 \
@@ -9880,7 +9979,7 @@ end\
     @param [Event] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Radio:onGlobalMouseUp( event )\
+function Radio:onGlobalMouseUp( Event event, Event.phases phase )\
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = false\
         if self:hitTestEvent( event ) then\
@@ -9896,7 +9995,7 @@ end\
     @param [Event] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Radio:onMouseDown( event )\
+function Radio:onMouseDown( Event event, Event.phases phase )\
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = true\
     end\
@@ -9995,9 +10094,9 @@ end\
 \
 -- TODO: more string methods",},KeyEvent = {["text/lua"] = "\
 class \"KeyEvent\" extends \"Event\" {\
-\9keyCode = false;\
-\9keyString = false;\
-\9isCharacter = false;\
+\9keyCode = Number;\
+\9keyString = String.allowsNil;\
+\9isCharacter = Boolean;\
 }\
 \
 --[[\
@@ -10005,9 +10104,9 @@ class \"KeyEvent\" extends \"Event\" {\
 \9@desc Creates a key event from the arguments\
 \9@param [number] keyCode -- the key's numerical key code\
 ]]\
-function KeyEvent:initialise( keyCode )\
+function KeyEvent:initialise( Number keyCode )\
 \9self.keyCode = keyCode\
-\9self.keyString = KeyboardShortcutManager.convert( keyCode ) or false\
+\9self.keyString = KeyboardShortcutManager.static:convert( keyCode )\
 \9-- TODO: this needs testing\
 \9self.isCharacter = (2 <= keyCode and keyCode <= 13) or (16 <= keyCode and keyCode <= 27) or (30 <= keyCode and keyCode <= 41) or (44 <= keyCode and keyCode <= 53)\
 end",},EventManager = {["text/lua"] = "\
@@ -10039,29 +10138,21 @@ end\
 \9@param [function] func -- the function called when the event occurs\
 \9@param [class] sender -- the value passed as self. defaults to eventManager.owner\
 ]]\
-function EventManager:connect( eventType, func, phase, eventManager, sender )\
-\9if not eventType then error( \"No event type given to EventManager:connect!\", 2 ) end\
-\9if type( eventType ) == \"table\" and eventType:typeOf( Event ) then eventType = eventType.eventType end\
-\9\
-\9if func and type( func ) == \"function\" then\
-\9\9phase = phase or Event.phases.BEFORE\
-\9\9eventManager = eventManager or self\
-\9\9self:disconnect( eventType, func, phase, eventManager, sender ) -- ensure duplicates won't be made\
+function EventManager:connect( Event eventType, Function func, Event.phases( Event.phases.BEFORE ) phase, EventManager.allowsNil eventManager, sender )\
+\9eventManager = eventManager or self -- TODO: allow self in default values\
+\9self:disconnect( eventType, func, phase, eventManager, sender ) -- ensure duplicates won't be made\
 \
-\9\9if not self.handles[eventType] then\
-\9\9\9self.handles[eventType] = {}\
-\9\9end\
-\
-\9\9table.insert( self.handles[eventType], { func, phase, eventManager, sender or eventManager.owner } )\
-\9else\
-\9\9error( \"Attempted to connect non-function to event: \" .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )\
+\9if not self.handles[eventType] then\
+\9\9self.handles[eventType] = {}\
 \9end\
+\
+\9table.insert( self.handles[eventType], { func, phase, eventManager, sender or eventManager.owner } )\
 end\
 \
 --[[\
 \9@instance\
 \9@desc Unsubscribes a function to the given event\
-\9@param [Event.eventType] eventType -- the name of the event type\
+\9@param [Event] eventType -- the name of the event type\
 \9@param [function] func -- the function called when the event occurs\
 \9@param [class] sender -- the value passed as self. defaults to eventManager.owner\
 ]]\
@@ -10162,11 +10253,11 @@ end\
 \9@return [boolean] stopPropagation -- whether no further handles should recieve this event\
 ]]\
 function EventManager:handleEvent( event )\
-\9if self:handleEventPhase( event, self.phase.BEFORE ) then\
+\9if self:handleEventPhase( event, Event.phases.BEFORE ) then\
 \9\9return true\
 \9end\
 \
-\9if self:handleEventPhase( event, self.phase.AFTER ) then\
+\9if self:handleEventPhase( event, Event.phases.AFTER ) then\
 \9\9return true\
 \9end\
 end\
@@ -10179,9 +10270,9 @@ end\
 \9@return [boolean] stopPropagation -- whether no further handles should recieve this event\
 ]]\
 function EventManager:handleEventPhase( event, phase )\
-\9local eventType = event.eventType\
-\9if self.handles[eventType] then\
-\9\9for i, handle in pairs( self.handles[eventType] ) do\
+\9local handles = self.handles[event.class]\
+\9if handles then\
+\9\9for i, handle in pairs( handles ) do\
 \9\9\9if handle and phase == handle[2] then\
 \9\9\9\9-- handle[1] is the handle function\
 \9\9\9\9-- handle[2] is the phase\
@@ -10205,7 +10296,9 @@ function EventManager:dispose()\
 \9self:disconnectAllGlobals()\
 end",},KeyboardShortcutEvent = {["text/lua"] = "\
 class \"KeyboardShortcutEvent\" extends \"Event\" {\
-\9eventType = \"interface_keyboard_shortcut\";\
+    static = {\
+        eventType = \"interface_keyboard_shortcut\";\
+    };\
 \9keys = false;\
 }\
 \
@@ -10421,7 +10514,7 @@ class \"MouseEvent\" extends \"Event\" {\
 function MouseEvent:makeRelative( view )\
 \9if not view then end\
 \9local oldRelativeView = self.relativeView\
-\9self.super:makeRelative( view )\
+\9self:super( view )\
 \9\
 \9local x, y = self.x, self.y\
 \
@@ -10448,7 +10541,9 @@ class \"ClipboardData\" {}\
 function ClipboardData:initialise()\
 end",},ChildRemovedInterfaceEvent = {["text/lua"] = "\
 class \"ChildRemovedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_child_removed\";\
+    static = {\
+        eventType = \"interface_child_removed\";\
+    };\
 \9childView = false; -- the removed child\
 \9isSentToChildren = false;\
 }\
@@ -10661,7 +10756,7 @@ end\
     @param [Event] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function MenuItem:onGlobalMouseUp( event )\
+function MenuItem:onGlobalMouseUp( Event event, Event.phases phase )\
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = false\
         if self.isEnabled and self:hitTestEvent( event ) then\
@@ -10680,7 +10775,7 @@ end\
     @param [Event] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function MenuItem:onMouseDown( event )\
+function MenuItem:onMouseDown( Event event, Event.phases phase )\
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = true\
     end\
@@ -10693,7 +10788,7 @@ end\
     @param [Event] event -- the keyboard shortcut\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function MenuItem:onKeyboardShortcut( event )\
+function MenuItem:onKeyboardShortcut( Event event, Event.phases phase )\
     if self.isEnabled then\
         local keyboardShortcut = self.keyboardShortcut\
         if keyboardShortcut and keyboardShortcut:matchesEvent( event ) then\
@@ -10864,7 +10959,7 @@ end\
 \9@param [term] terminal -- the terminal object to draw to\
 \9@return self\
 ]]\
-function ScreenCanvas:drawToTerminal( terminal )\9\
+function ScreenCanvas:drawToTerminal( terminal )\
     if self.isVisible then\
 \9\9if self.hasChanged then\
 \9        local s = os.clock()\
@@ -10959,8 +11054,14 @@ function ScreenCanvas:drawToTerminal( terminal )\9\
 \9\9\9\9\9\9changed = true\
 \9\9\9\9\9end\
 \9\9\9\9end\
-\9\9\9\9term.setCursorPos(1,y)\
-\9\9\9\9blit(str)\
+\9\9\9\9if changed then\
+\9\9\9\9\9log(y)\
+\9\9\9\9\9log(str)\
+\9\9\9\9\9term.setCursorPos(1,y)\
+\9\9\9\9\9term.setBackgroundColour(8)\
+\9\9\9\9\9blit(\"e\"..str)\
+\9\9\9\9\9sleep(0)\
+\9\9\9\9end\
 \9\9\9end\
 \9\9end\
 \9end\
@@ -11111,6 +11212,7 @@ function Package.static:make( path, overwrite, Folder folder, isResourcePackage 
         local folders = {}\
         for i, item in ipairs( folder.items ) do\
             local itemName = item.fullName\
+            logtraceback()\
             if RESOURCE_PACKAGE_FOLDERS[itemName] and item:typeOf( Folder ) then\
                 folders[itemName] = item:serialise( true )\
             elseif itemName == \"loadfirst.scfg\" and item.metadata.mime == Metadata.mimes.SCFG then\
@@ -11126,8 +11228,6 @@ function Package.static:make( path, overwrite, Folder folder, isResourcePackage 
     end\
     -- log(contents)\
     -- log( serialise( allItems, {} ) )\
-    print(serialise(self.super))\
-    print(self.super)\
     return self:super( path, overwrite, isResourcePackage and Metadata.mimes.RESOURCEPKG or Metadata.mimes.PACKAGE, contents )\
 end\
 ",},MouseDoubleClickEvent = {["text/lua"] = "\
@@ -11360,16 +11460,16 @@ function Image:appendImage( appendingImage, x, y )\
     end\
     self.pixels = pixels\
 end",},Interface = {["text/lua"] = "\
-local function callSetters( instance, _class )\
-\9local definedFunctions, setters, raw = _class.definedFunctions, class.setters, instance.raw\
-\9for k, _ in pairs( _class.definedProperties ) do\
-\9\9local classValue = _class[k]\
-\9\9local instanceValue = raw[k]\
-\9\9if classValue and type( classValue ) ~= \"table\" and instanceValue == classValue and definedFunctions[setters[k]] then\
-\9\9\9instance[k] = classValue\
-\9\9end\
-\9end\
-end\
+-- local function callSetters( instance, _class )\
+-- \9local definedFunctions, setters, raw = _class.definedFunctions, class.setters, instance.raw\
+-- \9for k, _ in pairs( _class.definedProperties ) do\
+-- \9\9local classValue = _class[k]\
+-- \9\9local instanceValue = raw[k]\
+-- \9\9if classValue and type( classValue ) ~= \"table\" and instanceValue == classValue and definedFunctions[setters[k]] then\
+-- \9\9\9instance[k] = classValue\
+-- \9\9end\
+-- \9end\
+-- end\
 \
 class \"Interface\" {\
 \9name = false; -- the name of the interface (the file name without the extension)\
@@ -11432,19 +11532,19 @@ function Interface.container:get()\
 \
 \9local containerProperties = self.containerProperties\
 \9local containerClass = self.containerClass\
-\9container = containerClass:new( false, containerProperties )\
+\9container = containerClass.spawn( containerProperties )\
 \9container.interfaceProperties = containerProperties\
 \9if not container then\
 \9\9error( \"Interface XML invaid: \" .. self.name .. \".sinterface. Error: Failed to initialise Container class: \" .. tostring( self.class ) .. \". Identifier: \" .. tostring( properties.identifier ), 0 )\
 \9end\
 \
 \9self.container = container\
-\9callSetters( container, containerClass )\
+\9-- callSetters( container, containerClass )\
 \
 \9local children = self.children\
 \9for i, childView in ipairs( children ) do\
 \9\9container:insert( childView )\
-\9\9callSetters( childView, childView.class )\
+\9\9-- callSetters( childView, childView.class )\
 \9end\
 \
 \
@@ -11458,11 +11558,11 @@ end\
 \9@return [table] children -- the table of child views\
 ]]\
 function Interface.children:get()\
+\9log(\"get chilfdren\")\
 \9local children = self.children\
 \9if children then return children end\
 \9local function insertTo( childNode, parentContainer )\
 \9\9local childClass = class.get( childNode.type )\
-\
 \9\9if not childClass then\
 \9\9\9return nil, \"Class not found: \" .. childNode.type\
 \9\9elseif not childClass:typeOf( View ) then\
@@ -11474,7 +11574,8 @@ function Interface.children:get()\
 \9\9\9interfaceProperties[k] = v\
 \9\9end\
 \9\9childNode.attributes.interfaceProperties = interfaceProperties\
-\9\9local childView = childClass:new( false, childNode.attributes )\
+\9\9local childView = childClass( childNode.attributes )--:new( false, childNode.attributes )\
+\9log(\"got \"..tostring(childView))\
 \
 \9\9if not childView then\
 \9\9\9return nil, \"Failed to initialise \" .. childNode.type .. \". Identifier: \" .. tostring( childNode.attributes.identifier )\
@@ -11498,6 +11599,7 @@ function Interface.children:get()\
 \
 \9local children = {}\
 \9for i, childNode in ipairs( self.childNodes ) do\
+\9\9log(\"node\")\
 \9\9local childView, err = insertTo( childNode )\
 \9\9if err then error( \"Interface XML invaid: \" .. self.name .. \".sinterface. Error: \" .. err, 0 ) end\
 \9\9if childView then table.insert( children, childView ) end\
@@ -11506,7 +11608,9 @@ function Interface.children:get()\
 \9return children\
 end",},TextChangedInterfaceEvent = {["text/lua"] = "\
 class \"TextChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_text\";\
+    static = {\
+        eventType = \"interface_text\";\
+    };\
 \9text = false; -- the new text value\
 \9oldText = false; -- the previous text value\
 }\
@@ -11663,7 +11767,7 @@ end\
     @param [Event] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Checkbox:onGlobalMouseUp( event )\9\
+function Checkbox:onGlobalMouseUp( Event event, Event.phases phase )\9\
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = false\
         if self.isEnabled then\
@@ -11681,7 +11785,7 @@ end\
     @param [Event] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Checkbox:onMouseDown( event )\
+function Checkbox:onMouseDown( Event event, Event.phases phase )\
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = true\
     end\
@@ -11729,7 +11833,9 @@ class \"ForwardSymbol\" extends \"Symbol\" {\
 \
 }",},SiblingRemovedInterfaceEvent = {["text/lua"] = "\
 class \"SiblingRemovedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_sibling_removed\";\
+    static = {\
+        eventType = \"interface_sibling_removed\";\
+    };\
 \9view = false; -- the new sibling that was removed\
 \9isSentToChildren = false;\
 }\
@@ -12550,7 +12656,9 @@ function Font:render( canvas, text, x, y, cropWidth, cropHeight, colour )\
 \9end\
 end",},FocusesChangedInterfaceEvent = {["text/lua"] = "\
 class \"FocusesChangedInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_focuses_changed\";\
+    static = {\
+        eventType = \"interface_focuses_changed\";\
+    };\
 \9newFocuses = false; -- the new views that are being focused on. doesn't lose it's focus when it recieves this event.\
     oldFocuses = false; -- the old views that previously were focused\
 }\
@@ -12615,7 +12723,7 @@ end\
 \9@return [boolean] isValid -- whether the value is valid\
 ]]\
 function Validator.static:isValid( value, typeName )\
-\9local validatorType = Validator.validatorType( typeName )\
+\9local validatorType = self:validatorType( typeName )\
 \9return validatorType( value ) ~= nil\
 end\
 \
@@ -12627,11 +12735,13 @@ end\
 \9@return parsedValue -- the parsed value\
 ]]\
 function Validator.static:parse( value, typeName )\
-\9local validatorType = Validator.validatorType( typeName )\
+\9local validatorType = self:validatorType( typeName )\
 \9return validatorType( value )\
 end",},ActionInterfaceEvent = {["text/lua"] = "\
 class \"ActionInterfaceEvent\" extends \"InterfaceEvent\" {\
-\9eventType = \"interface_action\";\
+    static = {\
+        eventType = \"interface_action\";\
+    };\
 \9sender = false; -- the view whose action it is\
 }\
 \
@@ -12932,7 +13042,7 @@ function Theme:initialise( themeName, cantExtend )\
 \9\9error( \"Theme file not found: \" .. themeName .. \".stheme\", 0 )\
 \9end\
 \
-\9Theme.themes[themeName] = self\
+\9Theme.static.themes[themeName] = self\
 end\
 \
 --[[\
@@ -12943,7 +13053,7 @@ end\
 \9@return [Theme] theme -- the theme with the given name\
 ]]\
 function Theme.static:named( themeName, cantExtend )\
-\9return Theme.themes[themeName] or Theme( themeName, cantExtend )\
+\9return Theme.static.themes[themeName] or Theme( themeName, cantExtend )\
 end\
 \
 --[[\
@@ -12963,7 +13073,7 @@ function Theme:initialiseTheme( nodes, cantExtend )\
 \
 \9local classes = {}\
 \9if extends then\
-\9\9local extendingTheme = Theme.named( extends, cantExtend )\
+\9\9local extendingTheme = Theme.static:named( extends, cantExtend )\
 \9\9if not extendingTheme then return \"Tried to extend a non-existant theme: \" .. extends\
 \9\9elseif extendingTheme == self.name then return \"Tried to extend self\" end\
 \9\9local extendsClasses = extendingTheme.classes\
@@ -12989,8 +13099,8 @@ function Theme:initialiseTheme( nodes, cantExtend )\
 \9\9\9local validationTypeName = propertyNode.attributes.type\
 \9\9\9for styleName, styleValue in pairs( propertyNode.attributes ) do\
 \9\9\9\9if styleName ~= \"type\" then\
-\9\9\9\9\9if Validator.isValid( styleValue, validationTypeName ) then\
-\9\9\9\9\9\9propertyTheme[styleName] = Validator.parse( styleValue, validationTypeName )\
+\9\9\9\9\9if Validator.static:isValid( styleValue, validationTypeName ) then\
+\9\9\9\9\9\9propertyTheme[styleName] = Validator.static:parse( styleValue, validationTypeName )\
 \9\9\9\9\9else\
 \9\9\9\9\9\9return \"Style value '\" .. tostring( styleValue ) .. \"' is invalid for type '\" .. validationTypeName .. \"' : '\" .. styleName .. \"' (of property: \" .. propertyNode.type .. \" and of class: \" .. classNode.type .. \")\" \
 \9\9\9\9\9end\
@@ -13038,8 +13148,9 @@ function Theme:value( _class, propertyName, styleName, noError )\
 \9end\
 \
 \9-- an error occured, try to see if the value was defined for a super class\
-\9if _class._extends then\
-\9\9local themeValue = self:value( _class._extends, propertyName, styleName, true )\
+\9local super = _class.super\
+\9if super then\
+\9\9local themeValue = self:value( super, propertyName, styleName, true )\
 \9\9if themeValue then\
 \9\9\9return themeValue\
 \9\9end\
@@ -13076,10 +13187,10 @@ end\
 \9@param [string] key -- the key of the value\
 \9@return value -- the value\
 ]]\
-function ThemeOutlet:get( key )\
-\9if key == \"class\" or self.definedBoth[key] or class.defined[key] then return false end\
-\9return true, self:themeValue( key, self.style )\
-end\
+-- function ThemeOutlet:get( key )\
+-- \9if key == \"class\" or self.definedBoth[key] or class.defined[key] then return false end\
+-- \9return true, self:themeValue( key, self.style )\
+-- end\
 \
 --[[\
 \9@instance\
@@ -13095,7 +13206,7 @@ function ThemeOutlet:connect( _class, classKey, key )\
 \9\9error( \"Attempted to connect theme to undefined property '\" .. classKey .. \"' for object '\" .. tostring( _class ) .. \"'\", 4 )\
 \9end\
 \9table.insert( self.connections, { _class, classKey, key, _class[classKey] } )\
-\9_class[classKey] = self:themeValue( key, style )\
+\9_class[classKey] = self:value( key, style )\
 end\
 \
 --[[\
@@ -13121,10 +13232,10 @@ end\
 \9@desc Fired when the theme changes, updates the value\
 \9@param [string] style -- the style name\
 ]]\
-function ThemeOutlet:onThemeChange( event )\
+function ThemeOutlet:onThemeChange( Event event, Event.phases phase )\
 \9local style = self.style\
 \9for i, connection in pairs( self.connections ) do\
-\9\9connection[1][connection[2]] = self:themeValue( connection[3], style )\
+\9\9connection[1][connection[2]] = self:value( connection[3], style )\
 \9end\
 \
 end\
@@ -13137,7 +13248,7 @@ end\
 function ThemeOutlet.style:set( style )\
 \9self.style = style\
 \9for i, connection in pairs( self.connections ) do\
-\9\9connection[1][connection[2]] = self:themeValue( connection[3], style )\
+\9\9connection[1][connection[2]] = self:value( connection[3], style )\
 \9end\
 end\
 \
@@ -13145,11 +13256,11 @@ end\
 \9@instance\
 \9@desc Returns the value for the current theme given the property name and style)\
 \9@param [string] propertyName -- the name of the property\
-\9@param [string] styleName -- default is \"default\", the name of the style\
+\9@param [string] styleName -- defaults to the current style\
 \9@return themeValue -- the theme value\
 ]]\
-function ThemeOutlet:themeValue( valueName, styleName )\
-\9return Theme.active:value( self.ownerClass, valueName, styleName )\
+function ThemeOutlet:value( valueName, styleName )\
+\9return Theme.static.active:value( self.ownerClass, valueName, styleName or self.style )\
 end",},Document = {["text/lua"] = "\
 class \"Document\" {\
 \
@@ -13270,9 +13381,9 @@ end\
 \
 function Document.contents:set( contents )\
 \9self.contents = contents\
-\9if self.hasInitialised then\
+\9-- if self.hasInitialised then\
 \9\9self.isModified = true\
-\9end\
+\9-- end\
 end\
 \
 \
@@ -13734,7 +13845,7 @@ function FlowContainer:updateHeight( height )\
     -- self.needsLayoutUpdate = true\
 end\
 \
-function FlowContainer:onReady( event )\
+function FlowContainer:onReady( Event event, Event.phases phase )\
     self:updateLayout( true )\
 end\
 \
@@ -13745,13 +13856,13 @@ function FlowContainer:update( deltaTime )\
     end\
 end\
 \
-function FlowContainer:onChildAdded( event )\
+function FlowContainer:onChildAdded( Event event, Event.phases phase )\
     if event.childView:typeOf( IFlowItem ) then\
         self.needsLayoutUpdate = true\
     end\
 end\
 \
-function FlowContainer:onChildRemoved( event )\
+function FlowContainer:onChildRemoved( Event event, Event.phases phase )\
     self.needsLayoutUpdate = true\
 end\
 \
@@ -13891,7 +14002,7 @@ end\
 function Button:initialiseCanvas()\
     self:super()\
     local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas\
-    local shadowObject = canvas:insert( RoundedRectangle( 2, 2, width - 1, height - 1, theme.shadowColour ) )\
+    local shadowObject = canvas:insert( RoundedRectangle( 2, 2, width - 1, height - 1, theme:value( \"shadowColour\" ) ) )\
     local backgroundObject = canvas:insert( RoundedRectangle( 1, 1, width - 1, height - 1, theme.fillColour, theme.outlineColour, cornerRadius ) )\
     local textObject = canvas:insert( Text( 1, 5, width, 10, self.text ) )\
 \
@@ -14040,7 +14151,7 @@ end\
     @param [Event] event -- the mouse up event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Button:onGlobalMouseUp( event )\
+function Button:onGlobalMouseUp( Event event, Event.phases phase )\
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = false\
         if self.isEnabled and self:hitTestEvent( event ) then\
@@ -14057,7 +14168,7 @@ end\
     @param [MouseDownEvent] event -- the mouse down event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Button:onMouseDown( event )\
+function Button:onMouseDown( Event event, Event.phases phase )\
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then\
         self.isPressed = true\
     end\
@@ -14070,7 +14181,7 @@ end\
     @param [KeyDownEvent] event -- the key down event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Button:onKeyDown( event )\
+function Button:onKeyDown( Event event, Event.phases phase )\
     if self.isEnabled and self.isFocused and event.keyCode == keys.enter then\
         self.isPressed = true\
         return true\
@@ -14083,7 +14194,7 @@ end\
     @param [KeyUpEvent] event -- the key down event\
     @return [boolean] preventPropagation -- prevent anyone else using the event\
 ]]\
-function Button:onKeyUp( event )\
+function Button:onKeyUp( Event event, Event.phases phase )\
     if self.isEnabled and self.isPressed and self.isFocused and event.keyCode == keys.enter then\
         self.isPressed = false\
     self.event:handleEvent( ActionInterfaceEvent( self ) )\
@@ -14155,7 +14266,7 @@ function MenuBar.isEnabled:set( isEnabled )\
 end\
 \
 function MenuBar.isVisible:set( isVisible )\
-\9self.super:setIsVisible( isVisible )\
+\9self:super( isVisible )\
 \9if isVisible then\
 \9\9self.needsLayoutUpdate = true\
 \9end\
@@ -14273,6 +14384,7 @@ function Canvas:insert( graphicsObject )\
         graphicsObject.parent:remove( graphicsObject )\
     end\
     graphicsObject.raw.parent = self\
+    log(\"insert \"..tostring(graphicsObject))\
     self.children[#self.children + 1] = graphicsObject\
     return graphicsObject\
 end\
@@ -14307,7 +14419,9 @@ function Canvas:draw( isShadow )\
     if self.isVisible then\
         self.buffer = {}\
         local children = self.children\
+        log(\"childred of \" .. tostring(self))\
         for i = 1, #children do\
+            log(children[i])\
             children[i]:drawTo( self, isShadow )\
         end\
         self.hasChanged = false\
@@ -14979,7 +15093,9 @@ function InterfaceOutlet:childRemoved( childView )\
 \9end\
 end",},CharacterEvent = {["text/lua"] = "\
 class \"CharacterEvent\" extends \"Event\" {\
-\9eventType = \"char\";\
+    static = {\
+        eventType = \"char\";\
+    };\
 \9character = false;\
 }\
 \

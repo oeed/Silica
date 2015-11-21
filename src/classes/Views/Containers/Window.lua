@@ -90,7 +90,7 @@ end
 
 function Window.height:set( height )
     height = math.max( math.min( height, self.maxHeight ), self.minHeight )
-    self.super:setHeight( height )
+    self:super( height )
     self.shadowObject.height = height - 3
     local container = self.container
     if container then container.height = height - self.barHeight - 5 end
@@ -98,7 +98,7 @@ end
 
 function Window.width:set( width )
     width = math.max( math.min( width, self.maxWidth ), self.minWidth )
-    self.super:setWidth( width )
+    self:super( width )
     self.shadowObject.width = width - 2
     self.barObject.width = width - 2
     self.separatorObject.width = width - 2
@@ -106,7 +106,7 @@ function Window.width:set( width )
     if container then container.width = width - 2 end
 end
 
-function Window:onInterfaceLoaded( event )
+function Window:onInterfaceLoaded( Event event, Event.phases phase )
     local currentContainer = self.container
     for i, childView in ipairs( self.children ) do
         if childView ~= currentContainer and childView:typeOf( WindowContainer ) then
@@ -126,7 +126,7 @@ function Window:updateThemeStyle()
 end
 
 function Window.isEnabled:set( isEnabled )
-    self.super:setIsEnabled( isEnabled )
+    self:super( isEnabled )
     self:updateThemeStyle()
 end
 
@@ -173,7 +173,7 @@ end
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onMouseDownBefore( event )
+function Window:onMouseDownBefore( Event event, Event.phases phase )
     self:focus()
 end
 
@@ -183,7 +183,7 @@ end
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onMouseDownAfter( event )
+function Window:onMouseDownAfter( Event event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         x = event.x
         y = event.y
@@ -206,7 +206,7 @@ end
     @param [Event] event -- the mouse drag event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onGlobalMouseDrag( event )
+function Window:onGlobalMouseDrag( Event event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         local preventPropagation = false
         if self.isDragging then
@@ -233,7 +233,7 @@ end
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onGlobalMouseUp( event )
+function Window:onGlobalMouseUp( Event event, Event.phases phase )
     if (self.isDragging or self.isResizingX or self.isResizingY ) and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.dragX = false
         self.dragY = false

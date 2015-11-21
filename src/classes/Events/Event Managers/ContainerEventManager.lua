@@ -10,7 +10,7 @@ class "ContainerEventManager" extends "EventManager" {}
 function ContainerEventManager:handleEvent( event )
 	local sender = event.sender
 	local isSentToSender = not sender or ( self == sender and event.isSentToSender )
-	if isSentToSender and self:handleEventPhase( event, self.phase.BEFORE ) then
+	if isSentToSender and self:handleEventPhase( event, Event.phases.BEFORE ) then
 		return true
 	end
 
@@ -32,7 +32,7 @@ function ContainerEventManager:handleEvent( event )
 			end
 		end
 	end
-	if isSentToSender and self:handleEventPhase( event, self.phase.AFTER ) then
+	if isSentToSender and self:handleEventPhase( event, Event.phases.AFTER ) then
 		return true
 	end
 end

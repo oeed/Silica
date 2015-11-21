@@ -1,6 +1,8 @@
 
 class "KeyboardShortcutEvent" extends "Event" {
-	eventType = "interface_keyboard_shortcut";
+    static = {
+        eventType = "interface_keyboard_shortcut";
+    };
 	keys = false;
 }
 

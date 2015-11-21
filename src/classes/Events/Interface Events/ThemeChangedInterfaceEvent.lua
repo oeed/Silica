@@ -1,6 +1,8 @@
 
 class "ThemeChangedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = "interface_theme_changed";
+    static = {
+        eventType = "interface_theme_changed";
+    };
 	newThemeName = false;
 	oldThemeName = false;
 }

@@ -20,7 +20,7 @@ function ListContainer:initialise( ... )
     self:event( ReadyInterfaceEvent, self.onReady )
 end
 
-function ListContainer:onReady( event )
+function ListContainer:onReady( Event event, Event.phases phase )
     self:updateLayout( true )
 end
 
@@ -31,14 +31,14 @@ function ListContainer:update( deltaTime )
     end
 end
 
-function ListContainer:onChildAdded( event )
+function ListContainer:onChildAdded( Event event, Event.phases phase )
     if not event.childView:typeOf( ListItem ) then
         error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not extend ListItem to '" .. tostring( self ) .. "'", 0 )
     end
     self.needsLayoutUpdate = true
 end
 
-function ListContainer:onChildRemoved( event )
+function ListContainer:onChildRemoved( Event event, Event.phases phase )
     self.needsLayoutUpdate = true
 end
 

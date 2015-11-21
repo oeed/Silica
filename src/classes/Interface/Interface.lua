@@ -1,14 +1,14 @@
 
-local function callSetters( instance, _class )
-	local definedFunctions, setters, raw = _class.definedFunctions, class.setters, instance.raw
-	for k, _ in pairs( _class.definedProperties ) do
-		local classValue = _class[k]
-		local instanceValue = raw[k]
-		if classValue and type( classValue ) ~= "table" and instanceValue == classValue and definedFunctions[setters[k]] then
-			instance[k] = classValue
-		end
-	end
-end
+-- local function callSetters( instance, _class )
+-- 	local definedFunctions, setters, raw = _class.definedFunctions, class.setters, instance.raw
+-- 	for k, _ in pairs( _class.definedProperties ) do
+-- 		local classValue = _class[k]
+-- 		local instanceValue = raw[k]
+-- 		if classValue and type( classValue ) ~= "table" and instanceValue == classValue and definedFunctions[setters[k]] then
+-- 			instance[k] = classValue
+-- 		end
+-- 	end
+-- end
 
 class "Interface" {
 	name = false; -- the name of the interface (the file name without the extension)
@@ -71,19 +71,19 @@ function Interface.container:get()
 
 	local containerProperties = self.containerProperties
 	local containerClass = self.containerClass
-	container = containerClass.spawn( false, containerProperties )
+	container = containerClass.spawn( containerProperties )
 	container.interfaceProperties = containerProperties
 	if not container then
 		error( "Interface XML invaid: " .. self.name .. ".sinterface. Error: Failed to initialise Container class: " .. tostring( self.class ) .. ". Identifier: " .. tostring( properties.identifier ), 0 )
 	end
 
 	self.container = container
-	callSetters( container, containerClass )
+	-- callSetters( container, containerClass )
 
 	local children = self.children
 	for i, childView in ipairs( children ) do
 		container:insert( childView )
-		callSetters( childView, childView.class )
+		-- callSetters( childView, childView.class )
 	end
 
 
@@ -97,11 +97,11 @@ end
 	@return [table] children -- the table of child views
 ]]
 function Interface.children:get()
+	log("get chilfdren")
 	local children = self.children
 	if children then return children end
 	local function insertTo( childNode, parentContainer )
 		local childClass = class.get( childNode.type )
-
 		if not childClass then
 			return nil, "Class not found: " .. childNode.type
 		elseif not childClass:typeOf( View ) then
@@ -113,7 +113,8 @@ function Interface.children:get()
 			interfaceProperties[k] = v
 		end
 		childNode.attributes.interfaceProperties = interfaceProperties
-		local childView = childClass:new( false, childNode.attributes )
+		local childView = childClass( childNode.attributes )--:new( false, childNode.attributes )
+	log("got "..tostring(childView))
 
 		if not childView then
 			return nil, "Failed to initialise " .. childNode.type .. ". Identifier: " .. tostring( childNode.attributes.identifier )
@@ -137,6 +138,7 @@ function Interface.children:get()
 
 	local children = {}
 	for i, childNode in ipairs( self.childNodes ) do
+		log("node")
 		local childView, err = insertTo( childNode )
 		if err then error( "Interface XML invaid: " .. self.name .. ".sinterface. Error: " .. err, 0 ) end
 		if childView then table.insert( children, childView ) end

@@ -157,7 +157,7 @@ function FileItem:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isDropHovering and "hover" or (self.isFocused and "focused" or "default") ) or "disabled"
 end
 
-function FileItem:onMouseDown( event )
+function FileItem:onMouseDown( Event event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         if self.application.keyboardShortcutManager:isKeyDown( ADD_FOCUS_KEY ) then
             if self.isFocused then
@@ -174,7 +174,7 @@ function FileItem:onMouseDown( event )
     return true
 end
 
-function FileItem:onMouseHeld( event )
+function FileItem:onMouseHeld( Event event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self:addFocus()
         local isMove = not self.application.keyboardShortcutManager:isKeyDown( DRAG_COPY_KEY )
@@ -190,7 +190,7 @@ function FileItem:onMouseHeld( event )
     return true
 end
 
-function FileItem:onMouseDoubleClick( event )
+function FileItem:onMouseDoubleClick( Event event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         -- error('oepn')
     end

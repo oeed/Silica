@@ -1,6 +1,8 @@
 
 class "MouseDownEvent" extends "MouseEvent" {
-	eventType = "mouse_click";
+    static = {
+        eventType = "mouse_click";
+    };
 	mouseButton = false;
 }
 

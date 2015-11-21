@@ -59,7 +59,7 @@ function ListItem.isSelected:set( isSelected )
     self:updateThemeStyle()
 end
 
-function ListItem:onMouseHeld( event )
+function ListItem:onMouseHeld( Event event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then
         self.isSelected = true
         self:startDragDrop( event, ListClipboardData( self ), true, function()self.isSelected = false end )
@@ -67,7 +67,7 @@ function ListItem:onMouseHeld( event )
     return true
 end
 
-function ListItem:onGlobalMouseUp( event )
+function ListItem:onGlobalMouseUp( Event event, Event.phases phase )
     if self.isSelected and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isSelected = false
         if self.isEnabled and self:hitTestEvent( event ) then
@@ -79,7 +79,7 @@ function ListItem:onGlobalMouseUp( event )
     end
 end
 
-function ListItem:onMouseDown( event )
+function ListItem:onMouseDown( Event event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isSelected = not self.isSelected
     end

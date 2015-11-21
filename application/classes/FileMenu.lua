@@ -5,7 +5,7 @@ class "FileMenu" extends "Menu" {
 	rebootMenuItem = InterfaceOutlet( "rebootMenuItem" );
 }
 
-function FileMenu:onAlertMenuItem( event )
+function FileMenu:onAlertMenuItem( Event event, Event.phases phase )
 	-- log( path:gsub( "[^/]+/%.%.", "" ):gsub( "/%.", "" ):gsub( "//+", "/" ) )
 	-- local alert = AlertWindow()
 	-- self.application.container:insert( alert )
@@ -13,6 +13,6 @@ function FileMenu:onAlertMenuItem( event )
 	-- alert:focus()
 end
 
-function FileMenu:onRebootMenuItem( event )
+function FileMenu:onRebootMenuItem( Event event, Event.phases phase )
 	os.reboot()
 end

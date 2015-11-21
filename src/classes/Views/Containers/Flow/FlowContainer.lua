@@ -31,7 +31,7 @@ function FlowContainer:updateHeight( height )
     -- self.needsLayoutUpdate = true
 end
 
-function FlowContainer:onReady( event )
+function FlowContainer:onReady( Event event, Event.phases phase )
     self:updateLayout( true )
 end
 
@@ -42,13 +42,13 @@ function FlowContainer:update( deltaTime )
     end
 end
 
-function FlowContainer:onChildAdded( event )
+function FlowContainer:onChildAdded( Event event, Event.phases phase )
     if event.childView:typeOf( IFlowItem ) then
         self.needsLayoutUpdate = true
     end
 end
 
-function FlowContainer:onChildRemoved( event )
+function FlowContainer:onChildRemoved( Event event, Event.phases phase )
     self.needsLayoutUpdate = true
 end
 

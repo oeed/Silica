@@ -130,7 +130,7 @@ function Menu:update( deltaTime )
 end
 
 function Menu.isVisible:set( isVisible )
-	self.super:setIsVisible( isVisible )
+	self:super( isVisible )
 	if isVisible then
 		self.needsLayoutUpdate = true
 	end
@@ -151,7 +151,7 @@ end
 	@param [Event] -- the mouse down event
 	@desc Closes the menu when somewhere other than the menu is clicked, otherwise handles the event
 ]]
-function Menu:onGlobalMouseDown( event )
+function Menu:onGlobalMouseDown( Event event, Event.phases phase )
 	if self.isVisible then
 		if self.hitTestOwner and self.owner and self.owner:hitTestEvent( event ) then
 			self.owner.event:handleEvent( event )

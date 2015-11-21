@@ -57,7 +57,7 @@ function Container:loadInterface()
     end
 end
 
-function Container:onInterfaceOutletChanged( event )
+function Container:onInterfaceOutletChanged( Event event, Event.phases phase )
 	local interfaceOutlet = event.interfaceOutlet
 	local oldView = false
 	local newView = false
@@ -128,7 +128,7 @@ function Container:onParentResizedConstraintUpdateAfter( arg1, arg2, arg3 )
 end
 
 function Container.width:set( width )
-	self.super:setWidth( width )
+	self:super( width )
     width = self.width
 	local event = self.event
 	if event then
@@ -137,7 +137,7 @@ function Container.width:set( width )
 end
 
 function Container.height:set( height )
-	self.super:setHeight( height )
+	self:super( height )
     height = self.height
 	local event = self.event
 	if event then
@@ -207,6 +207,8 @@ function Container:insert( childView, position )
 	if not childView:typeOf( View ) then
 		error( "Attempted to insert non-View to Container", 4 )
 	end
+
+	log("insert "..tostring(childView))
 
 	local children = self.children
 	if position then

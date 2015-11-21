@@ -31,7 +31,7 @@ function SymbolSegmentButton:updateWidth( width )
     self.symbolObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1
 end
 
-function SymbolSegmentButton:onSiblingOrParentChanged( event )
+function SymbolSegmentButton:onSiblingOrParentChanged( Event event, Event.phases phase )
     self:super( event )
     local isFirst = self.isFirst
     local isLast = self.isLast 
@@ -50,7 +50,7 @@ function SymbolSegmentButton:autosize()
 end
 
 function SymbolSegmentButton.isPressed:set( isPressed )
-    self.super:setIsPressed( isPressed )
+    self:super( isPressed )
     local symbolObject = self.symbolObject
     symbolObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1
     symbolObject.y = isPressed and 6 or 5

@@ -25,7 +25,7 @@ function FontStudioApplicationContainer:initialise( ... )
     self:event( Event.KEY_DOWN, self.onKeyDown )
 end
 
-function FontStudioApplicationContainer:onReady( event )
+function FontStudioApplicationContainer:onReady( Event event, Event.phases phase )
     FontDocument:open( "src/fonts/Napier.sfont" )
 
     local document = self.application.document
@@ -39,7 +39,7 @@ function FontStudioApplicationContainer:onReady( event )
     -- document:save()
 end
 
-function FontStudioApplicationContainer:onKeyDown( event )
+function FontStudioApplicationContainer:onKeyDown( Event event, Event.phases phase )
     local keyCode = event.keyCode
 
     if keyCode == keys.left then

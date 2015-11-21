@@ -13,7 +13,7 @@ function MaximiseWindowButton:initialiseCanvas()
     self.symbolObject = self.canvas:insert( symbolObject )
 end
 
-function MaximiseWindowButton:onMouseUp( event )    
+function MaximiseWindowButton:onMouseUp( Event event, Event.phases phase )    
     if self.window then
         self.window:close()
         return true

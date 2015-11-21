@@ -1,6 +1,6 @@
 <FilesApplicationContainer themeName="files">
-    
-    <ToolbarContainer width="100%">
+    <Container></Container>
+<!--     <ToolbarContainer width="100%">
         <ToolbarSegmentContainer>
             <ToolbarSymbolSegmentButton symbol="left" />
             <ToolbarSymbolSegmentButton symbol="right" />
@@ -9,7 +9,7 @@
         <ToolbarStaticSpace/>
         <ToolbarDynamicSpace/>
         <ToolbarSymbolButton symbol="settings"/>
-    </ToolbarContainer>
+    </ToolbarContainer> -->
 
     <!-- <FileItem x=200 y=30 width=100 height=32/> -->
 <!-- 
@@ -26,7 +26,7 @@
         </ListContainer>
     </ScrollView> -->
 
-
+<!-- 
     <FlowContainer identifier="filesContainer" y=30 x=1  width=320 height=100>
         <FileItem title="Test 1 abcdefghik" subtitle="42kB"/>
         <FileItem title="Test 2" subtitle="42kB"/>
@@ -36,6 +36,6 @@
         <FileItem title="Test 6" subtitle="42kB"/>
         <FileItem title="Test 7" subtitle="42kB"/>
     </FlowContainer>
-
+ -->
     
 </FilesApplicationContainer>

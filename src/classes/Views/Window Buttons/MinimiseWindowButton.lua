@@ -11,7 +11,7 @@ function MinimiseWindowButton:initialiseCanvas()
     self.symbolObject = self.canvas:insert( symbolObject )
 end
 
-function MinimiseWindowButton:onMouseUp( event )    
+function MinimiseWindowButton:onMouseUp( Event event, Event.phases phase )    
     if self.window then
         self.window:close()
         return true

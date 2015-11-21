@@ -102,6 +102,7 @@ function Canvas:insert( graphicsObject )
         graphicsObject.parent:remove( graphicsObject )
     end
     graphicsObject.raw.parent = self
+    log("insert "..tostring(graphicsObject))
     self.children[#self.children + 1] = graphicsObject
     return graphicsObject
 end
@@ -136,7 +137,9 @@ function Canvas:draw( isShadow )
     if self.isVisible then
         self.buffer = {}
         local children = self.children
+        log("childred of " .. tostring(self))
         for i = 1, #children do
+            log(children[i])
             children[i]:drawTo( self, isShadow )
         end
         self.hasChanged = false

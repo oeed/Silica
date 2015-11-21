@@ -1,6 +1,8 @@
 
 class "MouseUpEvent" extends "MouseEvent" {
-	eventType = "mouse_up";
+    static = {
+        eventType = "mouse_up";
+    };
 	mouseButton = false;
 }
 

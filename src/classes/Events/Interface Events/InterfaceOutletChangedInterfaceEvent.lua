@@ -1,6 +1,8 @@
 
 class "InterfaceOutletChangedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = "interface_outlet_changed";
+    static = {
+        eventType = "interface_outlet_changed";
+    };
 	interfaceOutlet = false;
 	oldView = false;
 	newView = false;

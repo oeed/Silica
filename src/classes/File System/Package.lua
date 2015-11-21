@@ -103,6 +103,7 @@ function Package.static:make( path, overwrite, Folder folder, isResourcePackage 
         local folders = {}
         for i, item in ipairs( folder.items ) do
             local itemName = item.fullName
+            logtraceback()
             if RESOURCE_PACKAGE_FOLDERS[itemName] and item:typeOf( Folder ) then
                 folders[itemName] = item:serialise( true )
             elseif itemName == "loadfirst.scfg" and item.metadata.mime == Metadata.mimes.SCFG then
@@ -118,8 +119,6 @@ function Package.static:make( path, overwrite, Folder folder, isResourcePackage 
     end
     -- log(contents)
     -- log( serialise( allItems, {} ) )
-    print(serialise(self.super))
-    print(self.super)
     return self:super( path, overwrite, isResourcePackage and Metadata.mimes.RESOURCEPKG or Metadata.mimes.PACKAGE, contents )
 end
 

@@ -14,7 +14,7 @@ end
 	@param [term] terminal -- the terminal object to draw to
 	@return self
 ]]
-function ScreenCanvas:drawToTerminal( terminal )	
+function ScreenCanvas:drawToTerminal( terminal )
     if self.isVisible then
 		if self.hasChanged then
 	        local s = os.clock()
@@ -109,8 +109,14 @@ function ScreenCanvas:drawToTerminal( terminal )
 						changed = true
 					end
 				end
-				term.setCursorPos(1,y)
-				blit(str)
+				if changed then
+					log(y)
+					log(str)
+					term.setCursorPos(1,y)
+					term.setBackgroundColour(8)
+					blit("e"..str)
+					sleep(0)
+				end
 			end
 		end
 	end

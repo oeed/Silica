@@ -1,6 +1,8 @@
 
 class "ChildRemovedInterfaceEvent" extends "InterfaceEvent" {
-	eventType = "interface_child_removed";
+    static = {
+        eventType = "interface_child_removed";
+    };
 	childView = false; -- the removed child
 	isSentToChildren = false;
 }

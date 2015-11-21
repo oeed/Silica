@@ -8,7 +8,7 @@ class "ScaledCharacterObject" extends "GraphicsObject" {
 
 function ScaledCharacterObject:initialise( x, y, character, scale )
     scale = scale or 1
-    self.super:initialise( x, y, character and scale * character.width or 1, character and scale * #character or 1 )
+    self:super( x, y, character and scale * character.width or 1, character and scale * #character or 1 )
     self.character = character
     self.scale = scale
 end

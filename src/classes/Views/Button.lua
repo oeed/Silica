@@ -44,7 +44,7 @@ end
 function Button:initialiseCanvas()
     self:super()
     local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
-    local shadowObject = canvas:insert( RoundedRectangle( 2, 2, width - 1, height - 1, theme.shadowColour ) )
+    local shadowObject = canvas:insert( RoundedRectangle( 2, 2, width - 1, height - 1, theme:value( "shadowColour" ) ) )
     local backgroundObject = canvas:insert( RoundedRectangle( 1, 1, width - 1, height - 1, theme.fillColour, theme.outlineColour, cornerRadius ) )
     local textObject = canvas:insert( Text( 1, 5, width, 10, self.text ) )
 
@@ -193,7 +193,7 @@ end
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Button:onGlobalMouseUp( event )
+function Button:onGlobalMouseUp( Event event, Event.phases phase )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
@@ -210,7 +210,7 @@ end
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Button:onMouseDown( event )
+function Button:onMouseDown( Event event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
     end
@@ -223,7 +223,7 @@ end
     @param [KeyDownEvent] event -- the key down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Button:onKeyDown( event )
+function Button:onKeyDown( Event event, Event.phases phase )
     if self.isEnabled and self.isFocused and event.keyCode == keys.enter then
         self.isPressed = true
         return true
@@ -236,7 +236,7 @@ end
     @param [KeyUpEvent] event -- the key down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Button:onKeyUp( event )
+function Button:onKeyUp( Event event, Event.phases phase )
     if self.isEnabled and self.isPressed and self.isFocused and event.keyCode == keys.enter then
         self.isPressed = false
     self.event:handleEvent( ActionInterfaceEvent( self ) )

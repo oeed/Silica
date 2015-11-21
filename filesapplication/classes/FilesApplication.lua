@@ -11,26 +11,26 @@ class "FilesApplication" extends "Application" {
 	@desc Initialise the custom application
 ]]
 function FilesApplication:initialise()
-	self:super( fs )
+	self:super()
 	self:event( CharacterEvent, self.onChar )
 
-	try( function() 
-		log("one")
-		Exception( "Blah" ):throw()
-		log("two")
-	end ) {
+	-- try( function() 
+	-- 	log("one")
+	-- 	Exception( "Blah" ):throw()
+	-- 	log("two")
+	-- end ) {
 
-		catch( Exception, function()
-			log( "Exception" )
-			log( exception )
-		end );
+	-- 	catch( Exception, function()
+	-- 		log( "Exception" )
+	-- 		log( exception )
+	-- 	end );
 
-		default( function( exception )
-			log( "default" )
-			log( exception )
-		end );
+	-- 	default( function( exception )
+	-- 		log( "default" )
+	-- 		log( exception )
+	-- 	end );
 
-	}
+	-- }
 
 
 	-- local file = File( "/application/test.txt" ) -- subclass of FileSystemItem. you can also do FileSystemItem( “/path” ) and it will return a File or Folder
@@ -65,7 +65,7 @@ end
 	@param [Event] event -- description
 	@return [boolean] stopPropagation
 ]]
-function FilesApplication:onChar( event )
+function FilesApplication:onChar( CharacterEvent event, Event.phases phase )
 	if not self:hasFocus() and event.character == '\\' then
 		os.reboot()
 	elseif event.character == "s" then

@@ -1,7 +1,7 @@
 
 class "FilesApplicationContainer" extends "ApplicationContainer" {
     
-    filesContainer = InterfaceOutlet();
+    -- filesContainer = InterfaceOutlet();
     fileStyle = 1;
 
 }
@@ -13,6 +13,10 @@ end
 
 function FilesApplicationContainer:initialiseCanvas()
     self:super()
+    log("here")
+    log(self.width)
+    log(self.height)
+    self.canvas.fillColour = colours.lightBlue
     -- local path = Path( 20, 50, 7, 7, 1, 4 )
     -- path:lineTo( 4, 1 )
     -- path:lineTo( 4, 3 )
@@ -26,6 +30,11 @@ function FilesApplicationContainer:initialiseCanvas()
     -- self.canvas:insert(path)
 end
 
+-- function FilesApplicationContainer:update( ... )
+--     self:super( ... )
+--     log("update")
+-- end
+
 function FilesApplicationContainer.fileStyle:set( fileStyle )
     self.fileStyle = fileStyle
     -- for i, fileItem in ipairs( self.filesContainer.children ) do
@@ -33,5 +42,5 @@ function FilesApplicationContainer.fileStyle:set( fileStyle )
     -- end
 end
 
-function FilesApplicationContainer:onReady( event )
+function FilesApplicationContainer:onReady( Event event, Event.phases phase )
 end

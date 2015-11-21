@@ -9,7 +9,7 @@ class "ApplicationContainer" extends "Container" {
 }
 
 --[[
-	@constructor
+	@constructo
 	@desc Initialise a application container instance
 	@param [table] properties -- the properties for the view
 ]]
@@ -18,7 +18,7 @@ function ApplicationContainer:initialise( ... )
 		self.themeName = "default"
 	end
 
-	self.super:initialise( ... )
+	self:super( ... )
 
     self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
 end
@@ -26,7 +26,7 @@ end
 function ApplicationContainer:initialiseCanvas()
 	local canvas = ScreenCanvas( self.x, self.y, self.width, self.height )
     self.canvas = canvas
-    self.theme:connect( self.canvas, "fillColour" )
+    -- self.theme:connect( self.canvas, "fillColour" )
 end
 
 function ApplicationContainer.theme:set( theme )
@@ -56,7 +56,7 @@ end
     @param [MouseDownEvent] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function ApplicationContainer:onMouseDownAfter( event )
+function ApplicationContainer:onMouseDownAfter( Event event, Event.phases phase )
 	local application = self.application
 	
 	if application:hasFocus() then

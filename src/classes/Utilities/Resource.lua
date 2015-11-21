@@ -44,17 +44,13 @@ function Resource:initialise( name, mimes, category, allowDirectories )
 			end
 		end
 	end
-
-	-- otherwise search the resource directories
-	local function searchFolders( folders )
-		for i, folder in ipairs( folders ) do
-			print(folder)
-			print(folder.name)
-			return folder:find( name, mimes )
-		end
+	
+	local file
+	for i, folder in ipairs( Application.static.resourceFolders ) do
+		file = folder:find( name, mimes )
+		break
 	end
-
-	local file = searchFolders( Application.static.resourceFolders )
+	
 	self.file = file or false
 	if file then
 		self.contents = file.contents

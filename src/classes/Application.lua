@@ -45,21 +45,16 @@ end
     @param [string] path -- the path to the directory of resources
 ]]
 function Application.static:load( path )
-    print("load "..path)
     local folder = Folder( path )
-    print(folder)
     if folder then
         table.insert( self.resourceFolders, folder )
         local classesFolder = folder:folderFromPath( "classes" )
-        print(classesFolder)
         if classesFolder then
             table.insert( class.folders, classesFolder )
             local luaMime = Metadata.mimes.LUA
             local function loadFolder( folder )
-                log("Load folder "..folder.name)
                 for i, fileSystemItem in ipairs( folder.items ) do
                     if fileSystemItem.metadata.mime == luaMime then
-                        log("Load file "..fileSystemItem.name)
                         class.load( fileSystemItem.name, fileSystemItem.contents )
                     elseif fileSystemItem:typeOf( Folder ) then
                         loadFolder( fileSystemItem )
@@ -97,7 +92,7 @@ function Application:run( ... )
 	self:update()
 
 	while self.isRunning do
-		local event = Event.create( coroutine.yield() )
+		local event = Event.static:create( coroutine.yield() )
 		event.relativeView = self.container
 		self.event:handleEvent( event )
 	end
@@ -323,7 +318,7 @@ end
 	@param [TimerEvent] event -- the timer event
 	@return [boolean] stopPropagation -- whether following handlers should not recieve this event
 ]]
-function Application:onTimer( event )
+function Application:onTimer( Event event, Event.phases phase )
 	if event.timer and event.timer == self.updateTimer then
 		self:update()
 		return true

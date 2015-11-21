@@ -27,29 +27,21 @@ end
 	@param [function] func -- the function called when the event occurs
 	@param [class] sender -- the value passed as self. defaults to eventManager.owner
 ]]
-function EventManager:connect( eventType, func, phase, eventManager, sender )
-	if not eventType then error( "No event type given to EventManager:connect!", 2 ) end
-	if type( eventType ) == "table" and eventType:typeOf( Event ) then eventType = eventType.eventType end
-	
-	if func and type( func ) == "function" then
-		phase = phase or Event.phases.BEFORE
-		eventManager = eventManager or self
-		self:disconnect( eventType, func, phase, eventManager, sender ) -- ensure duplicates won't be made
+function EventManager:connect( Event eventType, Function func, Event.phases( Event.phases.BEFORE ) phase, EventManager.allowsNil eventManager, sender )
+	eventManager = eventManager or self -- TODO: allow self in default values
+	self:disconnect( eventType, func, phase, eventManager, sender ) -- ensure duplicates won't be made
 
-		if not self.handles[eventType] then
-			self.handles[eventType] = {}
-		end
-
-		table.insert( self.handles[eventType], { func, phase, eventManager, sender or eventManager.owner } )
-	else
-		error( "Attempted to connect non-function to event: " .. eventType .. ' for class: ' .. tostring( self.owner or nil ), 0 )
+	if not self.handles[eventType] then
+		self.handles[eventType] = {}
 	end
+
+	table.insert( self.handles[eventType], { func, phase, eventManager, sender or eventManager.owner } )
 end
 
 --[[
 	@instance
 	@desc Unsubscribes a function to the given event
-	@param [Event.eventType] eventType -- the name of the event type
+	@param [Event] eventType -- the name of the event type
 	@param [function] func -- the function called when the event occurs
 	@param [class] sender -- the value passed as self. defaults to eventManager.owner
 ]]
@@ -150,11 +142,11 @@ end
 	@return [boolean] stopPropagation -- whether no further handles should recieve this event
 ]]
 function EventManager:handleEvent( event )
-	if self:handleEventPhase( event, self.phase.BEFORE ) then
+	if self:handleEventPhase( event, Event.phases.BEFORE ) then
 		return true
 	end
 
-	if self:handleEventPhase( event, self.phase.AFTER ) then
+	if self:handleEventPhase( event, Event.phases.AFTER ) then
 		return true
 	end
 end
@@ -167,9 +159,9 @@ end
 	@return [boolean] stopPropagation -- whether no further handles should recieve this event
 ]]
 function EventManager:handleEventPhase( event, phase )
-	local eventType = event.eventType
-	if self.handles[eventType] then
-		for i, handle in pairs( self.handles[eventType] ) do
+	local handles = self.handles[event.class]
+	if handles then
+		for i, handle in pairs( handles ) do
 			if handle and phase == handle[2] then
 				-- handle[1] is the handle function
 				-- handle[2] is the phase

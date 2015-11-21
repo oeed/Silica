@@ -3,8 +3,13 @@ local eventClasses = {}
 
 class "Event" {
 	
-	relativeView = false; -- the view that the event is relative of
 	eventType = false;
+
+	static = {
+		eventType = false;
+	};
+
+	relativeView = false; -- the view that the event is relative of
     sender = false;
 
 	isSentToChildren = true; -- whether the event will be passed to children
@@ -29,11 +34,11 @@ end
 --[[
 	@static
 	@desc Registers an Event subclass after it has just been constructed
-	@param [class] _class -- the class that was constructed
 ]]
-function Event.static:constructed( _class )
-	if _class.eventType then
-		Event.register( _class.eventType, _class )
+function Event.static:initialise()
+	local eventType = self.eventType
+	if eventType then
+		Event.static:register( self.eventType, self.class )
 	end
 end
 
@@ -48,11 +53,14 @@ function Event.static:create( eventType, ... )
 	if not eventType then error( "No event type given to Event.create!", 0 ) end
 
 	local eventClass = eventClasses[eventType]
+	local event
 	if eventClass then
-		return eventClass( ... )
+		event = eventClass( ... )
 	else
-		return Event()
+		event = Event()
 	end
+	event.eventType = eventType
+	return event
 end
 
 --[[

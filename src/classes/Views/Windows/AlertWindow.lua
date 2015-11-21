@@ -14,7 +14,7 @@ function AlertWindow:initialise( ... )
 	self.height = 40
 end
 
-function AlertWindow:onReady( event )
+function AlertWindow:onReady( Event event, Event.phases phase )
 	self:centre()
 	self:focus()
 	self.okayButton:focus()

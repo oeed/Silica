@@ -137,7 +137,7 @@ end
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function MenuItem:onGlobalMouseUp( event )
+function MenuItem:onGlobalMouseUp( Event event, Event.phases phase )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
@@ -156,7 +156,7 @@ end
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function MenuItem:onMouseDown( event )
+function MenuItem:onMouseDown( Event event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
     end
@@ -169,7 +169,7 @@ end
     @param [Event] event -- the keyboard shortcut
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function MenuItem:onKeyboardShortcut( event )
+function MenuItem:onKeyboardShortcut( Event event, Event.phases phase )
     if self.isEnabled then
         local keyboardShortcut = self.keyboardShortcut
         if keyboardShortcut and keyboardShortcut:matchesEvent( event ) then

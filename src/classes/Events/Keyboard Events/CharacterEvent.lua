@@ -1,6 +1,8 @@
 
 class "CharacterEvent" extends "Event" {
-	eventType = "char";
+    static = {
+        eventType = "char";
+    };
 	character = false;
 }
 

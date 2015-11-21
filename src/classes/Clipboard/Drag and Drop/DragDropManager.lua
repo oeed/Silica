@@ -159,7 +159,7 @@ end
     @param [MouseDragEvent] event -- the mouse dragged event
     @return [boolean] shouldCancel -- whether other events handlers should not recieve this event
 ]]
-function DragDropManager:onMouseDrag( event )
+function DragDropManager:onMouseDrag( Event event, Event.phases phase )
     local dragView = self.dragView
     if dragView then
         dragView.x = event.x - self.relativeX + 1
@@ -175,7 +175,7 @@ end
     @param [MouseUpEvent] event -- the mouse up event
     @return [boolean] shouldCancel -- whether other events handlers should not recieve this event
 ]]
-function DragDropManager:onMouseUp( event )
+function DragDropManager:onMouseUp( Event event, Event.phases phase )
     local dragView = self.dragView
     if dragView then
         local destination = self.destination

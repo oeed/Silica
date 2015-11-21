@@ -419,7 +419,7 @@ end
 	@param [Event] event -- the mouse up event
 	@return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function TextBox:onGlobalMouseUp( event )
+function TextBox:onGlobalMouseUp( Event event, Event.phases phase )
 	if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = false
 		if self.isEnabled and self:hitTestEvent( event ) then
@@ -434,7 +434,7 @@ end
 	@param [MouseDownEvent] event -- the mouse down event
 	@return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function TextBox:onMouseUp( event )
+function TextBox:onMouseUp( Event event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self:focus( TextBox )
 	end
@@ -447,7 +447,7 @@ end
 	@param [MouseDownEvent] event -- the mouse down event
 	@return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function TextBox:onMouseDown( event )
+function TextBox:onMouseDown( Event event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = true
 		self.cursorPosition = self:viewToCharCoords( event.x - self.leftMargin + self.scroll )
@@ -456,7 +456,7 @@ function TextBox:onMouseDown( event )
 	return true
 end
 
-function TextBox:onMouseDrag( event )
+function TextBox:onMouseDrag( Event event, Event.phases phase )
 	if self.isPressed and self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = true
 		self.selectionPosition = self:viewToCharCoords( event.x - self.leftMargin + self.scroll )
@@ -464,7 +464,7 @@ function TextBox:onMouseDrag( event )
 	return true
 end
 
-function TextBox:onKeyDown( event )
+function TextBox:onKeyDown( Event event, Event.phases phase )
 	if self.isFocused then
 		local keyCode = event.keyCode
 		local text = self.text
@@ -506,13 +506,13 @@ function TextBox:onKeyDown( event )
 	end
 end
 
-function TextBox:onKeyUp( event )
+function TextBox:onKeyUp( Event event, Event.phases phase )
 	if self.isFocused then
 		
 	end
 end
 
-function TextBox:onCharacter( event )
+function TextBox:onCharacter( Event event, Event.phases phase )
 	if self.isFocused then
 		local text = self.text
 		self:write( CharacterEvent )
@@ -525,7 +525,7 @@ end
     @param [Event] event -- the keyboard shortcut
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function TextBox:onKeyboardShortcut( event )
+function TextBox:onKeyboardShortcut( Event event, Event.phases phase )
     if self.isFocused then
         if event:matchesKeys( { "ctrl", "left" } ) or event:matchesKeys( { "home" } ) then
         	self.selectionPosition = false

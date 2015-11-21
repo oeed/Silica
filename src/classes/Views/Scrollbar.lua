@@ -102,7 +102,7 @@ end
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Scrollbar:onGlobalMouseUp( event )
+function Scrollbar:onGlobalMouseUp( Event event, Event.phases phase )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
     end
@@ -114,7 +114,7 @@ end
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Scrollbar:onMouseDown( event )
+function Scrollbar:onMouseDown( Event event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
         local position, size = self:getScroller( true )
@@ -129,7 +129,7 @@ end
     @param [Event] event -- the mouse drag event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Scrollbar:onGlobalMouseDrag( event )
+function Scrollbar:onGlobalMouseDrag( Event event, Event.phases phase )
     if self.isPressed and self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         local oldRelative = event.relativeView
         event:makeRelative( self )

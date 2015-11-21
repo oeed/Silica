@@ -40,7 +40,7 @@ function MenuBarItem:initialise( ... )
     self:event( ReadyInterfaceEvent, self.onInterfaceReady )
 end
 
-function MenuBarItem:onInterfaceReady( event )
+function MenuBarItem:onInterfaceReady( Event event, Event.phases phase )
     local menu = self.menu
     if menu then
         menu = self.menu
@@ -180,7 +180,7 @@ end
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function MenuBarItem:onGlobalMouseUp( event )
+function MenuBarItem:onGlobalMouseUp( Event event, Event.phases phase )
     if self.isEnabled and self.isPressed then
         self.isPressed = false
         if self:hitTestEvent( event ) then
@@ -195,7 +195,7 @@ end
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function MenuBarItem:onMouseDown( event )
+function MenuBarItem:onMouseDown( Event event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
     end
@@ -208,7 +208,7 @@ end
     @param [Event] event -- the menu changed event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function MenuBarItem:onMenuChanged( event )
+function MenuBarItem:onMenuChanged( Event event, Event.phases phase )
     self:updateThemeStyle()
     
     local menu = self.menu

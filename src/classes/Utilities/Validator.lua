@@ -29,7 +29,7 @@ end
 	@return [boolean] isValid -- whether the value is valid
 ]]
 function Validator.static:isValid( value, typeName )
-	local validatorType = Validator.validatorType( typeName )
+	local validatorType = self:validatorType( typeName )
 	return validatorType( value ) ~= nil
 end
 
@@ -41,6 +41,6 @@ end
 	@return parsedValue -- the parsed value
 ]]
 function Validator.static:parse( value, typeName )
-	local validatorType = Validator.validatorType( typeName )
+	local validatorType = self:validatorType( typeName )
 	return validatorType( value )
 end

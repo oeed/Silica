@@ -1,6 +1,8 @@
 
 class "MouseDragEvent" extends "MouseEvent" {
-	eventType = "mouse_drag";
+    static = {
+        eventType = "mouse_drag";
+    };
 	mouseButton = false;
 }
 

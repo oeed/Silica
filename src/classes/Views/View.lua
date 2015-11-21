@@ -87,7 +87,12 @@ function View:initialise( properties )
 	-- } )
 	
 	if properties and type( properties ) == "table" then
-		self:properties( properties )
+		-- TODO: replace
+		for k, v in pairs(properties) do
+			self[k] = v
+			-- Code here...
+		end
+		-- self:properties( properties )
 	end
 
     self:event( ParentResizedInterfaceEvent, self.onParentResizedConstraintUpdate )
@@ -114,7 +119,7 @@ end
     @desc Sets up the canvas and it's graphics objects
 ]]
 function View:initialiseCanvas()
-	self.canvas = Canvas( self.x, self.y, self.width, self.height, self )
+	self.canvas = Canvas( self.x or 1, self.y or 1, self.width or 1, self.height or 1, self )
 end
 
 --[[
@@ -233,8 +238,8 @@ function View:siblingsOfType( _class )
 	return siblings
 end
 
-View:alias( View.x, "left" )
-View:alias( View.y, "top" )
+-- View:alias( View.x, "left" )
+-- View:alias( View.y, "top" )
 
 -- object.left is the raw left value (i.e. a number, or nil if not yet calculated)
 -- object.loadedConstraints.left is the parsed and simplified left value
@@ -274,8 +279,8 @@ function View:parseConstraint( property )
 		end
 	end
 
-	local parsed = MathParser.parseString( tostring( constraintString ) )
-	MathParser.simplify( parsed )
+	local parsed = MathParser.static:parseString( tostring( constraintString ) )
+	MathParser.static:simplify( parsed )
 
 	loaded[property] = parsed
 	return parsed
@@ -290,8 +295,8 @@ end
 function View:evalConstraint( property )
 	local references = {}
 	local parsed = self:parseConstraint( property )
-	local resolved = MathParser.resolve( parsed, self, property, references )
-	local value = MathParser.eval( resolved )
+	local resolved = MathParser.static:resolve( parsed, self, property, references )
+	local value = MathParser.static:eval( resolved )
 
 	local oldValue = self.raw[property]
 	if oldValue ~= value then
@@ -354,7 +359,7 @@ end
 	@desc Called when the parent changes. This updates constraints.
 	@param [ParentChangedInterfaceEvent] event -- the event
 ]]
-function View:onParentChangedConstraintUpdate( event )
+function View:onParentChangedConstraintUpdate( Event event, Event.phases phase )
 	for k, v in pairs( self.stringConstraints ) do
 		self.constraintsNeedingUpdate[k] = true
 	end
@@ -365,7 +370,7 @@ end
 	@desc Called when the interface is loaded and ready. This updates constraints.
 	@param [ReadyInterfaceEvent] event -- the event
 ]]
-function View:onReadyConstraintUpdate( event )
+function View:onReadyConstraintUpdate( Event event, Event.phases phase )
 	if event.isInit then
 		for k, v in pairs( self.stringConstraints ) do
 			self.constraintsNeedingUpdate[k] = true
@@ -378,7 +383,7 @@ end
 	@desc Called when the parent resizes. This updates constraints.
 	@param [ParentResizedInterfaceEvent] event -- the event
 ]]
-function View:onParentResizedConstraintUpdate( event )
+function View:onParentResizedConstraintUpdate( Event event, Event.phases phase )
 	local isHorizontal = event.isHorizontal
 	local isVertical = event.isVertical
 	local ident = self.identifier
@@ -410,19 +415,19 @@ function View:reloadConstraint( property, isReferenceChange )
 end
 
 -- @instance
-function View.top:get()
-	return self.top or self:evalConstraint "top"
-end
+-- function View.top:get()
+-- 	return self.top or self:evalConstraint "top"
+-- end
 
--- @instance
-function View.top:set( top )
-	if top then
-		self.stringConstraints.top = top
-		self:reloadConstraint "top"
-	else
-		self.stringConstraints.top = nil
-	end
-end
+-- -- @instance
+-- function View.top:set( top )
+	-- if top then
+	-- 	self.stringConstraints.top = top
+	-- 	self:reloadConstraint "top"
+	-- else
+	-- 	self.stringConstraints.top = nil
+	-- end
+-- end
 
 -- -- @instance
 -- function View.bottom:get()
@@ -446,27 +451,27 @@ end
 -- end
 
 -- @instance
-function View.left:get()
-	return self.left or self:evalConstraint "left"
-end
+-- function View.left:get()
+-- 	return self.left or self:evalConstraint "left"
+-- end
 
--- @instance
-function View.left:set( left )
-	local value
-	if left then
-		local stringConstraints = self.stringConstraints
-		stringConstraints.left = left
-		value = self:reloadConstraint "left"
-		if stringConstraints.width then
-			stringConstraints.right = nil
-		elseif stringConstraints.right then
-			stringConstraints.width = nil
-		end
-	else
-		self.stringConstraints.left = nil
-	end
-	return value
-end
+-- -- @instance
+-- function View.left:set( left )
+	-- local value
+	-- if left then
+	-- 	local stringConstraints = self.stringConstraints
+	-- 	stringConstraints.left = left
+	-- 	value = self:reloadConstraint "left"
+	-- 	if stringConstraints.width then
+	-- 		stringConstraints.right = nil
+	-- 	elseif stringConstraints.right then
+	-- 		stringConstraints.width = nil
+	-- 	end
+	-- else
+	-- 	self.stringConstraints.left = nil
+	-- end
+	-- return value
+-- end
 
 -- -- @instance 
 -- function View.right:get()
@@ -666,7 +671,7 @@ function View:update( dt )
 		end
 	end
 
-	if self.hasInitialised then
+	-- if self.hasInitialised then
 		local needsConstraintUpdate = self.needsConstraintUpdate
 		for k, isChanged in pairs( needsConstraintUpdate ) do
 			if isChanged then
@@ -677,7 +682,7 @@ function View:update( dt )
 				needsConstraintUpdate[k] = false
 			end
 		end
-	end
+	-- end
 end
 
 --[[/
@@ -821,7 +826,7 @@ local MIN_MOUSE_HOLD_TIME = 0.3
 	@desc Detects when the mouse is pressed. Used to fire mouse held and double click
 	@param [MouseDownEvent] event
 ]]
-function View:onMouseDownMetaEvents( event )
+function View:onMouseDownMetaEvents( Event event, Event.phases phase )
 	local mouseButton, time = event.mouseButton, os.time()
 	local lastMouseDown, lastMouseUp = self.lastMouseDown, self.lastMouseUp
 
@@ -856,7 +861,7 @@ end
 	@desc Detects when the mouse is released. Used to fire mouse held and double click
 	@param [MouseUpEvent] event
 ]]
-function View:onGlobalMouseUpMetaEvents( event )
+function View:onGlobalMouseUpMetaEvents( Event event, Event.phases phase )
 	self.lastMouseUp[event.mouseButton] = os.time()
 end
 

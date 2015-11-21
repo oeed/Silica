@@ -42,7 +42,7 @@ end
 
  -- yes, set, not update
 function SegmentButton.width:set( width )
-    self.super:setWidth( width )
+    self:super( width )
     local isFirst = self.isFirst
     local isLast = self.isLast
     self.backgroundObject.width = isLast and width - 1 or width - 1
@@ -68,7 +68,7 @@ function SegmentButton.leftMargin:get()
 end
 
 function SegmentButton.isPressed:set( isPressed )
-    self.super:setIsPressed( isPressed )
+    self:super( isPressed )
     local isFirst = self.isFirst
     local isLast = self.isLast
     if isLast then
@@ -83,7 +83,7 @@ end
     @desc Fired when it's siblings changed or it is added/removed from it's parent
     @param [Event] event -- the event
 ]]
-function SegmentButton:onSiblingOrParentChanged( event )
+function SegmentButton:onSiblingOrParentChanged( Event event, Event.phases phase )
     local backgroundObject = self.backgroundObject
     local shadowObject = self.shadowObject
     local isFirst = self.isFirst
