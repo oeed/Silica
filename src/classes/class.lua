@@ -11,27 +11,28 @@ local valueTypes = {}
 local compiledClassDetails, compiledInstances, compiledStatics = {}, {}, {}
 local currentlyConstructing, expectedName -- the class that is currently being constructed
 local constructingEnvironment, constructorProxy, constructingFunctionArguments, currentCompiledClass
-local stripFunctionArguments, loadProperties, compileClass, loadPropertiesTableSection, checkValue, constructSuper, isInterface
+local stripFunctionArguments, loadProperties, compileClass, loadPropertiesTableSection, checkValue, constructSuper, isInterface, pseudoReference
 local allLockedGetters, allLockedSetters = {}, {}
 local isLoadingProperties
 local interface
 
 local application -- the running application
 
-local TYPETABLE_NAME, TYPETABLE_TYPE, TYPETABLE_CLASS, TYPETABLE_ALLOWS_NIL, TYPETABLE_IS_VAR_ARG, TYPETABLE_IS_ENUM, TYPETABLE_ENUM_ITEM_TYPE, TYPETABLE_HAS_DEFAULT_VALUE, TYPETABLE_DEFAULT_VALUE = 1, 2, 3, 4, 5, 6, 7, 8, 9
+local TYPETABLE_NAME, TYPETABLE_TYPE, TYPETABLE_CLASS, TYPETABLE_ALLOWS_NIL, TYPETABLE_IS_VAR_ARG, TYPETABLE_IS_ENUM, TYPETABLE_ENUM_ITEM_TYPE, TYPETABLE_HAS_DEFAULT_VALUE, TYPETABLE_IS_DEFAULT_VALUE_REFERENCE, TYPETABLE_DEFAULT_VALUE = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 local FUNCTIONTABLE_FUNCTION = 1
+local VALUE_TYPE_UID = {} -- just a unique identifier to indicate that this is a valueType
+local REFERENCE_UID = {} -- just a unique identifier to indicate that this is a valueType
 
 local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true }
 
 -- Create the value types --
 
-local valueTypeUID = {} -- just a unique identifier to indicate that this is a valueType
 function createValueType( name, typeStr, classType, destinationKey, destination )
     destination = destination or valueTypes
     destinationKey = destinationKey or name
     classType = classType or false
     local valueType = {
-        valueTypeUID;
+        VALUE_TYPE_UID;
         [TYPETABLE_TYPE] = typeStr;
         [TYPETABLE_CLASS] = classType;
         [TYPETABLE_ALLOWS_NIL] = false;
@@ -39,12 +40,13 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
         [TYPETABLE_IS_ENUM] = false;
         [TYPETABLE_ENUM_ITEM_TYPE] = false;
         [TYPETABLE_HAS_DEFAULT_VALUE] = false;
+        [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
     }
 
     local metatable = {}
     function metatable:__call( ... )
         local valueInstance = {
-            valueTypeUID;
+            VALUE_TYPE_UID;
             [TYPETABLE_TYPE] = typeStr;
             [TYPETABLE_CLASS] = classType;
             [TYPETABLE_ALLOWS_NIL] = false;
@@ -52,9 +54,15 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             [TYPETABLE_IS_ENUM] = false;
             [TYPETABLE_ENUM_ITEM_TYPE] = false;
             [TYPETABLE_HAS_DEFAULT_VALUE] = true;
+            [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
         }
+
         local args = { ... }
-        if not classType then
+        if #args == 1 and type( args[1] ) == "table" and args[1][0] == REFERENCE_UID then
+            -- this is a reference value
+            valueInstance[TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = true
+            valueInstance[TYPETABLE_DEFAULT_VALUE] = args[1]
+        elseif not classType then
             if #args >= 2 then
                 error( "non-class types are only allowed 1 argument, the default value" , 2 )
             end
@@ -121,7 +129,7 @@ createValueType( "Thread", "thread" )
 local function createEnumType()
     local metatable = {}
     local valueType = {
-        valueTypeUID;
+        VALUE_TYPE_UID;
         [TYPETABLE_TYPE] = "table";
         [TYPETABLE_CLASS] = false;
         [TYPETABLE_ALLOWS_NIL] = false;
@@ -129,23 +137,25 @@ local function createEnumType()
         [TYPETABLE_IS_ENUM] = true;
         [TYPETABLE_ENUM_ITEM_TYPE] = false;
         [TYPETABLE_HAS_DEFAULT_VALUE] = false;
+        [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
     }
     function metatable:__call( ... )
         local valueInstance = {
-            valueTypeUID;
+            VALUE_TYPE_UID;
             [TYPETABLE_TYPE] = "table";
             [TYPETABLE_CLASS] = false;
             [TYPETABLE_ALLOWS_NIL] = false;
             [TYPETABLE_IS_VAR_ARG] = false;
             [TYPETABLE_IS_ENUM] = true;
             [TYPETABLE_HAS_DEFAULT_VALUE] = true;
+            [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
         }
         local args = { ... }
         if #args ~= 2 then
             error( "enums only support 2 arguments: valueType, table" , 2 )
         end
         local itemValueType = args[1]
-        if type( itemValueType ) ~= "table" or itemValueType[1] ~= valueTypeUID or itemValueType[TYPETABLE_HAS_DEFAULT_VALUE] then
+        if type( itemValueType ) ~= "table" or itemValueType[1] ~= VALUE_TYPE_UID or itemValueType[TYPETABLE_HAS_DEFAULT_VALUE] then
             error( "1st argument must be ValueType without a default value" , 2 )
         end
         local values = args[2]
@@ -240,10 +250,11 @@ function class.load( name, contents )
 
     -- TODO: load classes if we index _G with their name and they return nil. only allow self if it is within the static table
     local metatable = {}
-
+    local selfPseudoReference = pseudoReference( "self" )
     function metatable:__index( key )
         local globalValue = _G[key]
         if globalValue then return globalValue end
+        if key == "self" then return selfPseudoReference end
         -- if the value is nil see if we can find a class with that name and load it
         if class.exists( key ) then
             -- there should be a class with that name, load it
@@ -300,6 +311,26 @@ local function loadClassLines( name, contents )
     return lines
 end
 
+function pseudoReference( name )
+    local referenceTable = {
+        [0] = REFERENCE_UID;
+        name;
+    }
+
+    local metatable = {}
+    function metatable:__index( key )
+        table.insert( referenceTable, key )
+        return referenceTable
+    end
+
+    function metatable:__newindex( key )
+        error( "attempt to set pseudo reference value" )
+    end
+    setmetatable( referenceTable, metatable )
+
+    return referenceTable
+end
+
 function stripFunctionArguments( name, contents )
     local classString = ""
     local foundTypeDeclaration = false
@@ -332,10 +363,13 @@ function stripFunctionArguments( name, contents )
             end
 
             local valueTypeExtractionEnvironment = {}
+            local pseudoReferences = {}
             local metatable = {}
             function metatable:__index( key )
                 local globalValue = valueTypes[key]
                 if globalValue then return globalValue end
+                local pseudoReferenceValue = pseudoReferences[key]
+                if pseudoReferenceValue then print("using pseudo "..key) return pseudoReferenceValue end
                 -- if we're loading properties and the value is nil, see if we can find a class with that name and load it
                 if class.exists( key ) then
                     -- there should be a class with that name, load it
@@ -397,6 +431,7 @@ function stripFunctionArguments( name, contents )
                             [TYPETABLE_IS_ENUM] = false;
                             [TYPETABLE_ENUM_ITEM_TYPE] = false;
                             [TYPETABLE_HAS_DEFAULT_VALUE] = true;
+                            [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
                             [TYPETABLE_DEFAULT_VALUE] = nil;
                         }
                     else
@@ -408,12 +443,13 @@ function stripFunctionArguments( name, contents )
                         value = func()
 
                         if not value then
-                            log(serialise(valueTypes["Number"].allowsNil))
-                            log(serialise(valueTypes["Mask"].allowsNil))
                             error( name .. ": " .. n .. ": error extracting value type from " .. type )
                         elseif value[TYPETABLE_HAS_DEFAULT_VALUE] then -- this was created like String(), not String, so it created its own instance. hence we can use the value directly
                             value[TYPETABLE_NAME] = argumentName
                             typeTable = value
+                            if argumentName == "width" then
+                                print(serialise(value[TYPETABLE_DEFAULT_VALUE]))
+                            end
                         else
                             -- this is the actual valueType table, we can't use it. we need to make a copy AND set allowsNil back to false as it may have been changed
                             typeTable = {
@@ -427,6 +463,10 @@ function stripFunctionArguments( name, contents )
                             value[TYPETABLE_ALLOWS_NIL] = false
                         end
                         typeTable[TYPETABLE_IS_VAR_ARG] = isVarArg;
+
+                        if typeTable[TYPETABLE_TYPE] == "table" and i ~= argumentSubstringPoints then -- if it's a table add an item to the environment so it can be referenced
+                            pseudoReferences[argumentName] = pseudoReference( argumentName )
+                        end
                     end
                     table.insert( argumentsTable, typeTable )  
                     argumentsString = argumentsString .. argumentName .. ","
@@ -604,6 +644,7 @@ function loadProperties( propertiesTable )
     for name, valueType in pairs( valueTypes ) do
         constructingEnvironment[name] = nil
     end
+    constructingEnvironment.self = nil -- and remove the pseudo type
 
     isLoadingProperties = false
     local staticPropertiesTable = propertiesTable.static
@@ -660,7 +701,7 @@ function loadProperties( propertiesTable )
                 if not type( key ) == "string" or not key:match( "^[_%u]+$" ) then
                     error( "Enum keys must be all uppercase with _" , 2 )
                 end
-                checkValue( func, itemValueType )
+                checkValue( func, itemValueType, nil, { self = self }, key )
                 if superOnlyEnums[k] then
                     __tostring = selfTostring
                     superOnlyEnums[k] = false
@@ -777,7 +818,7 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
     for propertyName, value in pairs( fromTable ) do
         if propertyName ~= ignoreKey then
             local isEnum = false
-            if type( value ) == "table" and value[1] == valueTypeUID then
+            if type( value ) == "table" and value[1] == VALUE_TYPE_UID then
                 -- this is a value type
                 if value[TYPETABLE_IS_ENUM] then
                     if not enumsTable then
@@ -826,6 +867,7 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                     [TYPETABLE_IS_ENUM] = false;
                     [TYPETABLE_ENUM_ITEM_TYPE] = false;
                     [TYPETABLE_HAS_DEFAULT_VALUE] = true;
+                    [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
                     [TYPETABLE_DEFAULT_VALUE] = value;
                 }
             end
@@ -897,12 +939,26 @@ local function generateDefaultValue( typeTable )
     end
 end
 
-function checkValue( value, typeTable, isSelf ) -- TODO: error level and message based on where it's called form
+function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: error level and message based on where it's called form
     if value == nil  then
         -- if the value is nil try loading the default value
         local hasDefaultValue = typeTable[TYPETABLE_HAS_DEFAULT_VALUE]
         if hasDefaultValue then
-            if typeTable[TYPETABLE_TYPE] ~= "table" then
+            if typeTable[TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] then
+                -- this is a reference, we need to get the value out of the content
+                if not context then
+                    error( "attempted to use reference in invalid location (no context)" )
+                end
+                value = context
+                for i, key in ipairs( context ) do
+                    value = value[key]
+                    -- TODO: circular references
+                    -- if circularKey and circularKey[i] == key then
+                        -- error( "attempted to make circular reference " )
+                    -- end
+                end
+                -- don't return because we'll need to check if the value it gave was okay
+            elseif typeTable[TYPETABLE_TYPE] ~= "table" then
                 return typeTable[TYPETABLE_DEFAULT_VALUE]
             else
                 return generateDefaultValue( typeTable )                
@@ -1194,11 +1250,18 @@ local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, 
                     error( functionName .. ": wrong number of arguments, got "..argumentsLength.." expected between ".. minArgs .. " and " .. maxArgs, 2 )
                 end
 
-                local values = { checkValue( self, selfTypeTable, true ) }
+                local context = { self = self }
+                local values = { checkValue( self, selfTypeTable, true, context, functionName ) }
 
                 local argumentCount = (argumentsLength > minChecked and argumentsLength or minChecked)
                 for i = 1 + FUNCTIONTABLE_FUNCTION, argumentCount + FUNCTIONTABLE_FUNCTION do
-                    values[i] = checkValue( arguments[i - FUNCTIONTABLE_FUNCTION], (i > functionTableLength) and varargTypeTable or functionTable[i] )
+                    local valueType = (i > functionTableLength) and varargTypeTable or functionTable[i]
+                    local valueName = valueType[TYPETABLE_NAME]
+                    local value = checkValue( arguments[i - FUNCTIONTABLE_FUNCTION], valueType, context, valueName )
+                    values[i] = value
+                    if i < functionTableLength then
+                        context[valueName] = value
+                    end
                 end
 
                 local oldSuper = rawget( self, "super" )
@@ -1409,7 +1472,7 @@ function compileAndSpawnStatic( static, name, compiledClass )
             if setter and not lockedSetters[locatedKey] then
                 setter( self, value )
             else
-                values[locatedKey] = checkValue( value, staticProperties[locatedKey] )
+                values[locatedKey] = checkValue( value, staticProperties[locatedKey], nil, { self = self }, key )
             end
         else
             error("attempt to set undefined property or function", 2 )
@@ -1503,7 +1566,7 @@ function spawnInstance( name, ... )
             if setter and not lockedSetters[locatedKey] then
                 setter( self, value )
             else
-                values[locatedKey] = checkValue( value, instanceProperties[locatedKey] )
+                values[locatedKey] = checkValue( value, instanceProperties[locatedKey], nil, { self = self }, key )
             end
         else
             error("attempt to set undefined property or function", 2 )
