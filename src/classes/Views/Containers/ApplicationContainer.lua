@@ -45,8 +45,23 @@ function ApplicationContainer.themeName:set( themeName )
 	self.application.event:handleEvent( ThemeChangedInterfaceEvent( themeName, oldThemeName ) )
 end
 
+
+--[[
+	@desc Redraws the container and draws it to the screen if neccesary
+]]
 function ApplicationContainer:draw()
-	self.canvas:drawToTerminal()
+	if self.needsDraw then
+		self:super()
+		self.canvas:drawToScreen()
+	end
+end
+
+--[[
+	@desc Description
+]]
+function ApplicationContainer:update( ... )
+	self:super( ... )
+	self:draw()
 end
 
 --[[

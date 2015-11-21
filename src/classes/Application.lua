@@ -141,9 +141,7 @@ function Application:update()
 	self.lastUpdate = os.clock()
 
 	self:checkScheduled( lastUpdate )
-	local container = self.container
-	container:update( deltaTime )
-	container:draw()
+	self.container:update( deltaTime )
 end
 
 --[[
