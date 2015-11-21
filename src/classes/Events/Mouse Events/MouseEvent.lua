@@ -19,7 +19,6 @@ class "MouseEvent" extends "Event" {
 
 
 --[[
-	@instance
 	@desc Make the event's coordinates relative to the supplied view
 	@param [View] view -- the view who's coordinate system will be used
 ]]

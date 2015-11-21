@@ -40,7 +40,6 @@ function Application.static:initialise( ... )
 end
 
 --[[
-    @static
     @desc Adds the given directory to the resource listing and loads any classes
     @param [string] path -- the path to the directory of resources
 ]]
@@ -80,7 +79,6 @@ function Application:initialise( ... )
 end
 
 --[[
-	@instance
 	@desc Runs the application runtime with the supplied arguments
 	@param ... -- the arguments feed to the program (simply use ... for the arguments)
 	@return [number] exitCode -- returns the exit code of the application
@@ -99,7 +97,6 @@ function Application:run( ... )
 end
 
 --[[
-	@instance
 	@desc Changes the interface name, reloading the interface
 	@param [string] interfaceName -- the name of the interface (the file name without extension)
 ]]
@@ -111,7 +108,6 @@ function Application.interfaceName:set( interfaceName )
 end
 
 --[[
-	@instance
 	@desc Loads the application container or changes it if there is one.
 ]]
 function Application:reloadInterface()
@@ -135,7 +131,6 @@ function Application.container:set( container )
 end
 
 --[[
-	@instance
 	@desc Update all application's views
 ]]
 function Application:update()
@@ -152,7 +147,6 @@ function Application:update()
 end
 
 --[[
-	@instance
 	@desc Returns a table of the views in focus that are of the given type
 	@param [class] type -- the type
 	@param [table{View}] searchFocuses -- the focuses to look through, i.e. from the focuses changed event (defaults to the current ones)
@@ -169,7 +163,6 @@ function Application:focusesOfType( _type, searchFocuses )
 end
 
 --[[
-	@instance
 	@desc Returns true if there is at least one focused view
 	@return [boolean] hasFocus
 ]]
@@ -178,7 +171,6 @@ function Application:hasFocus()
 end
 
 --[[
-	@instance
 	@desc Unfocuses everything else and makes the given view the only focused view
 	@param [View] newFocus -- the view that is to be focused upon
 	@param [class] filter -- the filter class. any other views that are focused that extend this class will be unfocused, all others will be untouched
@@ -207,7 +199,6 @@ function Application:focus( newFocus, filter )
 end
 
 --[[
-	@instance
 	@desc Adds the given view to the list of focused views, unfocusing single focus only views
 	@param [view] newFocus -- the view that is to be focused upon
 ]]
@@ -228,7 +219,6 @@ function Application:addFocus( newFocus )
 end
 
 --[[
-	@instance
 	@desc Removes the given view from the list of focused views
 	@param [view] oldFocus -- the view that is to be focused upon
 ]]
@@ -246,7 +236,6 @@ function Application:unfocus( oldFocus )
 end
 
 --[[
-	@instance
 	@desc Unfocuses the view that is currently focused (i.e. the selected text box)
 	@param [class] filter -- the filter class. views that are focused that extend this class will be unfocused, all others will be untouched. if nil all are unfocused
 ]]
@@ -264,7 +253,6 @@ function Application:unfocusAll( filter )
 end
 
 --[[
-	@instance
 	@desc Schedules a function to be called at a specified time in the future
 	@param [number] time -- in how many seconds the function should be run
 	@param [function] func -- the function to call (self is always passed as first argument)
@@ -280,7 +268,6 @@ function Application:schedule( func, time, ... )
 end
 
 --[[
-	@instance
 	@desc Unschedule a scheduled task
 	@param [number] scheduleId -- the ID of the scheduled task
 	@return [boolean] didUnschedule -- whether the task was unscheduled. this is only false if the task no longer exists or never existed
@@ -294,7 +281,6 @@ function Application:unschedule( scheduleId )
 end
 
 --[[
-	@instance
 	@desc Run any scheduled tasks that need to be run
 	@param [number] lastUpdate -- the time of the last update
 ]]
@@ -313,7 +299,6 @@ function Application:checkScheduled( lastUpdate )
 end
 
 --[[
-	@instance
 	@desc Called when a timer is fired
 	@param [TimerEvent] event -- the timer event
 	@return [boolean] stopPropagation -- whether following handlers should not recieve this event

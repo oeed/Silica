@@ -134,7 +134,6 @@ function Folder:folderFromPath( path )
 end
 
 --[[
-    @instance
     @desc Find an IEditableFileSystemItem that matches the name (without the extension) and the mime type.
     @param [string] name -- the exact name of the file without extension to match
     @param [Metatable.mimes/table{Metatable.mimes}] mimes -- a mime or table of mimes

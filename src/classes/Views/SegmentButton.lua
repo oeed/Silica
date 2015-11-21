@@ -19,7 +19,6 @@ function SegmentButton:initialise( ... )
 end
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function SegmentButton:initialiseCanvas()
@@ -79,7 +78,6 @@ function SegmentButton.isPressed:set( isPressed )
 end
 
 --[[
-    @instance
     @desc Fired when it's siblings changed or it is added/removed from it's parent
     @param [Event] event -- the event
 ]]

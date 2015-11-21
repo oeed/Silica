@@ -23,7 +23,6 @@ function Checkbox:initialise( ... )
 end
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Checkbox:initialiseCanvas()
@@ -58,7 +57,6 @@ function Checkbox:updateWidth( width )
 end
 
 --[[
-    @instance
     @desc Sets whether the button is pressed, changing the drawing state
 ]]
 function Checkbox.isPressed:set( isPressed )
@@ -67,7 +65,6 @@ function Checkbox.isPressed:set( isPressed )
 end
 
 --[[
-    @instance
     @desc Sets whether the button is pressed, changing the drawing state
 ]]
 function Checkbox.isEnabled:set( isEnabled )
@@ -76,7 +73,6 @@ function Checkbox.isEnabled:set( isEnabled )
 end
 
 --[[
-    @instance
     @desc Sets whether the button is pressed, changing the drawing state
 ]]
 function Checkbox.isChecked:set( isChecked )
@@ -85,7 +81,6 @@ function Checkbox.isChecked:set( isChecked )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance. Sends the event to the local handler.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -103,7 +98,6 @@ function Checkbox:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event

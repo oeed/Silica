@@ -94,7 +94,6 @@ function Animation:initialise( duration, subject, targetValues, easingFunc, roun
 end
 
 --[[
-	@instance
 	@desc Sets the animation to the specificed time point
 	@param [number] time -- the time point
 	@return [boolean] isComplete -- whether the animation is complete
@@ -119,7 +118,6 @@ function Animation.time:set( time )
 end
 
 --[[
-	@instance
 	@desc Resets the animation back to the start
 	@return [boolean] isComplete -- whether the animation is complete
 ]]
@@ -128,7 +126,6 @@ function Animation:reset()
 end
 
 --[[
-	@instance
 	@desc Updates the animation given a change in time, returning true if the animation is complete
 	@param [number] deltaTime -- the change in time since the last update
 	@return [boolean] isComplete -- whether the animation is complete

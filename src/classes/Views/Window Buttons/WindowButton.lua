@@ -50,7 +50,6 @@ function WindowButton.isPressed:set( isPressed )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -65,7 +64,6 @@ function WindowButton:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event

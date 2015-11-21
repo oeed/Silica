@@ -18,7 +18,6 @@ function Scrollbar:initialise( ... )
 end
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Scrollbar:initialiseCanvas()
@@ -59,7 +58,6 @@ function Scrollbar.isPressed:set( isPressed )
 end
 
 --[[
-    @instance
     @desc Gets and updates the size and location of the scroller
     @return [number] position -- the position of the scroller
     @return [number] size -- the size of the scroller
@@ -97,7 +95,6 @@ function Scrollbar:getScroller( dontSetPosition )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -109,7 +106,6 @@ function Scrollbar:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -124,7 +120,6 @@ function Scrollbar:onMouseDown( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is dragged anywhere on screen. Moves the window if dragging
     @param [Event] event -- the mouse drag event
     @return [boolean] preventPropagation -- prevent anyone else using the event

@@ -41,7 +41,6 @@ function InterfaceOutlet:initialise( viewIdentifier, trackAll, key, container )
 end
 
 --[[
-	@instance
 	@desc Sets the current views the outlet points to
 	@param [table/View] views -- the view or views
 ]]
@@ -58,7 +57,6 @@ function InterfaceOutlet.views:set( views )
 end
 
 --[[
-	@instance
 	@desc Called when a child was added to the container. If it's our identifier, track it (if we don't already have a view or we're tracking all)
 	@param [View] childView -- the view that was just added
 	@param [boolean] lookInChildren -- whether the
@@ -98,7 +96,6 @@ function InterfaceOutlet:childAdded( childView, lookInChildren )
 end
 
 --[[
-	@instance
 	@desc Called when a child was removed from the container. If it's our identifier stop tracking it.
 	@param [View] childView -- the view that was just added
 ]]

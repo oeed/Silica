@@ -19,7 +19,6 @@ function FocusesChangedInterfaceEvent:initialise( newFocuses, oldFocuses )
 end
 
 --[[
-    @instance
     @desc Returns true if the given is currently focused
     @param [View] view
     @return [boolean] isFocused
@@ -29,7 +28,6 @@ function FocusesChangedInterfaceEvent:contains( view )
 end
 
 --[[
-    @instance
     @desc Returns true if the given was focused
     @param [View] view
     @return [boolean] isFocused

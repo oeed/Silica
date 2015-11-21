@@ -86,7 +86,6 @@ function ScrollView:updateHeight( height )
 end
 
 --[[
-	@instance
 	@desc Set vertical scroll offset of the contents
 	@param [number] offsetY -- the vertical offset
 ]]
@@ -128,7 +127,6 @@ function ScrollView:update( deltaTime )
 end
 
 --[[
-	@instance
 	@desc Scrolls the scroll view to the offset given, animating the value
 	@param [number] offsetY -- the direction/distance to scroll
 ]]
@@ -149,7 +147,6 @@ function ScrollView:scrollTo( offsetY )
 end
 
 --[[
-	@instance
 	@desc Fired when the mouse is scrolled over the scroll view
 	@param [Event] event -- the mouse scroll event
     @return [boolean] preventPropagation -- prevent anyone else using the event

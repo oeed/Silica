@@ -13,7 +13,6 @@ function String:initialise( str )
 end
 
 --[[
-	@instance
 	@desc Splits a string in to an array with a delimeter
 	@param [string] delimeter -- the delimeter
 	@return [table] components -- the split string components
@@ -28,7 +27,6 @@ function String:split( delimeter )
 end
 
 --[[
-	@instance
 	@desc The file extension of the string
 	@return [table] components -- a table with the directory path, file name and then extension
 ]]

@@ -16,7 +16,6 @@ function FontStudioApplication:initialise()
 end
 
 --[[
-	@instance
 	@desc React to a character being fired
 	@param [Event] event -- description
 	@return [boolean] stopPropagation

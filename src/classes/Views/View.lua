@@ -107,7 +107,6 @@ function View:initialiseTheme()
 end
 
 --[[
-	@instance
 	@desc Initialises the view's event manager (used for overriding)
 ]]
 function View:initialiseEventManager()
@@ -115,7 +114,6 @@ function View:initialiseEventManager()
 end
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function View:initialiseCanvas()
@@ -123,7 +121,6 @@ function View:initialiseCanvas()
 end
 
 --[[
-	@instance
 	@desc Returns the view's siblings in it's container
 	@return [table] siblings -- an array of the siblings
 ]]
@@ -142,7 +139,6 @@ function View.siblings:get()
 end
 
 --[[
-	@instance
 	@desc Returns true if the view is the first child of it's parent
 	@return [boolean] isFirst -- whether  the view is the first child of it's parent
 ]]
@@ -151,7 +147,6 @@ function View.isFirst:get()
 end
 
 --[[
-	@instance
 	@desc Returns true if the view is the last child of it's parent
 	@return [boolean] isLast -- whether  the view is the last child of it's parent
 ]]
@@ -161,7 +156,6 @@ function View.isLast:get()
 end
 
 --[[
-	@instance
 	@desc Returns whether the control is enabled, rising up to the parent containers as well
 	@return [boolean] isEnabled -- whether the view is enabled
 ]]
@@ -179,7 +173,6 @@ function View.isEnabled:get()
 end
 
 --[[
-	@instance
 	@desc Returns the index of the view in it's parent. 1 is the bottom most view
 	@return [number] index -- an array of the siblings
 ]]
@@ -195,7 +188,6 @@ function View.index:get()
 end
 
 --[[
-	@instance
 	@desc Sets the z index of the view in it's parent container
 	@param [number] index
 ]]
@@ -221,7 +213,6 @@ function View.index:set( index )
 end
 
 --[[
-	@instance
 	@desc Returns the view's siblings in it's container that are of or inherit from the given class
 	@param [class] _class -- the class type
 	@return [table] siblings -- an array of the siblings
@@ -246,7 +237,6 @@ end
 -- object.stringConstraints.left is the string constraint
 
 --[[
-	@instance
 	@desc Parses a constraint and simplifies it
 	@param [string] property - the constraint to parse and simplify
 	@return [table] parsed - the parsed and simplified constraint
@@ -287,7 +277,6 @@ function View:parseConstraint( property )
 end
 
 --[[
-	@instance
 	@desc Evaluates the numerical value of a constraint
 	@param [string] property -- the name of the property (i.e. left, width, etc.)
 	@return [number] value -- the numerical value
@@ -355,7 +344,6 @@ function View:updateConstraint( property, value )
 end
 
 --[[
-	@instance
 	@desc Called when the parent changes. This updates constraints.
 	@param [ParentChangedInterfaceEvent] event -- the event
 ]]
@@ -366,7 +354,6 @@ function View:onParentChangedConstraintUpdate( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Called when the interface is loaded and ready. This updates constraints.
 	@param [ReadyInterfaceEvent] event -- the event
 ]]
@@ -379,7 +366,6 @@ function View:onReadyConstraintUpdate( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Called when the parent resizes. This updates constraints.
 	@param [ParentResizedInterfaceEvent] event -- the event
 ]]
@@ -398,7 +384,6 @@ function View:onParentResizedConstraintUpdate( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Re-evaluates a constraint, reparsing if necessary.
 	@param [string] property -- the name of the property (i.e. left, width, etc.)
 	@param [boolean] isReferenceChange -- false if it should re-parse the constraint
@@ -552,7 +537,6 @@ function View.isVisible:get()
 end
 
 --[[
-	@instance
 	@desc Converts the local coordinates to local coordinates of a parent (or global if nil) to.
 	@param [number] x -- the local x coordinate
 	@param [number] y -- the local y coordinate
@@ -573,7 +557,6 @@ function View:coordinatesTo( x, y, parent )
 end
 
 --[[
-	@instance
 	@desc Converts the position of the view to the coordinates in a parent (or global if nil)
 	@param [View] parent -- the parent to convert to
 	@return [number] x -- the x coordinate in the parent's coordinate system
@@ -589,7 +572,6 @@ function View:position( parent )
 end
 
 --[[
-	@instance
 	@desc Converts the coordinates of a parent (or global if nil) to local coordinates.
 	@param [number] x -- the x coordinate
 	@param [number] y -- the y coordinate
@@ -611,7 +593,6 @@ function View:coordinates( x, y, parent )
 end
 
 --[[
-	@instance
 	@desc Hit test the view realative to its parent's coordinates
 	@param [number] x -- the x coordinate to hit test
 	@param [number] y -- the y coorindate to hit test
@@ -626,7 +607,6 @@ function View:hitTest( x, y )
 end
 
 --[[
-	@instance
 	@desc Hit tests the view with an event relative to the parent, uses the coordinates if it's a MouseEvent, otherwise it will always return true
 	@param [Event] event -- the event
 	@param [View] parent -- the parent
@@ -645,7 +625,6 @@ function View:hitTestEvent( event, parent )
 end
 
 --[[
-	@instance
 	@desc Update the animation
 	@param [number] deltaTime -- time since last update
 ]]
@@ -686,7 +665,6 @@ function View:update( dt )
 end
 
 --[[/
-	@instance
 	@desc Animate a change in a certain property
 	@param [string] propertyName -- the name of the property
 	@param [number] value -- the target value
@@ -707,7 +685,6 @@ function View:animate( propertyName, value, time, onFinish, easing, delay, round
 end
 
 --[[
-	@instance
 	@desc Animate a change in the x coordinate
 	@param [number] x -- the target x coordinate
 	@param [number] time -- the duration of the animation
@@ -726,7 +703,6 @@ function View:animateX( x, time, onFinish, easing, delay )
 end
 
 --[[
-	@instance
 	@desc Animate a change in the y coordinate
 	@param [number] y -- the target y coordinate
 	@param [number] time -- the duration of the animation
@@ -745,7 +721,6 @@ function View:animateY( y, time, onFinish, easing, delay )
 end
 
 --[[
-	@instance
 	@desc Animate a change in the width
 	@param [number] width -- the target width
 	@param [number] time -- the duration of the animation
@@ -764,7 +739,6 @@ function View:animateWidth( width, time, onFinish, easing, delay )
 end
 
 --[[
-	@instance
 	@desc Animate a change in the height
 	@param [number] height -- the target height
 	@param [number] time -- the duration of the animation
@@ -783,7 +757,6 @@ function View:animateHeight( height, time, onFinish, easing, delay )
 end
 
 --[[
-	@instance
 	@desc Animate a change in the position
 	@param [number] x -- the target x coordinate
 	@param [number] y -- the target y coordinate
@@ -801,7 +774,6 @@ function View:move( x, y, time, onFinish, easing )
 end
 
 --[[
-	@instance
 	@desc Animate a change in the size
 	@param [number] width -- the target width
 	@param [number] height -- the target height
@@ -822,7 +794,6 @@ local MAX_DOUBLE_CLICK_TIME = 0.8
 local MIN_MOUSE_HOLD_TIME = 0.3
 
 --[[
-	@instance
 	@desc Detects when the mouse is pressed. Used to fire mouse held and double click
 	@param [MouseDownEvent] event
 ]]
@@ -857,7 +828,6 @@ function View:onMouseDownMetaEvents( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Detects when the mouse is released. Used to fire mouse held and double click
 	@param [MouseUpEvent] event
 ]]
@@ -866,7 +836,6 @@ function View:onGlobalMouseUpMetaEvents( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Starts a drag and drop for the view
 	@param [MouseDownEvent] event -- the mouse down event to start the event
 	@param [ClipboardData] data -- the data to associate with the drag

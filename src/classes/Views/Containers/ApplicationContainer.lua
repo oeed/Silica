@@ -35,7 +35,6 @@ function ApplicationContainer.theme:set( theme )
 end
 
 --[[
-	@instance
 	@desc Sets the container's theme based upon it's name
 	@return [string] themeName -- the name of the theme
 ]]
@@ -51,7 +50,6 @@ function ApplicationContainer:draw()
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released and doesn't hit anything else. Unfocuses the focused view, if any.
     @param [MouseDownEvent] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event

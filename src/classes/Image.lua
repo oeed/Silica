@@ -147,7 +147,6 @@ function Image.pixels:set( pixels )
 end
 
 --[[
-    @instance
     @desc Returns the image's pixels scaled to the desired dimensions. These are cached so performance should not be a huge concern.
     @param [number] scaledWidth
     @param [number] scaledHeight
@@ -186,7 +185,6 @@ function Image:getScaledPixels( scaledWidth, scaledHeight )
 end
 
 --[[
-    @instance
     @desc Renders the given image on top of the self image at the given position
     @param [Image] appendingImage -- description
     @param [number] x

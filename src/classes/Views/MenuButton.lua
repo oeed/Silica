@@ -90,7 +90,6 @@ function MenuButton:initialiseCanvas()
 end
 
 --[[
-    @instance
     @desc Whether the button is pressed or open
     @return [boolean] isActive -- whether the button is active
 ]]
@@ -110,7 +109,6 @@ function MenuButton:update()
 end
 
 --[[
-    @instance
     @desc Description
     @param [type] arg1 -- description
     @param [type] arg2 -- description
@@ -136,7 +134,6 @@ function MenuButton.isPressed:set( isPressed )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released while over the button. Toggles the menu if it hit tests.
     @param [Event] event -- the mouse up event
 ]]
@@ -151,7 +148,6 @@ function MenuButton:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the owned menu opens or closes
     @param [Event] event -- the menu changed event
     @return [boolean] preventPropagation -- prevent anyone else using the event

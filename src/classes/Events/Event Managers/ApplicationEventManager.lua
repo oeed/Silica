@@ -4,7 +4,6 @@ class "ApplicationEventManager" extends "EventManager" {
 }
 
 --[[
-	@instance
 	@desc Perfoms the appropriate handles for the given event and then trickles them down through the owner's children
 	@param [Event] event -- the event to handle
 	@return [boolean] stopPropagation -- whether no further handles should recieve this event

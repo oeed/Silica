@@ -139,7 +139,6 @@ function MenuBarItem:update( deltaTime )
 end
 
 --[[
-    @instance
     @desc Make the menu bar item flash for a brief period of time
 ]]
 function MenuBarItem:flash()
@@ -152,7 +151,6 @@ function MenuBarItem.isFlashing:set( isFlashing )
 end
 
 --[[
-    @instance
     @desc Whether the button is pressed or open
     @return [boolean] isActive -- whether the button is active
 ]]
@@ -175,7 +173,6 @@ function MenuBarItem.isPressed:set( isPressed )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Toggles the menu if it hit tests.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -190,7 +187,6 @@ function MenuBarItem:onGlobalMouseUp( Event event, Event.phases phase )
     end
 end
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -203,7 +199,6 @@ function MenuBarItem:onMouseDown( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the owned menu opens or closes
     @param [Event] event -- the menu changed event
     @return [boolean] preventPropagation -- prevent anyone else using the event

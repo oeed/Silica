@@ -21,7 +21,6 @@ end
 
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function PathView:initialiseCanvas()

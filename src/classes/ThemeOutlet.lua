@@ -18,7 +18,6 @@ function ThemeOutlet:initialise( owner )
 end
 
 --[[
-	@instance
 	@desc Returns the value for the given key, using the current theme style
 	@param [string] key -- the key of the value
 	@return value -- the value
@@ -29,7 +28,6 @@ end
 -- end
 
 --[[
-	@instance
 	@desc Connect a class value to a theme value, updating it each time the style is changed
 	@param [class] _class -- the class to connect the value to
 	@param [string] classKey -- the key of the class' value
@@ -46,7 +44,6 @@ function ThemeOutlet:connect( _class, classKey, key )
 end
 
 --[[
-	@instance
 	@desc Disconnect a class value from a theme value
 	@param [class] _class -- the class that was connected
 	@param [string] classKey -- the key of the class' value
@@ -64,7 +61,6 @@ function ThemeOutlet:disconnect( _class, classKey, key )
 end
 
 --[[
-	@instance
 	@desc Fired when the theme changes, updates the value
 	@param [string] style -- the style name
 ]]
@@ -77,7 +73,6 @@ function ThemeOutlet:onThemeChange( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Sets the current style (pressed, checked, disabled, etc) for the owner
 	@param [string] style -- the style name
 ]]
@@ -89,7 +84,6 @@ function ThemeOutlet.style:set( style )
 end
 
 --[[
-	@instance
 	@desc Returns the value for the current theme given the property name and style)
 	@param [string] propertyName -- the name of the property
 	@param [string] styleName -- defaults to the current style

@@ -13,7 +13,6 @@ function KeyboardShortcut:initialise( ... )
 end
 
 --[[
-	@instance
 	@desc Returns the symbol string to be used on menus and elsewhere to represent the shortcut
 	@return [string] symbols -- the symbols string
 ]]
@@ -27,7 +26,6 @@ function KeyboardShortcut:symbols()
 end
 
 --[[
-	@instance
 	@desc Creates a keyboard shortcut from a string. Each key is separated by a space. Keys represented by a character (i.e. a, 5, /) should be written as the character. Other posibilities are: ctrl (also acts as command on OS X), alt, shift, tab, esc, delete, backspace, enter, left, right, up, down, fn, home, end, f1, f2 .. f12
 	@param [string] keys -- the shortcut string
 	@return [KeyboardShortcut] keyboardShortcut -- the keyboard shortcut
@@ -51,7 +49,6 @@ function KeyboardShortcut.static:fromString( str )
 end
 
 --[[
-	@instance
 	@desc Compares the shortcut to a keyboard shortcut event
 	@param [KeyboardShortcutEvent] event -- the keyboard shortcut event
 	@return [boolean] isMatch -- whether the keyboard shortcut was a match (i.e. the keys are down)

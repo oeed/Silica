@@ -18,7 +18,6 @@ class "ProgressBar" extends "View" {
 }
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function ProgressBar:initialiseCanvas()
@@ -53,7 +52,6 @@ function ProgressBar.isEnabled:set( isEnabled )
 end
 
 --[[
-    @instance
     @desc Set the value of the progress bar
     @param [number] value -- the value
 ]]
@@ -63,7 +61,6 @@ function ProgressBar.value:set( value )
 end
 
 --[[
-    @instance
     @desc Set the maximum value of the progress bar
     @param [number] maximum -- the maximum value
 ]]
@@ -73,7 +70,6 @@ function ProgressBar.maximum:set( maximum )
 end
 
 --[[
-    @instance
     @desc Fired on a screen update. Animates the stripes
     @param [number] deltaTime -- the time since last update
 ]]

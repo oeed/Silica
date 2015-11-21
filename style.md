@@ -54,7 +54,6 @@ function Class.staticFunction()
 All public functions (and private if you feel like it or it's not obvious) must have comments above them in the structure below. If no return value or arguments are specificed simply ommit the line.
 ```lua
 --[[
-	@instance
 	@desc A reasonable description of what the function does
 	@param [number] arg1 -- a description of what the variable is
 	@param [View] arg2 -- a description of what the variable is

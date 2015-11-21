@@ -23,7 +23,6 @@ class "DragDropManager" {
 }
 
 --[[
-    @instance
     @desc Creates a drag and drop manager
     @param [Application] owner -- the manager owner
 ]]
@@ -34,7 +33,6 @@ function DragDropManager:initialise( owner )
 end
 
 --[[
-    @instance
     @desc Starts a drag and drop proccess
     @param [Table{View}] views -- the view being dragged
     @param [ClipboardData] data -- the data that will be given to the destination
@@ -99,7 +97,6 @@ function DragDropManager:start( views, data, relativeX, relativeY, hideSource, c
 end
 
 --[[
-    @instance
     @desc Cancels the current drag and drop proccess, if one exists
     @return [boolean] didCancel -- whether a proccess was canceled (i.e. returns true if one existed)
 ]]
@@ -133,7 +130,6 @@ function DragDropManager:cancel()
 end
 
 --[[
-    @instance
     @desc Sets the destination, informing the new and old destinations if they've changed
     @param [IDragDropDestination] destination
 ]]
@@ -154,7 +150,6 @@ function DragDropManager.destination:set( destination )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is dragged in the application
     @param [MouseDragEvent] event -- the mouse dragged event
     @return [boolean] shouldCancel -- whether other events handlers should not recieve this event
@@ -170,7 +165,6 @@ function DragDropManager:onMouseDrag( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released in the application
     @param [MouseUpEvent] event -- the mouse up event
     @return [boolean] shouldCancel -- whether other events handlers should not recieve this event
@@ -227,7 +221,6 @@ function DragDropManager:onMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Finds the lowest level (i.e. the view with most parents above it) view at the current view coordinates that accepts the drag
 ]]
 function DragDropManager:updateDestination()

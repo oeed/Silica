@@ -66,7 +66,6 @@ function KeyboardShortcutManager:isKeyDown( keyString )
 end
 
 --[[
-	@static
 	@desc Returns the symbol for a keyString for places such as menus
 	@return [string] keyString -- the string value of the key
 	@return [string] symbol -- the symbol
@@ -76,7 +75,6 @@ function KeyboardShortcutManager.static:symbol( keyString )
 end
 
 --[[
-	@instance
 	@desc Converts a keys API code to the common string value used throughout Silica
 	@param [number] keyCode -- the numerical value of the key
 	@return [string] keyString -- the string value of the key
@@ -86,7 +84,6 @@ function KeyboardShortcutManager.static:convert( keyCode )
 end
 
 --[[
-	@instance
 	@desc Returns true if the given key string is valid
 	@param [string] keyString -- the string value of the key
 	@return [boolean] isValid -- whether the key string is valid
@@ -102,7 +99,6 @@ function KeyboardShortcutManager.static:isValid( keyString )
 end
 
 --[[
-	@instance
 	@desc Send the keyboard shortcut event of the currently held keys
 ]]
 function KeyboardShortcutManager:sendEvent()
@@ -110,7 +106,6 @@ function KeyboardShortcutManager:sendEvent()
 end
 
 --[[
-	@instance
 	@desc Fires 10 seconds after a key was pressed. If the key status hasn't changed it sets it to not be pressed.
 	@param [string] keyString -- the key string
 ]]

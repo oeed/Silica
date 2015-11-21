@@ -10,7 +10,6 @@ class "Label" extends "View" {
 }
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Label:initialiseCanvas()
@@ -63,7 +62,6 @@ function Label:update( deltaTime )
 end
 
 --[[
-    @instance
     @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text
 ]]
 function Label:autosize()

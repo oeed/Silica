@@ -21,7 +21,6 @@ function Radio:initialise( ... )
     end
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Radio:initialiseCanvas()
@@ -42,7 +41,6 @@ function Radio:updateWidth( width )
 end
 
 --[[
-    @instance
     @desc Sets the checked state of the radio button. Sets all other sibling (in the same container) radios to false if being set to true
     @param [boolean] isChecked -- the new checked state
 ]]
@@ -68,7 +66,6 @@ function Radio.isEnabled:set( isEnabled )
 end
 
 --[[
-    @instance
     @desc Sets whether the button is pressed, changing the drawing state
 ]]
 function Radio.isPressed:set( isPressed )
@@ -77,7 +74,6 @@ function Radio.isPressed:set( isPressed )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -93,7 +89,6 @@ function Radio:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event

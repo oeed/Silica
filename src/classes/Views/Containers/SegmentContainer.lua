@@ -4,7 +4,6 @@ class "SegmentContainer" extends "Container" {
 }
 
 --[[
-	@instance
 	@desc Updates the location and size of the menu as well as the location and size of the menu items
 ]]
 function SegmentContainer:updateLayout()

@@ -132,7 +132,6 @@ function MenuItem.isPressed:set( isPressed )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -151,7 +150,6 @@ function MenuItem:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -164,7 +162,6 @@ function MenuItem:onMouseDown( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the a keyboard shortcut is fired
     @param [Event] event -- the keyboard shortcut
     @return [boolean] preventPropagation -- prevent anyone else using the event

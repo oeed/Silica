@@ -66,7 +66,6 @@ function TextBox:initialise( ... )
 end
 
 --[[
-	@instance
 	@desc Sets up the canvas and it's graphics objects
 ]]
 function TextBox:initialiseCanvas()
@@ -186,7 +185,6 @@ function TextBox:updateSelection()
 end
 
 --[[
-	@instance
 	@desc Converts the coordinates relative to the text box to the character position
 	@param [number] x -- the x coordinate
 	@return [number] characterPosition -- the charcter position
@@ -214,7 +212,6 @@ function TextBox:charToViewCoords( char )
 end
 
 --[[
-	@instance
 	@desc Callback to check whether a character entered by the user is valid, intended to be overridden by sub-classes
 	@param [string] character
 	@return [boolean] isValid
@@ -280,7 +277,6 @@ function TextBox.selectionPosition:set( selectionPosition )
 end
 
 --[[
-	@instance
 	@desc ima leave this... until floobits,.. just yeah
 	es@param [string] character
 	@return [boolean] isValid
@@ -311,7 +307,6 @@ function TextBox:write( text )
 end
 
 --[[
-	@instance
 	@desc Returns the character at the given character position
 	@param [number] characterPosition -- the character position
 	@return [string] character -- the character
@@ -321,7 +316,6 @@ function TextBox:charCoordsToChar( characterPosition )
 end
 
 --[[
-	@instance
 	@desc What does this actually do?
 	@param [type] arg1 -- description
 	@param [type] arg2 -- description
@@ -333,7 +327,6 @@ function TextBox:charToCharCoords( arg1, arg2, arg3 )
 end
 
 --[[
-	@instance
 	@desc Converts the character position to screen coordinates
 	@param [number] characterPosition -- the position of the character
 	@return [number] x -- the x coordinate realtive to the text box
@@ -344,7 +337,6 @@ function TextBox:charCoordsToViewCoordinates( characterPosition )
 end
 
 --[[
-	@instance
 	@desc Set the text of the text box.
 	@param [string] text -- the text of the text box
 ]]
@@ -368,7 +360,6 @@ function TextBox.isMasked:set( isMasked )
 end
 
 --[[
-	@instance
 	@desc Set the margin on either side of the text
 	@param [number] margin -- the space around the text
 ]]
@@ -414,7 +405,6 @@ function TextBox.isFocused:set( isFocused )
 end
 
 --[[
-	@instance
 	@desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
 	@param [Event] event -- the mouse up event
 	@return [boolean] preventPropagation -- prevent anyone else using the event
@@ -429,7 +419,6 @@ function TextBox:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Fired when the mouse is released. Focuses on the text box
 	@param [MouseDownEvent] event -- the mouse down event
 	@return [boolean] preventPropagation -- prevent anyone else using the event
@@ -442,7 +431,6 @@ function TextBox:onMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
 	@param [MouseDownEvent] event -- the mouse down event
 	@return [boolean] preventPropagation -- prevent anyone else using the event
@@ -520,7 +508,6 @@ function TextBox:onCharacter( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the a keyboard shortcut is fired
     @param [Event] event -- the keyboard shortcut
     @return [boolean] preventPropagation -- prevent anyone else using the event

@@ -20,7 +20,6 @@ function Container:initialise( ... )
 end
 
 --[[
-	@static
 	@desc Creates a container from interface file
 	@param [string] interfaceName -- the name of the interface file
 	@param [class] _class -- the class that the container must extend (e.g. ApplicationContainer). If this is being called on a subclass you MUST pass in the class.
@@ -36,7 +35,6 @@ function Container.static:fromInterface( interfaceName, _class )
 end
 
 --[[
-    @instance
     @desc Loads the children and properties of the interface specified by the self.interfaceName interface name. Called automatically during Container:init, do not call this yourself.
 ]]
 function Container:loadInterface()
@@ -82,7 +80,6 @@ function Container:onInterfaceOutletChanged( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Called when a value is set. Connects InterfaceOutlets to the Container.
 	@param [string] key -- the key of the set value
     @param value -- the value
@@ -96,7 +93,6 @@ end
 -- end
 
 --[[
-	@instance
 	@desc Initialises the custom container event manger
 ]]
 function Container:initialiseEventManager()
@@ -104,7 +100,6 @@ function Container:initialiseEventManager()
 end
 
 --[[
-	@instance
 	@desc Updates the view and it's children When overriding this self.super:update must be called AFTER the custom drawing code.
 	@param [number] deltaTime -- the time since last update
 ]]
@@ -116,7 +111,6 @@ function Container:update( deltaTime )
 end
 
 --[[
-	@instance
 	@desc Fired after
 	@param [type] arg1 -- description
 	@param [type] arg2 -- description
@@ -154,7 +148,6 @@ function Container.isEnabled:set( isEnabled )
 end
 
 --[[
-	@instance
 	@desc Moves the view to be the top of it's siblings
 	@param [View] childView -- the view to make front most
 ]]
@@ -188,7 +181,6 @@ function Container:sendToFront( frontView, position )
 end
 
 --[[
-	@instance
 	@desc Moves the view to be the bottom of it's siblings
 	@param [View] childView -- the view to make botom most
 ]]
@@ -197,7 +189,6 @@ function Container:sendToBack( childView )
 end
 
 --[[
-	@instance
 	@desc Adds a child view to the container (on the top by default)
 	@param [View] childView -- the view to add to the container
 	@param [number] position -- the z-position of the child (top by default). higher number means further back
@@ -248,7 +239,6 @@ function Container:insert( childView, position )
 end
 
 --[[
-	@instance
 	@desc Removes the first instance of the child view from the container
 	@param [View] childView -- the view to add to the container
 	@return [boolean] didRemove -- whether a child was removed
@@ -284,7 +274,6 @@ function Container:remove( removingView )
 end
 
 --[[
-	@instance
 	@desc Returns the ( first ) child with the given identifier
 	@param [string] identifier -- the identifier of the child view
 	@param [boolean] descendTree -- true by default. whether child Containers should be looked through
@@ -308,7 +297,6 @@ function Container:findChild( identifier, descendTree )
 end
 
 --[[
-	@instance
 	@desc Returns all children with the given identifier
 	@param [string] identifier -- the identifier of the child view
 	@param [boolean] descendTree -- true by default. whether child Containers should be looked through

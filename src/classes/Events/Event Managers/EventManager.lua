@@ -20,7 +20,6 @@ function EventManager:initialise( owner )
 end
 
 --[[
-	@instance
 	@desc Subscribes a function to the given event
 	@param [Event.eventType] eventType -- the name of the event type
 	@param [EventManager] eventManager -- the handle manager 
@@ -39,7 +38,6 @@ function EventManager:connect( Event eventType, Function func, Event.phases( Eve
 end
 
 --[[
-	@instance
 	@desc Unsubscribes a function to the given event
 	@param [Event] eventType -- the name of the event type
 	@param [function] func -- the function called when the event occurs
@@ -60,7 +58,6 @@ function EventManager:disconnect( eventType, func, phase, eventManager, sender )
 end
 
 --[[
-	@instance
 	@desc Subscribes a function globally to the given event
 	@param [Event.eventType] eventType -- the name of the event type
 	@param [function] func -- the function called when the event occurs
@@ -83,7 +80,6 @@ function EventManager:connectGlobal( eventType, func, phase, sender )
 end
 
 --[[
-	@instance
 	@desc Unsubscribes a function to globally the given event
 	@param [Event.eventType] eventType -- the name of the event type
 	@param [function] func -- the function called when the event occurs
@@ -103,7 +99,6 @@ function EventManager:disconnectGlobal( eventType, func, phase, sender, eventMan
 end
 
 --[[
-	@instance
 	@desc Unsubscribes all global events
 ]]
 function EventManager:disconnectAllGlobals()
@@ -116,7 +111,6 @@ function EventManager:disconnectAllGlobals()
 end
 
 --[[
-	@instance
 	@desc Returns true if the EventManager has any handles for the given type
 	@param [Event.eventType] eventType -- the name of the even type
 	@return [boolean] hasConnections
@@ -126,7 +120,6 @@ function EventManager:hasConnections( eventType )
 end
 
 --[[
-	@instance
 	@desc Returns true if the EventManager has any global handles for the given type
 	@param [Event.eventType] eventType -- the name of the even type
 	@return [boolean] hasConnections
@@ -136,7 +129,6 @@ function EventManager:hasConnectionsGlobal( eventType )
 end
 
 --[[
-	@instance
 	@desc Perfoms the appropriate handles for the given event
 	@param [Event] event -- the event to handle
 	@return [boolean] stopPropagation -- whether no further handles should recieve this event
@@ -152,7 +144,6 @@ function EventManager:handleEvent( event )
 end
 
 --[[
-	@instance
 	@desc Performs the handles for a specific phase
 	@param [Event] event -- the event to handle
 	@param [EventManager.phase] phase -- the phase desired

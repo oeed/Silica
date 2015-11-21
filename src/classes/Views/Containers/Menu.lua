@@ -44,7 +44,6 @@ function Menu:initialise( ... )
 end
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Menu:initialiseCanvas()
@@ -64,7 +63,6 @@ function Menu:initialiseCanvas()
 end
 
 --[[
-	@instance
 	@desc Show the menu as a context menu (sets it as a single shot)
 	@param [View] owner -- the object that invoked the context menu (usually the thing right clicked)
 	@param [number] x -- the x coordinate of the click (from event.x)
@@ -99,7 +97,6 @@ function Menu:updateWidth( width )
 end
 
 --[[
-	@instance
 	@desc Updates the location and size of the menu as well as the location and size of the menu items
 ]]
 function Menu:updateLayout()
@@ -147,7 +144,6 @@ function Menu:removeChild( ... )
 end
 
 --[[
-	@instance
 	@param [Event] -- the mouse down event
 	@desc Closes the menu when somewhere other than the menu is clicked, otherwise handles the event
 ]]
@@ -166,7 +162,6 @@ function Menu:onGlobalMouseDown( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Sets the open state of the menu
 	@param [boolean] isOpen -- whether the menu should be open
 ]]
@@ -179,7 +174,6 @@ function Menu.isOpen:set( isOpen )
 end
 
 --[[
-	@instance
 	@desc The open state of the menu
 ]]
 function Menu.isOpen:get()
@@ -187,7 +181,6 @@ function Menu.isOpen:get()
 end
 
 --[[
-	@instance
 	@desc Opens the menu if closed, or closes the menu if open
 ]]
 function Menu:toggle()
@@ -195,7 +188,6 @@ function Menu:toggle()
 end
 
 --[[
-	@instance
 	@desc Open the menu, hiding it from the screen
 ]]
 function Menu:open()
@@ -206,7 +198,6 @@ function Menu:open()
 end
 
 --[[
-	@instance
 	@desc Closes the menu, hiding it from the screen
 ]]
 function Menu:close()

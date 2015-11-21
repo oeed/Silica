@@ -46,7 +46,6 @@ function Window:initialise( ... )
 end
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Window:initialiseCanvas()
@@ -69,7 +68,6 @@ function Window:initialiseCanvas()
 end
 
 --[[
-    @instance
     @desc Loads the interface specified by the self.interfaceName interface name
 ]]
 function Window:loadInterface()
@@ -131,7 +129,6 @@ function Window.isEnabled:set( isEnabled )
 end
 
 --[[
-    @instance
     @desc Centres the window relative to it's parent (which should be the application container)
 ]]
 function Window:centre()
@@ -145,7 +142,6 @@ end
 Window:alias( Window.centre, "center" )
 
 --[[
-    @instance
     @desc Focus on the window, bringing it to the front and enabling controls whilst unfocusing other windows
 ]]
 function Window:focus()
@@ -160,7 +156,6 @@ function Window:focus()
 end
 
 --[[
-    @instance
     @desc Unfocus on the window, disabling controls
 ]]
 function Window:unfocus()
@@ -168,7 +163,6 @@ function Window:unfocus()
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is pushed on the window bar before children have recieved the event. Makes the window front most and active
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -178,7 +172,6 @@ function Window:onMouseDownBefore( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is pushed on the window bar after children have recieved the event. Starts dragging.
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -201,7 +194,6 @@ function Window:onMouseDownAfter( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is dragged anywhere on screen. Moves the window if dragging
     @param [Event] event -- the mouse drag event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -228,7 +220,6 @@ function Window:onGlobalMouseDrag( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Stops dragging
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -245,7 +236,6 @@ function Window:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Closes the window, removing it from the screen
 ]]
 function Window:close()

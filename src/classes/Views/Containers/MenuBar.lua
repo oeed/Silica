@@ -17,7 +17,6 @@ function MenuBar:updateThemeStyle()
 end
 
 --[[
-	@instance
 	@desc Updates the location of the menu bar items
 ]]
 function MenuBar:updateLayout()

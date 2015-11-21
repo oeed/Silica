@@ -38,7 +38,6 @@ function Button:initialise( ... )
 end
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Button:initialiseCanvas()
@@ -93,7 +92,6 @@ function Button.text:set( text )
 end
 
 --[[
-    @instance
     @desc Set the margin on either side of the text
     @param [number] margin -- the space around the text
 ]]
@@ -103,7 +101,6 @@ function Button.margin:set( margin )
 end
 
 --[[
-    @instance
     @desc Set the margin on the left side of the text
     @param [number] margin -- the space around the left side of the text
 ]]
@@ -113,7 +110,6 @@ function Button.leftMargin:set( leftMargin )
 end
 
 --[[
-    @instance
     @desc Set the margin on the left side of the text
     @param [number] margin -- the space around the left side of the text
 ]]
@@ -143,7 +139,6 @@ function Button.needsAutosize:set( needsAutosize )
 end
 
 --[[
-    @instance
     @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text
 ]]
 function Button:autosize()
@@ -188,7 +183,6 @@ function Button.isFocused:set( isFocused )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -205,7 +199,6 @@ function Button:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -218,7 +211,6 @@ function Button:onMouseDown( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when a key is pressed down. Presses the button down if it isin focus and it was the enter key.
     @param [KeyDownEvent] event -- the key down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -231,7 +223,6 @@ function Button:onKeyDown( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when a key is pressed released. Fires the button action if the button is pressed, in focus and it was the enter key.
     @param [KeyUpEvent] event -- the key down event
     @return [boolean] preventPropagation -- prevent anyone else using the event

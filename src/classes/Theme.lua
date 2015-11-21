@@ -45,7 +45,6 @@ function Theme:initialise( themeName, cantExtend )
 end
 
 --[[
-	@static
 	@desc Returns the theme with the given name. This retireves the theme from a cache if it's already been defined and should be used instead of just Theme()
 	@param [string] themeName -- the name of the theme
 	@table [table] cantExtend -- a table of the theme names that the theme can't extend (as they are currently extending, which would cause recussursion)
@@ -56,7 +55,6 @@ function Theme.static:named( themeName, cantExtend )
 end
 
 --[[
-	@instance
 	@desc Creates the container from the interface file
 	@param [table] nodes -- the nodes from the XML file
 	@table [table] cantExtend -- a table of the theme names that the theme can't extend (as they are currently extending, which would cause recussursion)
@@ -113,7 +111,6 @@ function Theme:initialiseTheme( nodes, cantExtend )
 end
 
 --[[
-	@instance
 	@desc Gets a value from the theme with the given style for the given class
 	@param [string] _class -- the name of the class to get the value for
 	@param [string] propertyName -- the name of the property

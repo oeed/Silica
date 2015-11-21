@@ -61,7 +61,6 @@ function Interface:initialise( interfaceName, extend )
 end
 
 --[[
-	@instance
 	@desc Returns and generates if needed a container from the interface.
 	@return [Container] container -- the container
 ]]
@@ -92,7 +91,6 @@ function Interface.container:get()
 end
 
 --[[
-	@instance
 	@desc Creates a table of children from the interface file
 	@return [table] children -- the table of child views
 ]]
