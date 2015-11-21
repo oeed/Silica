@@ -408,7 +408,9 @@ function stripFunctionArguments( name, contents )
                         value = func()
 
                         if not value then
-                            error( "error extracting value type from " .. type )
+                            log(serialise(valueTypes["Number"].allowsNil))
+                            log(serialise(valueTypes["Mask"].allowsNil))
+                            error( name .. ": " .. n .. ": error extracting value type from " .. type )
                         elseif value[TYPETABLE_HAS_DEFAULT_VALUE] then -- this was created like String(), not String, so it created its own instance. hence we can use the value directly
                             value[TYPETABLE_NAME] = argumentName
                             typeTable = value
@@ -422,7 +424,7 @@ function stripFunctionArguments( name, contents )
                                 typeTable[i] = value[i]
                             end
 
-                            rawset( value, "allowsNil", false )
+                            value[TYPETABLE_ALLOWS_NIL] = false
                         end
                         typeTable[TYPETABLE_IS_VAR_ARG] = isVarArg;
                     end
@@ -810,7 +812,7 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                         end
                         toTable[propertyName] = uniqueValue
 
-                        rawset( value, "allowsNil", false )
+                        value[TYPETABLE_ALLOWS_NIL] = false
                     end
                 end
             else
