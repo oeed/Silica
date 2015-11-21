@@ -111,6 +111,36 @@ function Container:update( deltaTime )
 end
 
 --[[
+	@desc Draws the Container and its children to its Canvas
+]]
+function Container:draw()
+	local canvas = self.canvas
+
+	-- first draw ourself
+	self:onDraw()
+
+	-- then draw the children
+	for i, childView in ipairs( self.children ) do
+		-- only draw if something changed
+		if childView.needsDraw then
+			local x, y = childView.x, childView.y
+			-- first draw the contents
+			childView:draw()
+
+			local shadowSize = childView.shadowSize
+			if shadowSize > 0 then
+				-- if there's a shadow draw it to the canvas
+				local shadowMask = childView.shadowMask
+				canvas:drawShadow( x, y, shadowMask, shadowSize )
+			end
+
+			-- draw the childView to the canvas
+			childView:drawTo( x, y, canvas )
+		end
+	end
+end
+
+--[[
 	@desc Fired after
 	@param [type] arg1 -- description
 	@param [type] arg2 -- description

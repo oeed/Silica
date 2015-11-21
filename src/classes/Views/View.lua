@@ -39,6 +39,7 @@ class "View" {
 
 	event = false;
 	canvas = Canvas;
+	shadowMask = Mask; -- TODO: .isReadOnly
 	theme = false;
 	isCanvasHitTested = true;
 	isVisible = true;
@@ -121,12 +122,28 @@ function View:initialiseCanvas()
 end
 
 --[[
-	@desc Returns the Mask to use for the View's shadow
-	@return Mask shadowMask
+	@desc The Mask to use for the View's shadow
 ]]
-function View:getShadowMask( Mask canvasMask )
-	return canvasMask -- canvasMask is the mask of the currently drawn pixels to the canvas, i.e. everything will cast a shadow
+function View.shadowMask:get()
+	return self.canvas.mask -- self.canvas.mask is the mask of the currently drawn pixels to the canvas, i.e. everything will cast a shadow
 end
+
+--[[
+	@desc Called when a parent Container wants the Canvas to be redraw
+]]
+function View:draw()
+	self:onDraw() -- we have no children, just draw our own content
+end
+
+--[[
+	@desc Called when the contents of the View's Canvas needs to be updated
+]]
+function View:onDraw()
+
+end
+
+-- Location --
+
 
 --[[
 	@desc Returns the view's siblings in it's container
