@@ -1015,7 +1015,8 @@ function compileClass( compiledClass, name )
         compiledClass.super = classes[superName]
 
         local enumTypes = currentlyConstructing.enumTypes 
-        for k, enum in pairs( currentlyConstructing.enums  ) do
+        local enums = currentlyConstructing.enums
+        for k, enum in pairs( enums  ) do
             if not next( enum ) then
                 error( "Enums must have at least one value" , 2 )
             end
