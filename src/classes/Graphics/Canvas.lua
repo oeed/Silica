@@ -37,7 +37,7 @@ end
 ]]
 
 --[[
-    @desc Description
+    @desc Draws the canvas to another canvas
 ]]
 function Canvas:drawTo( Number x, Number y, Canvas destinationCanvas, Mask.allowsNil mask )
 end
@@ -46,4 +46,10 @@ end
     @desc Draws an image to the canvas, scaling the image if needed
 ]]
 function Canvas:image( Number x, Number y, Image image, Number( image.width ) width, Number( image.height ) height )
+end
+
+--[[
+    @desc Draws a shadow mask to the parent's canvas
+]]
+function Canvas:drawShadow( Number x, Number y, Number shadowSize, Mask shadowMask, Graphics.colours shadowColour )
 end
