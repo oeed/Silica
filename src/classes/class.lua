@@ -1153,6 +1153,8 @@ function compileClass( compiledClass, name )
             function metatable:__index( key )
                 if key == "application" then
                     return application
+                elseif key == "super" then
+                    return -- this class doesn't have a super
                 end
                 error("attempt to get undefined class property "..key, 2)
             end

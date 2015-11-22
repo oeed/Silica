@@ -12,4 +12,8 @@
         <fillColour type="Graphics.colours" default="BLUE" focused="BLUE" />
     </Container>
 
+    <TestView>
+        <fillColour type="Graphics.colours" default="BLUE" pressed="LIGHT_BLUE" />
+    </TestView>
+
 </Theme>

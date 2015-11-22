@@ -120,7 +120,7 @@ end
 ]]
 function Theme:value( _class, propertyName, styleName, noError )
 	if styleName == "type" then
-		error( "Reserverd style name: " .. styleName, 0 )
+		error( "Reserved style name: " .. styleName, 0 )
 	end
 	styleName = styleName or "default"
 	local className = _class.className
