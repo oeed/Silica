@@ -9,7 +9,6 @@ class "WindowButton" extends "View" {
 }
 
 --[[
-    @constructor
     @desc Creates a button object and connects the event handlers
 ]]
 function WindowButton:initialise( ... )

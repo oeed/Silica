@@ -7,7 +7,6 @@ class "PathView" extends "View" {
 }
 
 --[[
-    @constructor
     @desc Creates a button object and connects the event handlers
 ]]
 function PathView:initialise( ... )

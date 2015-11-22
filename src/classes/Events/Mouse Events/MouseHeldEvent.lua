@@ -6,7 +6,6 @@ class "MouseHeldEvent" extends "MouseEvent" {
 }
 
 --[[
-    @constructor
     @desc Creates a mouse held event from the arguments
     @param [MouseEvent.mouseButtons] mouseButton -- the mouse button (left, right, etc.)
     @param [number] x -- the x screen coordinate

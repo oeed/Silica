@@ -16,7 +16,6 @@ class "MenuButton" extends "Button" {
 }
 
 --[[
-    @constructor
     @desc Creates a MenuButton object and connects the event handlers
 ]]
 function MenuButton:initialise( ... )
