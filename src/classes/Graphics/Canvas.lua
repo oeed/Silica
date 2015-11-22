@@ -29,6 +29,15 @@ function Canvas.mask:get()
 end
 
 --[[
+    @desc Hit test the current contents of the canvas
+    @return Boolean didHit
+]]
+function Canvas:hitTest( Number x, Number y )
+    local colour = self.pixels[ ( y - 1 ) * self.width + x ]
+    return colour and colour ~= Graphics.colours.TRANSPARENT
+end
+
+--[[
     @desc Fills an area in the given mask with the given colour, defaulting to the entire canvas
 ]]
 function Canvas:fill( Graphics.colours colour, Mask( self.mask ) mask )
