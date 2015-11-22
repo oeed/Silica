@@ -1261,6 +1261,7 @@ local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, 
                 end
 
                 local context = { self = self }
+                setmetatable( context, { __index = classes } )
                 local values = { checkValue( self, selfTypeTable, true, context, functionName ) }
                 local argumentCount = (argumentsLength > minChecked and argumentsLength or minChecked)
                 for i = 1 + FUNCTIONTABLE_FUNCTION, argumentCount + FUNCTIONTABLE_FUNCTION do
@@ -1481,7 +1482,8 @@ function compileAndSpawnStatic( static, name, compiledClass )
             if setter and not lockedSetters[locatedKey] then
                 setter( self, value )
             else
-                values[locatedKey] = checkValue( value, staticProperties[locatedKey], nil, { self = self }, key )
+                local context = setmetatable( { self = self }, { __index = classes } )
+                values[locatedKey] = checkValue( value, staticProperties[locatedKey], nil, context, key )
             end
         else
             error("attempt to set undefined property or function", 2 )
@@ -1542,8 +1544,9 @@ function spawnInstance( name, ... )
     end
 
     -- for default values that are tables make them unique or create class instances
+    local context = setmetatable( { self = instance }, { __index = classes } )
     for propertyName, typeTable in pairs( compiledInstance.requireDefaultGeneration ) do
-        values[propertyName] = generateDefaultValue( typeTable )
+        values[propertyName] = generateDefaultValue( typeTable, context )
     end
 
     local lockedGetters, lockedSetters = {}, {}
@@ -1573,7 +1576,8 @@ function spawnInstance( name, ... )
             if setter and not lockedSetters[locatedKey] then
                 setter( self, value )
             else
-                values[locatedKey] = checkValue( value, instanceProperties[locatedKey], nil, { self = self }, key )
+                local context = setmetatable( { self = self }, { __index = classes } )
+                values[locatedKey] = checkValue( value, instanceProperties[locatedKey], nil, context, key )
             end
         else
             error("attempt to set undefined property or function", 2 )
@@ -1612,7 +1616,7 @@ function spawnInstance( name, ... )
         if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
             local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
             if value == nil then
-                values[k] = generateDefaultValue( instanceProperties[k], instance, k )
+                values[k] = generateDefaultValue( instanceProperties[k], context, k )
             end
         end
     end
