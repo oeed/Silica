@@ -573,10 +573,12 @@ end
 -- end
 
 function View.height:set( height )
+	self.height = height
     self.canvas.height = height
 end
 
 function View.width:set( width )
+	self.width = width
     self.canvas.width = width
 end
 
