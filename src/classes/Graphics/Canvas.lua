@@ -64,8 +64,53 @@ end
 --[[
     @desc Draws an outline around the given mask, defaulting to the canvas' content mask
 ]]
-function Canvas:outline( Graphics.colours colour, Number( 1 ) thickness, Mask( self.contentMask ) mask )
+function Canvas:outline( Graphics.colours colour, Mask( self.contentMask ) mask, Number( 1 ) leftThickness, Number( leftThickness ) topThickness, Number( leftThickness ) rightThickness, Number( leftThickness ) bottomThickness )
+    local width, height, pixels = self.width, self.height, self.pixels
+    local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
+    local function xScanline( min, max, inc, thickness )
+        for y = 1, height do
+            local distance = 0
+            for x = min, max, inc do
+                local mx = x - maskX + 1
+                local my = y - maskY + 1
+                if mx >= 1 and mx <= maskWidth and my >= 1 and my <= maskHeight and maskPixels[ (my - 1) * maskWidth + mx ] then
+                    if distance < thickness then
+                        distance = distance + 1
+                        pixels[(y - 1) * width + x] = colour
+                        if distance >= thickness then
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end
 
+    local function yScanline( min, max, inc, thickness )
+        for x = 1, width do
+            local distance = 0
+            for y = min, max, inc do
+                local mx = x - maskX + 1
+                local my = y - maskY + 1
+                if mx >= 1 and mx <= maskWidth and my >= 1 and my <= maskHeight and maskPixels[ (my - 1) * maskWidth + mx ] then
+                    if distance < thickness then
+                        distance = distance + 1
+                        pixels[(y - 1) * width + x] = colour
+                        if distance >= thickness then
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    xScanline( 1, width, 1, leftThickness )
+    xScanline( width, 1, -1, rightThickness )
+    yScanline( 1, height, 1, topThickness )
+    yScanline( height, 1, -1, bottomThickness )
+
+    return pixels
 end
 
 --[[
