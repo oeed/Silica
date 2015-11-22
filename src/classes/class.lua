@@ -11,6 +11,7 @@ local valueTypes = {}
 local compiledClassDetails, compiledInstances, compiledStatics = {}, {}, {}
 local currentlyConstructing, expectedName -- the class that is currently being constructed
 local constructingEnvironment, constructorProxy, constructingFunctionArguments, currentCompiledClass
+local environments = {}
 local stripFunctionArguments, loadProperties, compileClass, loadPropertiesTableSection, checkValue, constructSuper, isInterface, pseudoReference, checkValue, compileClass, compileInstanceClass, compileAndSpawnStatic, spawnInstance, createValueType
 local implements, extends, interface
 local allLockedGetters, allLockedSetters = {}, {}
@@ -68,6 +69,7 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             if #args >= 2 then
                 error( "non-class types are only allowed 1 argument, the default value" , 2 )
             end
+            -- TODO: this *will* cause issues if nil is given as the default value but .allowsNil is then specified
             valueInstance[TYPETABLE_DEFAULT_VALUE] = checkValue( args[1], valueInstance ) -- check the default value actually complies with the type if it's not a class (class default values are parsed as arguments)
         else
             for i, v in ipairs( args ) do
@@ -259,6 +261,7 @@ function class.load( name, contents )
     expectedName = name
     constructingFunctionArguments = {}
     constructingEnvironment = { class = class, extends = extends, interface = interface, implements = implements }
+    environments[name] = constructingEnvironment
 
     local compiledClass = {}
     createValueType( name, "table", compiledClass ) -- generate the value type for this class. the future table for the compiled class is used, which will be filled later
@@ -399,7 +402,10 @@ function stripFunctionArguments( name, contents )
                     -- now we want to return its valueType
                     return valueTypes[key]
                 else
-                    error( "attempt to access undelcared value " .. key .. " in value type declaration", 2 )
+                    pseudoReferenceValue = pseudoReference( key )
+                    pseudoReferences[key] = pseudoReferenceValue
+                    return pseudoReferenceValue
+                    -- error( "attempt to access undelcared value " .. key .. " in value type declaration", 2 )
                 end
             end
             setmetatable( valueTypeExtractionEnvironment, metatable )
@@ -977,7 +983,7 @@ function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: e
     if value == nil  then
         -- if a default value couldn't be loaded and the argument doesn't accept nil then error
         if not typeTable[TYPETABLE_ALLOWS_NIL] then
-            error("can't be nil: " .. typeTable[TYPETABLE_NAME], 2 )
+            error("can't be nil: " .. tostring(typeTable[TYPETABLE_NAME]), 2 )
         else
             -- otherwise, if nil is okay, continue with nil
             return nil
@@ -1246,7 +1252,7 @@ local function addMissingSuper( superPrebuilt, prebuiltFunctions, outValues, def
     end
 end
 
-local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, superPrebuiltFunctions, outValues, selfTypeTable )
+local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, superPrebuiltFunctions, outValues, selfTypeTable, name, name )
     for functionName, functionTable in pairs( classFunctions ) do
         definedIndexes[functionName] = functionName
         local func = functionTable[FUNCTIONTABLE_FUNCTION]
@@ -1268,7 +1274,7 @@ local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, 
                 end
 
                 local context = { self = self }
-                setmetatable( context, { __index = classes } )
+                setmetatable( context, { __index = environments[name] } )
                 local values = { checkValue( self, selfTypeTable, true, context, functionName ) }
                 local argumentCount = (argumentsLength > minChecked and argumentsLength or minChecked)
                 for i = 1 + FUNCTIONTABLE_FUNCTION, argumentCount + FUNCTIONTABLE_FUNCTION do
@@ -1369,7 +1375,7 @@ function compileInstanceClass( name, compiledClass, static )
     end
 
     -- add the instance functions
-    addFunctions( classDetails.instanceFunctions, definedIndexes, currentlyConstructing.prebuiltInstanceFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceFunctions, initialValues, selfTypeTable )
+    addFunctions( classDetails.instanceFunctions, definedIndexes, currentlyConstructing.prebuiltInstanceFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceFunctions, initialValues, selfTypeTable, name )
 
     addGetter( classDetails.instanceGetters, instanceProperties, prebuiltGetters, currentlyConstructing.prebuiltInstanceGetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceGetters )
     addSetter( classDetails.instanceSetters, instanceProperties, prebuiltSetters, currentlyConstructing.prebuiltInstanceSetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceSetters )
@@ -1443,7 +1449,7 @@ function compileAndSpawnStatic( static, name, compiledClass )
         end
     end
 
-    addFunctions( classDetails.staticFunctions, definedIndexes, classDetails.prebuiltStaticFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltStaticFunctions, values, selfTypeTable )
+    addFunctions( classDetails.staticFunctions, definedIndexes, classDetails.prebuiltStaticFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltStaticFunctions, values, selfTypeTable, name )
 
     local lockedGetters, lockedSetters = {}, {}
     allLockedGetters[static] = lockedGetters
@@ -1489,7 +1495,7 @@ function compileAndSpawnStatic( static, name, compiledClass )
             if setter and not lockedSetters[locatedKey] then
                 setter( self, value )
             else
-                local context = setmetatable( { self = self }, { __index = classes } )
+                local context = setmetatable( { self = self }, { __index = environments[name] } )
                 values[locatedKey] = checkValue( value, staticProperties[locatedKey], nil, context, key )
             end
         else
@@ -1551,7 +1557,7 @@ function spawnInstance( name, ... )
     end
 
     -- for default values that are tables make them unique or create class instances
-    local context = setmetatable( { self = instance }, { __index = classes } )
+    local context = setmetatable( { self = instance }, { __index = environments[name] } )
     for propertyName, typeTable in pairs( compiledInstance.requireDefaultGeneration ) do
         values[propertyName] = generateDefaultValue( typeTable, context )
     end
@@ -1583,7 +1589,7 @@ function spawnInstance( name, ... )
             if setter and not lockedSetters[locatedKey] then
                 setter( self, value )
             else
-                local context = setmetatable( { self = self }, { __index = classes } )
+                local context = setmetatable( { self = self }, { __index = environments[name] } )
                 values[locatedKey] = checkValue( value, instanceProperties[locatedKey], nil, context, key )
             end
         else
