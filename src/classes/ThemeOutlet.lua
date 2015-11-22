@@ -80,7 +80,7 @@ function ThemeOutlet.style:set( style )
 	local oldStyle = self.style
 	if oldStyle ~= style then
 		self.style = style
-		local active, ownerClass = Theme.static.active, ownerClass
+		local active, ownerClass = Theme.static.active, self.ownerClass
 		for i, connection in pairs( self.connections ) do
 			connection[1][connection[2]] = active:value( ownerClass, connection[3], style )
 			self:value( connection[3], style )
