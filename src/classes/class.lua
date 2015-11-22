@@ -997,7 +997,7 @@ function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: e
     return value
 end
 
-local function mergeProperties( classProperties, staticProperties )
+local function mergeProperties( classProperties, staticProperties, name )
     for k, staticTypeTable in pairs( staticProperties ) do
         if not classProperties[k] then
             -- subclass doesn't define the property, copy it
@@ -1008,7 +1008,7 @@ local function mergeProperties( classProperties, staticProperties )
 
             -- ensure that the types and allows nil are the same
             if classTypeTable[TYPETABLE_NAME] ~= staticTypeTable[TYPETABLE_NAME] or classTypeTable[TYPETABLE_TYPE] ~= staticTypeTable[TYPETABLE_TYPE] or classTypeTable[TYPETABLE_CLASS] ~= staticTypeTable[TYPETABLE_CLASS] or classTypeTable[TYPETABLE_ALLOWS_NIL] ~= staticTypeTable[TYPETABLE_ALLOWS_NIL] then
-                error("cannot change type or allows nil of super class' property: " .. k, 2 )
+                error(name .. ": cannot change type or allows nil of super class' property: " .. k, 2 )
             end
         end
     end
@@ -1034,8 +1034,8 @@ function compileClass( compiledClass, name )
 
         -- add super properties and ensure they don't conflict
         if compiledSuperDetails then
-            mergeProperties( currentlyConstructing.instanceProperties, compiledSuperDetails.instanceProperties )
-            mergeProperties( currentlyConstructing.staticProperties, compiledSuperDetails.staticProperties )
+            mergeProperties( currentlyConstructing.instanceProperties, compiledSuperDetails.instanceProperties, name )
+            mergeProperties( currentlyConstructing.staticProperties, compiledSuperDetails.staticProperties, name )
         end
 
         -- all the properties and functions have been added now, check that the class complies with its interfaces
@@ -1533,7 +1533,6 @@ function spawnInstance( name, ... )
 
     -- for default values that are tables make them unique or create class instances
     for propertyName, typeTable in pairs( compiledInstance.requireDefaultGeneration ) do
-        if propertyName == "handles" then log "Generating" end
         values[propertyName] = generateDefaultValue( typeTable )
     end
 
