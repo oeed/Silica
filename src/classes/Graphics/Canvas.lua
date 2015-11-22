@@ -53,23 +53,32 @@ function Canvas:outline( Graphics.colours colour, Number( 1 ) thickness, Mask( s
 end
 
 --[[
-    @desc Draws the canvas to another canvas at the specified location
-    @return Any returnedValue
-]]
-
---[[
-    @desc Draws the canvas to another canvas
+    @desc Draws the canvas to another canvas. If mask is provided the canvas content will be masked (mask pixels will be drawn, pixels not in the mask won't). Mask cordinates are relative to self, not the destination
 ]]
 function Canvas:drawTo( Number x, Number y, Canvas destinationCanvas, Mask.allowsNil mask )
     local width, height = self.width, self.height
     local destinationWidth, destinationHeight, destinationPixels = destinationCanvas.width, destinationCanvas.height, destinationCanvas.pixels
     local TRANSPARENT = Graphics.colours.TRANSPARENT
+    local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
+    print(serialise(maskPixels))
     for index, colour in pairs( self.pixels ) do
         if colour and colour ~= TRANSPARENT then
             local _x = (index - 1) % width + x
             local _y = math.floor( ( index - 1) / width ) + y
             if _x >= 1 and _x <= destinationWidth and _y >= 1 and _y <= destinationHeight then
-                destinationPixels[( _y - 1 ) * destinationWidth + _x] = colour
+                local isOkay = true
+                if mask then
+                    local mx = _x - x - maskX + 2
+                    local my = _y - y - maskY + 2
+                    if mx >= 1 and mx <= maskWidth and my >= 1 and my <= maskHeight then
+                        isOkay = maskPixels[ (my - 1) * maskWidth + mx ]
+                    else
+                        isOkay = false
+                    end
+                end
+                if isOkay then
+                    destinationPixels[( _y - 1 ) * destinationWidth + _x] = colour
+                end
             end
         end
     end
