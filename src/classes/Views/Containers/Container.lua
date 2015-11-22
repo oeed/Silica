@@ -120,7 +120,8 @@ end
 ]]
 function Container:draw()
 	local canvas = self.canvas
-
+	canvas:clear()
+	
 	-- first draw ourself
 	self:onDraw()
 

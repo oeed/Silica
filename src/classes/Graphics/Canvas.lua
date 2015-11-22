@@ -29,6 +29,13 @@ function Canvas.mask:get()
 end
 
 --[[
+    @desc Clears all pixels from the canvas
+]]
+function Canvas:clear()
+    self.pixels = {}
+end
+
+--[[
     @desc Hit test the current contents of the canvas
     @return Boolean didHit
 ]]

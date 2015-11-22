@@ -136,6 +136,7 @@ end
 	@desc Called when a parent Container wants the Canvas to be redraw
 ]]
 function View:draw()
+	self.canvas:clear()
 	self:onDraw() -- we have no children, just draw our own content
 end
 
