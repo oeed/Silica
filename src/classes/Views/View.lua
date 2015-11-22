@@ -77,7 +77,7 @@ class "View" {
 	@desc Initialise a view instance
 	@param [table] properties -- the properties for the view
 ]]
-function View:initialise( properties )
+function View:initialise( Table.allowsNil properties )
 	self.animations.names = {} 
 	self:initialiseEventManager()
 	self:initialiseTheme()
@@ -575,11 +575,13 @@ end
 function View.height:set( height )
 	self.height = height
     self.canvas.height = height
+    self.needsDraw = true
 end
 
 function View.width:set( width )
 	self.width = width
     self.canvas.width = width
+    self.needsDraw = true
 end
 
 function View.isVisible:get()
