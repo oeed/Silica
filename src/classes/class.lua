@@ -930,6 +930,7 @@ end
 local function generateDefaultValue( typeTable, context, circularKey )
     local hasDefaultValue = typeTable[TYPETABLE_HAS_DEFAULT_VALUE]
     if hasDefaultValue then
+        local defaultValue = typeTable[TYPETABLE_DEFAULT_VALUE]
         if typeTable[TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] then
             -- this is a reference, we need to get the value out of the content
             if not context then
@@ -945,15 +946,15 @@ local function generateDefaultValue( typeTable, context, circularKey )
             end
             -- don't return because we'll need to check if the value it gave was okay
             return value, false
-        elseif typeTable[TYPETABLE_TYPE] ~= "table" then
-            return typeTable[TYPETABLE_DEFAULT_VALUE]
+        elseif typeTable[TYPETABLE_TYPE] ~= "table" and type( defaultValue ) ~= "table" then
+            return defaultValue
         else
             -- this asumes TYPETABLE_HAS_DEFAULT_VALUE is true and TYPETABLE_TYPE is "table" and should only be called when that is true
             local classType = typeTable[TYPETABLE_CLASS]
             if classType then
                 return classType( unpack( typeTable, TYPETABLE_DEFAULT_VALUE )), true
             else
-                local defaultTable = typeTable[TYPETABLE_DEFAULT_VALUE]
+                local defaultTable = defaultValue
                 -- if it's a plain table make a deep copy of it
                 local function uniqueTable( default )
                     local new = {}
