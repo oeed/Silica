@@ -1,8 +1,6 @@
 
 class "ApplicationContainer" extends "Container" {
 	-- TODO: make this use a Constraint
-	x = Number( 1 );
-	y = Number( 1 );
 	width = Number( 320 );
 	height = Number( 200 );
 	themeName = String( "default" );
@@ -78,4 +76,8 @@ end
 function ApplicationContainer:dispose()
 	self:super()
 	self.application:clearFocus()
+end
+
+function ApplicationContainer.isVisible:get()
+	return self.isVisible -- View requires having a parent to be visible, but we never have a parent
 end

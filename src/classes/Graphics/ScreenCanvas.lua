@@ -21,10 +21,10 @@ function ScreenCanvas:drawToScreen( screen )
         [width - 1] = { [1] = true, [2] = true, [height - 1] = true, [height] = true },
         [width] = { [1] = true, [2] = true, [3] = true, [4] = true, [height - 3] = true, [height - 2] = true, [height - 1] = true, [height] = true },
     }
-    local cornerColour = Graphics.colours.BLACK
+    local blackColour = Graphics.colours.BLACK
     for x, v in pairs( corner ) do
         for y, v in pairs( v ) do
-            pixels[ ( y - 1 ) * width + x ] = cornerColour
+            pixels[ ( y - 1 ) * width + x ] = blackColour
         end
     end
 
@@ -53,15 +53,14 @@ function ScreenCanvas:drawToScreen( screen )
         local str = ""
         for x = 1, width do
             local p = ( y - 1 ) * width + x
-            local c = buffer[p] or colour
+            local c = pixels[p] or blackColour
             str = str .. hexes[c]
-            if not changed and c ~= drawn[p] then
+            if not changed and c ~= screenBuffer[p] then
                 changed = true
             end
         end
         if changed then
             term.setCursorPos(1,y)
-            term.setBackgroundColour(8)
             blit("e"..str)
         end
     end

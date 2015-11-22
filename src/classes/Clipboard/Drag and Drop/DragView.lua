@@ -6,7 +6,6 @@ class "DragView" extends "View" {
 
     imageObject = false;
     shadowObject = false;
-    shadowSize = 0;
     image = false;
     shadowImage = false;
 }

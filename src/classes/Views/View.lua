@@ -41,11 +41,12 @@ class "View" {
 	event = false;
 	canvas = Canvas;
 	shadowMask = Mask; -- TODO: .isReadOnly
+	shadowSize = Number( 0 ); -- TODO: .isReadOnly
 	needsDraw = Boolean( true );
+	isVisible = Boolean( true );
 
 	theme = false;
 	isCanvasHitTested = true;
-	isVisible = true;
 	isFocused = false;
 	isSingleFocusOnly = false; -- whether only this view can be in-focus when focused (i.e. so 3 textboxes aren't focused at the same time)
 	isFocusDismissable = true; -- whether clicking away from the view when focused will unfocus it

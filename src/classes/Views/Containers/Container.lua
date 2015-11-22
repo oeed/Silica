@@ -136,7 +136,7 @@ function Container:draw()
 			end
 
 			-- draw the childView to the canvas
-			childView:drawTo( x, y, canvas )
+			childView.canvas:drawTo( x, y, canvas )
 			childView.needsDraw = false
 		end
 	end
