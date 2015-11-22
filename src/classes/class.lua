@@ -11,7 +11,8 @@ local valueTypes = {}
 local compiledClassDetails, compiledInstances, compiledStatics = {}, {}, {}
 local currentlyConstructing, expectedName -- the class that is currently being constructed
 local constructingEnvironment, constructorProxy, constructingFunctionArguments, currentCompiledClass
-local stripFunctionArguments, loadProperties, compileClass, loadPropertiesTableSection, checkValue, constructSuper, isInterface, pseudoReference
+local stripFunctionArguments, loadProperties, compileClass, loadPropertiesTableSection, checkValue, constructSuper, isInterface, pseudoReference, checkValue, compileClass, compileInstanceClass, compileAndSpawnStatic, spawnInstance, createValueType
+local implements, extends, interface
 local allLockedGetters, allLockedSetters = {}, {}
 local isLoadingProperties
 local interface
@@ -97,8 +98,17 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
 
     function metatable:__index( k )
         if k == "allowsNil" then
-            valueType[TYPETABLE_ALLOWS_NIL] = true -- this sets it for the type everywhere, we then MUST reset it once we've accessed it
-            return valueType
+            -- we have to make a unique copy because setting allows nil would apply it to all types
+            local newValueType = {}
+            for i = 1, #valueType do
+                newValueType[i] = valueType[i]
+            end
+            newValueType[TYPETABLE_ALLOWS_NIL] = true
+            local newMetatable = { __index = metatable.index, __newindex = metatable.__newindex}
+            local __tostring = "value type instance '" .. name .. "': " ..  tostring( valueType ):sub( 8 )
+            function newMetatable:__tostring() return __tostring end
+            setmetatable( newValueType, newMetatable )
+            return newValueType
         elseif type( k ) ~= "number" then -- if it's a number it would've been trying to get a default value, don't error
             error( "tried to index '" .. k .. "', types only support .allowsNil", 2 )
         end
@@ -454,7 +464,7 @@ function stripFunctionArguments( name, contents )
 
                         if not value then
                             error( name .. ": " .. n .. ": error extracting value type from " .. type )
-                        elseif value[TYPETABLE_HAS_DEFAULT_VALUE] then -- this was created like String(), not String, so it created its own instance. hence we can use the value directly
+                        elseif value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] then -- this was created like String(), not String, or indexed .allowsNil so it created its own instance. hence we can use the value directly
                             value[TYPETABLE_NAME] = argumentName
                             typeTable = value
                         else
@@ -466,8 +476,6 @@ function stripFunctionArguments( name, contents )
                             for i = TYPETABLE_TYPE, #value do
                                 typeTable[i] = value[i]
                             end
-
-                            value[TYPETABLE_ALLOWS_NIL] = false
                         end
                         typeTable[TYPETABLE_IS_VAR_ARG] = isVarArg;
 
@@ -836,7 +844,7 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                             error( "self refernce only in static" , 2 )
                         end
                     end
-                    if value[TYPETABLE_HAS_DEFAULT_VALUE] then -- this was created like String(), not String. hence we can use the value table directly
+                    if value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] then -- this was created like String(), not String. hence we can use the value table directly
                         value[TYPETABLE_NAME] = propertyName
                         toTable[propertyName] = value
                     else
@@ -849,8 +857,6 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                             uniqueValue[i] = value[i]
                         end
                         toTable[propertyName] = uniqueValue
-
-                        value[TYPETABLE_ALLOWS_NIL] = false
                     end
                 end
             else
@@ -991,7 +997,7 @@ function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: e
         if isSelf then
             error("self not passed to function, you probably used . instead of :", 3)
         else
-            error(typeTable[TYPETABLE_NAME] .. " was wrong type, expected "..expectedType .. " got " .. type( value ), 4)
+            error(typeTable[TYPETABLE_NAME] .. " was wrong type, expected "..expectedType .. " got " .. type( value ) .. ": "..tostring(value), 4)
         end
     end
     return value
@@ -1622,7 +1628,7 @@ function spawnInstance( name, ... )
     for k, v in pairs( definedProperties ) do
         if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
             local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
-            if value == nil and instanceProperties[k][TYPETABLE_ALLOWS_NIL] then
+            if value == nil and not instanceProperties[k][TYPETABLE_ALLOWS_NIL] then
                 error( name .. "." .. k .. " was nil after initialisation but type does not specify .allowsNil" )
             end
         end

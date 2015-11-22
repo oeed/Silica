@@ -40,7 +40,7 @@ class "View" {
 
 	event = false;
 	canvas = Canvas;
-	shadowMask = Mask; -- TODO: .isReadOnly
+	shadowMask = Mask.allowsNil; -- TODO: .isReadOnly
 	shadowSize = Number( 0 ); -- TODO: .isReadOnly
 	needsDraw = Boolean( true );
 	isVisible = Boolean( true );
@@ -52,8 +52,8 @@ class "View" {
 	isFocusDismissable = true; -- whether clicking away from the view when focused will unfocus it
 	isEnabled = true;
 
-	isFirst = Boolean;
-	isLast = Boolean; -- TODO: .isReadOnly
+	isFirst = Boolean.allowsNil;
+	isLast = Boolean.allowsNil; -- TODO: .isReadOnly
 
 	stringConstraints = {}; -- the constraints strings
 	loadedConstraints = {}; -- the parsed constraints
