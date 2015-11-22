@@ -928,7 +928,7 @@ local function generateDefaultValue( typeTable, context, circularKey )
                 error( "attempted to use reference in invalid location (no context)" )
             end
             local value = context
-            for i, key in ipairs( context ) do
+            for i, key in ipairs( typeTable[TYPETABLE_DEFAULT_VALUE] ) do
                 value = value[key]
                 -- TODO: circular references
                 -- if circularKey and circularKey[i] == key then
