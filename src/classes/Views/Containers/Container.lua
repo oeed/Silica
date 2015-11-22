@@ -242,7 +242,7 @@ function Container:insert( childView, position )
 
 	local oldParent = childView.parent 
 	childView.parent = self
-	self.canvas:insert( childView.canvas )
+	-- self.canvas:insert( childView.canvas )
 	-- we need to update the isEnabled value
 	childView.isEnabled = childView.raw.isEnabled
 
@@ -281,7 +281,7 @@ function Container:remove( removingView )
 	local children, canvas = self.children, self.canvas
 	for i, childView in ipairs( children ) do
 		if childView == removingView then
-			canvas:remove( removingView.canvas )
+			-- canvas:remove( removingView.canvas )
 			table.remove( children, i )
 			didRemove = true
 			break
