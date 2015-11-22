@@ -16,12 +16,14 @@ function ContainerEventManager:handleEvent( event )
 	if event.isSentToChildren then
 		local owner = self.owner
 		local children = owner.children
+		local eventClass = event.class
 		for i = #children, 1, -1 do
 			local childView = children[i]
-			if childView:typeOf( Container ) or childView.event:hasConnections( event.eventType ) then
+			local childViewEvent = childView.event
+			if childView:typeOf( Container ) or childViewEvent:hasConnections( eventClass ) then
 				if childView:hitTestEvent( event, owner ) then
 					event:makeRelative( childView )
-					if childView.event:handleEvent( event ) then
+					if childViewEvent:handleEvent( event ) then
 						return true
 					end
 					event:makeRelative( owner )

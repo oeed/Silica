@@ -112,11 +112,11 @@ end
 
 --[[
 	@desc Returns true if the EventManager has any handles for the given type
-	@param [Event.eventType] eventType -- the name of the even type
+	@param Event.class eventType -- the name of the even type
 	@return [boolean] hasConnections
 ]]
-function EventManager:hasConnections( eventType )
-	return self.handles[eventType] and #self.handles[eventType] >= 1
+function EventManager:hasConnections( eventClass )
+	return self.handles[eventClass] and #self.handles[eventClass] >= 1
 end
 
 --[[
