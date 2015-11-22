@@ -8,7 +8,13 @@ class "ScreenCanvas" extends "Canvas" {
 
 function ScreenCanvas:initialise( ... )
     self:super( ... )
-    self:fill( Graphics.colours.RED )
+    self:fill( Graphics.colours.WHITE )
+end
+
+function ScreenCanvas.width:set( width )
+    self.width = width
+    print( "set to "..width)
+    logtraceback()
 end
 
 function ScreenCanvas:drawToScreen( screen )
@@ -65,7 +71,7 @@ function ScreenCanvas:drawToScreen( screen )
         end
         if changed then
             term.setCursorPos(1,y)
-            blit("e"..str)
+            blit(str)
         end
     end
 end

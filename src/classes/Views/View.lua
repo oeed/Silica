@@ -277,107 +277,111 @@ end
 	@param [string] property - the constraint to parse and simplify
 	@return [table] parsed - the parsed and simplified constraint
 ]]
-function View:parseConstraint( property )
-	local loaded = self.loadedConstraints
-	if loaded[property] then return loaded[property] end
+-- function View:parseConstraint( property )
+-- 	local loaded = self.loadedConstraints
+-- 	if loaded[property] then return loaded[property] end
 
-	local constraints = self.stringConstraints
-	local constraintString = constraints[property]
+-- 	local constraints = self.stringConstraints
+-- 	local constraintString = constraints[property]
 	
-	if not constraintString then
-		-- solve it based on other constraints
-		local left, right, top, bottom, width, height = constraints.left or "1", constraints.right or "1", constraints.top or "1", constraints.bottom or "1", constraints.width or "1", constraints.height or "1"
+-- 	if not constraintString then
+-- 		-- solve it based on other constraints
+-- 		local left, right, top, bottom, width, height = constraints.left or "1", constraints.right or "1", constraints.top or "1", constraints.bottom or "1", constraints.width or "1", constraints.height or "1"
 
-		if property == "width" then
-			constraintString = "(" .. right .. ")-(" .. left .. ")+1"
-		elseif property == "height" then
-			constraintString = "(" .. bottom .. ")-(" .. top .. ")+1"
-		elseif property == "left" then
-			constraintString = "(" .. right .. ")-(" .. width .. ")+1"
-		elseif property == "right" then
-			constraintString = "(" .. width .. ")+(" .. left .. ")-1"
-		elseif property == "top" then
-			constraintString = "(" .. bottom .. ")-(" .. height .. ")+1"
-		elseif property == "bottom" then
-			constraintString = "(" .. top .. ")+(" .. height .. ")-1"
-		else
-			constraintString = "0"
-		end
-	end
+-- 		if property == "width" then
+-- 			constraintString = "(" .. right .. ")-(" .. left .. ")+1"
+-- 		elseif property == "height" then
+-- 			constraintString = "(" .. bottom .. ")-(" .. top .. ")+1"
+-- 		elseif property == "left" then
+-- 			constraintString = "(" .. right .. ")-(" .. width .. ")+1"
+-- 		elseif property == "right" then
+-- 			constraintString = "(" .. width .. ")+(" .. left .. ")-1"
+-- 		elseif property == "top" then
+-- 			constraintString = "(" .. bottom .. ")-(" .. height .. ")+1"
+-- 		elseif property == "bottom" then
+-- 			constraintString = "(" .. top .. ")+(" .. height .. ")-1"
+-- 		else
+-- 			constraintString = "0"
+-- 		end
+-- 	end
 
-	local parsed = MathParser.static:parseString( tostring( constraintString ) )
-	MathParser.static:simplify( parsed )
+-- 	local parsed = MathParser.static:parseString( tostring( constraintString ) )
+-- 	MathParser.static:simplify( parsed )
 
-	loaded[property] = parsed
-	return parsed
-end
+-- 	loaded[property] = parsed
+-- 	return parsed
+-- end
 
---[[
-	@desc Evaluates the numerical value of a constraint
-	@param [string] property -- the name of the property (i.e. left, width, etc.)
-	@return [number] value -- the numerical value
-]]
-function View:evalConstraint( property )
-	local references = {}
-	local parsed = self:parseConstraint( property )
-	local resolved = MathParser.static:resolve( parsed, self, property, references )
-	local value = MathParser.static:eval( resolved )
+-- --[[
+-- 	@desc Evaluates the numerical value of a constraint
+-- 	@param [string] property -- the name of the property (i.e. left, width, etc.)
+-- 	@return [number] value -- the numerical value
+-- ]]
+-- function View:evalConstraint( property )
+-- 	local references = {}
+-- 	local parsed = self:parseConstraint( property )
+-- 	local resolved = MathParser.static:resolve( parsed, self, property, references )
+-- 	local value = MathParser.static:eval( resolved )
 
-	local oldValue = self.raw[property]
-	if oldValue ~= value then
-		self.raw[property] = value
-		self.references[property] = references
+-- 	local oldValue = self.raw[property]
+-- 	if oldValue ~= value then
+-- 		self.raw[property] = value
+-- 		self.references[property] = references
 		
-		self.needsConstraintUpdate[self:updateConstraint( property, value )] = true
-	end
-	return value
-end
+-- 		self.needsConstraintUpdate[self:updateConstraint( property, value )] = true
+-- 	end
+-- 	return value
+-- end
 
-function View:updateConstraint( property, value )
-	local stringConstraints = self.stringConstraints
-	local canvas = self.canvas
-	if property == "top" then
-		self.raw.y = value
-		if canvas then canvas.y = value end
-		return "y"
-	elseif property == "bottom" then
-		if stringConstraints.height then
-			value = value - self.height + 1
-			self.raw.y = value
-			if canvas then canvas.y = value end
-			return "y"
-		else
-			value = value - self.y + 1
-			self.raw.height = value
-			if canvas then canvas.height = value end
-			return "height"
-		end
-	elseif property == "left" then
-		self.raw.x = value
-		if canvas then canvas.x = value end
-		return "x"
-	elseif property == "right" then
-		if stringConstraints.width then
-			value = value - self.width + 1
-			self.raw.x = value
-			if canvas then canvas.x = value end
-			return "x"
-		else
-			value = value - self.x + 1
-			self.raw.width = value
-			if canvas then canvas.width = value end
-			return "width"
-		end
-	elseif property == "width" then
-		self.raw.width = value
-		if canvas then canvas.width = value end
-		return "width"
-	elseif property == "height" then
-		self.raw.height = value
-		if canvas then canvas.height = value end
-		return "height"
-	end
-end
+-- function View:updateConstraint( property, value )
+-- 	local stringConstraints = self.stringConstraints
+-- 	local canvas = self.canvas
+-- 	if property == "top" then
+-- 		self.raw.y = value
+-- 		if canvas then canvas.y = value end
+-- 		return "y"
+-- 	elseif property == "bottom" then
+-- 		if stringConstraints.height then
+-- 			value = value - self.height + 1
+-- 			self.raw.y = value
+-- 			if canvas then canvas.y = value end
+-- 			return "y"
+-- 		else
+-- 			value = value - self.y + 1
+-- 			self.raw.height = value
+-- 			if canvas then canvas.height = value end
+-- 			return "height"
+-- 		end
+-- 	elseif property == "left" then
+-- 		self.raw.x = value
+-- 		if canvas then canvas.x = value end
+-- 		return "x"
+-- 	elseif property == "right" then
+-- 		if stringConstraints.width then
+-- 			value = value - self.width + 1
+-- 			self.raw.x = value
+-- 			if canvas then canvas.x = value end
+-- 			return "x"
+-- 		else
+-- 			value = value - self.x + 1
+-- 			self.raw.width = value
+-- 			if canvas then canvas.width = value end
+-- 			return "width"
+-- 		end
+-- 	elseif property == "width" then
+-- 		self.raw.width = value
+-- 			print("self "..tostring(self))
+-- 			print("can: "..tostring(canvas))
+-- 			print("to "..value)
+-- 			print('---')
+-- 		if canvas then canvas.width = value end
+-- 		return "width"
+-- 	elseif property == "height" then
+-- 		self.raw.height = value
+-- 		if canvas then canvas.height = value end
+-- 		return "height"
+-- 	end
+-- end
 
 --[[
 	@desc Called when the parent changes. This updates constraints.
@@ -428,12 +432,12 @@ end
 	@note - call when a reference changes with true
 	@note - call when the constraint changes with false
 ]]
-function View:reloadConstraint( property, isReferenceChange )
-	if not isReferenceChange then
-		self.loadedConstraints[property] = nil
-	end
-	return self:evalConstraint( property )
-end
+-- function View:reloadConstraint( property, isReferenceChange )
+-- 	if not isReferenceChange then
+-- 		self.loadedConstraints[property] = nil
+-- 	end
+-- 	return self:evalConstraint( property )
+-- end
 
 -- @instance
 -- function View.top:get()
@@ -518,54 +522,62 @@ end
 -- end
 
 -- @instance 
-function View.width:get()
-	return self.width or self:evalConstraint "width"
-end
+-- function View.width:get()
+-- 	return self.width or self:evalConstraint "width"
+-- end
 
--- @instance 
-function View.width:set( width )
-	local value
-	if width then
-		local stringConstraints = self.stringConstraints
-		stringConstraints.width = width
-		value = self:reloadConstraint "width"
-		if stringConstraints.left then
-			stringConstraints.right = nil
-		elseif stringConstraints.right then
-			stringConstraints.left = nil
-		end
-	else
-		self.stringConstraints.width = nil
-	end
-	return value
-end
+-- -- @instance 
+-- function View.width:set( width )
+-- 	local value
+-- 	if width then
+-- 		local stringConstraints = self.stringConstraints
+-- 		stringConstraints.width = width
+-- 		value = self:reloadConstraint "width"
+-- 		if stringConstraints.left then
+-- 			stringConstraints.right = nil
+-- 		elseif stringConstraints.right then
+-- 			stringConstraints.left = nil
+-- 		end
+-- 	else
+-- 		self.stringConstraints.width = nil
+-- 	end
+-- 	return value
+-- end
 
--- @instance 
-function View.height:get()
-	return self.height or self:evalConstraint "height"
-end
+-- -- @instance 
+-- function View.height:get()
+-- 	return self.height or self:evalConstraint "height"
+-- end
 
--- @instance 
+-- -- @instance 
+-- function View.height:set( height )
+-- 	local value
+-- 	if height then
+-- 		local stringConstraints = self.stringConstraints
+-- 		stringConstraints.height = height
+-- 		value = self:reloadConstraint "height"
+-- 		if stringConstraints.top then
+-- 			stringConstraints.bottom = nil
+-- 		elseif stringConstraints.bottom then
+-- 			stringConstraints.top = nil
+-- 		end
+-- 	else
+-- 		self.stringConstraints.height = nil
+-- 	end
+-- 	return value
+-- end
+
+-- function View.isVisible:set( isVisible )
+-- 	self.canvas.isVisible = isVisible
+-- 	self.isVisible = isVisible
+-- end
+
 function View.height:set( height )
-	local value
-	if height then
-		local stringConstraints = self.stringConstraints
-		stringConstraints.height = height
-		value = self:reloadConstraint "height"
-		if stringConstraints.top then
-			stringConstraints.bottom = nil
-		elseif stringConstraints.bottom then
-			stringConstraints.top = nil
-		end
-	else
-		self.stringConstraints.height = nil
-	end
-	return value
+    self.canvas.height = height
 end
 
-function View.isVisible:set( isVisible )
-	self.canvas.isVisible = isVisible
-	self.isVisible = isVisible
+function View.width:set( width )
+    self.canvas.width = width
 end
 
 function View.isVisible:get()

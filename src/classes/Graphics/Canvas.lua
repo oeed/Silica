@@ -62,14 +62,14 @@ end
 ]]
 function Canvas:drawTo( Number x, Number y, Canvas destinationCanvas, Mask.allowsNil mask )
     local width, height = self.width, self.height
-    local destinationX, destinationY, destinationWidth, destinationHeight, destinationPixels = destinationCanvas.x, destinationCanvas.y, destinationCanvas.width, destinationCanvas.height, destinationCanvas.pixels
+    local destinationWidth, destinationHeight, destinationPixels = destinationCanvas.width, destinationCanvas.height, destinationCanvas.pixels
     local TRANSPARENT = Graphics.colours.TRANSPARENT
     for index, colour in pairs( self.pixels ) do
         if colour and colour ~= TRANSPARENT then
             local _x = (index - 1) % width + x
             local _y = math.floor( ( index - 1) / width ) + y
-            if _x >= 1 and _x <= width and _y >= 1 and _y <= height then
-                destinationPixels[( _y - 1 ) * width + _x] = colour
+            if _x >= 1 and _x <= destinationWidth and _y >= 1 and _y <= destinationHeight then
+                destinationPixels[( _y - 1 ) * destinationWidth + _x] = colour
             end
         end
     end
