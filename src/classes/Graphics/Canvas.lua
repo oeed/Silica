@@ -48,6 +48,7 @@ end
     @desc Fills an area in the given mask with the given colour, defaulting to the entire canvas
 ]]
 function Canvas:fill( Graphics.colours colour, Mask( self.mask ) mask )
+    if colour == Graphics.colours.TRANSPARENT then return end
     local pixels, width, height = self.pixels, self.width, self.height
     local maskX, maskY, maskWidth, maskHeight = mask.x, mask.y, mask.width, mask.height
     for index, isFilled in pairs( mask.pixels ) do
@@ -65,6 +66,7 @@ end
     @desc Draws an outline around the given mask, defaulting to the canvas' content mask
 ]]
 function Canvas:outline( Graphics.colours colour, Mask( self.contentMask ) mask, Number( 1 ) leftThickness, Number( leftThickness ) topThickness, Number( leftThickness ) rightThickness, Number( leftThickness ) bottomThickness )
+    if colour == Graphics.colours.TRANSPARENT then return end
     local width, height, pixels = self.width, self.height, self.pixels
     local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
     local function xScanline( min, max, inc, thickness )
