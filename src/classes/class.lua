@@ -371,7 +371,7 @@ function stripFunctionArguments( name, contents )
             end
 
             local valueTypeExtractionEnvironment = {}
-            local pseudoReferences = {}
+            local pseudoReferences = { self = pseudoReference( "self" ) }
             local metatable = {}
             function metatable:__index( key )
                 local valueTypeValue = valueTypes[key]
