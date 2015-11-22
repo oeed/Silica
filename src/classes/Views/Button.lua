@@ -1,18 +1,20 @@
 
+local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
+
 class "Button" extends "View" {
 
-    height = Number( 16 ); -- the default height
-    width = Number( 60 ); --36
+    height = Number( 16 );
+    width = Number( 36 );
     text = String( "" );
+    font = Font( Font.static.systemFont );
 
     isPressed = Boolean( false );
     isFocused = Boolean( false );
-    isAutosizing = Boolean( true );
-    font = Font( Font.static.systemFont );
-
+    isAutosized = Boolean( true );
     isFocusDismissable = Boolean( true );
 
     needsAutosize = Boolean( true );
+
 }
 
 --[[
@@ -30,16 +32,24 @@ end
 function Button:onDraw()
     local width, height, theme, canvas, isPressed = self.width, self.height, self.theme, self.canvas, self.isPressed
 
+    -- get all the shadow size details so we can adjust the compression as needed
+    local defaultShadowSize = theme:value( "shadowSize", "default" )
+    local shadowPressedSize = theme:value( "shadowSize", "pressed" )
+    local shadowSize = theme:value( "shadowSize" )
+    local shadowOffset = defaultShadowSize - shadowSize
+    local shadowPressedOffset = defaultShadowSize - shadowPressedSize
+    local shadowX = math.floor( shadowOffset * SHADOW_RATIO + 0.5 )
+
     -- background shape
-    local roundedRectangle = RoundedRectangleMask( isPressed and 2 or 1, isPressed and 2 or 1, width - 1, height - 1, theme:value( "cornerRadius" ) )
+    local roundedRectangle = RoundedRectangleMask( shadowX + 1, shadowOffset + 1, width - math.floor( shadowPressedOffset * SHADOW_RATIO + 0.5 ), height - shadowPressedOffset, theme:value( "cornerRadius" ) )
     canvas:fill( theme:value( "fillColour" ), roundedRectangle )
     canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
 
     local leftMargin, rightMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" )
     -- text
-    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, theme:value( "topMargin" ) + 1, width - leftMargin - rightMargin, nil, self.text, self.font ) )
+    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + shadowX + 1, theme:value( "topMargin" ) + 1 + shadowOffset, width - leftMargin - rightMargin, nil, self.text, self.font ) )
 
-    self.shadowSize = theme:value( "shadowSize" )
+    self.shadowSize = shadowSize
 end
 
 function Button.text:set( text )
@@ -61,13 +71,17 @@ function Button.font:set( font )
 end
 
 --[[
-    @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text
+    @desc Automatically resizes the button, regardless of isAutosized value, to fit the text
 ]]
 function Button:autosize()
-    if self.isAutosizing then
+    if self.isAutosized then
         local font, text, theme = self.font, self.text, self.theme
-        self.width = font:getWidth( self.text ) + theme:value( "leftMargin" ) + theme:value( "rightMargin" ) + 1
-        self.height = font.height + theme:value( "topMargin" ) + theme:value( "bottomMargin" ) + 1
+        local defaultShadowSize = theme:value( "shadowSize", "default" )
+        local shadowSize = theme:value( "shadowSize", "pressed" )
+        local shadowOffset = defaultShadowSize - shadowSize
+        local shadowX = math.floor( shadowOffset * SHADOW_RATIO + 0.5 )
+        self.width = font:getWidth( self.text ) + theme:value( "leftMargin" ) + theme:value( "rightMargin" ) + shadowX
+        self.height = font.height + theme:value( "topMargin" ) + theme:value( "bottomMargin" ) + shadowOffset
     end
     self.needsAutosize = false
 end

@@ -14,6 +14,11 @@ class "Canvas" {
 
     pixels = Table( {} );
 
+    shadows = Enum( Number, {
+        SHADOW_RATIO = SHADOW_RATIO;
+        SHADOW_COLOUR = SHADOW_COLOUR;
+    } )
+
 }
 
 function Canvas:initialise( Number x, Number y, Number width, Number height, View.allowsNil owner )

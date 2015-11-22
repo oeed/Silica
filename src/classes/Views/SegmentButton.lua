@@ -58,13 +58,13 @@ function SegmentButton.width:set( width )
     self.parent.needsLayoutUpdate = true
 end
 
-function SegmentButton.rightMargin:get()
-    return self.isLast and self.rightMargin or self.centerMargin
-end
+-- function SegmentButton.rightMargin:get()
+--     return self.isLast and self.rightMargin or self.centerMargin
+-- end
 
-function SegmentButton.leftMargin:get()
-    return self.isFirst and self.leftMargin or self.centerMargin
-end
+-- function SegmentButton.leftMargin:get()
+--     return self.isFirst and self.leftMargin or self.centerMargin
+-- end
 
 function SegmentButton.isPressed:set( isPressed )
     self:super( isPressed )
