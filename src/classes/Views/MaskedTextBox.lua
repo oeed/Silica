@@ -1,6 +1,6 @@
 
 class "MaskedTextBox" extends "TextBox" {
     
-    isMasked = true;
+    isMasked = Boolean( true );
 
 }

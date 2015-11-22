@@ -5,7 +5,7 @@ class "ParentChangedInterfaceEvent" extends "InterfaceEvent" {
     };
 	newParent = false; -- the new parent
 	oldParent = false; -- the old parent
-	isSentToChildren = false;
+	isSentToChildren = Boolean( false );
 }
 
 --[[

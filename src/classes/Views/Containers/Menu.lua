@@ -8,11 +8,11 @@ class "Menu" extends "Container" {
 	targetX = 1; -- the desired location of the menu. this is the originally set x value, the actual x value can change to prevent overflowing with the screen
 	targetY = 1;
 
-	isPressed = false;
-    isEnabled = true;
+	isPressed = Boolean( false );
+    isEnabled = Boolean( true );
     -- isVisible acts as the boolans of whether the menu is open or closed.
 
-	isSingleShot = false; -- true if the menu should be removed and unlinked when closed (as opposed to simply hiding for reuse only)
+	isSingleShot = Boolean( false ); -- true if the menu should be removed and unlinked when closed (as opposed to simply hiding for reuse only)
 	hitTestOwner = false; -- true if clicks should first be sent to the owner if they hit test (and it has one)
 
 	topMargin = 3;

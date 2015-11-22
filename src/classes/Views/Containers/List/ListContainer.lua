@@ -6,7 +6,7 @@ local BOTTOM_MARGIN = TOP_MARGIN
 class "ListContainer" extends "ScrollContainer" implements "IDragDropDestination" {
     
     needsLayoutUpdate = false;
-    isCanvasHitTested = false;
+    isCanvasHitTested = Boolean( false );
     canRearrange = true;
     dropStyle = DragDropManager.dropStyles.RETURN;
     canTransferItems = false;

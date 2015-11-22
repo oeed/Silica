@@ -4,7 +4,7 @@ class "SiblingRemovedInterfaceEvent" extends "InterfaceEvent" {
         eventType = "interface_sibling_removed";
     };
 	view = false; -- the new sibling that was removed
-	isSentToChildren = false;
+	isSentToChildren = Boolean( false );
 }
 
 --[[

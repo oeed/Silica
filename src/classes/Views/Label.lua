@@ -2,7 +2,7 @@
 class "Label" extends "View" {
 
     text = false;
-    isAutosizing = true;
+    isAutosizing = Boolean( true );
     font = false;
     textObject = false;
     needsAutosize = false;

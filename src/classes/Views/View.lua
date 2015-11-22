@@ -46,11 +46,11 @@ class "View" {
 	isVisible = Boolean( true );
 
 	theme = false;
-	isCanvasHitTested = true;
-	isFocused = false;
-	isSingleFocusOnly = false; -- whether only this view can be in-focus when focused (i.e. so 3 textboxes aren't focused at the same time)
-	isFocusDismissable = true; -- whether clicking away from the view when focused will unfocus it
-	isEnabled = true;
+	isCanvasHitTested = Boolean( true );
+	isFocused = Boolean( false );
+	isSingleFocusOnly = Boolean( false ); -- whether only this view can be in-focus when focused (i.e. so 3 textboxes aren't focused at the same time)
+	isFocusDismissable = Boolean( true ); -- whether clicking away from the view when focused will unfocus it
+	isEnabled = Boolean( true );
 
 	isFirst = Boolean.allowsNil;
 	isLast = Boolean.allowsNil; -- TODO: .isReadOnly

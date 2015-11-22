@@ -2,7 +2,7 @@
 class "WindowButton" extends "View" {
 	width = Number( 9 );
 	height = Number( 7 );
-    isPressed = false;
+    isPressed = Boolean( false );
     backgroundObject = false;
     symbolObject = false;
     window = false;

@@ -6,9 +6,9 @@ class "MenuItem" extends "View" {
 	height = Number( 12 );
 	width = Number( 40 );
 
-    isPressed = false;
-    isEnabled = true;
-	isCanvasHitTested = false;
+    isPressed = Boolean( false );
+    isEnabled = Boolean( true );
+	isCanvasHitTested = Boolean( false );
 
     keyboardShortcut = false;
     text = false;

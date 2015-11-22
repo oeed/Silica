@@ -17,12 +17,12 @@ class "FileItem" extends "View" implements "IDraggableView" implements "IFlowIte
     subtitleObject = false;
     imageObject = false;
     focusObject = false;
-    isFocused = false;
-    isCanvasHitTested = false;
+    isFocused = Boolean( false );
+    isCanvasHitTested = Boolean( false );
 
     title = false;
     subtitle = false;
-    isFolder = true;
+    isFolder = Boolean( true );
 
     minWidth = 85;
     idealWidth = 1;
@@ -38,7 +38,7 @@ class "FileItem" extends "View" implements "IDraggableView" implements "IFlowIte
     };
 
     dropStyle = DragDropManager.dropStyles.SHRINK;
-    isDropHovering = false;
+    isDropHovering = Boolean( false );
 
 }
 

@@ -6,8 +6,8 @@ class "InterfaceOutletChangedInterfaceEvent" extends "InterfaceEvent" {
 	interfaceOutlet = false;
 	oldView = false;
 	newView = false;
-	isSentToChildren = false;
-	isSentToSender = false;
+	isSentToChildren = Boolean( false );
+	isSentToSender = Boolean( false );
 }
 
 --[[

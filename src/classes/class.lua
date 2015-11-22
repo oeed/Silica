@@ -102,13 +102,15 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             local newValueType = {}
             for i = 1, #valueType do
                 newValueType[i] = valueType[i]
-            end
+        end
             newValueType[TYPETABLE_ALLOWS_NIL] = true
             local newMetatable = { __index = metatable.index, __newindex = metatable.__newindex}
             local __tostring = "value type instance '" .. name .. "': " ..  tostring( valueType ):sub( 8 )
             function newMetatable:__tostring() return __tostring end
             setmetatable( newValueType, newMetatable )
             return newValueType
+        elseif k == "static" and classType then
+            return pseudoReference( name ).static -- if you do, for example, Font.static return a psuedo reference to it
         elseif type( k ) ~= "number" then -- if it's a number it would've been trying to get a default value, don't error
             error( "tried to index '" .. k .. "', types only support .allowsNil", 2 )
         end
@@ -397,7 +399,7 @@ function stripFunctionArguments( name, contents )
                     -- now we want to return its valueType
                     return valueTypes[key]
                 else
-                    error( "attempt to access undelcared value " .. key .. " in value type declaration ", 2 )
+                    error( "attempt to access undelcared value " .. key .. " in value type declaration", 2 )
                 end
             end
             setmetatable( valueTypeExtractionEnvironment, metatable )
@@ -479,7 +481,7 @@ function stripFunctionArguments( name, contents )
                         end
                         typeTable[TYPETABLE_IS_VAR_ARG] = isVarArg;
 
-                        if typeTable[TYPETABLE_TYPE] == "table" and i ~= argumentSubstringPoints then -- if it's a table add an item to the environment so it can be referenced
+                        if i ~= argumentSubstringPoints then -- add the argument to the environment so it can be referenced
                             pseudoReferences[argumentName] = pseudoReference( argumentName )
                         end
                     end

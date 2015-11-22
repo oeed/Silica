@@ -3,8 +3,8 @@ class "Document" {
 
 	contents = false;
 	file = false;
-	isBinary = false;
-	isModified = false;
+	isBinary = Boolean( false );
+	isModified = Boolean( false );
 
 }
 

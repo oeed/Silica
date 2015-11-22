@@ -9,20 +9,20 @@ class "Window" extends "Container" {
     closeButton = false;
     minimiseButton = false;
     maximiseButton = false;
-    isEnabled = false;
+    isEnabled = Boolean( false );
 
 	dragX = false;
 	dragY = false;
-    isDragging = false;
-    isResizingX = false;
-	isResizingY = false;
+    isDragging = Boolean( false );
+    isResizingX = Boolean( false );
+	isResizingY = Boolean( false );
 
     minWidth = 60;
     minHeight = 40;
     maxWidth = 300;
     maxHeight = 150;
 
-    isCanvasHitTested = false;
+    isCanvasHitTested = Boolean( false );
 }
 
 --[[

@@ -12,8 +12,8 @@ class "Event" {
 	relativeView = false; -- the view that the event is relative of
     sender = false;
 
-	isSentToChildren = true; -- whether the event will be passed to children
-	isSentToSender = true; -- whether the event will be handled by the sender
+	isSentToChildren = Boolean( true ); -- whether the event will be passed to children
+	isSentToSender = Boolean( true ); -- whether the event will be handled by the sender
 
 	-- functions can be called either before or after tickle down
 	phases = Enum( Number, {

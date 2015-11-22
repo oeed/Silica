@@ -3,7 +3,7 @@ class "ReadyInterfaceEvent" extends "InterfaceEvent" {
     static = {
         eventType = "interface_ready";
     };
-	isInit = false; -- whether the event is the first one called in Application:initialise
+	isInit = Boolean( false ); -- whether the event is the first one called in Application:initialise
 }
 
 --[[

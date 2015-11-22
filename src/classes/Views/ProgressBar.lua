@@ -4,8 +4,8 @@ class "ProgressBar" extends "View" {
     height = Number( 7 );
     width = Number( 100 );
 
-    isEnabled = true;
-    isIndeterminate = true;
+    isEnabled = Boolean( true );
+    isIndeterminate = Boolean( true );
     cornerRadius = 4;
     stripeWidth = 8;
 

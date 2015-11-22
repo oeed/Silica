@@ -3,26 +3,20 @@ class "Button" extends "View" {
 
     height = Number( 16 ); -- the default height
     width = Number( 36 );
-    text = false;
+    text = String( "" );
 
-    isPressed = false;
-    isFocused = false;
-    isAutosizing = true;
-    font = false;
+    isPressed = Boolean( false );
+    isFocused = Boolean( false );
+    isAutosizing = Boolean( true );
+    font = Font( Font.static.systemFont );
 
-    shadowObject = false;
-    backgroundObject = false;
-    isFocusDismissable = false;
-    textObject = false;
+    isFocusDismissable = Boolean( true );
 
-    needsAutosize = false;
+    needsAutosize = Boolean( true );
     margin = Number;
     leftMargin = 0;
     rightMargin = 0;
 }
-
--- action Button.buttonOne function( event )
--- end
 
 --[[
     @constructor

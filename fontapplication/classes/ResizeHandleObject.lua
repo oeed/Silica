@@ -3,8 +3,8 @@ local HANDLE_SIZE = 3
 
 class "ResizeHandleObject" extends "GraphicsObject" {
 
-    isLeft = false;
-    isTop = false;
+    isLeft = Boolean( false );
+    isTop = Boolean( false );
     
 }
 

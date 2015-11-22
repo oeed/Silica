@@ -9,7 +9,7 @@ class "Application" {
 	updateTimer = false;
 	lastUpdate = 0;
 	arguments = {};
-	isRunning = false;
+	isRunning = Boolean( false );
 	container = false;
 	document = false;
 	event = false;

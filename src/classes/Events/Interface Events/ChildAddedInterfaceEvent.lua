@@ -4,7 +4,7 @@ class "ChildAddedInterfaceEvent" extends "InterfaceEvent" {
         eventType = "interface_child_added";
     };
 	childView = false; -- the added child
-	isSentToChildren = false;
+	isSentToChildren = Boolean( false );
 }
 
 --[[

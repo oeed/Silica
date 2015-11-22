@@ -38,9 +38,9 @@ class "TextBox" extends "View" {
 	margin = Number;
 	leftMargin = 0;
 	rightMargin = 0;
-	isFocused = false;
-	isPressed = false;
-	isMasked = false; -- whether bullets are shown instead of characters (for passwords)
+	isFocused = Boolean( false );
+	isPressed = Boolean( false );
+	isMasked = Boolean( false ); -- whether bullets are shown instead of characters (for passwords)
 
 	scroll = 0;
 	cursorPosition = 1;

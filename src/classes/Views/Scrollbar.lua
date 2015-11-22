@@ -1,12 +1,12 @@
 
 class "Scrollbar" extends "View" {
 	width = Number( 7 );
-    isHorizontal = false;
+    isHorizontal = Boolean( false );
 	scrollerObject = false;
 	grabberObject = false;
     dragPoint = false;
     direction = false;
-    isPressed = false;
+    isPressed = Boolean( false );
 }
 
 function Scrollbar:initialise( ... )

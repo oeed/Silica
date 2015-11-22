@@ -4,9 +4,9 @@ class "Checkbox" extends "View" {
     width = Number( 7 );
     height = Number( 7 );
 
-    isPressed = false;
-    isEnabled = true;
-    isChecked = false;
+    isPressed = Boolean( false );
+    isEnabled = Boolean( true );
+    isChecked = Boolean( false );
 
     checkObject = false;
 
