@@ -6,6 +6,10 @@ class "ScreenCanvas" extends "Canvas" {
 
 }
 
+function ScreenCanvas:initialise( ... )
+    self:super( ... )
+    self:fill( Graphics.colours.RED )
+end
 
 function ScreenCanvas:drawToScreen( screen )
     local pixels, width, height, screenBuffer = self.pixels, self.width, self.height, self.screenBuffer

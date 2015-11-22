@@ -13,7 +13,6 @@ class "ApplicationContainer" extends "Container" {
 ]]
 function ApplicationContainer:initialise( ... )
 	self:super( ... )
-
     self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
 end
 
