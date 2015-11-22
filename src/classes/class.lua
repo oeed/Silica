@@ -999,7 +999,14 @@ function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: e
         if isSelf then
             error("self not passed to function, you probably used . instead of :", 3)
         else
-            error(typeTable[TYPETABLE_NAME] .. " was wrong type, expected "..expectedType .. " got " .. type( value ) .. ": "..tostring(value), 4)
+            local expectedString
+            local expectedClass = typeTable[TYPETABLE_CLASS]
+            if expectedClass then
+                expectedString = expectedClass.className
+            else
+                expectedString = expectedType
+            end
+            error(typeTable[TYPETABLE_NAME] .. " was wrong type, expected "..expectedString .. " got " .. type( value ) .. ": "..tostring(value), 4)
         end
     end
     return value
