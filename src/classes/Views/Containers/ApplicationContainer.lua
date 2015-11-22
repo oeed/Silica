@@ -80,3 +80,7 @@ end
 function ApplicationContainer.isVisible:get()
 	return self.isVisible -- View requires having a parent to be visible, but we never have a parent
 end
+
+function ApplicationContainer.needsDraw:set( needsDraw )
+	self.needsDraw = needsDraw -- View passed needsDraw to parent, but we never have a aprent
+end

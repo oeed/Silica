@@ -60,7 +60,7 @@ function Canvas:drawTo( Number x, Number y, Canvas destinationCanvas, Mask.allow
     local destinationWidth, destinationHeight, destinationPixels = destinationCanvas.width, destinationCanvas.height, destinationCanvas.pixels
     local TRANSPARENT = Graphics.colours.TRANSPARENT
     local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
-    print(serialise(maskPixels))
+
     for index, colour in pairs( self.pixels ) do
         if colour and colour ~= TRANSPARENT then
             local _x = (index - 1) % width + x

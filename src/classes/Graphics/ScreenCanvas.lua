@@ -8,13 +8,7 @@ class "ScreenCanvas" extends "Canvas" {
 
 function ScreenCanvas:initialise( ... )
     self:super( ... )
-    self:fill( Graphics.colours.WHITE )
-end
-
-function ScreenCanvas.width:set( width )
-    self.width = width
-    print( "set to "..width)
-    logtraceback()
+    self:fill( Graphics.colours.BLACK )
 end
 
 function ScreenCanvas:drawToScreen( screen )

@@ -38,7 +38,7 @@ class "ClassTwo"
 All function calls and definitions must have spaces on either side of the arguments.
 ```lua
 function Class:hello( name, age )
-	print( "Hello, " .. name .. "! You're " .. age .. " years old." )
+	log( "Hello, " .. name .. "! You're " .. age .. " years old." )
 end
 ```
 
@@ -79,7 +79,7 @@ In source files, locals should be defined at the top, followed by classes, then 
 
 ```lua
 local function printInfo( ... )
-	print( "Info: ", ... )
+	log( "Info: ", ... )
 end
 
 class "MyClass" {

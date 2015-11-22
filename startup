@@ -143,17 +143,17 @@ end
 term.redirect(term.native())
 
 if fs.exists("Silica.resourcepkg") then
-    print("Using built package")
+    log("Using built package")
 	local _, err = pcall(function() dofile( "Silica.resourcepkg" ) end)
     fs.delete("OldSilica.resourcepkg")
 	fs.move("Silica.resourcepkg","OldSilica.resourcepkg")
 	if err then error(err,2) end
 else
-    print("Using old style package")
+    log("Using old style package")
 	shell.run( "package /src Silica" )
 	dofile( "Silica" )
 
-    print("Building")
+    log("Building")
 	local folder = Folder( "/src" )
 	log(folder)
 	local package = folder:package( "/Silica.resourcepkg", true, true )
@@ -164,6 +164,10 @@ end
 
 -- shell.run( "package /application app" )
 -- 
+
+-- the emulator only seems to want to draw after the first yield, so this just yields before we begin
+os.queueEvent("damn_emulator")
+os.pullEvent("damn_emulator")
 
 
 -- dofile( "app" )

@@ -110,6 +110,11 @@ function Container:update( deltaTime )
 	end
 end
 
+function Container:onDraw()
+    local canvas = self.canvas
+    canvas:fill( self.theme:value( "fillColour" ) )
+end
+
 --[[
 	@desc Draws the Container and its children to its Canvas
 ]]
@@ -122,10 +127,13 @@ function Container:draw()
 	-- then draw the children
 	for i, childView in ipairs( self.children ) do
 		-- only draw if something changed
-		if childView.isVisible and childView.needsDraw then
+		if childView.isVisible then
+			local needsDraw = childView.needsDraw
 			local x, y = childView.x, childView.y
 			-- first draw the contents
-			childView:draw()
+			if needsDraw then
+				childView:draw()
+			end
 
 			local shadowSize = childView.shadowSize
 			if shadowSize > 0 then
@@ -137,9 +145,12 @@ function Container:draw()
 
 			-- draw the childView to the canvas
 			childView.canvas:drawTo( x, y, canvas )
-			childView.needsDraw = false
+			if needsDraw then
+				childView.needsDraw = false
+			end
 		end
 	end
+	self.needsDraw = false
 end
 
 --[[
@@ -231,8 +242,6 @@ function Container:insert( childView, position )
 		error( "Attempted to insert non-View to Container", 4 )
 	end
 
-	log("insert "..tostring(childView))
-
 	local children = self.children
 	if position then
 		table.insert( children, position, childView )
@@ -266,6 +275,8 @@ function Container:insert( childView, position )
 	end
 
 	self.event:handleEvent( ChildAddedInterfaceEvent( childView ) )
+
+	self.needsDraw = true
 
 	return childView
 end
