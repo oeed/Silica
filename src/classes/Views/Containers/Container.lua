@@ -141,11 +141,11 @@ function Container:draw()
 				-- if there's a shadow draw it to the canvas
 				local shadowMask = childView.shadowMask
 				shadowColour = childView.theme:value( "shadowColour" )
-				canvas:drawShadow( x, y, shadowMask, shadowSize, shadowColour )
+				canvas:drawShadow( shadowColour, x, y, shadowSize, shadowMask )
 			end
 
 			-- draw the childView to the canvas
-			childView.canvas:drawTo( x, y, canvas )
+			childView.canvas:drawTo( canvas, x, y )
 			if needsDraw then
 				childView.needsDraw = false
 			end

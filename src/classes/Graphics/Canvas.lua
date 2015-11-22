@@ -135,7 +135,7 @@ end
 --[[
     @desc Draws the canvas to another canvas. If mask is provided the canvas content will be masked (mask pixels will be drawn, pixels not in the mask won't). Mask cordinates are relative to self, not the destination
 ]]
-function Canvas:drawTo( Number x, Number y, Canvas destinationCanvas, Mask.allowsNil mask )
+function Canvas:drawTo( Canvas destinationCanvas, Number x, Number y, Mask.allowsNil mask )
     local width, height = self.width, self.height
     local destinationWidth, destinationHeight, destinationPixels = destinationCanvas.width, destinationCanvas.height, destinationCanvas.pixels
     local TRANSPARENT = Graphics.colours.TRANSPARENT
@@ -167,13 +167,13 @@ end
 --[[
     @desc Draws an image to the canvas, scaling the image if needed
 ]]
-function Canvas:image( Number x, Number y, Image image, Number( image.width ) width, Number( image.height ) height )
+function Canvas:image( Image image, Number x, Number y, Number( image.width ) width, Number( image.height ) height )
 end
 
 --[[
     @desc Draws a shadow mask to the parent's canvas
 ]]
-function Canvas:drawShadow( Number x, Number y, Number shadowSize, Graphics.colours shadowColour, Mask shadowMask )
+function Canvas:drawShadow( Graphics.colours( SHADOW_COLOUR ) shadowColour, Number x, Number y, Number shadowSize, Mask( self.contentMask ) shadowMask )
     if shadowSize == 0 then return end
     print(self.c)
     x = math.floor( x + shadowSize * SHADOW_RATIO + 0.5 )
