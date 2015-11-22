@@ -913,60 +913,63 @@ end
 
 -- We have collected all the information about the class now, compile it in to the static class --
 
-local function generateDefaultValue( typeTable )
-    -- this asumes TYPETABLE_HAS_DEFAULT_VALUE is true and TYPETABLE_TYPE is "table" and should only be called when that is true
-    local classType = typeTable[TYPETABLE_CLASS]
-    if classType then
-        return classType( unpack( typeTable, TYPETABLE_DEFAULT_VALUE ))
-    else
-        local defaultTable = typeTable[TYPETABLE_DEFAULT_VALUE]
-        -- if it's a plain table make a deep copy of it
-        local function uniqueTable( default )
-            local new = {}
-            for k, v in pairs( default ) do
-                if type( v ) == "table" then
-                    new[k] = uniqueTable( v )
-                else
-                    new[k] = v
-                end
+local function generateDefaultValue( typeTable, context, circularKey )
+    local hasDefaultValue = typeTable[TYPETABLE_HAS_DEFAULT_VALUE]
+    if hasDefaultValue then
+        if typeTable[TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] then
+            -- this is a reference, we need to get the value out of the content
+            if not context then
+                error( "attempted to use reference in invalid location (no context)" )
             end
-            return new
+            local value = context
+            for i, key in ipairs( context ) do
+                value = value[key]
+                -- TODO: circular references
+                -- if circularKey and circularKey[i] == key then
+                    -- error( "attempted to make circular reference " )
+                -- end
+            end
+            -- don't return because we'll need to check if the value it gave was okay
+            return value, false
+        elseif typeTable[TYPETABLE_TYPE] ~= "table" then
+            return typeTable[TYPETABLE_DEFAULT_VALUE]
+        else
+            -- this asumes TYPETABLE_HAS_DEFAULT_VALUE is true and TYPETABLE_TYPE is "table" and should only be called when that is true
+            local classType = typeTable[TYPETABLE_CLASS]
+            if classType then
+                return classType( unpack( typeTable, TYPETABLE_DEFAULT_VALUE )), true
+            else
+                local defaultTable = typeTable[TYPETABLE_DEFAULT_VALUE]
+                -- if it's a plain table make a deep copy of it
+                local function uniqueTable( default )
+                    local new = {}
+                    for k, v in pairs( default ) do
+                        if type( v ) == "table" then
+                            new[k] = uniqueTable( v )
+                        else
+                            new[k] = v
+                        end
+                    end
+                    return new
+                end
+                return uniqueTable( defaultTable ), true
+            end
         end
-        return uniqueTable( defaultTable )
     end
 end
 
 function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: error level and message based on where it's called form
     if value == nil  then
-        -- if the value is nil try loading the default value
-        local hasDefaultValue = typeTable[TYPETABLE_HAS_DEFAULT_VALUE]
-        if hasDefaultValue then
-            if typeTable[TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] then
-                -- this is a reference, we need to get the value out of the content
-                if not context then
-                    error( "attempted to use reference in invalid location (no context)" )
-                end
-                value = context
-                for i, key in ipairs( context ) do
-                    value = value[key]
-                    -- TODO: circular references
-                    -- if circularKey and circularKey[i] == key then
-                        -- error( "attempted to make circular reference " )
-                    -- end
-                end
-                -- don't return because we'll need to check if the value it gave was okay
-            elseif typeTable[TYPETABLE_TYPE] ~= "table" then
-                return typeTable[TYPETABLE_DEFAULT_VALUE]
-            else
-                return generateDefaultValue( typeTable )                
-            end
+        value, isOkay = generateDefaultValue( typeTable, context, circularKey )
+        if isOkay then
+            return value
         end
     end
 
     if value == nil  then
         -- if a default value couldn't be loaded and the argument doesn't accept nil then error
         if not typeTable[TYPETABLE_ALLOWS_NIL] then
-            error("can't be nil", 2 )
+            error("can't be nil: " .. typeTable[TYPETABLE_NAME], 2 )
         else
             -- otherwise, if nil is okay, continue with nil
             return nil
@@ -1031,7 +1034,6 @@ function compileClass( compiledClass, name )
 
         -- add super properties and ensure they don't conflict
         if compiledSuperDetails then
-            print(name)
             mergeProperties( currentlyConstructing.instanceProperties, compiledSuperDetails.instanceProperties )
             mergeProperties( currentlyConstructing.staticProperties, compiledSuperDetails.staticProperties )
         end
@@ -1518,7 +1520,6 @@ function compileAndSpawnStatic( static, name, compiledClass )
     return static
 end
 
-
 function spawnInstance( name, ... )
     local compiledInstance = compiledInstances[name]
     local classDetails = compiledClassDetails[name]
@@ -1575,7 +1576,7 @@ function spawnInstance( name, ... )
         if locatedKey then
             local getter = getters[locatedKey]
             if getter and not lockedGetters[locatedKey] then
-                return getter( self )
+                return getter( self ) -- TODO: maybe check value the return value of the getter
             else
                 return values[locatedKey]
             end
@@ -1597,6 +1598,16 @@ function spawnInstance( name, ... )
     instance.raw = values
     setmetatable( instance, metatable )
 
+    -- insert default values
+    for k, v in pairs( definedProperties ) do
+        if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
+            local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
+            if value == nil then
+                values[k] = generateDefaultValue( instanceProperties[k], instance, k )
+            end
+        end
+    end
+
     -- run the initialiser
     for i, key in ipairs( { "initialise", "intialize" } ) do
         if definedIndexes[key] then
@@ -1608,7 +1619,15 @@ function spawnInstance( name, ... )
         end
     end
 
-    -- TODO: check for any nil values that aren't allowed to be nil
+    -- check for any nil values that aren't allowed to be nil
+    for k, v in pairs( definedProperties ) do
+        if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
+            local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
+            if value == nil and instanceProperties[k][TYPETABLE_ALLOWS_NIL] then
+                error( name .. "." .. k .. " was nil after initialisation but type does not specify .allowsNil" )
+            end
+        end
+    end
 
     return instance
 end
