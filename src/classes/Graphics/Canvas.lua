@@ -175,7 +175,6 @@ end
 ]]
 function Canvas:drawShadow( Graphics.colours( SHADOW_COLOUR ) shadowColour, Number x, Number y, Number shadowSize, Mask( self.contentMask ) shadowMask )
     if shadowSize == 0 then return end
-    print(self.c)
     x = math.floor( x + shadowSize * SHADOW_RATIO + 0.5 )
     y = y + shadowSize
     local pixels, width, height = self.pixels, self.width, self.height

@@ -17,19 +17,7 @@ local function writestring( handle, text )
 	end
 end
 
-local function renderCharacterScaledDown( setPixel, character, _x, _y, cw, ch, scale, colour )
-	_x = _x - 1
-	_y = _y - 1
-	for x = 1, cw do
-		for y = 1, ch do
-			if character[y] and character[y][x] then
-				setPixel( ceil( _x + x * scale - .5 ), ceil( _y + y * scale - .5 ), colour )
-			end
-		end
-	end
-end
-
-local no_char_map = {
+local NO_CHAR_MAP = {
 	width = 5;
 	{ true,  true,  true,  true, true };
 	{ true, false, false, false, true };
@@ -63,7 +51,7 @@ class "Font" {
 	@constructor
 	@desc Create a font with the given name
 	@param [string] fontName -- the name of the desired font
-	@param [number] desiredHeight -- the height of the desired font
+	@param [number] desiredHeight -- the height of the desired font (i.e what it should scale to)
 	@param [boolean] reload -- default is false, whether the cache should be ignored and the font reloaded
 ]]
 function Font:initialise( name, desiredHeight, reload )
@@ -190,10 +178,6 @@ function Font.static:decodeHandle( h )
 	end
 end
 
-function Font.height:get()
-	return self.height
-end
-
 function Font:getWidth( text )
 	if not text then return 0 end
 	local width = 0
@@ -204,12 +188,12 @@ function Font:getWidth( text )
 		if characters[char] then
 			bitmap = characters[char]
 		else
-			bitmap = no_char_map
+			bitmap = NO_CHAR_MAP
 			scale = desiredHeight / 6
 		end
 		width = width + bitmap.width * scale + spacing * scale
 	end
-	return width - spacing
+	return width - spacing * scale
 end
 
 function Font:getRawWidth( text )
@@ -222,51 +206,10 @@ function Font:getRawWidth( text )
 		if characters[char] then
 			bitmap = characters[char]
 		else
-			bitmap = no_char_map
+			bitmap = NO_CHAR_MAP
 			scale = desiredHeight / 6
 		end
 		width = width + bitmap.width * scale
 	end
 	return width
-end
-
-function Font:render( canvas, text, x, y, cropWidth, cropHeight, colour )
-	y = y - 1
-	x = x - 1
-	text = text == nil and "" or tostring( text )
-	local buffer = canvas.buffer
-	local width, height, _height = canvas.width, canvas.height, self.height
-	local cropX, cropY = math.min( x + cropWidth, width ), math.min( y + cropHeight, height )
-	local TRANSPARENT = Graphics.colours.TRANSPARENT
-	local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing
-	local function setPixel( x, y, colour )
-		if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= cropX and y <= cropY then
-	        buffer[ ( y - 1 ) * width + x ] = colour
-	    end
-	end
-	for i = 1, #text do
-		local char = text:byte( i )
-		local bitmap
-		if characters[char] then
-			bitmap = characters[char]
-		else
-			bitmap = no_char_map
-			scale = desiredHeight / 6
-		end
-		local cwidth = bitmap.width * scale
-		if scale < 1 then
-			renderCharacterScaledDown( setPixel, bitmap, x, y, bitmap.width, _height, scale, colour )
-		else
-			for _y = 1, desiredHeight do
-				for _x = 1, ceil( cwidth ) do
-					local bx, by = ceil( _x / scale ), ceil( _y / scale )
-					local char_is_on = bitmap[by] and bitmap[by][bx]
-					if char_is_on then
-						setPixel( floor( x + _x + .5 ), floor( y + _y + .5 ), colour ) -- oh no, not this...
-					end
-				end
-			end
-		end
-		x = x + cwidth + spacing * scale
-	end
 end
