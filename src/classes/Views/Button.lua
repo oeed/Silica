@@ -2,7 +2,7 @@
 class "Button" extends "View" {
 
     height = Number( 16 ); -- the default height
-    width = Number( 36 );
+    width = Number( 60 ); --36
     text = String( "" );
 
     isPressed = Boolean( false );
@@ -13,9 +13,6 @@ class "Button" extends "View" {
     isFocusDismissable = Boolean( true );
 
     needsAutosize = Boolean( true );
-    margin = Number;
-    leftMargin = 0;
-    rightMargin = 0;
 }
 
 --[[
@@ -31,84 +28,24 @@ function Button:initialise( ... )
     self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
---[[
-    @desc Sets up the canvas and it's graphics objects
-]]
-function Button:initialiseCanvas()
-    self:super()
-    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
-    local shadowObject = canvas:insert( RoundedRectangle( 2, 2, width - 1, height - 1, theme:value( "shadowColour" ) ) )
-    local backgroundObject = canvas:insert( RoundedRectangle( 1, 1, width - 1, height - 1, theme.fillColour, theme.outlineColour, cornerRadius ) )
-    local textObject = canvas:insert( Text( 1, 5, width, 10, self.text ) )
+function Button:onDraw()
+    local width, height, theme, canvas, isPressed = self.width, self.height, self.theme, self.canvas, self.isPressed
 
-    theme:connect( backgroundObject, "fillColour" )
-    theme:connect( backgroundObject, "outlineColour" )
-    theme:connect( backgroundObject, "radius", "cornerRadius" )
-    theme:connect( shadowObject, "fillColour", "shadowColour" )
-    theme:connect( shadowObject, "radius", "cornerRadius" )
-    theme:connect( textObject, "textColour" )
-    theme:connect( self, "leftMargin" )
-    theme:connect( self, "rightMargin" )
+    -- background shape
+    local roundedRectangle = RoundedRectangleMask( isPressed and 2 or 1, isPressed and 2 or 1, width - 1, height - 1, theme:value( "cornerRadius" ) )
+    canvas:fill( theme:value( "fillColour" ), roundedRectangle )
+    canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
 
-    self.backgroundObject = backgroundObject
-    self.shadowObject = shadowObject
-    self.textObject = textObject
+    local leftMargin, rightMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" )
+    -- text
+    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, theme:value( "topMargin" ) + 1, width - leftMargin - rightMargin, nil, self.text, self.font ) )
 
-    if not self.font then
-        self.font = Font.systemFont
-    end
-end
-
-function Button:updateHeight( height )
-    self.backgroundObject.height = height - 1
-    self.shadowObject.height = height - 1
-    -- self.needsAutosize = true
-end
-
-function Button:updateWidth( width )
-    self.backgroundObject.width = width - 1
-    self.shadowObject.width = width - 1
-    local textObject = self.textObject
-    if textObject then
-        local leftMargin, rightMargin = self.leftMargin, self.rightMargin
-        textObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1
-        textObject.width = width - leftMargin - rightMargin
-    end
+    self.shadowSize = theme:value( "shadowSize" )
 end
 
 function Button.text:set( text )
     self.text = text
-    local textObject = self.textObject
-    if textObject then
-        textObject.text = text
-    end
-    self.needsAutosize = true
-end
-
---[[
-    @desc Set the margin on either side of the text
-    @param [number] margin -- the space around the text
-]]
-function Button.margin:set( margin )
-    self.leftMargin = margin
-    self.rightMargin = margin
-end
-
---[[
-    @desc Set the margin on the left side of the text
-    @param [number] margin -- the space around the left side of the text
-]]
-function Button.leftMargin:set( leftMargin )
-    self.leftMargin = leftMargin
-    self.needsAutosize = true
-end
-
---[[
-    @desc Set the margin on the left side of the text
-    @param [number] margin -- the space around the left side of the text
-]]
-function Button.rightMargin:set( rightMargin )
-    self.rightMargin = rightMargin
+    self.needsDraw = true
     self.needsAutosize = true
 end
 
@@ -121,30 +58,17 @@ end
 
 function Button.font:set( font )
     self.font = font
-    local textObject = self.textObject
-    if textObject then
-        textObject.font = font
-        self.needsAutosize = true
-    end
-end
-
-function Button.needsAutosize:set( needsAutosize )
-    self.needsAutosize = needsAutosize
+    self.needsAutosize = true
 end
 
 --[[
     @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text
 ]]
 function Button:autosize()
-    -- TODO: support self.isAutosizing
-    local font, text = self.font, self.text
-
-    if font and text then
-        local fontWidth = font:getWidth( text )
-        self.width = fontWidth + self.leftMargin + self.rightMargin + 1
-
-        local fontHeight = font.height
-        self.height = fontHeight + 8
+    if self.isAutosizing then
+        local font, text, theme = self.font, self.text, self.theme
+        self.width = font:getWidth( self.text ) + theme:value( "leftMargin" ) + theme:value( "rightMargin" ) + 1
+        self.height = font.height + theme:value( "topMargin" ) + theme:value( "bottomMargin" ) + 1
     end
     self.needsAutosize = false
 end
@@ -161,14 +85,6 @@ end
 function Button.isPressed:set( isPressed )
     self.isPressed = isPressed
     self:updateThemeStyle()
-    local backgroundObject = self.backgroundObject
-    backgroundObject.x = isPressed and 2 or 1
-    backgroundObject.y = isPressed and 2 or 1
-    local textObject = self.textObject
-    -- textObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1
-    if textObject then
-        textObject.y = isPressed and 6 or 5
-    end
 end
 
 function Button.isFocused:set( isFocused )
@@ -224,7 +140,7 @@ end
 function Button:onKeyUp( Event event, Event.phases phase )
     if self.isEnabled and self.isPressed and self.isFocused and event.keyCode == keys.enter then
         self.isPressed = false
-    self.event:handleEvent( ActionInterfaceEvent( self ) )
+        self.event:handleEvent( ActionInterfaceEvent( self ) )
         return true
     end
 end

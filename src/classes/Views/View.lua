@@ -41,7 +41,7 @@ class "View" {
 	event = false;
 	canvas = Canvas;
 	shadowMask = Mask.allowsNil; -- TODO: .isReadOnly
-	shadowSize = Number( 0 ); -- TODO: .isReadOnly
+	shadowSize = Number( 1 ); -- TODO: .isReadOnly
 	needsDraw = Boolean( true );
 	isVisible = Boolean( true );
 
@@ -129,7 +129,7 @@ end
 	@desc The Mask to use for the View's shadow
 ]]
 function View.shadowMask:get()
-	return self.canvas.mask -- self.canvas.mask is the mask of the currently drawn pixels to the canvas, i.e. everything will cast a shadow
+	return self.canvas.contentMask -- self.canvas.mask is the mask of the currently drawn pixels to the canvas, i.e. everything will cast a shadow
 end
 
 --[[

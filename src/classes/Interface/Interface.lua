@@ -99,7 +99,6 @@ end
 	@return [table] children -- the table of child views
 ]]
 function Interface.children:get()
-	log("get chilfdren")
 	local children = self.children
 	if children then return children end
 	local function insertTo( childNode, parentContainer )
@@ -139,7 +138,6 @@ function Interface.children:get()
 
 	local children = {}
 	for i, childNode in ipairs( self.childNodes ) do
-		log("node")
 		local childView, err = insertTo( childNode )
 		if err then error( "Interface XML invaid: " .. self.name .. ".sinterface. Error: " .. err, 0 ) end
 		if childView then table.insert( children, { childView, childNode.attributes } ) end
