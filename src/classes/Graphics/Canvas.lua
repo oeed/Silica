@@ -1,4 +1,7 @@
 
+local SHADOW_RATIO = 2 / 3
+local SHADOW_COLOUR = Graphics.colours.GREY
+
 class "Canvas" {
     
     x = Number;
@@ -26,6 +29,20 @@ end
 ]]
 function Canvas.mask:get()
     return RectangleMask( 1, 1, self.width, self.height )
+end
+
+--[[
+    @desc Creates a mask which covers the filled pixels of the canvas
+]]
+function Canvas.contentMask:get()
+    local pixels = {}
+    local TRANSPARENT = Graphics.colours.TRANSPARENT
+    for k, v in pairs( self.pixels ) do
+        if v ~= TRANSPARENT then
+            pixels[k] = true
+        end
+    end
+    return Mask( 1, 1, self.width, self.height, pixels )
 end
 
 --[[
@@ -157,4 +174,19 @@ end
     @desc Draws a shadow mask to the parent's canvas
 ]]
 function Canvas:drawShadow( Number x, Number y, Number shadowSize, Graphics.colours shadowColour, Mask shadowMask )
+    if shadowSize == 0 then return end
+    print(self.c)
+    x = math.floor( x + shadowSize * SHADOW_RATIO + 0.5 )
+    y = y + shadowSize
+    local pixels, width, height = self.pixels, self.width, self.height
+    local maskX, maskY, maskWidth, maskHeight = shadowMask.x, shadowMask.y, shadowMask.width, shadowMask.height
+    for index, isFilled in pairs( shadowMask.pixels ) do
+        if isFilled then
+            local x = (index - 1) % maskWidth + maskX + x - 1
+            local y = math.floor( ( index - 1) / maskWidth ) + maskY + y - 1
+            if x >= 1 and x <= width and y >= 1 and y <= height then
+                pixels[( y - 1 ) * width + x] = shadowColour
+            end
+        end
+    end
 end
