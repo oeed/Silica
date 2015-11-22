@@ -80,9 +80,13 @@ function Interface.container:get()
 	-- callSetters( container, containerClass )
 
 	local children = self.children
-	for i, childView in ipairs( children ) do
+	for i, tbl in ipairs( children ) do
+		local childView = tbl[1]
 		container:insert( childView )
-		-- callSetters( childView, childView.class )
+
+		for k, v in pairs( tbl[2] ) do
+			childView[k] = v
+		end
 	end
 
 
@@ -106,13 +110,7 @@ function Interface.children:get()
 			return nil,"Class does not extend 'View': " .. childNode.type
 		end
 
-		local interfaceProperties = {}
-		for k, v in pairs( childNode.attributes ) do
-			interfaceProperties[k] = v
-		end
-		childNode.attributes.interfaceProperties = interfaceProperties
-		local childView = childClass( childNode.attributes )--:new( false, childNode.attributes )
-	log("got "..tostring(childView))
+		local childView = childClass()
 
 		if not childView then
 			return nil, "Failed to initialise " .. childNode.type .. ". Identifier: " .. tostring( childNode.attributes.identifier )
@@ -126,7 +124,12 @@ function Interface.children:get()
 				for i, _childNode in ipairs( childNode.body ) do
 					local child, err = insertTo( _childNode, childView )
 					if err then return nil, err end
-					if child then childView:insert( child ) end
+					if child then
+						childView:insert( child )
+						for k, v in pairs( _childNode.attributes ) do
+							child[k] = v
+						end
+					end
 				end
 			end
 		end
@@ -139,7 +142,7 @@ function Interface.children:get()
 		log("node")
 		local childView, err = insertTo( childNode )
 		if err then error( "Interface XML invaid: " .. self.name .. ".sinterface. Error: " .. err, 0 ) end
-		if childView then table.insert( children, childView ) end
+		if childView then table.insert( children, { childView, childNode.attributes } ) end
 	end
 	self.children = children
 	return children
