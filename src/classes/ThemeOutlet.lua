@@ -73,22 +73,31 @@ function ThemeOutlet:onThemeChange( Event event, Event.phases phase )
 end
 
 --[[
-	@desc Sets the current style (pressed, checked, disabled, etc) for the owner
+	@desc Sets the current style (pressed, checked, disabled, etc) for the owner. If the style changed the owner.needsDraw will be set to true if it's a View
 	@param [string] style -- the style name
 ]]
 function ThemeOutlet.style:set( style )
-	self.style = style
-	for i, connection in pairs( self.connections ) do
-		connection[1][connection[2]] = self:value( connection[3], style )
+	local oldStyle = self.style
+	if oldStyle ~= style then
+		self.style = style
+		local active, ownerClass = Theme.static.active, ownerClass
+		for i, connection in pairs( self.connections ) do
+			connection[1][connection[2]] = active:value( ownerClass, connection[3], style )
+			self:value( connection[3], style )
+		end
+
+		if ownerClass:typeOf( View ) then
+			self.owner.needsDraw = true
+		end
 	end
 end
 
 --[[
 	@desc Returns the value for the current theme given the property name and style)
 	@param [string] propertyName -- the name of the property
-	@param [string] styleName -- defaults to the current style
+	@param [string] style -- defaults to the current style
 	@return themeValue -- the theme value
 ]]
-function ThemeOutlet:value( valueName, styleName )
-	return Theme.static.active:value( self.ownerClass, valueName, styleName or self.style )
+function ThemeOutlet:value( valueName, style )
+	return Theme.static.active:value( self.ownerClass, valueName, style or self.style )
 end
