@@ -4,9 +4,10 @@ local function corner( pixels, width, height, radius, position ) -- position is 
     if radius <= 0 then return end
     
     local minDistance = radius
-    radius = radius + 0.5 -- doing this seems to magically make them look much better
-    if radius % 1 ~= 0 then
-        radius = radius + 0.25
+    if radius % 2 ~= 0 then -- doing this seems to magically make them look much better
+        radius = radius + 0.75
+    else
+        radius = radius + 0.5
     end
 
     local centerX = ( bit.band( position, 2 ) == 0 ) and radius or width - radius + 1
