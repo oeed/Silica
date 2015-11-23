@@ -30,46 +30,33 @@ class "View" {
 	y = Number( 1 );
 	width = Number( 1 );
 	height = Number( 1 );
-	index = false; -- the z index in its parent
-	parent = false;
-	siblings = false;
-	identifier = false;
-	interfaceProperties = false; -- the properties the view was given in the interface XML file
+	index = Number.allowsNil; -- the z index in its parent
+	parent = Container.allowsNil;
+	siblings = Table.allowsNil;
+	identifier = String.allowsNil;
+	isFirst = Boolean.allowsNil;
+	isLast = Boolean.allowsNil; -- TODO: .isReadOnly
 
-	animations = {};
+	animations = Table( {} );
 
-	event = false;
+	event = EventManager;
+
 	canvas = Canvas;
 	shadowMask = Mask.allowsNil; -- TODO: .isReadOnly
 	shadowSize = Number( 1 ); -- TODO: .isReadOnly
 	needsDraw = Boolean( true );
 	isVisible = Boolean( true );
-
 	theme = false;
+
 	isCanvasHitTested = Boolean( true );
 	isFocused = Boolean( false );
 	isSingleFocusOnly = Boolean( false ); -- whether only this view can be in-focus when focused (i.e. so 3 textboxes aren't focused at the same time)
 	isFocusDismissable = Boolean( true ); -- whether clicking away from the view when focused will unfocus it
 	isEnabled = Boolean( true );
 
-	isFirst = Boolean.allowsNil;
-	isLast = Boolean.allowsNil; -- TODO: .isReadOnly
+	lastMouseDown = Table( {} );
+	lastMouseUp = Table( {} );
 
-	stringConstraints = {}; -- the constraints strings
-	loadedConstraints = {}; -- the parsed constraints
-	constraintsNeedingUpdate = {}; -- the constraints that need to be refreshed next update
-	needsConstraintUpdate = {}; -- whether the constraint values have changed and the view needs to be informed
-	references = {};
-	lastMouseDown = {};
-	lastMouseUp = {};
-	--[[ format:
-		{
-			[property] = {
-				[reference1 (string)] = true;
-				[reference2 (string)] = true;
-			}
-		}
-	]]
 }
 
 --[[
