@@ -41,7 +41,7 @@ class "Exception" {
 
 function Exception:initialise( String message, Number( 1 ) level )
     self.message = message
-    level = level + 1
+    level = level == 0 and level or level + 1
     self.level = level
     self.id = nextID
     nextID = nextID + 1
