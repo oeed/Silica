@@ -1,5 +1,4 @@
 
-local exceptionClasses = {}
 local thrownExceptions = {}
 local nextID = 1
 
@@ -33,35 +32,16 @@ end
 
 class "Exception" {
     
-    message = false;
-    level = false;
-    id = false;
-    traceback = {};
-    exceptionType = false;
+    message = String;
+    level = Number( 1 );
+    id = Number;
+    traceback = Table( {} );
 
 }
 
---[[
-    @desc Registers an Exception subclass to a exception type
-    @param [class] _class -- the class that was constructed
-]]
-function Exception.static:register( exceptionType, subclass )
-    exceptionClasses[exceptionType] = subclass
-end
-
---[[
-    @desc Registers an Exception subclass after it has just been constructed
-    @param [class] _class -- the class that was constructed
-]]
-function Exception.static:constructed( _class )
-    if _class.exceptionType then
-        Exception.register( _class.exceptionType, _class )
-    end
-end
-
-function Exception:initialise( message, level )
+function Exception:initialise( String message, Number( 1 ) level )
     self.message = message
-    level = (level or 1) + 1
+    level = level + 1
     self.level = level
     self.id = nextID
     nextID = nextID + 1
