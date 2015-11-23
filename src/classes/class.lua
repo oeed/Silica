@@ -169,24 +169,32 @@ local function createEnumType()
             [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
         }
         local args = { ... }
-        if #args ~= 2 then
-            error( "enums only support 2 arguments: valueType, table" , 2 )
+        local itemValueType, values
+        if #args == 2 then
+            local isOkay = false
+            itemValueType = args[1]
+            if type( itemValueType ) == "table" and itemValueType[1] == VALUE_TYPE_UID and itemValueType[TYPETABLE_HAS_DEFAULT_VALUE] then
+                values = args[2]
+                if type( value ) == "table" then
+                    isOkay = true
+                end
+            end
+            if not isOkay then
+                ArgumentTypeClassException( "Enum ValueType declarations only accept 2 arguments, the ValueType (without a default value) of the Enum's items and a table of the items. (e.g. Enum( Number, { CAT = 0; DOG = 1; } ) )", 2 )
+            end
+        else
+            ArgumentCountClassException( "Enum ValueType declarations only accept 2 arguments, the ValueType (without a default value) of the Enum's items and a table of the items. (e.g. Enum( Number, { CAT = 0; DOG = 1; } ) )", 2 )
         end
-        local itemValueType = args[1]
-        if type( itemValueType ) ~= "table" or itemValueType[1] ~= VALUE_TYPE_UID or itemValueType[TYPETABLE_HAS_DEFAULT_VALUE] then
-            error( "1st argument must be ValueType without a default value" , 2 )
-        end
-        local values = args[2]
-        if not type( value ) == "table" then
-            error( "2nd argument must be table" , 2 )
-        end
+
         valueInstance[TYPETABLE_ENUM_ITEM_TYPE] = itemValueType
 
         for k, v in pairs( values ) do
             if type( func ) == "function" then
                 error( "function enum values must not be defined in properties table" , 2 )
+                EnumValueTypeClassException( "Enum ValueTypes cannot define function values in the declaration table. Instead define the function with the other functions. (e.g. function ClassName.enumNames.VALUE_KEY( ... ) )" )
             end
             if not type( k ) == "string" or not k:match( "^[_%u]+$" ) then
+                StyleClassException( "EnumValueType keys must be all uppercase with underscores separating words. (e.g. LIGHT_BLUE)" )
                 error( "Enum keys must be all uppercase with _" , 2 )
             end
 
@@ -197,11 +205,15 @@ local function createEnumType()
 
         local metatable = {}
         function metatable:__index( k )
-            error( "Enum does not support .allowsNil or indexing other properties" , 2 )
+            if k == "allowsNil" then
+                EnumValueTypeClassException( "Enum ValueTypes do not support .allowsNil" )
+            else
+                ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. Enum ValueTypes only support accessing any key." , 2 )
+            end
         end
 
         function metatable:__newindex( k, v )
-            error( "attempt to change enum valuetype" , 2 )
+            ValueTypeClassException( "Tried to set value of '" .. name .. "." .. k .. "'. ValueTypes do not support assignment of values." , 2 )
         end
 
         local __tostring = "value type instance (w. default & item type) 'Enum': " ..  tostring( valueInstance ):sub( 8 )
@@ -212,11 +224,15 @@ local function createEnumType()
     end
 
     function metatable:__index( k )
-        error( "Enum does not support .allowsNil or other properties" , 2 )
+        if k == "allowsNil" then
+            EnumValueTypeClassException( "Enum ValueTypes do not support .allowsNil" )
+        else
+            ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. Enum ValueTypes only support accessing any key." , 2 )
+        end
     end
 
     function metatable:__newindex( k )
-        error("attempt to set property of Enum", 2 )
+        ValueTypeClassException( "Tried to set value of '" .. name .. "." .. k .. "'. ValueTypes do not support assignment of values." , 2 )
     end
 
     local __tostring = "value type 'Enum': " ..  tostring( valueType ):sub( 8 )
