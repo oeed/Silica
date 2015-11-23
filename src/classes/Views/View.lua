@@ -77,11 +77,8 @@ function View:initialise( Table.allowsNil properties )
 		end
 	end
 
-    self:event( ParentResizedInterfaceEvent, self.onParentResizedConstraintUpdate )
-    self:event( ParentChangedInterfaceEvent, self.onParentChangedConstraintUpdate )
     self:event( MouseDownEvent, self.onMouseDownMetaEvents )
     self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUpMetaEvents )
-    self:event( ReadyInterfaceEvent, self.onReadyConstraintUpdate )
 end
 
 --[[
@@ -200,7 +197,7 @@ end
 --[[
 	@desc Sets the z index of the view in it's parent container
 ]]
-function View.index:set( Number index )
+function View.index:set( index )
 	local parent = self.parent
 	if parent then
 		local containerChildren = parent.children

@@ -71,7 +71,6 @@ function Interface.container:get()
 	local containerProperties = self.containerProperties
 	local containerClass = self.containerClass
 	container = containerClass.spawn( containerProperties )
-	container.interfaceProperties = containerProperties
 	if not container then
 		error( "Interface XML invaid: " .. self.name .. ".sinterface. Error: Failed to initialise Container class: " .. tostring( self.class ) .. ". Identifier: " .. tostring( properties.identifier ), 0 )
 	end
