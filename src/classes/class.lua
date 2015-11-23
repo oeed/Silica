@@ -576,7 +576,10 @@ end
 -- Being the creation of the class
 local function constructClass( _, name )
     if name ~= expectedName then
-        error( "wrong name, got "..name.." expected "..tostring(expectedName) ) -- wrong name
+        ConstructionClassException( "Attempted to construct the class/interface '" .. name .. "' but was expecting to load class/interface '" .. expectedName .. "'. This should never happen... soooooo... no idea what you're doing." )
+    end
+    if name:sub( 1, 1) ~= name:sub( 1, 1):upper() then
+        StyleClassException( "Class names must start with a capital letter. (e.g. TextBox)", 2 )
     end
     isInterface = false
     local constructing = {
@@ -611,12 +614,15 @@ local function constructClass( _, name )
 end
 
 function interface( name )
-    if #name < 2 or name:sub( 1, 1) ~= "I" then
-        error('must start with I')
-    end
     if name ~= expectedName then
-        error( "wrong name" , 2 ) -- wrong name
+        ConstructionClassException( "Attempted to construct the interface '" .. name .. "' but was expecting to load interface '" .. expectedName .. "'. This should never happen... soooooo... no idea what you're doing.", 2 )
     end
+    if #name < 2 or name:sub( 1, 1) ~= "I" then
+        StyleClassException( "Interface names must start with a capital 'I' and must be longer than 1 character. (e.g. IVehicle)", 2 )
+    elseif name:sub( 2, 1) ~= name:sub( 2, 1):upper() then
+        StyleClassException( "Interface names (excluding the 'I') must start with a capital letter. (e.g. IVehicle)", 2 )
+    end
+
     isInterface = true
     local constructing = {
         name = name;
@@ -646,7 +652,7 @@ end
 
 function extends( name )
     if isInterface then
-        error("interfaces can't extend", 2 ) -- TODO: maybe make possible
+        ConstructionClassException( "Interface '" .. currentlyConstructing.name .. "' attempted to extend '" .. name .. "'. Interfaces are not (yet) able to extend other interfaces. It *might* be possible to add this in, so if you think you might find it useful make an issue on GitHub for it.", 2 )
     end
     if name ~= currentlyConstructing.name then
         local ext = class.get( name )
@@ -658,21 +664,25 @@ function extends( name )
 
         currentlyConstructing.superName = name
     else
-        error( "can't extend self" , 2 )
+        ConstructionClassException( "Class '" .. currentlyConstructing.name .. "' attempted to extend '" .. name .. "' (i.e. self). Classes cannot extend themselves.", 2 )
     end
     return loadProperties
 end
 
 function implements( name )
     if isInterface then
+        ConstructionClassException( "Interface '" .. currentlyConstructing.name .. "' attempted to implement '" .. name .. "'. Interfaces are not able to implement other interfaces.", 2 )
         error("interfaces can't implements", 2 )
     end
     if name ~= currentlyConstructing.name then
         local interface = class.get( name )
+        if not interface then
+            ConstructionClassException( "Class '" .. currentlyConstructing.name .. "' attempted to implement '" .. name .. "', but the interface could not be found. Alterntively the class attempted to implement a class. Only interfaces can be implemented.", 2 )
+        end
         currentlyConstructing.interfaces[name] = interface
         currentlyConstructing.typeOfCache[interface] = true
     else
-        error( "can't extend self" , 2 )
+        ConstructionClassException( "Class '" .. currentlyConstructing.name .. "' attempted to implement '" .. name .. "' (i.e. self). Classes cannot implement themselves.", 2 )
     end
     return loadProperties
 end
