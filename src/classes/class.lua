@@ -367,7 +367,7 @@ function pseudoReference( name )
     end
 
     function metatable:__newindex( key )
-        error( "attempt to set pseudo reference value" )
+        PseudoReferenceClassException( "Tried to set value of a '" .. name .. " PseudoReference."  .. k .. "'. PseudoReferences (the references to variables as default values in ValueType declarations) do not support assignment of values." , 2 )
     end
     setmetatable( referenceTable, metatable )
 
