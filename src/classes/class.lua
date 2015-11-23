@@ -397,7 +397,7 @@ function stripFunctionArguments( name, contents )
                     if not firstLevel then
                         functionName, arguments = line:match( "^function " .. name .. ":([_%w]+)%s*%((.*)%)%s*$" )
                         if not functionName or not arguments then
-                            error(name..": "..n..": function malformed", 2 )
+                            ArgumentValueTypeParsingClassException( "Function declaration malformed in class '" ..name .. "' on line " .. n .. ". Function declarations must follow a strict style and cannot have anything other than the declaration on the line. Read the 'Class System' wiki page for all the possible formats.", 0 )
                         end
                     else
                         isEnum = true
@@ -462,7 +462,7 @@ function stripFunctionArguments( name, contents )
                     if not isVarArg then
                         type, argumentName = argument:match( "^(.-)([_%w]+)%s*$" )
                         if not type or not argumentName then
-                            error( name .. ": " .. n .. ": argument formatting wrong", 0 )
+                            ArgumentValueTypeParsingClassException( "Formatting of arguments was malformed in class '" ..name .. "' on line " .. n .. ". This probably isn't valid Lua. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                     end
 
@@ -485,13 +485,13 @@ function stripFunctionArguments( name, contents )
                     else
                         local func = loadstring( "return " .. type, name )
                         if not func then
-                            error("argument did bad: " .. name .. ": " .. n)
+                            ArgumentValueTypeParsingClassException( "Syntax of argument ValueType declaration was malformed in class '" ..name .. "' on line " .. n .. ". Check your spelling, syntax and that if you are use a class it exists. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         setfenv( func, valueTypeExtractionEnvironment )
                         value = func()
 
                         if not value then
-                            error( name .. ": " .. n .. ": error extracting value type from " .. type )
+                            ArgumentValueTypeParsingClassException( "Argument ValueType was invalid value in class '" ..name .. "' on line " .. n .. ". Check your spelling, syntax and that if you are use a class it exists. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         elseif value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] then -- this was created like String(), not String, or indexed .allowsNil so it created its own instance. hence we can use the value directly
                             value[TYPETABLE_NAME] = argumentName
                             typeTable = value
@@ -533,18 +533,18 @@ function stripFunctionArguments( name, contents )
                     -- as this is a getter or a setter force the type and name of argument to match the property
                     if functionName == "get" then
                         if #argumentsTable ~= 0 then
-                            error( name .. ": " .. n .. ": getters cannot have any arguments" , 2 )
+                            ArgumentValueTypeParsingClassException( "Invalid getter arguments in class '" ..name .. "' on line " .. n .. ". Getters should NOT have any arguments. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                     elseif functionName == "set" then
                         if #argumentsTable ~= 1 then
-                            error( name .. ": " .. n .. ": setters can only have one argument" , 2 )
+                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". Getters should can only have ONE argument. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         local tableItem = argumentsTable[1]
                         if tableItem[TYPETABLE_NAME] ~= (secondLevel and secondLevel or firstLevel) then
-                            error( name .. ": " .. n .. ": setters argument must be called the same name as the property" , 2 )
+                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". The name of the setter's argument must be identical to the property name. (e.g. function View.isFocused:set( isFocused ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         if tableItem[TYPETABLE_TYPE] then
-                            error( name .. ": " .. n .. ": setters argument should not indicate a type, it is automatically inferred" , 2 )
+                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". The setter's argument cannot declare a ValueType, it is automatically inferred. (e.g. function View.isFocused:set( isFocused ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                     end
                 end
@@ -566,7 +566,7 @@ function stripFunctionArguments( name, contents )
             end
             line = replacementLine .. ":" .. functionName .. "(" .. argumentsString .. ")" .. (isInterface and " end" or "")
         elseif isInterface and line:match( "^%s*end%s*$" ) then
-            error( name .. ": " .. "interfaces mustnt use end with functions" , 2 )
+            ArgumentValueTypeParsingClassException( "Invalid function declaration in interface '" ..name .. "' on line " .. n .. ". Interface functions cannot include 'end'. Simply state the function declaration without the 'end'. (e.g. function IVehicle:drive( Number speed ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
         end
         classString = classString .. line .. "\n"
     end
