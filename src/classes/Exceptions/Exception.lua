@@ -55,9 +55,8 @@ function Exception:initialise( String message, Number( 1 ) level )
             traceback[i] = src:gsub( ":%s$", "", 1 )
         end
     end
-end
 
-function Exception:throw()
+    -- throw the exception
     -- TODO: check that these won't leak out of OS programs (maybe .. self.application and compare the application id)
     local id = self.id
     thrownExceptions[id] = self
