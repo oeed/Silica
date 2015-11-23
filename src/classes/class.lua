@@ -67,7 +67,7 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             valueInstance[TYPETABLE_DEFAULT_VALUE] = args[1]
         elseif not classType then
             if #args >= 2 then
-                error( "non-class types are only allowed 1 argument, the default value" , 2 )
+                ArgumentCountClassException( "Non-class ValueTypes can only have one argument, the default value. e.g. String( \"The default value\" )", 2 )
             end
             -- TODO: this *will* cause issues if nil is given as the default value but .allowsNil is then specified
             valueInstance[TYPETABLE_DEFAULT_VALUE] = checkValue( args[1], valueInstance ) -- check the default value actually complies with the type if it's not a class (class default values are parsed as arguments)
@@ -80,15 +80,18 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
         local metatable = {}
         function metatable:__index( k )
             if k == "allowsNil" then
+                if valueInstance[TYPETABLE_ALLOWS_NIL] then
+                    ValueTypeClassException( "Tried to repeatedly index '" .. name .. ".allowsNil' (i.e. you did '" .. name .. ".allowsNil.allowsNil'). This is unnecessary.", 2 )
+                end
                 valueInstance[TYPETABLE_ALLOWS_NIL] = true
                 return valueInstance
             elseif type( k ) ~= "number" then -- if it's a number it would've been trying to get a default value, don't error
-                error( "tried to index '" .. k .. "', types only support .allowsNil" , 2 )
+                ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. ValueTypes only support accessing the key .allowsNil" , 2 )
             end
         end
 
         function metatable:__newindex( k )
-            error("attempt to set property of valueType", 2 )
+            ValueTypeClassException( "Tried to set value of '" .. name .. "." .. k .. "'. ValueTypes do not support assignment of values." , 2 )
         end
 
         local __tostring = "value type instance (w. default) '" .. name .. "': " ..  tostring( valueInstance ):sub( 8 )
@@ -104,7 +107,7 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             local newValueType = {}
             for i = 1, #valueType do
                 newValueType[i] = valueType[i]
-        end
+            end
             newValueType[TYPETABLE_ALLOWS_NIL] = true
             local newMetatable = { __index = metatable.index, __newindex = metatable.__newindex}
             local __tostring = "value type instance '" .. name .. "': " ..  tostring( valueType ):sub( 8 )
@@ -114,12 +117,12 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
         elseif k == "static" and classType then
             return pseudoReference( name ).static -- if you do, for example, Font.static return a psuedo reference to it
         elseif type( k ) ~= "number" then -- if it's a number it would've been trying to get a default value, don't error
-            error( "tried to index '" .. k .. "', types only support .allowsNil", 2 )
+            ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. ValueTypes only support accessing the key .allowsNil" , 2 )
         end
     end
 
     function metatable:__newindex( k )
-        error("attempt to set property of valueType", 2 )
+        ValueTypeClassException( "Tried to set value of '" .. name .. "." .. k .. "'. ValueTypes do not support assignment of values." , 2 )
     end
 
     local __tostring = "value type '" .. name .. "': " ..  tostring( valueType ):sub( 8 )
