@@ -249,11 +249,12 @@ end
 
 function class.load( name, contents )
     if classes[name] or interfaces[name] then
-        error( "class already loaded: "..name)
+        LoadingClassException( "Class/interface '" .. name .. "' has already been loaded OR there is a class file with a duplicate name. Duplicate class names are now allowed. Loading the same class file should never happen as the class system will automatically load the classes as needed, make sure you're not manually loading classes or use 'class.get' instead of 'class.load'", 2 )
     end
     if DISALLOWED_CLASS_NAMES[name] then
-        error( "reserved class name "..name )
+        LoadingClassException( "Class/interface cannot be called '" .. name .. "', it is a reserved name.", 0 )
     end
+
     local oldConstructing, oldEnvironment, oldConstructorProxy, oldIsLoadingProperties, oldConstructingFunctionArguments, oldCurrentCompiled, oldIsInterface, oldExpectedName = currentlyConstructing, constructingEnvironment, constructorProxy, isLoadingProperties, constructingFunctionArguments, currentCompiledClass, isInterface, expectedName
     isLoadingProperties = false
     currentlyConstructing = nil
@@ -295,7 +296,7 @@ function class.load( name, contents )
 
     local func, err = loadstring( stripFunctionArguments( name, contents ), name )
     if not func then
-        error( "could not parse " .. name .. ": ".. err )
+        LoadingClassException( "Class/interface '" .. name .. "' could not be parsed. Error: " .. err, 0 )
     else
         setfenv( func, constructingEnvironment )
         func()
@@ -303,7 +304,7 @@ function class.load( name, contents )
 
 
     if not currentlyConstructing then
-        error( "expected a class/interface to be defined but it wasn't in file "..name )
+        LoadingClassException( "File '" .. name .. "' did not define a class or interface. Files in the 'classes' folder MUST be a class.", 0 )
     end
 
     compileClass( compiledClass, name )
@@ -328,7 +329,7 @@ end
 local function loadClassLines( name, contents )
     local file = contents or class.exists( name )
     if not file then
-        error( "Unable to find class " .. name )
+        LoadingClassException( "The class/interface '" .. name .. "' was could not be found. Check the spelling and that the class file exists. This should not occur when using the automatic loading system, check you are not manually loading any classes.", 0 )
     end
     local lines = lines( file, "\n" )
     return lines
