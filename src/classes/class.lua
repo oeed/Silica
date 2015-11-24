@@ -173,7 +173,7 @@ local function createEnumType()
         if #args == 2 then
             local isOkay = false
             itemValueType = args[1]
-            if type( itemValueType ) == "table" and itemValueType[1] == VALUE_TYPE_UID and itemValueType[TYPETABLE_HAS_DEFAULT_VALUE] then
+            if type( itemValueType ) == "table" and itemValueType[1] == VALUE_TYPE_UID and not itemValueType[TYPETABLE_HAS_DEFAULT_VALUE] then
                 values = args[2]
                 if type( value ) == "table" then
                     isOkay = true
