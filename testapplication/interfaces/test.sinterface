@@ -1,9 +1,10 @@
 <ApplicationContainer themeName="test">
     
     <Button x=10 y=10 text="Silica :D" />
-    <Button x=200 y=10 text="Another" />
 
-    <TestView x=50 y=50 width=19 height=25/>
+    <Label x=70 y=14 text="Another" />
+
+    <!-- <TestView x=50 y=50 width=19 height=25/> -->
     <!-- <TestView x=50 y=50 width=80 height=80/> -->
 
 </ApplicationContainer>

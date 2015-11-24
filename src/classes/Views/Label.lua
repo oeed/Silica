@@ -1,29 +1,17 @@
 
 class "Label" extends "View" {
 
-    text = false;
-    isAutosizing = Boolean( true );
-    font = false;
-    textObject = false;
-    needsAutosize = false;
+    text = String( "" );
+    font = Font( Font.static.systemFont );
+
+    isAutosized = Boolean( true );
+
+    needsAutosize = Boolean( true );
 	
 }
 
---[[
-    @desc Sets up the canvas and it's graphics objects
-]]
-function Label:initialiseCanvas()
-    self:super()
-    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
-    local textObject = canvas:insert( Text( 1, 1, width, height, self.text ) )
-
-    theme:connect( textObject, "textColour" )
-    theme:connect( canvas, "fillColour" )
-    self.textObject = textObject
-
-    if not self.font then
-        self.font = Font.systemFont
-    end
+function Label:onDraw()
+    self.canvas:fill( self.theme:value( "textColour" ), TextMask( 1, 1, self.width, self.height, self.text, self.font ) )
 end
 
 function Label:updateThemeStyle()
@@ -32,20 +20,11 @@ end
 
 function Label.font:set( font )
     self.font = font
-    local textObject = self.textObject
-    if textObject then
-        self.textObject.font = font
-        self.needsAutosize = true
-    end
-end
-
-function Label:updateWidth( width )
-    self.textObject.width = width
+    self.needsAutosize = true
 end
 
 function Label.text:set( text )
     self.text = text
-    self.textObject.text = text
     self.needsAutosize = true
 end
 
@@ -61,14 +40,9 @@ function Label:update( deltaTime )
     end
 end
 
---[[
-    @desc Automatically resizes the button, regardless of isAutosizing value, to fit the text
-]]
 function Label:autosize()
-    -- TODO: support self.isAutosizing
-    local font, text = self.font, self.text
-
-    if font and text then
+    if self.isAutosized then
+        local font, text = self.font, self.text
         local fontWidth = font:getWidth( text )
         self.width = fontWidth
         self.height = font.height
