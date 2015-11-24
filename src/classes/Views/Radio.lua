@@ -1,8 +1,8 @@
 
 class "Radio" extends "View" {
 
-    width = Number( 7 );
-    height = Number( 7 );
+    width = Number( 8 );
+    height = Number( 8 );
 
     isPressed = Boolean( false );
     isEnabled = Boolean( true );
@@ -10,33 +10,18 @@ class "Radio" extends "View" {
 
 }
 
---[[
-    @desc Creates a button object and connects the event handlers
-]]
 function Radio:initialise( ... )
 	self:super( ... )
     self:event( MouseDownEvent, self.onMouseDown )
     self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
-    end
-
---[[
-    @desc Sets up the canvas and it's graphics objects
-]]
-function Radio:initialiseCanvas()
-    self:super()
-    local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
-    self.theme:connect( backgroundObject, "fillColour" )
-    self.theme:connect( backgroundObject, "outlineColour" )
-    self.theme:connect( backgroundObject, "radius", "cornerRadius" )
-    self.backgroundObject = backgroundObject
 end
 
-function Radio:updateHeight( height )
-    self.backgroundObject.height = height
-end
+function Radio:onDraw()
+    local width, height, theme, canvas, isPressed = self.width, self.height, self.theme, self.canvas, self.isPressed
 
-function Radio:updateWidth( width )
-    self.backgroundObject.width = width
+    local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
+    canvas:fill( theme:value( "fillColour" ), roundedRectangle )
+    canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
 end
 
 --[[
@@ -64,9 +49,6 @@ function Radio.isEnabled:set( isEnabled )
     self:updateThemeStyle()
 end
 
---[[
-    @desc Sets whether the button is pressed, changing the drawing state
-]]
 function Radio.isPressed:set( isPressed )
     self.isPressed = isPressed
     self:updateThemeStyle()

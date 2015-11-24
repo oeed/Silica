@@ -63,7 +63,8 @@
 	</MenuBarItem>
 
 	<Radio>
-		<cornerRadius type="number" default="4" pressed="4" />
+		<cornerRadius type="number" default="4"/>
+		<outlineThickness type="number" default="1" />
 		<fillColour type="Graphics.colours" default="WHITE" pressed="LIGHT_BLUE" checked="BLUE" disabledChecked="GREY" disabled="WHITE"/>
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="BLUE" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
 	</Radio>
