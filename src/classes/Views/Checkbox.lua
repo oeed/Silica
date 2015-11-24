@@ -45,8 +45,12 @@ function Checkbox.isEnabled:set( isEnabled )
 end
 
 function Checkbox.isChecked:set( isChecked )
-    self.isChecked = isChecked
-    self:updateThemeStyle()
+    local wasChecked = self.isChecked
+    if isChecked ~= wasChecked then
+        self.isChecked = isChecked
+        self:updateThemeStyle()
+        self.event:handleEvent( ActionInterfaceEvent( self ) )
+    end
 end
 
 --[[
