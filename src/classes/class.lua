@@ -1189,10 +1189,10 @@ function compileClass( compiledClass, name )
 
         if not metatable.__call then 
             function metatable:__call( ... )
-                return spawnInstance( name, ... )
+                return spawnInstance( false, name, ... )
            end
         end
-        compiledClass.spawn = function( ... ) return spawnInstance( name, ... ) end
+        compiledClass.spawn = function( ignoreAllowsNil, ... ) return spawnInstance( ignoreAllowsNil, name, ... ) end
 
         if not metatable.__tostring then 
             local __tostring = "class '" .. name .. "': " ..  tostring( compiledClass ):sub( 8 )
@@ -1221,6 +1221,9 @@ function compileClass( compiledClass, name )
 
 
         compileInstanceClass( name, compiledClass, static )
+        rawset( compiledClass, "instanceDefinedIndexes", compiledInstances[name].definedIndexes )
+        rawset( compiledClass, "instanceDefinedProperties", compiledInstances[name].definedProperties )
+        rawset( compiledClass, "instanceProperties", currentlyConstructing.instanceProperties )
         classes[name] = compiledClass
         static = compileAndSpawnStatic( static, name, compiledClass )
     end
@@ -1588,7 +1591,7 @@ function compileAndSpawnStatic( static, name, compiledClass )
     return static
 end
 
-function spawnInstance( name, ... )
+function spawnInstance( ignoreAllowsNil, name, ... )
     local compiledInstance = compiledInstances[name]
     local classDetails = compiledClassDetails[name]
     local instanceProperties = classDetails.instanceProperties
@@ -1688,12 +1691,14 @@ function spawnInstance( name, ... )
         end
     end
 
-    -- check for any nil values that aren't allowed to be nil
-    for k, v in pairs( definedProperties ) do
-        if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
-            local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
-            if value == nil and not instanceProperties[k][TYPETABLE_ALLOWS_NIL] then
-                error( name .. "." .. k .. " was nil after initialisation but type does not specify .allowsNil" )
+    if not ignoreAllowsNil then
+        -- check for any nil values that aren't allowed to be nil
+        for k, v in pairs( definedProperties ) do
+            if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
+                local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
+                if value == nil and not instanceProperties[k][TYPETABLE_ALLOWS_NIL] then
+                    error( name .. "." .. k .. " was nil after initialisation but type does not specify .allowsNil" )
+                end
             end
         end
     end

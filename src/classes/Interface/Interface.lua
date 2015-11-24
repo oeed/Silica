@@ -1,22 +1,16 @@
 
--- local function callSetters( instance, _class )
--- 	local definedFunctions, setters, raw = _class.definedFunctions, class.setters, instance.raw
--- 	for k, _ in pairs( _class.definedProperties ) do
--- 		local classValue = _class[k]
--- 		local instanceValue = raw[k]
--- 		if classValue and type( classValue ) ~= "table" and instanceValue == classValue and definedFunctions[setters[k]] then
--- 			instance[k] = classValue
--- 		end
--- 	end
--- end
+local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true }
+local TYPETABLE_ALLOWS_NIL = 4
 
 class "Interface" {
-	name = false; -- the name of the interface (the file name without the extension)
-	container = false; -- if you want to generate a container based on the interface (i.e. not use the properties and children for an already made interface) you can use the value
-	containerProperties = false; -- the properties given to the root element
-	children = false; -- the children of the interface
-	containerClass = false; -- the class type of the interface
-	childNodes = false; -- the nodes from the root elements XML
+
+	name = String; -- the name of the interface (the file name without the extension)
+	container = Container.allowsNil; -- if you want to generate a container based on the interface (i.e. not use the properties and children for an already made interface) you can use the value
+	containerProperties = Table; -- the properties given to the root element
+	children = Table.allowsNil; -- the children of the interface
+	containerClass = false; -- TODO: Class type -- the class type of the interface
+	childNodes = Table; -- the nodes from the root elements XML
+
 }
 
 --[[
@@ -70,14 +64,14 @@ function Interface.container:get()
 
 	local containerProperties = self.containerProperties
 	local containerClass = self.containerClass
-	container = containerClass.spawn( containerProperties )
+	container = containerClass.spawn( true, containerProperties )
 	if not container then
 		error( "Interface XML invaid: " .. self.name .. ".sinterface. Error: Failed to initialise Container class: " .. tostring( self.class ) .. ". Identifier: " .. tostring( properties.identifier ), 0 )
 	end
 
 	self.container = container
 	-- callSetters( container, containerClass )
-
+	local readyEvent = ReadyInterfaceEvent()
 	local children = self.children
 	for i, tbl in ipairs( children ) do
 		local childView = tbl[1]
@@ -86,6 +80,20 @@ function Interface.container:get()
 		for k, v in pairs( tbl[2] ) do
 			childView[k] = v
 		end
+		childView.event:handleEvent( readyEvent )
+
+        -- check for any nil values that aren't allowed to be nil
+        local class = childView.class
+        local className = class.className
+        local instanceProperties = class.instanceProperties
+        for k, v in pairs( class.instanceDefinedProperties ) do
+            if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
+                local value = childView[k] -- TODO: maybe this should use instance[k] so getters are called
+                if value == nil and not instanceProperties[k][TYPETABLE_ALLOWS_NIL] then
+                    error( className .. "." .. k .. " was nil after initialisation and ReadyInterfaceEvent, but type does not specify .allowsNil" )
+                end
+            end
+        end
 	end
 
 
@@ -108,13 +116,13 @@ function Interface.children:get()
 			return nil,"Class does not extend 'View': " .. childNode.type
 		end
 
-		local childView = childClass()
+		local childView = childClass.spawn( true )
 
 		if not childView then
 			return nil, "Failed to initialise " .. childNode.type .. ". Identifier: " .. tostring( childNode.attributes.identifier )
 		end
 
-
+		local readyEvent = ReadyInterfaceEvent()
 		if childNode.body and #childNode.body > 0 then
 			if not childClass:typeOf( Container ) then
 				return nil, "Class does not extend 'Container' but has children: " .. childNode.type
@@ -127,6 +135,19 @@ function Interface.children:get()
 						for k, v in pairs( _childNode.attributes ) do
 							child[k] = v
 						end
+						childView.event:handleEvent( readyEvent )
+
+					    -- check for any nil values that aren't allowed to be nil
+					    local class = child.class
+					    local instanceProperties = class.instanceProperties
+					    for k, v in pairs( class.instanceDefinedProperties ) do
+					        if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
+					            local value = child[k] -- TODO: maybe this should use instance[k] so getters are called
+					            if value == nil and not instanceProperties[k][TYPETABLE_ALLOWS_NIL] then
+					                error( name .. "." .. k .. " was nil after initialisation and ReadyInterfaceEvent, but type does not specify .allowsNil" )
+					            end
+					        end
+					    end
 					end
 				end
 			end
