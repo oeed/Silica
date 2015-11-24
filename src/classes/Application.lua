@@ -86,14 +86,21 @@ end
 function Application:run( ... )
 	self.arguments = { ... }
 	self.isRunning = true
+	try( function()
+		self:update()
 
-	self:update()
+		while self.isRunning do
+			local event = Event.static:create( coroutine.yield() )
+			event.relativeView = self.container
+			self.event:handleEvent( event )
+		end
+	end ) {
 
-	while self.isRunning do
-		local event = Event.static:create( coroutine.yield() )
-		event.relativeView = self.container
-		self.event:handleEvent( event )
-	end
+		catch( FatalException, function( extension )
+			print( extension.message )
+		end )
+
+	}
 end
 
 --[[

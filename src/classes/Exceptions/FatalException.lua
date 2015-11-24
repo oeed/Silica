@@ -1,0 +1,4 @@
+
+class "FatalException" extends "Exception" {
+    
+}

@@ -60,5 +60,6 @@ function Exception:initialise( String message, Number( 1 ) level )
     -- TODO: check that these won't leak out of OS programs (maybe .. self.application and compare the application id)
     local id = self.id
     thrownExceptions[id] = self
-    error( "SilicaException: " .. self.id, 0 )
+                                           -- TODO: \/ this is just temporary
+    error( "SilicaException: " .. self.id .. ": "..self.message, 0 )
 end
