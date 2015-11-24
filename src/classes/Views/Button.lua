@@ -45,9 +45,9 @@ function Button:onDraw()
     canvas:fill( theme:value( "fillColour" ), roundedRectangle )
     canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
 
-    local leftMargin, rightMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" )
+    local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
     -- text
-    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + shadowX + 1, theme:value( "topMargin" ) + 1 + shadowOffset, width - leftMargin - rightMargin, nil, self.text, self.font ) )
+    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + shadowX + 1, topMargin + 1 + shadowOffset, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, self.font ) )
 
     self.shadowSize = shadowSize
 end
