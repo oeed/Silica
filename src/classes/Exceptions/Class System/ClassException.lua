@@ -1,4 +1,4 @@
 
-class "ClassException" extends  {
+class "ClassException" extends "Exception" {
 
 }

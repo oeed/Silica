@@ -575,6 +575,9 @@ end
 
 -- Being the creation of the class
 local function constructClass( _, name )
+    if type( name ) ~= "string" then
+        ConstructionClassException( "'class' argument must be a string with the name of the class being defined, got type " .. type( name ), 2 )
+    end
     if name ~= expectedName then
         ConstructionClassException( "Attempted to construct the class/interface '" .. name .. "' but was expecting to load class/interface '" .. expectedName .. "'. This should never happen... soooooo... no idea what you're doing." )
     end
@@ -614,6 +617,9 @@ local function constructClass( _, name )
 end
 
 function interface( name )
+    if type( name ) ~= "string" then
+        ConstructionClassException( "'interface' argument must be a string with the name of the interface being defined, got type " .. type( name ), 2 )
+    end
     if name ~= expectedName then
         ConstructionClassException( "Attempted to construct the interface '" .. name .. "' but was expecting to load interface '" .. expectedName .. "'. This should never happen... soooooo... no idea what you're doing.", 2 )
     end
@@ -651,6 +657,9 @@ function interface( name )
 end
 
 function extends( name )
+    if type( name ) ~= "string" then
+        ConstructionClassException( "'extends' argument must be a string with the name of the extending class, got type " .. type( name ), 2 )
+    end
     if isInterface then
         ConstructionClassException( "Interface '" .. currentlyConstructing.name .. "' attempted to extend '" .. name .. "'. Interfaces are not (yet) able to extend other interfaces. It *might* be possible to add this in, so if you think you might find it useful make an issue on GitHub for it.", 2 )
     end
@@ -670,6 +679,9 @@ function extends( name )
 end
 
 function implements( name )
+    if type( name ) ~= "string" then
+        ConstructionClassException( "'implements' argument must be a string with the name of the interface, got type " .. type( name ), 2 )
+    end
     if isInterface then
         ConstructionClassException( "Interface '" .. currentlyConstructing.name .. "' attempted to implement '" .. name .. "'. Interfaces are not able to implement other interfaces.", 2 )
         error("interfaces can't implements", 2 )
