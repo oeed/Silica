@@ -70,6 +70,7 @@
 
 	<Checkbox>
 		<cornerRadius type="number" default="2" />
+		<outlineThickness type="number" default="1" />
 		<fillColour type="Graphics.colours" default="WHITE" pressed="LIGHT_BLUE" checked="BLUE" disabledChecked="GREY" disabled="WHITE"/>
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="BLUE" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
 		<checkColour type="Graphics.colours" default="TRANSPARENT" checked="WHITE" disabledChecked="WHITE" disabled="TRANSPARENT"/>
