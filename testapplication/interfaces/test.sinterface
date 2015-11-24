@@ -10,6 +10,8 @@
 
     <Radio x=135 y=20 />
 
+    <SeparatorView x=150 y=10 height=18 />
+
 
     <!-- <TestView x=50 y=50 width=19 height=25/> -->
     <!-- <TestView x=50 y=50 width=80 height=80/> -->
