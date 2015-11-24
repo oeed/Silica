@@ -46,7 +46,7 @@ class "View" {
 
 	canvas = Canvas;
 	shadowMask = Mask.allowsNil; -- TODO: .isReadOnly
-	shadowSize = Number( 1 ); -- TODO: .isReadOnly
+	shadowSize = Number( 0 ); -- TODO: .isReadOnly
 	needsDraw = Boolean( true );
 	isVisible = Boolean( true );
 	theme = false;
