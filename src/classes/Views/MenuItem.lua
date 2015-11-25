@@ -27,6 +27,8 @@ function MenuItem:initialise( ... )
     self:event( MouseDownEvent, self.onMouseDown )
     self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
     self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+    self:event( ThemeChangedInterfaceEvent, self.updateSize )
+    self:updateSize()
 end
 
 function MenuItem:onDraw()
@@ -37,6 +39,11 @@ function MenuItem:onDraw()
     local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
     canvas:fill( theme:value( "shortcutColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, font, Font.alignments.RIGHT ) )
     canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, font ) )
+end
+
+function MenuItem:updateSize( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
+    local theme = self.theme
+    self.height = 8 + theme:value( "topMargin ") + theme:value( "bottomMargin ") -- TODO: loading of fonts from theme
 end
 
 -- function MenuItem.shortcut:set( shortcut )
@@ -92,17 +99,6 @@ function MenuItem.keyboardShortcut:set( keyboardShortcut )
     end
     self.keyboardShortcut = keyboardShortcut
     self:updateText()
-end
-
-function MenuItem:updateWidth( width )
-    self.backgroundObject.width = width
-    self.textObject.width = width - TEXT_MARGIN
-    local shortcutObject = self.shortcutObject
-    shortcutObject.width = width - 5
-end
-
-function MenuItem:updateHeight( height )
-    self.backgroundObject.height = height
 end
 
 function MenuItem:updateThemeStyle()

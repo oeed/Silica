@@ -6,13 +6,10 @@ class "SeparatorMenuItem" extends "MenuItem" {
 
 }
 
---[[
-	@constructor
-	@desc Initialise a application container instance
-	@param [table] properties -- the properties for the view
-]]
 function SeparatorMenuItem:initialise( ... )
 	self.super:super( ... ) -- by pass the normal menuitem's event connecting, we don't need to get any events
+    self:event( ThemeChangedInterfaceEvent, self.updateSize )
+    self:updateSize()
 end
 
 function SeparatorMenuItem:onDraw()
@@ -23,4 +20,7 @@ function SeparatorMenuItem:onDraw()
     self.canvas:fill( theme:value( "separatorColour" ), theme:value( "isDashed" ) and SeparatorMask( separatorX, separatorY, separatorWidth, 1 ) or RectangleMask( separatorX, separatorY, separatorWidth, 1 ) )
 end
 
+function SeparatorMenuItem:updateSize( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
+    local theme = self.theme
+    self.height = 1 + theme:value( "topMargin ") + theme:value( "bottomMargin ")
 end
