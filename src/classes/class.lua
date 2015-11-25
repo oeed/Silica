@@ -1233,15 +1233,15 @@ function compileClass( compiledClass, name )
     return compiledClass
 end
 
-local function constructSuper( prebuiltFunctions )
+local function constructSuper( prebuiltFunctions, self )
     if #prebuiltFunctions == 1 then return end
     local lastSuper
     for i = 1, #prebuiltFunctions - 1 do
         local super, func = {}, prebuiltFunctions[i]( lastSuper )
-        local __tostring = "super " .. tostring(prebuiltFunctions[i])
+        local __tostring = "super " .. i .. ": " .. tostring(prebuiltFunctions[i])
         setmetatable( super, {
             __tostring = function() return __tostring end;
-            __call = function( self, ... ) return func( ... ) end
+            __call = function( _, __, ... ) return func( self, ... ) end
         } )
         super.super = lastSuper
         lastSuper = super
@@ -1283,7 +1283,7 @@ local function addPrebuilt( functionName, prebuiltFunction, prebuiltFunctions, s
         end
     end
     prebuilts[#prebuilts + 1] = prebuiltFunction
-    return prebuiltFunction( constructSuper( prebuilts ) )
+    -- return prebuiltFunction( constructSuper( prebuilts ) )
 end
 
 local function addMissingSuper( superPrebuilt, prebuiltFunctions, outValues, definedIndexes )
@@ -1292,7 +1292,7 @@ local function addMissingSuper( superPrebuilt, prebuiltFunctions, outValues, def
             if not prebuiltFunctions[functionName] then
                 prebuiltFunctions[functionName] = funcs -- TODO: check this doesn't cause issues due to using the same table
                 if definedIndexes then definedIndexes[functionName] = functionName end
-                outValues[functionName] = funcs[#funcs]( constructSuper( funcs ) )
+                -- outValues[functionName] = funcs[#funcs]
             end
         end
     end
@@ -1341,19 +1341,18 @@ local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, 
                 return unpack( response )
             end
         end
-        outValues[functionName] = addPrebuilt( functionName, prebuiltFunction, prebuiltFunctions, superPrebuiltFunctions )
+        addPrebuilt( functionName, prebuiltFunction, prebuiltFunctions, superPrebuiltFunctions )
     end
     addMissingSuper( superPrebuiltFunctions, prebuiltFunctions, outValues, definedIndexes )
 end
 
-local function addGetter( getters, properties, outGetters, prebuiltGetters, superPrebuiltGetters )
+local function addGetter( getters, properties, prebuiltGetters, superPrebuiltGetters )
     for propertyName, getterFunction in pairs( getters ) do
         local propertyTypeTable = properties[propertyName]
-        local function prebuiltGetter( super )
+        local function prebuiltGetter( super, lockedGetters )
             return function( self )
                 local oldSuper = rawget( self, "super" )
                 rawset( self, "super", super )
-                local lockedGetters = allLockedGetters[self]
                 lockedGetters[propertyName] = true
                 value = checkValue( getterFunction( self ), propertyTypeTable ) -- we know that this is defintely self as it's only called by the class system
                 lockedGetters[propertyName] = false
@@ -1361,19 +1360,18 @@ local function addGetter( getters, properties, outGetters, prebuiltGetters, supe
                 return value
             end
         end
-        outGetters[propertyName] = addPrebuilt( propertyName, prebuiltGetter, prebuiltGetters, superPrebuiltGetters )
+        addPrebuilt( propertyName, prebuiltGetter, prebuiltGetters, superPrebuiltGetters )
     end
     addMissingSuper( superPrebuiltGetters, prebuiltGetters, outGetters )
 end
 
-local function addSetter( setters, properties, outSetters, prebuiltSetters, superPrebuiltSetters )
+local function addSetter( setters, properties, prebuiltSetters, superPrebuiltSetters )
     for propertyName, setterFunction in pairs( setters ) do
         local propertyTypeTable = properties[propertyName]
-        local function prebuiltSetter( super )
+        local function prebuiltSetter( super, lockedSetters )
             return function( self, value )
                 local oldSuper = rawget( self, "super" )
                 rawset( self, "super", super )
-                local lockedSetters = allLockedSetters[self]
                 lockedSetters[propertyName] = true
                 setterFunction( self, checkValue( value, propertyTypeTable ) ) -- we know that this is defintely self as it's only called by the class system
                 lockedSetters[propertyName] = false
@@ -1381,13 +1379,13 @@ local function addSetter( setters, properties, outSetters, prebuiltSetters, supe
                 return value
             end
         end
-        outSetters[propertyName] = addPrebuilt( propertyName, prebuiltSetter, prebuiltSetters, superPrebuiltSetters )
+        addPrebuilt( propertyName, prebuiltSetter, prebuiltSetters, superPrebuiltSetters )
     end
     addMissingSuper( superPrebuiltSetters, prebuiltSetters, outSetters )
 end
 
 function compileInstanceClass( name, compiledClass, static )
-    local initialValues, prebuiltGetters, prebuiltSetters, requireDefaultGeneration, definedIndexes, definedProperties = { static = static, class = compiledClass, }, {}, {}, {}, { static = "static", class = "class", typeOf = "typeOf", isDefined = "isDefined", isDefinedProperty = "isDefinedProperty", isDefinedFunction = "isDefinedFunction" }, { static = "static", class = "class" }
+    local initialValues, requireDefaultGeneration, definedIndexes, definedProperties = { static = static, class = compiledClass, }, {}, { static = "static", class = "class", typeOf = "typeOf", isDefined = "isDefined", isDefinedProperty = "isDefinedProperty", isDefinedFunction = "isDefinedFunction" }, { static = "static", class = "class" }
     local classDetails = compiledClassDetails[name]
     local superName = classDetails.superName
     local compiledSuperDetails = superName and compiledClassDetails[superName]
@@ -1421,10 +1419,12 @@ function compileInstanceClass( name, compiledClass, static )
     end
 
     -- add the instance functions
-    addFunctions( classDetails.instanceFunctions, definedIndexes, currentlyConstructing.prebuiltInstanceFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceFunctions, initialValues, selfTypeTable, name )
+    local prebuiltFunctions = currentlyConstructing.prebuiltInstanceFunctions
+    addFunctions( classDetails.instanceFunctions, definedIndexes, prebuiltFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceFunctions, initialValues, selfTypeTable, name )
 
-    addGetter( classDetails.instanceGetters, instanceProperties, prebuiltGetters, currentlyConstructing.prebuiltInstanceGetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceGetters )
-    addSetter( classDetails.instanceSetters, instanceProperties, prebuiltSetters, currentlyConstructing.prebuiltInstanceSetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceSetters )
+    local prebuiltGetters, prebuiltSetters = currentlyConstructing.prebuiltInstanceGetters, currentlyConstructing.prebuiltInstanceSetters
+    addGetter( classDetails.instanceGetters, instanceProperties, prebuiltGetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceGetters )
+    addSetter( classDetails.instanceSetters, instanceProperties, prebuiltSetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceSetters )
 
     local typeOfCache = classDetails.typeOfCache
     function initialValues:typeOf( object )
@@ -1495,7 +1495,11 @@ function compileAndSpawnStatic( static, name, compiledClass )
         end
     end
 
-    addFunctions( classDetails.staticFunctions, definedIndexes, classDetails.prebuiltStaticFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltStaticFunctions, values, selfTypeTable, name )
+    local prebuiltFunctions = classDetails.prebuiltStaticFunctions
+    addFunctions( classDetails.staticFunctions, definedIndexes, prebuiltFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltStaticFunctions, values, selfTypeTable, name )
+    for functionName, funcs in pairs( prebuiltFunctions ) do
+        values[functionName] = funcs[#funcs]( constructSuper( funcs, static ) )
+    end
 
     local lockedGetters, lockedSetters = {}, {}
     allLockedGetters[static] = lockedGetters
@@ -1596,6 +1600,7 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     local classDetails = compiledClassDetails[name]
     local instanceProperties = classDetails.instanceProperties
 
+    local instance = {}
     local values, getters, setters = {}, {}, {}
 
     for key, value in pairs( compiledInstance.initialValues ) do
@@ -1608,21 +1613,27 @@ function spawnInstance( ignoreAllowsNil, name, ... )
         values[propertyName] = generateDefaultValue( typeTable, context )
     end
 
+
+    local prebuiltFunctions = compiledInstance.prebuiltFunctions
+    for functionName, funcs in pairs( prebuiltFunctions ) do
+        values[functionName] = funcs[#funcs]( constructSuper( funcs, instance ) )
+        -- values[functionName] = addPrebuilt( functionName, prebuiltFunction, prebuiltFunctions, superPrebuiltFunctions )
+    end
+
     local lockedGetters, lockedSetters = {}, {}
 
     -- unwrap the prebuilt getter/setter functions so we can use our unique locking tables
-    for propertyName, func in pairs( compiledInstance.prebuiltGetters ) do
-        getters[propertyName] = func
+    for propertyName, funcs in pairs( compiledInstance.prebuiltGetters ) do
+        getters[propertyName] = funcs[#funcs]( constructSuper( funcs, instance ), lockedGetters )
     end
 
-    for propertyName, func in pairs( compiledInstance.prebuiltSetters ) do
-        setters[propertyName] = func
+    for propertyName, funcs in pairs( compiledInstance.prebuiltSetters ) do
+        setters[propertyName] = funcs[#funcs]( constructSuper( funcs, instance ), lockedSetters )
     end
 
     local aliases = classDetails.aliases.instance
 
     local definedIndexes, definedProperties = compiledInstance.definedIndexes, compiledInstance.definedProperties
-    local instance = {}
     allLockedGetters[instance] = lockedGetters
     allLockedSetters[instance] = lockedSetters
     local metatable = {}
