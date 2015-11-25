@@ -17,7 +17,7 @@ function Radio:initialise( ... )
 end
 
 function Radio:onDraw()
-    local width, height, theme, canvas, isPressed = self.width, self.height, self.theme, self.canvas
+    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
 
     local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
     canvas:fill( theme:value( "fillColour" ), roundedRectangle )
