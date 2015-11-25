@@ -1,5 +1,4 @@
 
-local TEXT_MARGIN = 12
 
 class "MenuItem" extends "View" {
 
@@ -30,25 +29,14 @@ function MenuItem:initialise( ... )
     self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
-function MenuItem:initialiseCanvas()
-    self:super()
-    local width, height, canvas = self.width, self.height, self.canvas
-    local backgroundObject = canvas:insert( Rectangle( 1, 1, width, height, self.fillColour ) )
-    local textObject = canvas:insert( Text( 7, 3, height, width - TEXT_MARGIN, self.text ) )
-    local keyboardShortcut = self.keyboardShortcut
-    local shortcutObject = canvas:insert( Text( 1, 3, height, width - TEXT_MARGIN, keyboardShortcut and keyboardShortcut:symbols() or "" ) )
-    shortcutObject.alignment = Font.alignments.RIGHT
-    self.theme:connect( backgroundObject, "fillColour" )
-    self.theme:connect( textObject, "textColour" )
-    self.theme:connect( shortcutObject, "textColour", "shortcutColour" )
+function MenuItem:onDraw()
+    local width, height, theme, canvas, font = self.width, self.height, self.theme, self.canvas, self.font
 
-    self.backgroundObject = backgroundObject
-    self.textObject = textObject
-    self.shortcutObject = shortcutObject
+    canvas:fill( theme:value( "fillColour" ) )
 
-    if not self.font then
-        self.font = Font.systemFont
-    end
+    local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
+    canvas:fill( theme:value( "shortcutColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, font, Font.alignments.RIGHT ) )
+    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, font ) )
 end
 
 -- function MenuItem.shortcut:set( shortcut )

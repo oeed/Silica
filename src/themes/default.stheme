@@ -47,6 +47,8 @@
 	</MenuButton>
 	
 	<MenuItem>
+		<leftMargin type="number" default="6" />
+		<rightMargin type="number" default="6" />
 		<fillColour type="Graphics.colours" default="TRANSPARENT" pressed="BLUE" disabled="TRANSPARENT"/>
 		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
 		<shortcutColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
