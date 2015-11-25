@@ -17,8 +17,6 @@ class "Menu" extends "Container" {
 
 	topMargin = 3;
 	bottomMargin = 5;
-	shadowRightMargin = 1;
-	shadowTopMargin = 2;
 
     cornerRadius = 4;
     isOpen = Boolean;
@@ -43,23 +41,15 @@ function Menu:initialise( ... )
     self.event:connectGlobal( MouseDownEvent, self.onGlobalMouseDown, Event.phases.BEFORE )
 end
 
---[[
-    @desc Sets up the canvas and it's graphics objects
-]]
-function Menu:initialiseCanvas()
-	self:super()
-    local cornerRadius = self.cornerRadius
-    local shadowObject = self.canvas:insert( RoundedRectangle( 1 + self.shadowRightMargin, 1 + self.shadowTopMargin, self.width - 1, self.height - 2 ) )
-    local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 2 ) )
+function Menu:onDraw()
+    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
 
-    self.theme:connect( backgroundObject, "fillColour" )
-    self.theme:connect( backgroundObject, "outlineColour" )
-    self.theme:connect( backgroundObject, "radius", "cornerRadius" )
-    self.theme:connect( shadowObject, "fillColour", "shadowColour" )
-    self.theme:connect( shadowObject, "radius", "cornerRadius" )
+    -- background shape
+    local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
+    canvas:fill( theme:value( "fillColour" ), roundedRectangle )
+    canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
 
-	self.shadowObject = shadowObject
-	self.backgroundObject = backgroundObject
+    self.shadowSize = theme:value( "shadowSize" )
 end
 
 --[[
@@ -68,54 +58,34 @@ end
 	@param [number] x -- the x coordinate of the click (from event.x)
 	@param [number] y -- the y coordinate of the click (from event.y)
 ]]
-function Menu:showContext( owner, x, y )
+function Menu:showContext( View owner, Number x, Number y )
 	self.owner = owner
 	self.isSingleShot = true
 	self.x = x + owner.x - 1 - MENU_CONTEXT_OFFSET
 	self.y = y + owner.y - 1 - MENU_CONTEXT_OFFSET
-	if self.parent then
-        self.parent:removeChild( self )
+    local parent = self.parent
+	if parent then
+        parent:removeChild( self )
     end
 	owner.parent:insert( self )
 	self.isVisible = true
-end
-
-function Menu:updateHeight( height )
-    self.backgroundObject.height = height - self.shadowTopMargin
-    self.shadowObject.height = height - self.shadowTopMargin
-end
-
-function Menu:updateWidth( width )
-	local _width = width - self.shadowRightMargin
-    self.backgroundObject.width = _width
-    self.shadowObject.width = _width
-
-	local height = self.topMargin
-	for i, childView in ipairs( self.children ) do
-		childView.width = _width
-	end
 end
 
 --[[
 	@desc Updates the location and size of the menu as well as the location and size of the menu items
 ]]
 function Menu:updateLayout()
-	local width = self.owner and ( self.owner.menuMargin and self.owner.width + 2 * self.owner.menuMargin or 1 ) or 1
-	local height = self.topMargin
+    local owner = self.owner
+	local width = owner and ( owner.width + 2 * ( owner.theme:value( "menuSideMargin" ) or 0 ) ) or 1
+	local height = self.theme:value( "topMargin" )
 	for i, childView in ipairs( self.children ) do
 		width = math.max( width, childView.width )
-	end
-	width = width + (1 - width % 2) -- it must be an odd number (for the separators)
-	-- TODO: target position
-	
-	local height = self.topMargin
-	for i, childView in ipairs( self.children ) do
 		childView.x = 1
 		childView.y = height + 1
 		height = height + childView.height
 	end
-	self.width = width + self.shadowRightMargin
-	self.height = height + self.bottomMargin
+    width = width + (1 - width % 2) -- it must be an odd number (for the separators)
+	self.height = height + self.theme:value( "bottomMargin" )
 	self.needsLayoutUpdate = false
 end
 
@@ -149,8 +119,9 @@ end
 ]]
 function Menu:onGlobalMouseDown( Event event, Event.phases phase )
 	if self.isVisible then
-		if self.hitTestOwner and self.owner and self.owner:hitTestEvent( event ) then
-			self.owner.event:handleEvent( event )
+        local owner = self.owner
+		if self.hitTestOwner and owner and owner:hitTestEvent( event ) then
+			owner.event:handleEvent( event )
 			return true
 		elseif self:hitTestEvent( event ) then
 			self.event:handleEvent( event )
@@ -192,8 +163,9 @@ end
 ]]
 function Menu:open()
 	self.isVisible = true
-	if self.owner then
-		self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
+    local owner = self.owner
+	if owner then
+		owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
 	end
 end
 
@@ -202,8 +174,9 @@ end
 ]]
 function Menu:close()
 	self.isVisible = false
-	if self.owner then
-		self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
+    local owner = self.owner
+	if owner then
+		owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
 	end
 	if self.isSingleShot then
 		self:dispose()

@@ -39,6 +39,7 @@
 		<cornerRadius type="number" default="4" />
 		<fillColour type="Graphics.colours" default="WHITE" />
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" />
+		<outlineThickness type="number" default="1" />
 	</Menu>
 	
 	<MenuButton>
