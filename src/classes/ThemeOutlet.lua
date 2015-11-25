@@ -14,7 +14,7 @@ class "ThemeOutlet" {
 function ThemeOutlet:initialise( owner )
 	self.owner = owner
 	self.ownerClass = owner.class
-	owner.event:connectGlobal( ThemeChangedInterfaceEvent, self.onThemeChange, nil, self )
+	owner.event:connectGlobal( ThemeChangedInterfaceEvent, self.onThemeChanged, nil, self )
 end
 
 --[[
@@ -64,7 +64,7 @@ end
 	@desc Fired when the theme changes, updates the value
 	@param [string] style -- the style name
 ]]
-function ThemeOutlet:onThemeChange( Event event, Event.phases phase )
+function ThemeOutlet:onThemeChanged( Event event, Event.phases phase )
 	local style = self.style
 	for i, connection in pairs( self.connections ) do
 		connection[1][connection[2]] = self:value( connection[3], style )
