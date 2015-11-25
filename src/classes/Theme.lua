@@ -1,12 +1,12 @@
 
 class "Theme" {
-	name = false;
-	extends = false; -- the name of the theme this one extends
-	classes = {};
+	name = String;
+	extends = String.allowsNil; -- the name of the theme this one extends
+	classes = Table( {} );
 	
 	static = {
-		active = false; -- @static  the current theme
-		themes = { 1 }; -- @static  a cache of already created themes
+		active = Theme; -- @static  the current theme
+		themes = Table( {} ); -- @static  a cache of already created themes
 	}
 }
 
