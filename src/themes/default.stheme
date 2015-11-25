@@ -55,6 +55,15 @@
 		<shortcutColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
 	</MenuItem>
 
+	<SeparatorMenuItem>
+		<leftMargin type="number" default="4" />
+		<rightMargin type="number" default="4" />
+		<topMargin type="number" default="1" />
+		<bottomMargin type="number" default="1" />
+        <isDashed type="boolean" default="true"/>
+		<separatorColour type="Graphics.colours" default="GREY" disabled="LIGHT_GREY" />
+	</SeparatorMenuItem>
+
 	<MenuBar>
 		<fillColour type="Graphics.colours" default="WHITE" disabled="LIGHT_GREY" />
 		<separatorColour type="Graphics.colours" default="GREY" disabled="LIGHT_GREY" />
