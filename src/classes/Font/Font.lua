@@ -34,13 +34,13 @@ class "Font" {
 	characters = false;
 	scale = false;
 
-	alignments = {
+	alignments = Enum( Number, {
 		LEFT = 0;
 		CENTER = 1;
 		CENTRE = 1;
 		RIGHT = 2;
 		JUSTIFIED = 3;
-	};
+	} );
 
 	static = {
 		systemFont = Font;

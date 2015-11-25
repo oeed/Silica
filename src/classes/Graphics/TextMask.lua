@@ -1,4 +1,6 @@
 
+local alignments = Font.alignments
+
 local ceil, floor = math.ceil, math.floor
 
 local NO_CHAR_MAP = {
@@ -15,14 +17,32 @@ class "TextMask" extends "Mask" {
     
 }
 
-function TextMask:initialise( Number x, Number y, Number.allowsNil width, Number.allowsNil height, String text, Font( Font.static.systemFont ) font )
-    local width = width or font:getWidth( text )
+function TextMask:initialise( Number x, Number y, Number.allowsNil width, Number.allowsNil height, String text, Font( Font.static.systemFont ) font, Font.alignments( Font.alignments.LEFT ) alignment )
+    local fontWidth = font:getWidth( text )
+    local width = width or fontWidth
     local fontHeight = font.height
     local height = height or fontHeight
     local pixels = {}
     local scale, characters, desiredHeight, spacing = font.scale, font.characters, font.desiredHeight, font.spacing
 
+    while fontWidth > width and #text > 1 do
+        text = text:sub( 1, #text - 1 )
+        fontWidth = font:getWidth( text .. "..." )
+        hasEllipsis = true
+    end
+
+    if hasEllipsis then
+        text = text .. "..."
+    end
+
     local xShift = 0
+    if alignment == alignments.LEFT then
+    elseif alignment == alignments.CENTRE then
+        xShift = math.floor( (width - fontWidth ) / 2 )
+    elseif alignment == alignments.RIGHT then
+        xShift = width - fontWidth
+    end
+
     for i = 1, #text do
         local char = text:byte( i )
         local bitmap
@@ -30,7 +50,7 @@ function TextMask:initialise( Number x, Number y, Number.allowsNil width, Number
             bitmap = characters[char]
         else
             bitmap = NO_CHAR_MAP
-            -- scale = desiredHeight / 6
+            scale = desiredHeight / 6
         end
 
         local bitmapWidth = bitmap.width
