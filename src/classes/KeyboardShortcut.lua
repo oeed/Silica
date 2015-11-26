@@ -25,9 +25,9 @@ end
 ]]
 function KeyboardShortcut:symbols()
 	local symbols = ""
-	local symbol = KeyboardShortcutManager.symbol
+	local static = KeyboardShortcutManager.static
 	for i, keyString in ipairs( self.keys ) do
-		symbols = symbols .. symbol( keyString )
+		symbols = symbols .. static:symbol( keyString )
 	end
 	return symbols
 end
