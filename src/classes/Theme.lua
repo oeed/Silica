@@ -96,8 +96,9 @@ function Theme:initialiseTheme( nodes, cantExtend )
 			local validationTypeName = propertyNode.attributes.type
 			for styleName, styleValue in pairs( propertyNode.attributes ) do
 				if styleName ~= "type" then
-					if Validator.static:isValid( styleValue, validationTypeName ) then
-						propertyTheme[styleName] = Validator.static:parse( styleValue, validationTypeName )
+					local value = Validator.static:parse( styleValue, validationTypeName )
+					if value ~= nil then
+						propertyTheme[styleName] = value
 					else
 						return "Style value '" .. tostring( styleValue ) .. "' is invalid for type '" .. validationTypeName .. "' : '" .. styleName .. "' (of property: " .. propertyNode.type .. " and of class: " .. classNode.type .. ")" 
 					end

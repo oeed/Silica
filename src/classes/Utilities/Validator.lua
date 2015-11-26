@@ -17,6 +17,10 @@ function Validator.static:validatorType( typeName )
 		return tostring
 	elseif typeName == "Boolean" then
 		return function( K ) local k = K:lower() if k == "true" then return true elseif k == "false" then return false end end
+	elseif typeName == "Font" then
+		return function( k ) return Font.static:loadNamed( k ) end
+	else
+		UnknownTypeValidationException( "Unknown validation type: '" .. typeName .. "'" )
 	end
 end
 
