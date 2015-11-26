@@ -1657,7 +1657,7 @@ function spawnInstance( ignoreAllowsNil, name, ... )
                 values[locatedKey] = checkValue( value, instanceProperties[locatedKey], nil, context, key )
             end
         else
-            error("attempt to set undefined property or function", 2 )
+            error("attempt to set undefined property or function '" .. key .. "'", 2 )
         end
     end
 
