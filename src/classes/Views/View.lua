@@ -254,6 +254,11 @@ function View.isVisible:get()
 	return self.parent and self.isVisible -- if we don't have a parent we're effectively not visible
 end
 
+function View.isVisible:set( isVisible )
+	self.isVisible = isVisible
+	self.needsDraw = true
+end
+
 --[[
 	@desc Converts the local coordinates to local coordinates of a parent (or global if nil) to.
 	@return Number x -- the x coordinate in the parent's coordinate system
