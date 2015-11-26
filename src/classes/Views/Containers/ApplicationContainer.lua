@@ -33,7 +33,9 @@ function ApplicationContainer.themeName:set( themeName )
 	local oldThemeName = self.themeName
 	self.themeName = themeName
 	Theme.static.active = Theme.static:named( themeName )
-	self.application.event:handleEvent( ThemeChangedInterfaceEvent( themeName, oldThemeName ) )
+	if oldThemeName then
+		self.application.event:handleEvent( ThemeChangedInterfaceEvent( themeName, oldThemeName ) )
+	end
 end
 
 
