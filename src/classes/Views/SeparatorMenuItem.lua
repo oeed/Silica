@@ -22,5 +22,5 @@ end
 
 function SeparatorMenuItem:updateSize( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
     local theme = self.theme
-    self.height = 1 + theme:value( "topMargin ") + theme:value( "bottomMargin ")
+    self.height = 1 + theme:value( "topMargin") + theme:value( "bottomMargin")
 end

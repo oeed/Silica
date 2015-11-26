@@ -43,7 +43,7 @@ end
 
 function MenuItem:updateSize( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
     local theme = self.theme
-    self.height = 8 + theme:value( "topMargin ") + theme:value( "bottomMargin ") -- TODO: loading of fonts from theme
+    self.height = 8 + theme:value( "topMargin") + theme:value( "bottomMargin") -- TODO: loading of fonts from theme
 end
 
 -- function MenuItem.shortcut:set( shortcut )
