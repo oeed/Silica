@@ -1501,12 +1501,19 @@ function compileAndSpawnStatic( static, name, compiledClass )
         values[functionName] = funcs[#funcs]( constructSuper( funcs, static ) )
     end
 
-    local lockedGetters, lockedSetters = {}, {}
-    allLockedGetters[static] = lockedGetters
-    allLockedSetters[static] = lockedSetters
 
-    addGetter( classDetails.staticGetters, staticProperties, getters, currentlyConstructing.prebuiltInstanceGetters, compiledSuperDetails and compiledSuperDetails.prebuiltStaticGetters )
-    addSetter( classDetails.staticSetters, staticProperties, setters, currentlyConstructing.prebuiltInstanceSetters, compiledSuperDetails and compiledSuperDetails.prebuiltStaticSetters )
+    local prebuiltGetters, prebuiltSetters = currentlyConstructing.prebuiltStaticGetters, currentlyConstructing.prebuiltStaticSetters
+    addGetter( classDetails.staticGetters, staticProperties, prebuiltGetters, compiledSuperDetails and compiledSuperDetails.prebuiltStaticGetters )
+    addSetter( classDetails.staticSetters, staticProperties, prebuiltSetters, compiledSuperDetails and compiledSuperDetails.prebuiltStaticSetters )
+
+    local lockedGetters, lockedSetters = {}, {}
+    for propertyName, funcs in pairs( prebuiltGetters ) do
+        getters[propertyName] = funcs[#funcs]( constructSuper( funcs, static, lockedGetters ), lockedGetters )
+    end
+
+    for propertyName, funcs in pairs( prebuiltSetters ) do
+        setters[propertyName] = funcs[#funcs]( constructSuper( funcs, static, lockedSetters ), lockedSetters )
+    end
 
     local typeOfCache = classDetails.typeOfCache
     function static:typeOf( object )
