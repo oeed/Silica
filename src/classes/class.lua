@@ -1682,11 +1682,16 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     setmetatable( instance, metatable )
 
     -- insert default values
+    local generatedDefault = {}
     for k, v in pairs( definedProperties ) do
         if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
+            if k == "themeName" then log('yeah') end
             local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
+            if k == "themeName" then log(value) end
             if value == nil then
-                values[k] = generateDefaultValue( instanceProperties[k], context, k )
+                local defaultValue = generateDefaultValue( instanceProperties[k], context, k )
+                generatedDefault[k] = defaultValue
+                values[k] = defaultValue
             end
         end
     end
@@ -1699,6 +1704,13 @@ function spawnInstance( ignoreAllowsNil, name, ... )
             end
             instance[key]( instance, ... )
             break
+        end
+    end
+
+    -- call setters on the default values if they haven't changed
+    for k, defaultValue in pairs( generatedDefault ) do
+        if values[k] == defaultValue then
+            instance[k] = defaultValue
         end
     end
 

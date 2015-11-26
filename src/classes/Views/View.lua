@@ -120,7 +120,10 @@ end
 function View.needsDraw:set( needsDraw )
 	self.needsDraw = needsDraw
 	if needsDraw then
-		self.parent.needsDraw = needsDraw -- if we need to draw the parent also has to redraw
+		local parent = self.parent
+		if parent then
+			parent.needsDraw = needsDraw -- if we need to draw the parent also has to redraw
+		end
 	end
 end
 
