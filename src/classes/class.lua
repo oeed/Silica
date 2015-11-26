@@ -1233,11 +1233,11 @@ function compileClass( compiledClass, name )
     return compiledClass
 end
 
-local function constructSuper( prebuiltFunctions, self )
+local function constructSuper( prebuiltFunctions, self, locked )
     if #prebuiltFunctions == 1 then return end
     local lastSuper
     for i = 1, #prebuiltFunctions - 1 do
-        local super, func = {}, prebuiltFunctions[i]( lastSuper )
+        local super, func = {}, prebuiltFunctions[i]( lastSuper, locked )
         local __tostring = "super " .. i .. ": " .. tostring(prebuiltFunctions[i])
         setmetatable( super, {
             __tostring = function() return __tostring end;
@@ -1624,11 +1624,11 @@ function spawnInstance( ignoreAllowsNil, name, ... )
 
     -- unwrap the prebuilt getter/setter functions so we can use our unique locking tables
     for propertyName, funcs in pairs( compiledInstance.prebuiltGetters ) do
-        getters[propertyName] = funcs[#funcs]( constructSuper( funcs, instance ), lockedGetters )
+        getters[propertyName] = funcs[#funcs]( constructSuper( funcs, instance, lockedGetters ), lockedGetters )
     end
 
     for propertyName, funcs in pairs( compiledInstance.prebuiltSetters ) do
-        setters[propertyName] = funcs[#funcs]( constructSuper( funcs, instance ), lockedSetters )
+        setters[propertyName] = funcs[#funcs]( constructSuper( funcs, instance, lockedSetters ), lockedSetters )
     end
 
     local aliases = classDetails.aliases.instance
@@ -1685,9 +1685,7 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     local generatedDefault = {}
     for k, v in pairs( definedProperties ) do
         if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
-            if k == "themeName" then log('yeah') end
             local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
-            if k == "themeName" then log(value) end
             if value == nil then
                 local defaultValue = generateDefaultValue( instanceProperties[k], context, k )
                 generatedDefault[k] = defaultValue
