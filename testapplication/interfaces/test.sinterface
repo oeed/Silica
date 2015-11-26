@@ -1,4 +1,4 @@
-<ApplicationContainer themeName="test">
+<ApplicationContainer>
     
     <Button x=10 y=10 text="Silica :D" />
 
@@ -11,6 +11,9 @@
     <Radio x=135 y=20 />
 
     <SeparatorView x=150 y=10 height=18 />
+
+    <MenuButton x=160 y=20 text="Menu Button" menuName=menu />
+
 
 
     <!-- <TestView x=50 y=50 width=19 height=25/> -->

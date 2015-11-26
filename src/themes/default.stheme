@@ -5,17 +5,18 @@
 	</View>
 
 	<Button>
-		<cornerRadius type="number" default="8" />
-		<shadowSize type="number" default="1" pressed="0" />
-		<outlineThickness type="number" default="1" />
-		<leftMargin type="number" default="7" />
-		<rightMargin type="number" default="7" />
-		<topMargin type="number" default="4" />
-		<bottomMargin type="number" default="3" />
+		<cornerRadius type="Number" default="8" />
+		<shadowSize type="Number" default="1" pressed="0" />
+		<outlineThickness type="Number" default="1" />
+		<leftMargin type="Number" default="7" />
+		<rightMargin type="Number" default="7" />
+		<topMargin type="Number" default="4" />
+		<bottomMargin type="Number" default="3" />
 		<fillColour type="Graphics.colours" default="WHITE" pressed="BLUE" focused="BLUE" disabled="WHITE"/>
 		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" focused="WHITE" disabled="LIGHT_GREY"/>
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" focused="TRANSPARENT" disabled="LIGHT_GREY" pressed="TRANSPARENT"/>
 		<shadowColour type="Graphics.colours" default="GREY" disabled="TRANSPARENT"/>
+		<font type="Font" default="systemFont"/>
 	</Button>
 
 	<SymbolButton>
@@ -23,46 +24,49 @@
 	</SymbolButton>
 
 	<SegmentButton>
-		<centerMargin type="number" default="4" />
+		<centerMargin type="Number" default="4" />
 		<separatorBackgroundColour type="Graphics.colours" default="WHITE"/>
 		<separatorFillColour type="Graphics.colours" default="LIGHT_GREY"/>
 		<separatorOutlineColour type="Graphics.colours" default="LIGHT_GREY"/>
-		<separatorIsDashed type="boolean" default="true"/>
+		<separatorIsDashed type="Boolean" default="true"/>
 	</SegmentButton>
 
 	<SymbolSegmentButton>
-		<centerMargin type="number" default="5" />
+		<centerMargin type="Number" default="5" />
 		<symbolColour type="Graphics.colours" default="GREY" pressed="WHITE" focused="WHITE" disabled="LIGHT_GREY"/>
 	</SymbolSegmentButton>
 
 	<Menu>
-		<cornerRadius type="number" default="4" />
+		<cornerRadius type="Number" default="4" />
 		<fillColour type="Graphics.colours" default="WHITE" />
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" />
-		<outlineThickness type="number" default="1" />
+		<outlineThickness type="Number" default="1" />
 	</Menu>
 	
 	<MenuButton>
 		<arrowColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
-		<rightMargin type="number" default="15" />
+		<rightMargin type="Number" default="15" />
 	</MenuButton>
 	
 	<MenuItem>
-		<leftMargin type="number" default="6" />
-		<rightMargin type="number" default="6" />
-		<topMargin type="number" default="2" />
-		<bottomMargin type="number" default="2" />
+		<topMargin type="Number" default="2" />
+		<bottomMargin type="Number" default="2" />
+		<leftMargin type="Number" default="6" />
+		<rightMargin type="Number" default="6" />
+		<shortcutMargin type="Number" default="6" />
 		<fillColour type="Graphics.colours" default="TRANSPARENT" pressed="BLUE" disabled="TRANSPARENT"/>
 		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
 		<shortcutColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
+		<font type="Font" default="systemFont"/>
+		<shortcutFont type="Font" default="systemFont"/>
 	</MenuItem>
 
 	<SeparatorMenuItem>
-		<leftMargin type="number" default="4" />
-		<rightMargin type="number" default="4" />
-		<topMargin type="number" default="1" />
-		<bottomMargin type="number" default="1" />
-        <isDashed type="boolean" default="true"/>
+		<leftMargin type="Number" default="4" />
+		<rightMargin type="Number" default="4" />
+		<topMargin type="Number" default="1" />
+		<bottomMargin type="Number" default="1" />
+        <isDashed type="Boolean" default="true"/>
 		<separatorColour type="Graphics.colours" default="GREY" disabled="LIGHT_GREY" />
 	</SeparatorMenuItem>
 
@@ -77,22 +81,22 @@
 	</MenuBarItem>
 
 	<Radio>
-		<cornerRadius type="number" default="4"/>
-		<outlineThickness type="number" default="1" />
+		<cornerRadius type="Number" default="4"/>
+		<outlineThickness type="Number" default="1" />
 		<fillColour type="Graphics.colours" default="WHITE" pressed="LIGHT_BLUE" checked="BLUE" disabledChecked="GREY" disabled="WHITE"/>
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="BLUE" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
 	</Radio>
 
 	<Checkbox>
-		<cornerRadius type="number" default="2" />
-		<outlineThickness type="number" default="1" />
+		<cornerRadius type="Number" default="2" />
+		<outlineThickness type="Number" default="1" />
 		<fillColour type="Graphics.colours" default="WHITE" pressed="LIGHT_BLUE" checked="BLUE" disabledChecked="GREY" disabled="WHITE"/>
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" pressed="BLUE" checked="TRANSPARENT" disabledChecked="TRANSPARENT" disabled="LIGHT_GREY"/>
 		<checkColour type="Graphics.colours" default="TRANSPARENT" checked="WHITE" disabledChecked="WHITE" disabled="TRANSPARENT"/>
 	</Checkbox>
 
 	<ProgressBar>
-		<cornerRadius type="number" default="4" />
+		<cornerRadius type="Number" default="4" />
 		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY"/>
 		<barColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
@@ -101,8 +105,8 @@
 	</ProgressBar>
 
 	<Window>
-		<topCornerRadius type="number" default="4" />
-		<bottomCornerRadius type="number" default="2" />
+		<topCornerRadius type="Number" default="4" />
+		<bottomCornerRadius type="Number" default="2" />
 		<barColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY" />
 		<separatorColour type="Graphics.colours" default="GREY" disabled="LIGHT_GREY" />
 		<textColour type="Graphics.colours" default="BLACK" disabled="GREY"/>
@@ -113,21 +117,21 @@
 		<fillColour type="Graphics.colours" default="RED" pressed="RED" disabled="TRANSPARENT"/>
 		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="GREY"/>
 		<symbolColour type="Graphics.colours" default="TRANSPARENT" pressed="WHITE" disabled="TRANSPARENT"/>
-		<cornerRadius type="number" default="4" />
+		<cornerRadius type="Number" default="4" />
 	</CloseWindowButton>
 	
 	<MinimiseWindowButton>
 		<fillColour type="Graphics.colours" default="ORANGE" pressed="ORANGE" disabled="TRANSPARENT"/>
 		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="GREY"/>
 		<symbolColour type="Graphics.colours" default="TRANSPARENT" pressed="WHITE" disabled="TRANSPARENT"/>
-		<cornerRadius type="number" default="4" />
+		<cornerRadius type="Number" default="4" />
 	</MinimiseWindowButton>
 	
 	<MaximiseWindowButton>
 		<fillColour type="Graphics.colours" default="LIME" pressed="LIME" disabled="TRANSPARENT"/>
 		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="GREY"/>
 		<symbolColour type="Graphics.colours" default="TRANSPARENT" pressed="WHITE" disabled="TRANSPARENT"/>
-		<cornerRadius type="number" default="4" />
+		<cornerRadius type="Number" default="4" />
 	</MaximiseWindowButton>
 
 	<Scrollbar>
@@ -135,7 +139,7 @@
 		<scrollerColour type="Graphics.colours" default="WHITE" pressed="BLUE" disabled="WHITE" />
 		<outlineColour type="Graphics.colours" default="TRANSPARENT" pressed="TRANSPARENT" disabled="TRANSPARENT" />
 		<grabberColour type="Graphics.colours" default="GREY" pressed="WHITE" disabled="LIGHT_GREY" />
-		<cornerRadius type="number" default="2" />
+		<cornerRadius type="Number" default="2" />
 	</Scrollbar>
 
 	<ScrollView>
@@ -148,9 +152,9 @@
 	</Label>
 
 	<TextBox>
-		<cornerRadius type="number" default="8" />
-		<leftMargin type="number" default="7" />
-		<rightMargin type="number" default="7" />
+		<cornerRadius type="Number" default="8" />
+		<leftMargin type="Number" default="7" />
+		<rightMargin type="Number" default="7" />
 		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
 		<selectionColour type="Graphics.colours" default="LIGHT_BLUE" />
 		<textColour type="Graphics.colours" default="BLACK" disabled="LIGHT_GREY"/>
@@ -160,7 +164,7 @@
 	</TextBox>
 
 	<SearchBox>
-		<leftMargin type="number" default="18" />
+		<leftMargin type="Number" default="18" />
 		<searchSymbolColour type="Graphics.colours" default="LIGHT_GREY" />
 	</SearchBox>
 
@@ -170,13 +174,13 @@
 
 	<SeparatorView>
 		<fillColour type="Graphics.colours" default="LIGHT_GREY"/>
-        <isDashed type="boolean" default="true"/>
+        <isDashed type="Boolean" default="true"/>
 	</SeparatorView>
 
 	<ToolbarContainer>
 		<fillColour type="Graphics.colours" default="BLUE" />
 		<separatorFillColour type="Graphics.colours" default="LIGHT_BLUE" />
-		<separatorIsDashed type="boolean" default="false" />
+		<separatorIsDashed type="Boolean" default="false" />
 	</ToolbarContainer>
 
 	<ToolbarButton>
@@ -207,7 +211,7 @@
 	<ListItem>
 		<fillColour type="Graphics.colours" default="TRANSPARENT" selected="BLUE" disabled="TRANSPARENT"/>
 		<textColour type="Graphics.colours" default="BLACK" selected="WHITE" disabled="LIGHT_GREY"/>
-        <cornerRadius type="number" default="6" />
+        <cornerRadius type="Number" default="6" />
 	</ListItem>
 
 </Theme>

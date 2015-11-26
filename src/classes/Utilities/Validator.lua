@@ -11,11 +11,11 @@ function Validator.static:validatorType( typeName )
 	-- TODO: make validator types dynamic
 	if typeName == "Graphics.colours" then
 		return function( k ) return Graphics.colours[k] end
-	elseif typeName == "number" then
+	elseif typeName == "Number" then
 		return tonumber
-	elseif typeName == "string" then
+	elseif typeName == "String" then
 		return tostring
-	elseif typeName == "boolean" or typeName == "bool" then
+	elseif typeName == "Boolean" then
 		return function( K ) local k = K:lower() if k == "true" then return true elseif k == "false" then return false end end
 	end
 end
