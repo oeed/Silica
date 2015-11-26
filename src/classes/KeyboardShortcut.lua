@@ -1,4 +1,11 @@
 
+local function split(a,e)
+    local t,e=e or":",{}
+    local t=string.format("([^%s]+)",t)
+    a:gsub(t,function(t)e[#e+1]=t end)
+    return e
+end
+
 class "KeyboardShortcut" {
 	keys = {};
 }
@@ -31,13 +38,13 @@ end
 	@return [KeyboardShortcut] keyboardShortcut -- the keyboard shortcut
 ]]
 function KeyboardShortcut.static:fromString( str )
-	local parts = String( str ):split( " " )
+	local parts = split( str, " " )
 	local keys = {}
 
-	local isValid = KeyboardShortcutManager.isValid	
+	local static = KeyboardShortcutManager.static
 	for i, key in ipairs( parts ) do
 		if #key > 0 then
-			if isValid( key ) then
+			if static:isValid( key ) then
 				table.insert( keys, key )
 			else
 				error( "Invalid keyboard shortcut '" .. str .."'. The key '" .. key .. "' is not valid. Omit sides (i.e. leftShift is just shift) and use the character where possible (i.e. / not slash)", 0 )
