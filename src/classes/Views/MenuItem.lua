@@ -9,7 +9,7 @@ class "MenuItem" extends "View" {
     isEnabled = Boolean( true );
 	isCanvasHitTested = Boolean( false );
 
-    keyboardShortcut = false;
+    shortcut = false;
     text = false;
 
     font = false;
@@ -67,8 +67,8 @@ end
 
 function MenuItem:updateText()
     local text = self.text
-    local keyboardShortcut = self.keyboardShortcut
-    local symbols = keyboardShortcut and keyboardShortcut:symbols()
+    local shortcut = self.shortcut
+    local symbols = shortcut and shortcut:symbols()
     local textObject = self.textObject
     local shortcutObject = self.shortcutObject
 
@@ -91,13 +91,13 @@ function MenuItem.text:set( text )
     self:updateText()
 end
 
-function MenuItem.keyboardShortcut:set( keyboardShortcut )
-    if type( keyboardShortcut ) == "string" and #keyboardShortcut > 0 then
-        self.keyboardShortcut = KeyboardShortcut.fromString( keyboardShortcut ) or false
-    elseif not keyboardShortcut then
-        self.keyboardShortcut = false
+function MenuItem.shortcut:set( shortcut )
+    if type( shortcut ) == "string" and #shortcut > 0 then
+        self.shortcut = KeyboardShortcut.static:fromString( shortcut ) or false
+    elseif not shortcut then
+        self.shortcut = false
     end
-    self.keyboardShortcut = keyboardShortcut
+    self.shortcut = shortcut
     self:updateText()
 end
 
@@ -152,8 +152,8 @@ end
 ]]
 function MenuItem:onKeyboardShortcut( Event event, Event.phases phase )
     if self.isEnabled then
-        local keyboardShortcut = self.keyboardShortcut
-        if keyboardShortcut and keyboardShortcut:matchesEvent( event ) then
+        local shortcut = self.shortcut
+        if shortcut and shortcut:matchesEvent( event ) then
             local parent = self.parent
             local owner = parent.owner
             if owner:typeOf( MenuBarItem ) then owner:flash() end
