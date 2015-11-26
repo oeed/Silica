@@ -44,7 +44,9 @@ class "Font" {
 
 	static = {
 		systemFont = Font;
+		cache = Table( {} );
 	};
+
 }
 
 --[[
@@ -71,10 +73,22 @@ function Font:initialise( name, desiredHeight, reload )
 	self.scale = ( desiredHeight or height ) / height
 end
 
+function Font.static:loadNamed( String name, String.allowsNil alias )
+	local cache = self.cache
+	local cacheValue = cache[name]
+	if cacheValue then return cacheValue end
+	local font = Font( name )
+	cache[name] = font
+	if alias then
+		cache[alias] = font
+	end
+	return font
+end
+
 function Font.static:initialisePresets()
 	-- TODO: make this come from the theme
 	-- Font.systemFont = Font( "Napier" )
-	Font.static.systemFont = Font( "Auckland" )
+	Font.static.systemFont = Font.static:loadNamed( "Auckland", "systemFont" )
 end
 
 function Font.static:readMetadata( file )
