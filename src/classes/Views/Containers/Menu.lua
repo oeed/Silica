@@ -15,11 +15,8 @@ class "Menu" extends "Container" {
 	isSingleShot = Boolean( false ); -- true if the menu should be removed and unlinked when closed (as opposed to simply hiding for reuse only)
 	hitTestOwner = false; -- true if clicks should first be sent to the owner if they hit test (and it has one)
 
-	topMargin = 3;
-	bottomMargin = 5;
-
-    cornerRadius = 4;
     isOpen = Boolean;
+    owner = View.allowsNil;
 
     shadowObject = false;
     backgroundObject = false;
@@ -76,8 +73,9 @@ end
 ]]
 function Menu:updateLayout()
     local owner = self.owner
-	local width = owner and ( owner.width + 2 * ( owner.theme:value( "menuSideMargin" ) or 0 ) ) or 1
-	local height = self.theme:value( "topMargin" )
+    local ownerTheme = owner and owner.theme
+	local width = owner and ( owner.width + 2 * ( ownerTheme:value( "menuOffsetX" ) or 0 ) ) or 1
+	local height = self.theme:value( "topMargin" ) + ( ownerTheme and ownerTheme:value( "menuTopPadding" ) or 0 )
 	for i, childView in ipairs( self.children ) do
 		width = math.max( width, childView.width )
 		childView.x = 1
