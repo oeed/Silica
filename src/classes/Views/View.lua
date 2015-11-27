@@ -34,7 +34,7 @@ class "View" {
 	width = Number( 1 );
 	height = Number( 1 );
 	index = Number.allowsNil; -- the z index in its parent
-	parent = Container.allowsNil;
+	parent = Any.allowsNil; -- TODO: if this is Container it loads the Container class before View is loaded so it creates another View class table
 	siblings = Table.allowsNil;
 	identifier = String.allowsNil;
 	isFirst = Boolean.allowsNil;
@@ -264,7 +264,8 @@ end
 	@return Number x -- the x coordinate in the parent's coordinate system
 	@return Number y -- the x coordinate in the parent's coordinate system
 ]]
-function View:coordinatesTo( Number x, Number y, Container( self.application.container ) parent )
+--									TODO: Any should be Container. If it is it loads another View class, so there are two different ones
+function View:coordinatesTo( Number x, Number y, Any( self.application.container ) parent )
 	local currentParrent = { parent = self }
 	while currentParrent.parent and currentParrent.parent ~= parent do
 		currentParrent = currentParrent.parent
@@ -280,7 +281,8 @@ end
 	@return [number] x -- the x coordinate in the parent's coordinate system
 	@return [number] y -- the x coordinate in the parent's coordinate system
 ]]
-function View:position( Container( self.application.container ) parent )
+--					TODO: Any should be Container. If it is it loads another View class, so there are two different ones
+function View:position( Any( self.application.container ) parent )
 	local selfParent = self.parent
 	if not selfParent or parent == selfParent then
 		return self.x, self.y
@@ -295,7 +297,8 @@ end
 	@return [number] x -- the local x coordinate
 	@return [number] y -- the local x coordinate
 ]]
-function View:coordinates( Number x, Number y, Container( self.application.container ) parent )
+--							TODO: Any should be Container. If it is it loads another View class, so there are two different ones
+function View:coordinates( Number x, Number y, Any( self.application.container ) parent )
 	local currentParrent = self
 	while currentParrent and currentParrent ~= parent do
 		x = x - currentParrent.x + 1
@@ -326,7 +329,8 @@ end
 	@param [View] parent -- the parent
 	@return [boolean] isHit -- whether the hit test hit
 ]]
-function View:hitTestEvent( Event event, Container( self.parent ) parent )
+--							TODO: Any should be Container. If it is it loads another View class, so there are two different ones
+function View:hitTestEvent( Event event, Any( self.parent ) parent )
 	if not parent then
 		return false
 	elseif event:typeOf( MouseEvent ) then
