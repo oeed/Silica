@@ -34,7 +34,8 @@ function MenuButton:onReady( ReadyInterfaceEvent event, Event.phases phase  )
     menu.isSingleShot = false
     menu.isVisible = false
     menu.hitTestOwner = true
-    menu.topMargin = Menu.topMargin + 8
+    menu.x = self.x + self.theme:value( "menuOffsetX" )
+    menu.y = self.y + self.theme:value( "menuOffsetY" )
     self.menu = menu
     self.parent:insert( menu )
 end
@@ -50,6 +51,23 @@ function MenuButton:onParentChanged( Event event, Event.phases phase )
         self.parent:insert( menu )
     end
 end
+
+function MenuButton.x:set( x )
+    self.x = x
+    local menu = self.menu
+    if menu then
+        menu.x = x + self.theme:value( "menuOffsetX" )
+    end
+end
+
+function MenuButton.y:set( y )
+    self.y = y
+    local menu = self.menu
+    if menu then
+        menu.y = y + self.theme:value( "menuOffsetY" )
+    end
+end
+
 
 -- TODO: update menu location
 -- function MenuButton:updateX( x )
