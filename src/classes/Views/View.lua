@@ -256,7 +256,10 @@ end
 
 function View.isVisible:set( isVisible )
 	self.isVisible = isVisible
-	self.needsDraw = true
+	local parent = self.parent
+	if parent then
+		self.parent.needsDraw = true
+	end
 end
 
 --[[
