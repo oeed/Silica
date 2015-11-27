@@ -52,6 +52,13 @@ function MenuButton:onParentChanged( Event event, Event.phases phase )
     end
 end
 
+function MenuButton.width:set( width )
+    local menu = self.menu
+    if menu then
+        menu.width = width
+    end
+end
+
 function MenuButton.x:set( x )
     self.x = x
     local menu = self.menu

@@ -41,6 +41,9 @@
 		<fillColour type="Graphics.colours" default="WHITE" />
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" />
 		<outlineThickness type="Number" default="1" />
+		<topMargin type="Number" default="3" />
+		<bottomMargin type="Number" default="5" />
+		<shadowSize type="Number" default="5" />
 	</Menu>
 	
 	<MenuButton>
@@ -49,6 +52,9 @@
 		<outlineColour type="Graphics.colours" active="TRANSPARENT"/>
 		<arrowColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
 		<rightMargin type="Number" default="15" />
+		<menuOffsetX type="Number" default="-5" />
+		<menuOffsetY type="Number" default="8" />
+		<menuTopPadding type="Number" default="7" />
 	</MenuButton>
 	
 	<MenuItem>

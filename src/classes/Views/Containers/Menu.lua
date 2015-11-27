@@ -74,7 +74,7 @@ end
 function Menu:updateLayout()
     local owner = self.owner
     local ownerTheme = owner and owner.theme
-	local width = owner and ( owner.width + 2 * ( ownerTheme:value( "menuOffsetX" ) or 0 ) ) or 1
+	local width = owner and ( owner.width - 2 * ( ownerTheme:value( "menuOffsetX" ) or 0 ) ) or 1
 	local height = self.theme:value( "topMargin" ) + ( ownerTheme and ownerTheme:value( "menuTopPadding" ) or 0 )
 	for i, childView in ipairs( self.children ) do
 		width = math.max( width, childView.width )
@@ -82,9 +82,13 @@ function Menu:updateLayout()
 		childView.y = height + 1
 		height = height + childView.height
 	end
-    width = width + (1 - width % 2) -- it must be an odd number (for the separators)
+    self.width = width
 	self.height = height + self.theme:value( "bottomMargin" )
 	self.needsLayoutUpdate = false
+end
+
+function Menu.width:set( width )
+    self:super( width + (1 - width % 2) )-- it must be an odd number (for the separators)
 end
 
 function Menu:update( deltaTime )
@@ -93,14 +97,6 @@ function Menu:update( deltaTime )
         self:updateLayout()
     end
 end
-
-function Menu.isVisible:set( isVisible )
-	self:super( isVisible )
-	if isVisible then
-		self.needsLayoutUpdate = true
-	end
-end
-
 function Menu:insert( ... )
 	self:super( ... )
 	self.needsLayoutUpdate = true
