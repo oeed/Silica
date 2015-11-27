@@ -107,7 +107,7 @@ function MenuButton.isActive:get()
 end
 
 function MenuButton:updateThemeStyle()
-    self.theme.style = self.isEnabled and ( self.isActive and "pressed" or "default" ) or "disabled"
+    self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or ( self.isActive and "active" or "default" ) ) or "disabled"
 end
 
 --[[

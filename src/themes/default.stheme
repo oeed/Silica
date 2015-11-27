@@ -44,6 +44,9 @@
 	</Menu>
 	
 	<MenuButton>
+		<fillColour type="Graphics.colours" active="BLUE"/>
+		<textColour type="Graphics.colours" active="WHITE"/>
+		<outlineColour type="Graphics.colours" active="TRANSPARENT"/>
 		<arrowColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
 		<rightMargin type="Number" default="15" />
 	</MenuButton>
