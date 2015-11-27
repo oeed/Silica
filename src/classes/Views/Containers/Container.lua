@@ -240,7 +240,7 @@ end
 ]]
 function Container:insert( childView, position )
 	if not childView:typeOf( View ) then
-		error( "Attempted to insert non-View to Container", 4 )
+		error( "Attempted to insert non-View to Container", 3 )
 	end
 
 	local children = self.children
