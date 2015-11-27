@@ -46,43 +46,18 @@ function MenuItem:updateSize( ThemeChangedInterfaceEvent.allowsNil event, Event.
     self.height = 8 + theme:value( "topMargin") + theme:value( "bottomMargin") -- TODO: loading of fonts from theme
 end
 
--- function MenuItem.shortcut:set( shortcut )
---     if shortcut and #shortcut > 0 then
---         self.keyboardShortcut = KeyboardShortcut.fromString( shortcut ) or false
---     else
---         self.keyboardShortcut = false
---     end
--- end
-
-function MenuItem.font:set( font )
-    self.font = font
-    local textObject = self.textObject
-    local shortcutObject = self.shortcutObject
-    if textObject then
-        textObject.font = font
-        shortcutObject.font = font
-        self:updateText()
-    end
-end
-
 function MenuItem:updateText()
     local text = self.text
     local shortcut = self.shortcut
     local symbols = shortcut and shortcut:symbols()
-    local textObject = self.textObject
-    local shortcutObject = self.shortcutObject
-
-    if textObject then
-        local textWidth = self.font:getWidth( text )
-        local shortcutWidth = symbols and self.font:getWidth( symbols ) or 0
-        local width = textWidth + TEXT_MARGIN + ( shortcutWidth ~= 0 and shortcutWidth + 8 or 0 )
-        self.width = width
-        textObject.text = text
-        shortcutObject.text = symbols
-        local parent = self.parent
-        if parent then
-            parent.needsLayoutUpdate = true
-        end
+    local theme = self.theme
+    local textWidth = theme:value( "font" ):getWidth( text )
+    local shortcutWidth = symbols and theme:value( "shortcutFont" ):getWidth( symbols ) or 0
+    local width = textWidth + theme:value( "leftMargin" ) + theme:value( "rightMargin" ) + ( shortcutWidth ~= 0 and shortcutWidth + theme:value( "shortcutMargin") or 0 )
+    self.width = width
+    local parent = self.parent
+    if parent then
+        parent.needsLayoutUpdate = true
     end
 end
 
@@ -97,7 +72,6 @@ function MenuItem.shortcut:set( shortcut )
     elseif not shortcut then
         self.shortcut = false
     end
-    self.shortcut = shortcut
     self:updateText()
 end
 
