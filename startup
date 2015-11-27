@@ -36,19 +36,6 @@ function _G.logtraceback( level )
 	log( "Start of traceback:\n" .. ("-"):rep( 20 ) .. "\nin " .. table.concat( traceback, "\nin ") .. "\n" .. ("-"):rep( 20 ) .. "\nEnd of traceback" )
 end
 
-function _G.error(m,l)
-	term.setBackgroundColor(colors.red)
-	term.clear()
-	logtraceback( 2 )
-	_error(m,l and (l == 0 and l or l + 1) or 2)
-	while true do
-		local event, key = os.pullEvent("char")
-		if key == "\\" then
-			os.reboot()
-		end
-	end
-end
-
 local g_tLuaKeywords = {
     [ "and" ] = true,
     [ "break" ] = true,
