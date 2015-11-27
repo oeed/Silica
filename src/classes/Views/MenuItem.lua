@@ -12,7 +12,6 @@ class "MenuItem" extends "View" {
     shortcut = false;
     text = false;
 
-    font = false;
     backgroundObject = false;
 }
 
@@ -32,13 +31,13 @@ function MenuItem:initialise( ... )
 end
 
 function MenuItem:onDraw()
-    local width, height, theme, canvas, font = self.width, self.height, self.theme, self.canvas, self.font
+    local width, height, theme, canvas, font = self.width, self.height, self.theme, self.canvas
 
     canvas:fill( theme:value( "fillColour" ) )
 
     local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
-    canvas:fill( theme:value( "shortcutColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, font, Font.alignments.RIGHT ) )
-    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, font ) )
+    canvas:fill( theme:value( "shortcutColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, theme:value( "shortcutFont" ), Font.alignments.RIGHT ) )
+    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, theme:value( "font" ) ) )
 end
 
 function MenuItem:updateSize( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
