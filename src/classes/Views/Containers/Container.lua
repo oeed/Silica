@@ -202,15 +202,6 @@ function Container:sendToFront( frontView, position )
 			else table.insert( children, childView ) end
 		end
 	end
-	local frontCanvas = frontView.canvas
-	local canvasChildren = self.canvas.children
-	for i, childCanvas in ipairs( canvasChildren ) do
-		if childCanvas == frontCanvas then
-			table.remove( canvasChildren, i )
-			if position then table.insert( canvasChildren, position, childCanvas )
-			else table.insert( canvasChildren, childCanvas ) end
-		end
-	end
 	
 	-- TODO: screen order changed events?
 	-- for i, childView in ipairs( self.children ) do
@@ -218,8 +209,7 @@ function Container:sendToFront( frontView, position )
 	-- 	if onSiblingsChanged then onSiblingsChanged( childView ) end
 	-- end
 
-	self.canvas.hasChanged = true
-	frontView.canvas.hasChanged = true
+	self.needsDraw = true
 end
 
 --[[
