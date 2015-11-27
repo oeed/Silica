@@ -157,6 +157,6 @@ function Theme:value( _class, propertyName, styleName, noError )
 	if noError then
 		return false
 	else
-		error( err, 0 )
+		error( err, 4 )
 	end
 end
