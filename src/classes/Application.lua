@@ -128,9 +128,10 @@ function Application:reloadInterface()
 	if interfaceName then		
 		self.container = Interface( interfaceName ).container
 	else
-		self.container = ApplicationContainer()
+		local container = ApplicationContainer()
+		self.container = container
+		container:handleEvent( ReadyInterfaceEvent() )
 	end
-	self.event:handleEvent( ReadyInterfaceEvent( true ) )
 end
 
 function Application.container:set( container )
