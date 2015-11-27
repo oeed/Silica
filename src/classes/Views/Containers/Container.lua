@@ -28,9 +28,7 @@ end
 function Container.static:fromInterface( interfaceName, _class )
 	local interface = Interface( interfaceName, _class or Container )
 	if interface then
-		local container = interface.container
-		container.interface = interface
-		return container
+		return interface.container
 	end
 end
 
