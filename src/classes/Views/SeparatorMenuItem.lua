@@ -13,11 +13,11 @@ function SeparatorMenuItem:initialise( ... )
 end
 
 function SeparatorMenuItem:onDraw()
-    local width, height, theme, canvas, isPressed = self.width, self.height, self.theme
+    local width, height, theme, canvas, isPressed = self.width, self.height, self.theme, self.canvas
     canvas:fill( theme:value( "fillColour" ) )
     local leftMargin = theme:value( "leftMargin" )
     local separatorX, separatorY, separatorWidth = 1 + leftMargin, 1 + theme:value( "topMargin" ), width - leftMargin - theme:value( "rightMargin" )
-    self.canvas:fill( theme:value( "separatorColour" ), theme:value( "isDashed" ) and SeparatorMask( separatorX, separatorY, separatorWidth, 1 ) or RectangleMask( separatorX, separatorY, separatorWidth, 1 ) )
+    canvas:fill( theme:value( "separatorColour" ), theme:value( "isDashed" ) and SeparatorMask( separatorX, separatorY, separatorWidth, 1 ) or RectangleMask( separatorX, separatorY, separatorWidth, 1 ) )
 end
 
 function SeparatorMenuItem:updateSize( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
