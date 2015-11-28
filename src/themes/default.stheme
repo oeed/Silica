@@ -71,12 +71,12 @@
 	</MenuItem>
 
 	<SeparatorMenuItem>
-		<leftMargin type="Number" default="4" />
-		<rightMargin type="Number" default="4" />
-		<topMargin type="Number" default="1" />
-		<bottomMargin type="Number" default="1" />
+		<leftMargin type="Number" default="5" />
+		<rightMargin type="Number" default="5" />
+		<topMargin type="Number" default="2" />
+		<bottomMargin type="Number" default="2" />
         <isDashed type="Boolean" default="true"/>
-		<separatorColour type="Graphics.colours" default="GREY" disabled="LIGHT_GREY" />
+		<separatorColour type="Graphics.colours" default="LIGHT_GREY" />
 	</SeparatorMenuItem>
 
 	<MenuBar>
