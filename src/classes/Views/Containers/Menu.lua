@@ -89,6 +89,9 @@ end
 
 function Menu.width:set( width )
     self:super( width + (1 - width % 2) )-- it must be an odd number (for the separators)
+    for i, childView in ipairs( self.children ) do
+        childView.width = width
+    end
 end
 
 function Menu:update( deltaTime )
