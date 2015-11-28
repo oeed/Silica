@@ -36,7 +36,7 @@ function MenuItem:onDraw()
     canvas:fill( theme:value( "fillColour" ) )
 
     local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
-    canvas:fill( theme:value( "shortcutColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, theme:value( "shortcutFont" ), Font.alignments.RIGHT ) )
+    canvas:fill( theme:value( "shortcutColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.shortcut:symbols(), theme:value( "shortcutFont" ), Font.alignments.RIGHT ) )
     canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, theme:value( "font" ) ) )
 end
 
