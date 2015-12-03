@@ -54,16 +54,15 @@ function ProgressBar:onDraw()
     end
 
 
-    local rectOne = RectangleMask( 6, 1, 5, 5 )
-    local rectTwo = RectangleMask( 8, 3, 5, 5 )
-    canvas:fill( colours.red, rectOne )
-    canvas:fill( colours.green, rectTwo )
-    canvas:fill( colours.yellow, rectOne:exclude( rectTwo ) )
-
-    -- canvas:fill( theme:value( "stripeColour" ), stripeMask )
+    -- local rectOne = RectangleMask( 6, 1, 5, 5 )
+    -- local rectTwo = RectangleMask( 8, 3, 5, 5 )
+    -- canvas:fill( colours.red, rectOne )
+    -- canvas:fill( colours.green, rectTwo )
+    -- canvas:fill( colours.yellow, rectOne:exclude( rectTwo ) )
+    canvas:fill( theme:value( "stripeColour" ), roundedRectangle:subtract( stripeMask ) )
 
     if isIndeterminate then
-        -- canvas:outline( theme:value( "barOutlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
+        canvas:outline( theme:value( "barOutlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
     end
     -- canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
 
