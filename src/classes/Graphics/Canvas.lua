@@ -87,7 +87,7 @@ end
 --[[
     @desc Draws an outline around the given mask, defaulting to the canvas' content mask
 ]]
-function Canvas:outline( Graphics.colours colour, Mask( self.contentMask ) mask, Number( 1 ) leftThickness, Number( leftThickness ) topThickness, Number( leftThickness ) rightThickness, Number( leftThickness ) bottomThickness )
+function Canvas:outline( Graphics.colours colour, Mask( self.contentMask ) mask, Number( 1 ) leftThickness, Number( leftThickness ) topThickness, Number( leftThickness ) rightThickness, Number( topThickness ) bottomThickness )
     if colour == Graphics.colours.TRANSPARENT then return end
     local width, height, pixels = self.width, self.height, self.pixels
     local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
