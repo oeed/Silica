@@ -1,6 +1,4 @@
 
--- TODO: this needs some fixes to make the last button have a gap on it's left when pushed
-
 local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class "SegmentButton" extends "Button" {
