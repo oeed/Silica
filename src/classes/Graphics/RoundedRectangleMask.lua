@@ -30,7 +30,7 @@ class "RoundedRectangleMask" extends "Mask" {
     
 }
 
-function RoundedRectangleMask:initialise( Number x, Number y, Number width, Number height, Number topLeftRadius, Number( topLeftRadius ) topRightRadius, Number( topLeftRadius ) bottomLeftRadius, Number( bottomLeftRadius ) bottomRightRadius )
+function RoundedRectangleMask:initialise( Number x, Number y, Number width, Number height, Number topLeftRadius, Number( topLeftRadius ) topRightRadius, Number( topLeftRadius ) bottomLeftRadius, Number( topRightRadius ) bottomRightRadius )
     local pixels = {}
 
     corner( pixels, width, height, topLeftRadius, 0 )
