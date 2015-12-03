@@ -3,6 +3,10 @@
 	<View>
 		<shadowColour type="Graphics.colours" default="GREY" />
 	</View>
+	
+	<Container>
+		<fillColour type="Graphics.colours" default="TRANSPARENT" />
+	</Container>
 
 	<Button>
 		<cornerRadius type="Number" default="8" />
