@@ -39,14 +39,14 @@ function RoundedRectangleMask:initialise( Number x, Number y, Number width, Numb
     corner( pixels, width, height, bottomRightRadius, 3 )
 
     local maxTopRadius = math.max( topLeftRadius, topRightRadius )
-    for x = topLeftRadius, width - topRightRadius do
+    for x = topLeftRadius + 1, width - topRightRadius do
         for y = 1, maxTopRadius do
             pixels[(y - 1) * width + x] = true
         end
     end
 
     local maxBottomRadius = math.max( bottomLeftRadius, bottomRightRadius )
-    for x = bottomLeftRadius, width - bottomRightRadius do
+    for x = bottomLeftRadius + 1, width - bottomRightRadius do
         for y = height - maxBottomRadius + 1, height do
             pixels[(y - 1) * width + x] = true
         end
