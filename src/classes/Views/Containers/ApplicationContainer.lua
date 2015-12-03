@@ -1,9 +1,11 @@
 
 class "ApplicationContainer" extends "Container" {
+
 	-- TODO: make this use a Constraint
 	width = Number( 320 );
 	height = Number( 200 );
 	themeName = String( "default" );
+
 }
 
 --[[

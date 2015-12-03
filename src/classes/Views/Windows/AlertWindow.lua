@@ -1,7 +1,9 @@
 
 class "AlertWindow" extends "Window" {
+
 	interfaceName = "alert";
 	okayButton = InterfaceOutlet( "okayButton" );
+
 }
 
 function AlertWindow:initialise( ... )

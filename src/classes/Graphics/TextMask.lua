@@ -14,7 +14,9 @@ local NO_CHAR_MAP = {
 }
 
 class "TextMask" extends "Mask" {
+
     
+
 }
 
 function TextMask:initialise( Number x, Number y, Number.allowsNil width, Number.allowsNil height, String text, Font( Font.static.systemFont ) font, Font.alignments( Font.alignments.LEFT ) alignment )

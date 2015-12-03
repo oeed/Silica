@@ -1,7 +1,9 @@
 
 class "MenuBar" extends "Container" {
+
 	needsLayoutUpdate = false;	
     separatorObject = false;
+
 }
 
 function MenuBar:initialiseCanvas()

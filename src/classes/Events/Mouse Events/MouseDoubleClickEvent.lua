@@ -1,8 +1,10 @@
 
 class "MouseDoubleClickEvent" extends "MouseEvent" {
+
     eventType = "mouse_double_click";
     mouseButton = false;
     isSentToChildren = Boolean( false );
+
 }
 
 --[[

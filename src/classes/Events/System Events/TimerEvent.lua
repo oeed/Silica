@@ -1,9 +1,11 @@
 
 class "TimerEvent" extends "Event" {
+
     static = {
         eventType = "timer";
     };
 	timer = false;
+
 }
 
 --[[

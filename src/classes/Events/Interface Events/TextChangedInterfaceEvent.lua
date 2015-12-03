@@ -1,10 +1,12 @@
 
 class "TextChangedInterfaceEvent" extends "InterfaceEvent" {
+
     static = {
         eventType = "interface_text";
     };
 	text = false; -- the new text value
 	oldText = false; -- the previous text value
+
 }
 
 --[[

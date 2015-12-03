@@ -1,6 +1,8 @@
 
 class "ApplicationEventManager" extends "EventManager" {
+
 	handlesGlobal = false;
+
 }
 
 --[[

@@ -1,6 +1,8 @@
 
 class "RectangleMask" extends "Mask" {
+
     
+
 }
 
 function RectangleMask:initialise( Number x, Number y, Number width, Number height )

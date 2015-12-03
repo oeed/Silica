@@ -1,6 +1,8 @@
 
 class "FirstApplicationContainer" extends "ApplicationContainer" {
+
 	firstButton = InterfaceOutlet( "firstButton" )
+
 }
 
 function FirstApplicationContainer:initialise( ... )

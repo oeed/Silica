@@ -9,6 +9,7 @@ local SCROLL_ACCELERATION = 1.2--0.97
 local SPEED_CUTOFF = 0.2
 
 class "ScrollView" extends "Container" {
+
 	contents = false;
 	horizontalScrollbar = false;
 	verticalScrollbar = false;
@@ -16,6 +17,7 @@ class "ScrollView" extends "Container" {
 	verticalVelocityTime = 0;
 	verticalVelocity = 0;
 	horizontalVelocity = 0;
+
 }
 
 --[[

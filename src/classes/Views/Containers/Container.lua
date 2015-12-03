@@ -1,11 +1,13 @@
 
 class "Container" extends "View" {
+
 	children = {};
 	interfaceOutlets = {};
 	interfaceName = false;
 	offsetX = 0;
 	offsetY = 0;
 	interfaceOutletActions = {};
+
 }
 
 --[[

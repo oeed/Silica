@@ -1,7 +1,9 @@
 
 class "TestView" extends "View" {
+
 	width = false;
 	height = false;
+
 }
 
 function TestView:initialise( ... )

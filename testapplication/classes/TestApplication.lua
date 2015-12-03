@@ -1,7 +1,9 @@
 
 class "TestApplication" extends "Application" {
+
 	name = "Test";
 	interfaceName = "test";
+
 }
 
 function TestApplication:initialise()

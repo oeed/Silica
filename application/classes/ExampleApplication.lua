@@ -1,7 +1,9 @@
 
 class "ExampleApplication" extends "Application" {
+
 	name = "Example";
 	interfaceName = "first";
+
 }
 
 -- For the demo the below code isn't really needed, it's just for debug

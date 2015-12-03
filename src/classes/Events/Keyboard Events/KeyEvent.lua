@@ -1,8 +1,10 @@
 
 class "KeyEvent" extends "Event" {
+
 	keyCode = Number;
 	keyString = String.allowsNil;
 	isCharacter = Boolean;
+
 }
 
 --[[

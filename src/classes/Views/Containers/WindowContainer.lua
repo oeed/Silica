@@ -1,6 +1,8 @@
 
 class "WindowContainer" extends "Container" {
+
 	backgroundObject = false;
+
 }
 
 function WindowContainer:initialise( ... )

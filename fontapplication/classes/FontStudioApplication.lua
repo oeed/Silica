@@ -1,7 +1,9 @@
 
 class "FontStudioApplication" extends "Application" {
+
 	name = "FontStudio";
 	interfaceName = "fontstudio";
+
 }
 
 -- For the demo the below code isn't really needed, it's just for debug

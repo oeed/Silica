@@ -1,6 +1,8 @@
 
 class "FontWindowContainer" extends "WindowContainer" {
+
 	backgroundObject = false;
+
 }
 
 function FontWindowContainer:initialiseCanvas()

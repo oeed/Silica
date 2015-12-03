@@ -1,8 +1,10 @@
 
 class "MouseHeldEvent" extends "MouseEvent" {
+
     eventType = "mouse_held";
     mouseButton = false;
     isSentToChildren = Boolean( false );
+
 }
 
 --[[

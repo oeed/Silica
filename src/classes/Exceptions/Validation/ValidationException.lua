@@ -1,6 +1,8 @@
 
 class "ValidationException" extends "Exception" {
+
     
+
 }
 
 function ValidationException:initialise( String message, Number.allowsNil level )

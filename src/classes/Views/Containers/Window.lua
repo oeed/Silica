@@ -1,5 +1,6 @@
 
 class "Window" extends "Container" {
+
 	-- separatorObject = false;	
 	-- shadowObject = false;
 	-- barObject = false;
@@ -23,6 +24,7 @@ class "Window" extends "Container" {
     maxHeight = 150;
 
     isCanvasHitTested = Boolean( false );
+
 }
 
 --[[

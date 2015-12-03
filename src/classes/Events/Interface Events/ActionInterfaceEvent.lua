@@ -1,9 +1,11 @@
 
 class "ActionInterfaceEvent" extends "InterfaceEvent" {
+
     static = {
         eventType = "interface_action";
     };
 	sender = false; -- the view whose action it is
+
 }
 
 --[[

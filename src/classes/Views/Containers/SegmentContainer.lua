@@ -1,6 +1,8 @@
 
 class "SegmentContainer" extends "Container" {
+
 	needsLayoutUpdate = false;	
+
 }
 
 --[[

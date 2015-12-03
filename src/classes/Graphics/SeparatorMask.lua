@@ -1,6 +1,8 @@
 
 class "SeparatorMask" extends "Mask" {
+
     
+
 }
 
 function SeparatorMask:initialise( Number x, Number y, Number width, Number height )

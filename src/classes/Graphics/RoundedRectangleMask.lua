@@ -27,7 +27,9 @@ local function corner( pixels, width, height, radius, position ) -- position is 
 end
 
 class "RoundedRectangleMask" extends "Mask" {
+
     
+
 }
 
 function RoundedRectangleMask:initialise( Number x, Number y, Number width, Number height, Number topLeftRadius, Number( topLeftRadius ) topRightRadius, Number( topLeftRadius ) bottomLeftRadius, Number( topRightRadius ) bottomRightRadius )

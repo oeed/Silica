@@ -1,7 +1,9 @@
 
 class "FilesApplication" extends "Application" {
+
 	name = "Files";
 	interfaceName = "files";
+
 }
 
 -- For the demo the below code isn't really needed, it's just for debug

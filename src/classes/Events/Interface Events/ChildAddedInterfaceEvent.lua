@@ -1,10 +1,12 @@
 
 class "ChildAddedInterfaceEvent" extends "InterfaceEvent" {
+
     static = {
         eventType = "interface_child_added";
     };
 	childView = false; -- the added child
 	isSentToChildren = Boolean( false );
+
 }
 
 --[[
