@@ -61,5 +61,5 @@ function Exception:initialise( String message, Number( 1 ) level )
     local id = self.id
     thrownExceptions[id] = self
                                            -- TODO: \/ this is just temporary
-    error( "SilicaException: " .. self.id .. ": "..self.message, 0 )
+    error( "SilicaException: " .. self.id .. ": "..self.message .. textutils.serialize(traceback), 0 )
 end
