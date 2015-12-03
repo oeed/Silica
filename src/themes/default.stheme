@@ -29,9 +29,9 @@
 
 	<SegmentButton>
 		<centerMargin type="Number" default="4" />
-		<separatorBackgroundColour type="Graphics.colours" default="WHITE"/>
 		<separatorFillColour type="Graphics.colours" default="LIGHT_GREY"/>
-		<separatorOutlineColour type="Graphics.colours" default="LIGHT_GREY"/>
+		<separatorTopMargin type="Number" default="2" />
+		<separatorBottomMargin type="Number" default="2" />
 		<separatorIsDashed type="Boolean" default="true"/>
 	</SegmentButton>
 

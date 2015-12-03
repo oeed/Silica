@@ -1,4 +1,6 @@
 
+local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
+
 class "SegmentContainer" extends "Container" {
 
 	needsLayoutUpdate = false;	
@@ -12,18 +14,21 @@ function SegmentContainer:updateLayout()
 	if self.isVisible then
 		local width = 0
 		local height = 0
-		for i, childView in ipairs( self.children ) do
+		local children = self.children
+		local childrenCount = #children
+		for i, childView in ipairs( children ) do
 			height = math.max( height, childView.height )
-		end
-
-		for i, childView in ipairs( self.children ) do
 			childView.x = width + 1
 			childView.y = 1
 			width = width + childView.width
+			if i ~= childrenCount then
+				width = width - math.floor( SHADOW_RATIO * childView.theme:value( "shadowSize", "default" ) + 0.5 )
+			end
 		end
 		self.width = width
 		self.height = height
 	end
+	self.needsLayoutUpdate = false
 end
 
 function SegmentContainer:update( deltaTime )
