@@ -14,11 +14,14 @@
 
     <MenuButton x=160 y=10 text="Menu Button" menuName=menu />
 
-    <SegmentContainer x=10 y=40>
+    <SegmentContainer x=10 y=35>
         <SegmentButton text=One />
         <SegmentButton text=Two />
         <SegmentButton text=Three />
     </SegmentContainer>
+
+    <ProgressBar x=135 y=35 />
+
 
     <!-- <TestView x=50 y=50 width=19 height=25/> -->
     <!-- <TestView x=50 y=50 width=80 height=80/> -->
