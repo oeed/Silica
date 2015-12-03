@@ -129,6 +129,16 @@ end
 
 term.redirect(term.native())
 
+-- setmetatable( _G, {
+--     __newindex = function( self, k, v )
+--         rawset( self, k, v )
+--         if k:sub(1,1):upper() ~= k:sub(1,1) then
+--             print( "Set _G." .. k .. " to: " .. tostring( v ) )
+--         end
+--         -- logtraceback()
+--     end
+-- } )
+
 if fs.exists("Silica.resourcepkg") then
     log("Using built package")
 	local _, err = pcall(function() dofile( "Silica.resourcepkg" ) end)

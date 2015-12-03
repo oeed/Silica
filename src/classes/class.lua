@@ -175,7 +175,7 @@ local function createEnumType()
             itemValueType = args[1]
             if type( itemValueType ) == "table" and itemValueType[1] == VALUE_TYPE_UID and not itemValueType[TYPETABLE_HAS_DEFAULT_VALUE] then
                 values = args[2]
-                if type( value ) == "table" then
+                if type( values ) == "table" then
                     isOkay = true
                 end
             end
@@ -338,7 +338,7 @@ end
 
 -- Start loading the class and get the argument types from the functions --
 
-function lines(str)
+local function lines(str)
   local t = {}
   local function helper(line) table.insert(t, line) return "" end
   helper((str:gsub("(.-)\r?\n", helper)))
@@ -488,7 +488,7 @@ function stripFunctionArguments( name, contents )
                             ArgumentValueTypeParsingClassException( "Syntax of argument ValueType declaration was malformed in class '" ..name .. "' on line " .. n .. ". Check your spelling, syntax and that if you are use a class it exists. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         setfenv( func, valueTypeExtractionEnvironment )
-                        value = func()
+                        local value = func()
 
                         if not value then
                             ArgumentValueTypeParsingClassException( "Argument ValueType was invalid value in class '" ..name .. "' on line " .. n .. ". Check your spelling, syntax and that if you are use a class it exists. Read the 'Class System' wiki page if you're still stuck.", 0 )
@@ -1017,6 +1017,7 @@ end
 
 function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: error level and message based on where it's called form
     if value == nil  then
+        local isOkay
         value, isOkay = generateDefaultValue( typeTable, context, circularKey )
         if isOkay then
             return value
