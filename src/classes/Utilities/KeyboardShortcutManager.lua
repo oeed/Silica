@@ -66,7 +66,7 @@ function KeyboardShortcutManager:isKeyDown( keyString )
 end
 
 function KeyboardShortcutManager:isOnlyKeyDown( keyString )
-	local keysDown = self.keyDown
+	local keysDown = self.keysDown
 	for k, v in pairs( keysDown ) do
 		if k ~= keyString then
 			if v then
