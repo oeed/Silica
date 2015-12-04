@@ -35,16 +35,18 @@ function ProgressBar:onDraw()
             canvas:fill( theme:value( "fillColour" ), roundedRectangle )
             canvas:outline( theme:value( "outlineColour" ), roundedRectangle, outlineThickness )
 
-            local barMask = RoundedRectangleMask( 1, 1, barWidth, height, cornerRadius, 0 )
-            canvas:fill( theme:value( "barFillColour" ), barMask )
-            canvas:outline( theme:value( "barOutlineColour" ), barMask, outlineThickness, outlineThickness, 0 )
+            if barWidth > 0 then
+                local barMask = RoundedRectangleMask( 1, 1, barWidth, height, cornerRadius, 0 )
+                canvas:fill( theme:value( "barFillColour" ), barMask )
+                canvas:outline( theme:value( "barOutlineColour" ), barMask, outlineThickness, outlineThickness, 0 )
+            end
         end
     end
 end
  
 function ProgressBar.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
-    self.theme.style = self.isEnabled and "default" or "disabled"
+    self.theme.style = isEnabled and "default" or "disabled"
 end
 
 --[[
