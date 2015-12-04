@@ -199,15 +199,15 @@ function TextBox:updateSelection()
 	local isVisible = self.selectionVisible
 	local cursorX = math.max( self:charToViewCoords( self.cursorPosition ) - 1, 0 )
 	local selectionX = selectionPosition and math.max( self:charToViewCoords( selectionPosition ) - 1, 0 )
-
+	local _x = self.selectionX
 	if not isVisible and selectionPosition then
-		if selectionX then self.selectionX = selectionX end
+		if selectionX and not _x then self.selectionX = selectionX end
 		self.selectionVisible = true
 	end
 
 	local x, width, f
 	if not selectionPosition or cursorX == selectionX then
-		local _x, _width = self.selectionX, self.selectionWidth
+		local _width = self.selectionWidth
 		if not selectionPosition and not _x then
 			self.selectionX = cursorX
 			self.selectionWidth = 0
@@ -217,6 +217,8 @@ function TextBox:updateSelection()
 		width = 0
 		f = function() self.selectionVisible = false end
 	else
+		log("this "..selectionX)
+		log("Or ".. selectionPosition)
 		x = math.min( cursorX, selectionX )
 		width = math.max( cursorX, selectionX ) - x
 	end
@@ -281,8 +283,8 @@ function TextBox.selectionPosition:set( selectionPosition )
 end
 
 --[[
-	@desc ima leave this... until floobits,.. just yeah
-	es@param [string] character
+	@desc Insert text into the text box at the current cursor position
+	@param [string] character
 	@return [boolean] isValid
 ]]
 function TextBox:write( text )
@@ -300,8 +302,8 @@ function TextBox:write( text )
 	if selectionPosition then
 		selectionPosition = selectionPosition - 1
 		self.text = text:sub( 1, math.min( cursorPosition, selectionPosition ) - 1 ) .. s .. text:sub( math.max( cursorPosition, selectionPosition ) + 1 )
-		self.cursorPosition =  math.min( cursorPosition, selectionPosition ) + #s
 		self.selectionPosition = nil
+		self.cursorPosition =  math.min( cursorPosition, selectionPosition ) + #s
 	else
 		self.text = text:sub( 1, cursorPosition - 1 ) .. s .. text:sub( cursorPosition )
 		self.cursorPosition =  cursorPosition + #s
@@ -442,8 +444,8 @@ function TextBox:onKeyDown( Event event, Event.phases phase )
 			local cursorPosition = self.cursorPosition
 
 			if selectionPosition then
-				self.cursorPosition = math.min( cursorPosition, selectionPosition )
 				self.selectionPosition = nil
+				self.cursorPosition = math.min( cursorPosition, selectionPosition )
 			else
 				self.cursorPosition = cursorPosition - 1
 			end
@@ -452,8 +454,8 @@ function TextBox:onKeyDown( Event event, Event.phases phase )
 			local cursorPosition = self.cursorPosition
 
 			if selectionPosition then
-				self.cursorPosition = math.max( cursorPosition, selectionPosition )
 				self.selectionPosition = nil
+				self.cursorPosition = math.max( cursorPosition, selectionPosition )
 			else
 				self.cursorPosition = cursorPosition + 1
 			end
@@ -486,15 +488,16 @@ end
 ]]
 function TextBox:onKeyboardShortcut( Event event, Event.phases phase )
     if self.isFocused then
+    	log(textutils.serialise(event.keys))
         if event:matchesKeys( { "ctrl", "left" } ) or event:matchesKeys( { "home" } ) then
-        	self.selectionPosition = false
+        	self.selectionPosition = nil
         	self.cursorPosition = 1
         elseif event:matchesKeys( { "ctrl", "right" } ) or event:matchesKeys( { "end" } ) then
-        	self.selectionPosition = false
+        	self.selectionPosition = nil
         	self.cursorPosition = #self.text + 1
-        elseif event:matchesKeys( { "ctrl", "shift", "left" } ) then -- ehm, nope, select a word
+        elseif event:matchesKeys( { "ctrl", "shift", "left" } ) then
         	self.selectionPosition = 1
-        elseif event:matchesKeys( { "ctrl", "shift", "right" } ) then -- ehm, nope, select a word
+        elseif event:matchesKeys( { "ctrl", "shift", "right" } ) then
         	self.selectionPosition = #self.text + 1
         elseif event:matchesKeys( { "shift", "left" } ) then
         	local selectionPosition = self.selectionPosition
@@ -515,8 +518,8 @@ function TextBox:onKeyboardShortcut( Event event, Event.phases phase )
         	self.selectionPosition = #self.text + 1
         elseif event:matchesKeys( { "ctrl", "backspace" } ) then
         	local cursorPosition = self.cursorPosition
+        	self.selectionPosition = nil
         	self.cursorPosition = 1
-        	self.selectionPosition = false
         	self.text = self.text:sub( cursorPosition )
         elseif event:matchesKeys( { "ctrl", "home" } ) then
         	self.cursorPosition = 1
