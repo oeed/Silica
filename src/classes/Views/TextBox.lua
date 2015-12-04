@@ -106,6 +106,7 @@ function TextBox:onDraw()
     local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
     -- text
 
+    local scroll = self.scroll
     if isFocused then
     	local cursorPosition = self.cursorPosition
     	local fontHeight = font.height
@@ -186,7 +187,9 @@ function TextBox:viewToCharCoords( x )
 	if x <= 0 then
 		return 1
 	end
-	local font = self.theme:value( "font" )
+	local theme = self.theme
+	x = x - theme:value( "leftMargin" )
+	local font = theme:value( "font" )
 	local width = font.getWidth
 	local text = self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text
 	for i = 1, #text do
@@ -232,7 +235,7 @@ function TextBox.cursorPosition:set( cursorPosition )
 end
 
 function TextBox:updateCursorPosition()
-	local value = self.theme:value( "leftMargin" ) + math.max( self:charToViewCoords( self.selectionPosition or self.cursorPosition ) - 1, 1 ) - self.scroll + 2
+	local value = self.theme:value( "leftMargin" ) + math.max( self:charToViewCoords( self.selectionPosition or self.cursorPosition ) - 1, 1 )
 	self:animate( "cursorX", value, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
 end
 
@@ -379,7 +382,7 @@ end
 function TextBox:onMouseDrag( Event event, Event.phases phase )
 	if self.isPressed and self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = true
-		self.selectionPosition = self:viewToCharCoords( event.x - self.leftMargin + self.scroll )
+		self.selectionPosition = self:viewToCharCoords( event.x )
 	end
 	return true
 end
