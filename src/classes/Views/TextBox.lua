@@ -71,7 +71,10 @@ function TextBox:onDraw()
     canvas:fill( fillColour, roundedRectangle )
 
     local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
-    -- text
+
+	if #text == 0 then
+	    canvas:fill( theme:value( "placeholderColour" ),  roundedRectangle:intersect( TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.placeholder, font ) ) )
+	end
 
     local scroll = self.scroll
     if isFocused then
