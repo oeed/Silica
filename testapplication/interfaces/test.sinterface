@@ -20,7 +20,9 @@
         <SegmentButton text=Three />
     </SegmentContainer>
 
-    <ProgressBar x=135 y=35 />
+    <!-- <ProgressBar x=135 y=37 /> -->
+
+    <TextBox x=10 y=60 text="Boo" />
 
 
     <!-- <TestView x=50 y=50 width=19 height=25/> -->

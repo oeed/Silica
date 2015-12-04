@@ -170,14 +170,18 @@
 
 	<TextBox>
 		<cornerRadius type="Number" default="8" />
+		<outlineThickness type="Number" default="1" />
 		<leftMargin type="Number" default="7" />
 		<rightMargin type="Number" default="7" />
+		<topMargin type="Number" default="4" />
+		<bottomMargin type="Number" default="3" />
 		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
 		<selectionColour type="Graphics.colours" default="LIGHT_BLUE" />
 		<textColour type="Graphics.colours" default="BLACK" disabled="LIGHT_GREY"/>
 		<cursorColour type="Graphics.colours" default="BLACK" />
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" focused="BLUE" pressed="BLUE" />
 		<placeholderColour type="Graphics.colours" default="LIGHT_GREY" />
+		<font type="Font" default="systemFont"/>
 	</TextBox>
 
 	<SearchBox>
