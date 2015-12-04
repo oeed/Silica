@@ -100,7 +100,8 @@ function TextBox:onDraw()
 
     -- background shape
     local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
-    canvas:fill( theme:value( "fillColour" ), roundedRectangle )
+    local fillColour = theme:value( "fillColour" )
+    canvas:fill( fillColour, roundedRectangle )
     canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
 
     local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
@@ -111,8 +112,11 @@ function TextBox:onDraw()
     	local cursorPosition = self.cursorPosition
     	-- local cursorX = leftMargin + math.max( self:charToViewCoords( cursorPosition ) - 1, 1 )
     	local fontHeight = font.height
-    	local cursorMask = RectangleMask( self.cursorX, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
-    	canvas:fill( self.cursorColour, cursorMask )
+    	local cursorColour = self.cursorColour
+    	if cursorColour ~= fillColour then
+	    	local cursorMask = RectangleMask( self.cursorX, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
+    		canvas:fill( cursorColour, cursorMask )
+    	end
     end
 
     -- self.shadowSize = shadowSize
@@ -158,15 +162,17 @@ function TextBox:update( deltaTime )
 		local rem = cursorFlashCounter % 1
 		if rem > .85 then
 			if visible then
-				self.cursorColour = ( rem > .95 and colours.lightGrey ) or colours.grey
+				self.cursorColour = ( rem > .95 and Graphics.colours.LIGHT_GREY ) or Graphics.colours.GREY
 			else
-				self.cursorColour = ( rem > .95 and colours.grey ) or colours.lightGrey
+				self.cursorColour = ( rem > .95 and Graphics.colours.GREY ) or Graphics.colours.LIGHT_GREY
 				visible = true
 			end
+		elseif not visible then
+			self.cursorColour = Graphics.colours.WHITE
 		else
-			self.cursorColour = colours.black
+			self.cursorColour = Graphics.colours.BLACK
 		end
-		self.cursorFlashCounter = cursorFlashCounter + deltaTime
+		self.cursorFlashCounter = cursorFlashCounter + deltaTime * 2
 	end
 end
 
