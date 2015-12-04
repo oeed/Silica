@@ -13,6 +13,8 @@
 
 local CURSOR_ANIMATION_SPEED = 0.45
 
+local sub = string.sub -- move to top
+local concat = table.concat
 local floor = math.floor
 
 class "TextBox" extends "View" {
@@ -109,69 +111,7 @@ function TextBox:update( deltaTime )
 		else
 			colour = colours.black
 		end
-		self.cursorObject.fillColour = colour
-		self.cursorObject.isVisible = visible
 		self.cursorFlashCounter = cursorFlashCounter + deltaTime
-	end
-end
-
-function TextBox:updateHeight( height )
-	self.backgroundObject.height = height
-end
-
-function TextBox:updateWidth( width )
-	self.backgroundObject.width = width
-	local textObject = self.textObject
-	textObject.x = self.leftMargin + 1 - self.scroll
-	textObject.width = width - self.leftMargin - self.rightMargin
-	local placeholderObject = self.placeholderObject
-	placeholderObject.x = self.leftMargin + 1
-	placeholderObject.width = width - self.leftMargin - self.rightMargin
-end
-
-function TextBox.leftMargin:set( leftMargin )
-	self.leftMargin = leftMargin
-	local textObject = self.textObject
-	if textObject then
-		textObject.x = leftMargin + 1 - self.scroll
-		self.placeholderObject.x = leftMargin + 2
-	end
-end
-
-function TextBox:updateSelection()
-	local selectionObject = self.selectionObject
-	local leftMargin = self.leftMargin
-	local cursorPosition = self.cursorPosition
-	local selectionPosition = self.selectionPosition
-
-	local isVisible = selectionObject.isVisible
-	if not selectionPosition then--or cursorPosition == selectionPosition then
-		if isVisible then selectionObject.isVisible = false end
-	else
-		local cursorX = leftMargin + math.max( self:charToViewCoords( cursorPosition ) - 1, 1 ) - self.scroll
-		local selectionX = leftMargin + math.max( self:charToViewCoords( selectionPosition ) - 1, 1 ) - self.scroll
-
-		if not isVisible then selectionObject.isVisible = true end
-
-		local x, width, f
-		if cursorX == selectionX then
-			-- if isVisible then selectionObject.isVisible = false end
-			local _x, _width = selectionObject.x, selectionObject.width
-			x = math.floor( _x + _width / 2 )
-			width = 0
-			f = function() selectionObject.isVisible = false end
-		else
-			x = math.min( cursorX, selectionX )
-			width = math.max( cursorX, selectionX ) - x
-		end
-
-		if not isVisible then
-			selectionObject.x = x
-			selectionObject.width = width
-		else
-			self:animate( "selectionX", x, CURSOR_ANIMATION_SPEED, f, Animation.easings.OUT_QUART )
-			self:animate( "selectionWidth", width, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
-		end
 	end
 end
 
@@ -213,9 +153,7 @@ end
 
 function TextBox.scroll:set( scroll )
 	self.scroll = scroll
-	self.textObject.x = self.leftMargin + 1 - self.scroll
-	self:updateSelection()
-	self:updateCursorPosition()
+	self.needsDraw = true
 end
 
 function TextBox.cursorPosition:set( cursorPosition )
@@ -231,40 +169,15 @@ function TextBox.cursorPosition:set( cursorPosition )
 	self:updateCursorPosition()
 end
 
-function TextBox.cursorX:set( cursorX )
-	self.cursorObject.x = cursorX
-end
-
-function TextBox.cursorX:get()
-	return self.cursorObject.x
-end
-
-function TextBox.selectionX:set( selectionX )
-	self.selectionObject.x = selectionX
-end
-
-function TextBox.selectionX:get()
-	return self.selectionObject.x
-end
-
-function TextBox.selectionWidth:set( selectionWidth )
-	self.selectionObject.width = selectionWidth
-end
-
-function TextBox.selectionWidth:get()
-	return self.selectionObject.width
-end
-
 function TextBox:updateCursorPosition()
 	local value = self.leftMargin + math.max( self:charToViewCoords( self.selectionPosition or self.cursorPosition ) - 1, 1 ) - self.scroll
-	self:animate( "cursorX", value, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
+self:animate( "cursorX", value, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
 end
 
 function TextBox.selectionPosition:set( selectionPosition )
 	self.selectionPosition = selectionPosition
 	self.cursorFlashCounter = 0
-	self:updateSelection()
-	self:updateCursorPosition()
+	self.needsDraw = true
 end
 
 --[[
@@ -272,8 +185,6 @@ end
 	es@param [string] character
 	@return [boolean] isValid
 ]]
-local sub = string.sub -- move to top
-local concat = table.concat
 function TextBox:write( text )
 	local t = {}
 	local valid = self.isValidChar
@@ -303,18 +214,7 @@ end
 	@return [string] character -- the character
 ]]
 function TextBox:charCoordsToChar( characterPosition )
-	return character
-end
-
---[[
-	@desc What does this actually do?
-	@param [type] arg1 -- description
-	@param [type] arg2 -- description
-	@param [type] arg3 -- description
-	@return [type] returnedValue -- description
-]]
-function TextBox:charToCharCoords( arg1, arg2, arg3 )
-	return returnedValue
+	return character -- TODO: is this needed??
 end
 
 --[[
@@ -333,21 +233,17 @@ end
 ]]
 function TextBox.text:set( text )
 	self.text = text
-	self.textObject.text = self.isMasked and string.rep( string.char( 149 ), #text ) or text
-	self.placeholderObject.isVisible = #text == 0
+	self.needsDraw = true
 end
 
 function TextBox.placeholder:set( placeholder )
 	self.placeholder = placeholder
-	local placeholderObject = self.placeholderObject
-	if placeholderObject then
-		placeholderObject.text = placeholder or ''
-	end
+	self.needsDraw = true
 end
 
 function TextBox.isMasked:set( isMasked )
 	self.isMasked = isMasked
-	self.text = self.text
+	self.needsDraw = true
 end
 
 --[[
@@ -357,17 +253,6 @@ end
 function TextBox.margin:set( margin )
 	self.leftMargin = margin
 	self.rightMargin = margin
-end
-
-function TextBox.font:set( font )
-	self.font = font
-	local textObject = self.textObject
-	if textObject then
-		textObject.font = font
-		self.placeholderObject.font = font
-		self.cursorObject.height = font.height + 1
-		self.selectionObject.height = font.height + 1
-	end
 end
 
 function TextBox:updateThemeStyle()
@@ -389,9 +274,7 @@ end
 
 function TextBox.isFocused:set( isFocused )
 	self.isFocused = isFocused
-	self.cursorObject.isVisible = isFocused
 	self.cursorPosition = self.cursorPosition or 1
-	self.isFocused = isFocused
 	self:updateThemeStyle()
 end
 
