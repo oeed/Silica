@@ -61,41 +61,6 @@ function TextBox:initialise( ... )
 	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
---[[
-	@desc Sets up the canvas and it's graphics objects
-]]
--- function TextBox:initialiseCanvas()
--- 	self:super()
--- 	local width, height, theme = self.width, self.height, self.theme
--- 	local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, width, height ) )
--- 	local selectionObject = self.canvas:insert( Rectangle( 0, 4, 1, self.height - 6 ) )
--- 	local placeholderObject = self.canvas:insert( Text( self.leftMargin, 5, self.width, 10, self.placeholder ) )
--- 	local textObject = self.canvas:insert( Text( self.leftMargin, 5, self.width, 10, self.text ) )
--- 	local cursorObject = self.canvas:insert( Cursor( 0, 4, self.height - 6 ) )
--- 	cursorObject.isVisible = false
--- 	selectionObject.isVisible = false
-
--- 	theme:connect( backgroundObject, "fillColour" )
--- 	theme:connect( backgroundObject, "outlineColour" )
--- 	theme:connect( backgroundObject, "radius", "cornerRadius" )
--- 	theme:connect( textObject, "textColour" )
--- 	theme:connect( placeholderObject, "textColour", "placeholderColour" )
--- 	theme:connect( cursorObject, "fillColour", "cursorColour" )
--- 	theme:connect( selectionObject, "fillColour", "selectionColour" )
--- 	theme:connect( self, "leftMargin" )
--- 	theme:connect( self, "rightMargin" )
-
--- 	self.backgroundObject = backgroundObject
--- 	self.textObject = textObject
--- 	self.placeholderObject = placeholderObject
--- 	self.cursorObject = cursorObject
--- 	self.selectionObject = selectionObject
-
--- 	if not self.font then
--- 		self.font = Font.systemFont
--- 	end
--- end
-
 function TextBox:onDraw()
     local width, height, theme, canvas, isFocused = self.width, self.height, self.theme, self.canvas, self.isFocused
     local font, text = theme:value( "font" ), ( self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text )
@@ -196,11 +161,11 @@ function TextBox:viewToCharCoords( x )
 	local width = font.getWidth
 	local text = self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text
 	for i = 1, #text do
-		local cw = width( font, text:sub( i, i ) )
-		if x <= cw / 2 then
+		local characterWidth = width( font, text:sub( i, i ) )
+		if x <= characterWidth / 2 then
 			return i
 		end
-		x = x - cw
+		x = x - characterWidth
 	end
 	return #text + 1
 end
@@ -282,15 +247,15 @@ function TextBox:write( text )
 		end
 	end
 	local text = self.text
-	local cp, sp = self.cursorPosition, self.selectionPosition
-	if sp then
-		sp = sp - 1
-		self.text = text:sub( 1, math.min( cp, sp ) - 1 ) .. s .. text:sub( math.max( cp, sp ) + 1 )
-		self.cursorPosition =  math.min( cp, sp ) + #s
+	local cursorPosition, selectionPosition = self.cursorPosition, self.selectionPosition
+	if selectionPosition then
+		selectionPosition = selectionPosition - 1
+		self.text = text:sub( 1, math.min( cursorPosition, selectionPosition ) - 1 ) .. s .. text:sub( math.max( cursorPosition, selectionPosition ) + 1 )
+		self.cursorPosition =  math.min( cursorPosition, selectionPosition ) + #s
 		self.selectionPosition = false
 	else
-		self.text = text:sub( 1, cp - 1 ) .. s .. text:sub( cp )
-		self.cursorPosition =  cp + #s
+		self.text = text:sub( 1, cursorPosition - 1 ) .. s .. text:sub( cursorPosition )
+		self.cursorPosition =  cursorPosition + #s
 	end
 end
 
