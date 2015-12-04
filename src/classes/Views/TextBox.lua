@@ -12,6 +12,7 @@
 ]]
 
 local CURSOR_ANIMATION_SPEED = 0.4
+local SCROLL_SPEED = 4
 
 local sub = string.sub -- move to top
 local concat = table.concat
@@ -35,7 +36,8 @@ class "TextBox" extends "View" {
 	isPressed = Boolean( false );
 	isMasked = Boolean( false ); -- whether bullets are shown instead of characters (for passwords)
 
-	scroll = 0;
+	scroll = Number( 0 );
+	maxScroll = Number( 0 );
 	cursorPosition = 1;
 	maximumLength = false;
 	selectionPosition = false;
@@ -54,6 +56,7 @@ function TextBox:initialise( ... )
 	self:event( MouseDownEvent, self.onMouseDown )
 	self:event( MouseUpEvent, self.onMouseUp )
 	self:event( MouseDragEvent, self.onMouseDrag )
+	self:event( MouseScrollEvent, self.onMouseScroll )
     self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
 	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
@@ -112,7 +115,7 @@ function TextBox:onDraw()
     	local fontHeight = font.height
     	local cursorColour = self.cursorColour
     	if cursorColour ~= fillColour then
-	    	local cursorMask = RectangleMask( self.cursorX, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
+	    	local cursorMask = RectangleMask( self.cursorX - scroll, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
     		canvas:fill( cursorColour, cursorMask )
     	end
     end
@@ -188,7 +191,7 @@ function TextBox:viewToCharCoords( x )
 		return 1
 	end
 	local theme = self.theme
-	x = x - theme:value( "leftMargin" )
+	x = x - theme:value( "leftMargin" ) + self.scroll
 	local font = theme:value( "font" )
 	local width = font.getWidth
 	local text = self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text
@@ -216,11 +219,6 @@ function TextBox:isValidChar( character )
 	return true
 end
 
-function TextBox.scroll:set( scroll )
-	self.scroll = scroll
-	self.needsDraw = true
-end
-
 function TextBox.cursorPosition:set( cursorPosition )
 	cursorPosition = math.max( math.min( cursorPosition, #self.text + 1 ), 1 )
 	self.cursorPosition = cursorPosition
@@ -237,6 +235,24 @@ end
 function TextBox:updateCursorPosition()
 	local value = self.theme:value( "leftMargin" ) + math.max( self:charToViewCoords( self.selectionPosition or self.cursorPosition ) - 1, 1 )
 	self:animate( "cursorX", value, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
+end
+
+--[[
+	@desc Updates the maximum scroll value to account for the change in of the text or textbox
+]]
+function TextBox:updateMaxScroll()
+	local theme = self.theme
+	self.maxScroll = theme:value( "font" ):getWidth( self.text ) - self.width - theme:value( "leftMargin" ) - theme:value( "rightMargin" )
+end
+
+function TextBox.scroll:set( scroll )
+	self.scroll = math.max( math.min( scroll, self.maxScroll ), 0 )
+	self.needsDraw = true
+end
+
+function TextBox.maxScroll:set( maxScroll )
+	self.maxScroll = math.max( maxScroll, 0 )
+	self.scroll = self.scroll -- this will check that the scroll value is okay
 end
 
 function TextBox.cursorX:set( cursorX )
@@ -303,6 +319,7 @@ end
 ]]
 function TextBox.text:set( text )
 	self.text = text
+	self:updateMaxScroll()
 	self.needsDraw = true
 end
 
@@ -383,6 +400,13 @@ function TextBox:onMouseDrag( Event event, Event.phases phase )
 	if self.isPressed and self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = true
 		self.selectionPosition = self:viewToCharCoords( event.x )
+	end
+	return true
+end
+
+function TextBox:onMouseScroll( MouseScrollEvent event, Event.phases phase )
+	if self.isEnabled then
+		self.scroll = self.scroll + event.direction * SCROLL_SPEED
 	end
 	return true
 end
