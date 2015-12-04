@@ -14,7 +14,6 @@ local constructingEnvironment, constructorProxy, constructingFunctionArguments, 
 local environments = {}
 local stripFunctionArguments, loadProperties, compileClass, loadPropertiesTableSection, checkValue, constructSuper, isInterface, pseudoReference, checkValue, compileClass, compileInstanceClass, compileAndSpawnStatic, spawnInstance, createValueType
 local implements, extends, interface
-local allLockedGetters, allLockedSetters = {}, {}
 local isLoadingProperties
 local interface
 
@@ -1642,8 +1641,6 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     local aliases = classDetails.aliases.instance
 
     local definedIndexes, definedProperties = compiledInstance.definedIndexes, compiledInstance.definedProperties
-    allLockedGetters[instance] = lockedGetters
-    allLockedSetters[instance] = lockedSetters
     local metatable = {}
     function metatable:__newindex( key, value )
         if RESERVED_NAMES[key] then error( "reserved name" , 2 ) end
