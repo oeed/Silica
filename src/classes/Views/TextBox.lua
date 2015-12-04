@@ -119,7 +119,7 @@ function TextBox:onDraw()
     	end
     end
 
-    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1 - scroll, topMargin + 1, font:getWidth( text ), height - topMargin - bottomMargin, text, font ) )
+    canvas:fill( theme:value( "textColour" ),  roundedRectangle:intersect( TextMask( leftMargin + 1 - scroll, topMargin + 1, font:getWidth( text ), height - topMargin - bottomMargin, text, font ) ) )
     canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
 
     -- self.shadowSize = shadowSize
