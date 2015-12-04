@@ -105,11 +105,9 @@ function TextBox:onDraw()
 
     local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
     -- text
-    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, font ) )
 
     if isFocused then
     	local cursorPosition = self.cursorPosition
-    	-- local cursorX = leftMargin + math.max( self:charToViewCoords( cursorPosition ) - 1, 1 )
     	local fontHeight = font.height
     	local cursorColour = self.cursorColour
     	if cursorColour ~= fillColour then
@@ -117,6 +115,8 @@ function TextBox:onDraw()
     		canvas:fill( cursorColour, cursorMask )
     	end
     end
+
+    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, text, font ) )
 
     -- self.shadowSize = shadowSize
 
