@@ -19,16 +19,9 @@ class "TextBox" extends "View" {
 
 	height = Number( 15 );
 	width = Number( 120 );
-	text = "";
-	placeholder = "";
+	text = String;
+	placeholder = String;
 
-	font = false;
-
-	backgroundObject = false;
-	textObject = false;
-	placeholderObject = false;
-	cursorObject = false;
-	selectionObject = false;
 	cursorFlashCounter = 0;
 
 	cursorX = Number;
@@ -36,8 +29,6 @@ class "TextBox" extends "View" {
 	selectionWidth = Number;
 
 	margin = Number;
-	leftMargin = 0;
-	rightMargin = 0;
 	isFocused = Boolean( false );
 	isPressed = Boolean( false );
 	isMasked = Boolean( false ); -- whether bullets are shown instead of characters (for passwords)
