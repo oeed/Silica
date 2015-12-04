@@ -9,12 +9,12 @@ local function shapeMode( self, mask, func )
         for _y = 1, height do
             local _selfX, _selfY = x - selfX + _x, y - selfY + _y
             local selfPixel = false
-            if _selfX >= 1 and _selfY >= 1 and _selfX <= selfWidth and _selfX <= selfHeight then
+            if _selfX >= 1 and _selfY >= 1 and _selfX <= selfWidth and _selfY <= selfHeight then
                 selfPixel = selfPixels[(_selfY - 1) * selfWidth + _selfX]
             end
             local _maskX, _maskY = x - maskX + _x, y - maskY + _y
             local maskPixel = false
-            if _maskX >= 1 and _maskY >= 1 and _maskX <= maskWidth and _maskX <= maskHeight then
+            if _maskX >= 1 and _maskY >= 1 and _maskX <= maskWidth and _maskY <= maskHeight then
                 maskPixel = maskPixels[(_maskY - 1) * maskWidth + _maskX]
             end
             pixels[(_y - 1) * width + _x] = func( selfPixel, maskPixel )
