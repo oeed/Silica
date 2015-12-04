@@ -104,7 +104,6 @@ function TextBox:onDraw()
     local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
     local fillColour = theme:value( "fillColour" )
     canvas:fill( fillColour, roundedRectangle )
-    canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
 
     local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
     -- text
@@ -121,6 +120,7 @@ function TextBox:onDraw()
     end
 
     canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1 - scroll, topMargin + 1, font:getWidth( text ), height - topMargin - bottomMargin, text, font ) )
+    canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
 
     -- self.shadowSize = shadowSize
 
