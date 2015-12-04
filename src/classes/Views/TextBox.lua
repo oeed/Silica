@@ -30,7 +30,8 @@ class "TextBox" extends "View" {
 
 	cursorX = Number( 0 );
 	selectionX = Number.allowsNil;
-	selectionWidth = Number.allowsNil;
+	selectionWidth = Number( 0 );
+	selectionVisible = Boolean( false );
 
 	isFocused = Boolean( false );
 	isPressed = Boolean( false );
@@ -65,7 +66,6 @@ function TextBox:onDraw()
     local width, height, theme, canvas, isFocused = self.width, self.height, self.theme, self.canvas, self.isFocused
     local font, text = theme:value( "font" ), ( self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text )
 
-    -- background shape
     local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
     local fillColour = theme:value( "fillColour" )
     canvas:fill( fillColour, roundedRectangle )
@@ -78,11 +78,16 @@ function TextBox:onDraw()
 
     local scroll = self.scroll
     if isFocused then
-    	local cursorPosition = self.cursorPosition
     	local fontHeight = font.height
+    	if self.selectionVisible then
+    		local selectionMask = RoundedRectangleMask( leftMargin + 1 + self.selectionX - scroll, math.floor( fontHeight / 2 ), self.selectionWidth, fontHeight + 1, theme:value( "selectionRadius" ) )
+    		canvas:fill( theme:value( "selectionColour" ), selectionMask )
+    	end
+
+    	local cursorPosition = self.cursorPosition
     	local cursorColour = self.cursorColour
     	if cursorColour ~= fillColour then
-	    	local cursorMask = RectangleMask( self.cursorX - scroll, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
+	    	local cursorMask = RectangleMask( leftMargin + 1 + self.cursorX - scroll, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
     		canvas:fill( cursorColour, cursorMask )
     	end
     end
@@ -161,10 +166,11 @@ function TextBox:viewToCharCoords( x )
 	local theme = self.theme
 	x = x - theme:value( "leftMargin" ) + self.scroll
 	local font = theme:value( "font" )
-	local width = font.getWidth
+	local getWidth = font.getWidth
 	local text = self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text
 	for i = 1, #text do
-		local characterWidth = width( font, text:sub( i, i ) )
+		local characterWidth = getWidth( font, text:sub( i, i ), true )
+		log(text:sub( i, i ))
 		if x <= characterWidth / 2 then
 			return i
 		end
@@ -201,8 +207,37 @@ function TextBox.cursorPosition:set( cursorPosition )
 end
 
 function TextBox:updateCursorPosition()
-	local value = self.theme:value( "leftMargin" ) + math.max( self:charToViewCoords( self.selectionPosition or self.cursorPosition ) - 1, 1 )
+	local value = math.max( self:charToViewCoords( self.selectionPosition or self.cursorPosition ) - 1, 1 )
 	self:animate( "cursorX", value, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
+end
+
+function TextBox:updateSelection()
+	local selectionPosition = self.selectionPosition
+	local isVisible = self.selectionVisible
+	local cursorX = math.max( self:charToViewCoords( self.cursorPosition ) - 1, 1 )
+	local selectionX = selectionPosition and math.max( self:charToViewCoords( selectionPosition ) - 1, 1 )
+	if not isVisible then
+		if selectionX then self.selectionX = selectionX end
+		self.selectionVisible = true
+	end
+
+	local x, width, f
+	if not selectionPosition or cursorX == selectionX then
+		local _x, _width = self.selectionX, self.selectionWidth
+		if not selectionPosition and not _x then
+			self.selectionX = cursorX
+			self.selectionWidth = 0
+			return
+		end
+		x = cursorX--math.floor( _x + _width / 2 )
+		width = 0
+		f = function() self.selectionVisible = false end
+	else
+		x = math.min( cursorX, selectionX )
+		width = math.max( cursorX, selectionX ) - x
+	end
+	self:animate( "selectionX", x, CURSOR_ANIMATION_SPEED, f, Animation.easings.OUT_QUART )
+	self:animate( "selectionWidth", width, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
 end
 
 --[[
@@ -231,6 +266,7 @@ end
 function TextBox.selectionPosition:set( selectionPosition )
 	self.selectionPosition = selectionPosition
 	self.cursorFlashCounter = 0
+	self:updateSelection()
 	self.needsDraw = true
 end
 
@@ -359,6 +395,7 @@ function TextBox:onMouseDown( Event event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = true
 		self.cursorPosition = self:viewToCharCoords( event.x )
+		log(self.cursorPosition)
 		self.selectionPosition = false
 	end
 	return true
