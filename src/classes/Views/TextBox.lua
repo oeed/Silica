@@ -244,7 +244,23 @@ end
 
 function TextBox.cursorX:set( cursorX )
 	self.cursorX = cursorX
-	self.needsDraw = true
+
+	-- if the cursor is extending past the visible bounds adjust scroll to keep it visible
+	local width, scroll = self.width, self.scroll
+    local relativeX = cursorX - scroll
+    if relativeX < 0 then
+    	-- the cursor is to the left of the screen
+    	self.scroll = scroll + relativeX
+    else
+    	local theme = self.theme
+    	local leftMargin, rightMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" )
+    	local rightOverflow = relativeX - width + leftMargin + rightMargin + 1
+    	if rightOverflow > 0 then
+	    	self.scroll = scroll + rightOverflow
+	    else
+			self.needsDraw = true -- we can put this here because setting scroll does it, so it's not always needed
+	    end
+    end
 end
 
 function TextBox.selectionX:set( selectionX )
@@ -427,7 +443,7 @@ function TextBox:onKeyDown( Event event, Event.phases phase )
 
 			if selectionPosition then
 				self.cursorPosition = math.min( cursorPosition, selectionPosition )
-				self.selectionPosition = false
+				self.selectionPosition = nil
 			else
 				self.cursorPosition = cursorPosition - 1
 			end
@@ -437,7 +453,7 @@ function TextBox:onKeyDown( Event event, Event.phases phase )
 
 			if selectionPosition then
 				self.cursorPosition = math.max( cursorPosition, selectionPosition )
-				self.selectionPosition = false
+				self.selectionPosition = nil
 			else
 				self.cursorPosition = cursorPosition + 1
 			end
