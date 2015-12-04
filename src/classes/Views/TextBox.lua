@@ -95,8 +95,7 @@ end
 
 function TextBox:onDraw()
     local width, height, theme, canvas, isFocused = self.width, self.height, self.theme, self.canvas, self.isFocused
-    local font = theme:value( "font" )
-
+    local font, text = theme:value( "font" ), ( self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text )
 
     -- background shape
     local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
@@ -145,11 +144,6 @@ function TextBox:onDraw()
 		-- 	self:animate( "selectionX", x, CURSOR_ANIMATION_SPEED, f, Animation.easings.OUT_QUART )
 		-- 	self:animate( "selectionWidth", width, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
 		-- end
-
-
-
-
-	-- self.textObject.text = self.isMasked and string.rep( string.char( 149 ), #text ) or text
 
 end
 
