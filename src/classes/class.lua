@@ -563,7 +563,7 @@ function stripFunctionArguments( name, contents )
             else
                 constructingFunctionArguments[functionName] = argumentsTable
             end
-            line = replacementLine .. ":" .. functionName .. "(" .. argumentsString .. ")" .. (isInterface and " end" or "")
+            line = replacementLine .. ( isEnum and "." or ":" ) .. functionName .. "(" .. argumentsString .. ")" .. (isInterface and " end" or "")
         elseif isInterface and line:match( "^%s*end%s*$" ) then
             ArgumentValueTypeParsingClassException( "Invalid function declaration in interface '" ..name .. "' on line " .. n .. ". Interface functions cannot include 'end'. Simply state the function declaration without the 'end'. (e.g. function IVehicle:drive( Number speed ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
         end
