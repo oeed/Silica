@@ -65,6 +65,20 @@ function KeyboardShortcutManager:isKeyDown( keyString )
 	return self.keysDown[keyString] == true
 end
 
+function KeyboardShortcutManager:isOnlyKeyDown( keyString )
+	local keysDown = self.keyDown
+	for k, v in pairs( keysDown ) do
+		if k ~= keyString then
+			if v then
+				return false
+			end
+		elseif not v then
+			return false
+		end
+	end
+	return keysDown[keyString] == true
+end
+
 --[[
 	@desc Returns the symbol for a keyString for places such as menus
 	@return [string] keyString -- the string value of the key
