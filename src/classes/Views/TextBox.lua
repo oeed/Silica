@@ -242,7 +242,7 @@ end
 ]]
 function TextBox:updateMaxScroll()
 	local theme = self.theme
-	self.maxScroll = theme:value( "font" ):getWidth( self.text ) - self.width - theme:value( "leftMargin" ) - theme:value( "rightMargin" )
+	self.maxScroll = theme:value( "font" ):getWidth( self.text ) - ( self.width - theme:value( "leftMargin" ) - theme:value( "rightMargin" ) )
 end
 
 function TextBox.scroll:set( scroll )
