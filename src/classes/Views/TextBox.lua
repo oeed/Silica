@@ -97,8 +97,13 @@ function TextBox:onDraw()
     	end
     end
 
-    canvas:fill( theme:value( "textColour" ),  roundedRectangle:intersect( TextMask( leftMargin + 1 - scroll, topMargin + 1, font:getWidth( text ), height - topMargin - bottomMargin, text, font ) ) )
-    canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
+    local textMask = roundedRectangle:intersect( TextMask( leftMargin + 1 - scroll, topMargin + 1, font:getWidth( text ), height - topMargin - bottomMargin, text, font ) )
+    canvas:fill( theme:value( "textColour" ), textMask  )
+    local outlineThickness = theme:value( "outlineThickness" )
+    canvas:fill( theme:value( "fadeOneColour" ), OutlineMask( leftMargin, topMargin, width - leftMargin - rightMargin + 2, height - topMargin - bottomMargin + 2 * outlineThickness ):intersect( textMask )  )
+    canvas:fill( theme:value( "fadeTwoColour" ), OutlineMask( leftMargin - 1, topMargin - 1, width - leftMargin - rightMargin + 4, height - topMargin - bottomMargin + 4 * outlineThickness ):intersect( textMask )  )
+    canvas:fill( theme:value( "fillColour" ), OutlineMask( 1 + outlineThickness, 1 + outlineThickness, width - 2 * outlineThickness, height - 2 * outlineThickness, leftMargin - 2 - outlineThickness, topMargin - 2 - outlineThickness, rightMargin - 2 - outlineThickness, bottomMargin - 2 - outlineThickness ):intersect( textMask ) )
+    canvas:outline( theme:value( "outlineColour" ), roundedRectangle, outlineThickness )
 end
 
 function TextBox:update( deltaTime )

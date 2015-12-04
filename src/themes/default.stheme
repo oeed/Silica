@@ -186,6 +186,8 @@
 		<cursorColour type="Graphics.colours" default="BLACK" />
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" focused="BLUE" pressed="BLUE" />
 		<placeholderColour type="Graphics.colours" default="LIGHT_GREY" />
+		<fadeOneColour type="Graphics.colours" default="GREY" />
+		<fadeTwoColour type="Graphics.colours" default="LIGHT_GREY" />
 		<font type="Font" default="systemFont"/>
 	</TextBox>
 
