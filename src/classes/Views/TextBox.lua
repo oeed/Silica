@@ -12,6 +12,7 @@
 ]]
 
 local CURSOR_ANIMATION_SPEED = 0.4
+local CURSOR_ANIMATION_EASING = Animation.easings.OUT_QUART
 local SCROLL_SPEED = 4
 
 local sub = string.sub -- move to top
@@ -184,7 +185,7 @@ end
 
 function TextBox:updateCursorPosition()
 	local value = math.max( self:charToViewCoords( self.selectionPosition or self.cursorPosition ) - 1, 0 )
-	self:animate( "cursorX", value, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
+	self:animate( "cursorX", value, CURSOR_ANIMATION_SPEED, nil, CURSOR_ANIMATION_EASING )
 end
 
 function TextBox:updateSelection()
@@ -192,7 +193,7 @@ function TextBox:updateSelection()
 	local isVisible = self.selectionVisible
 	local cursorX = math.max( self:charToViewCoords( self.cursorPosition ) - 1, 0 )
 	local selectionX = selectionPosition and math.max( self:charToViewCoords( selectionPosition ) - 1, 0 )
-	log("c "..cursorX.." s "..tostring(selectionX))
+
 	if not isVisible and selectionPosition then
 		if selectionX then self.selectionX = selectionX end
 		self.selectionVisible = true
@@ -206,15 +207,15 @@ function TextBox:updateSelection()
 			self.selectionWidth = 0
 			return
 		end
-		x = cursorX--math.floor( _x + _width / 2 )
+		x = cursorX
 		width = 0
 		f = function() self.selectionVisible = false end
 	else
 		x = math.min( cursorX, selectionX )
 		width = math.max( cursorX, selectionX ) - x
 	end
-	self:animate( "selectionX", x, CURSOR_ANIMATION_SPEED, f, Animation.easings.OUT_QUART )
-	self:animate( "selectionWidth", width, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
+	self:animate( "selectionX", x, CURSOR_ANIMATION_SPEED, f, CURSOR_ANIMATION_EASING )
+	self:animate( "selectionWidth", width, CURSOR_ANIMATION_SPEED, nil, CURSOR_ANIMATION_EASING )
 end
 
 --[[
@@ -237,6 +238,16 @@ end
 
 function TextBox.cursorX:set( cursorX )
 	self.cursorX = cursorX
+	self.needsDraw = true
+end
+
+function TextBox.selectionX:set( selectionX )
+	self.selectionX = selectionX
+	self.needsDraw = true
+end
+
+function TextBox.selectionWidth:set( selectionWidth )
+	self.selectionWidth = selectionWidth
 	self.needsDraw = true
 end
 
