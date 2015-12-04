@@ -6,7 +6,6 @@ class "Button" extends "View" {
     height = Number( 16 );
     width = Number( 36 );
     text = String( "" );
-    font = Font( Font.static.systemFont );
 
     isPressed = Boolean( false );
     isFocused = Boolean( false );
@@ -47,7 +46,7 @@ function Button:onDraw()
 
     local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
     -- text
-    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + shadowX + 1, topMargin + 1 + shadowOffset, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, self.font ) )
+    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + shadowX + 1, topMargin + 1 + shadowOffset, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, theme:value( "font" ) ) )
 
     self.shadowSize = shadowSize
 end
@@ -65,17 +64,13 @@ function Button:update( deltaTime )
     end
 end
 
-function Button.font:set( font )
-    self.font = font
-    self.needsAutosize = true
-end
-
 --[[
     @desc Automatically resizes the button, regardless of isAutosized value, to fit the text
 ]]
 function Button:autosize()
     if self.isAutosized then
-        local font, text, theme = self.font, self.text, self.theme
+        local text, theme = self.text, self.theme
+        local font = theme:value( "font" )
         local defaultShadowSize = theme:value( "shadowSize", "default" )
         local shadowSize = theme:value( "shadowSize", "pressed" )
         local shadowOffset = defaultShadowSize - shadowSize
