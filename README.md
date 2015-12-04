@@ -1,5 +1,5 @@
 # Silica
-The next generation ComputerCraft GUI Framework by awsumben13 and oeed
+The next generation ComputerCraft GUI Framework by oeed
 
 Installation
 ========
