@@ -175,6 +175,10 @@
 		<rightMargin type="Number" default="7" />
 		<topMargin type="Number" default="4" />
 		<bottomMargin type="Number" default="3" />
+		<selectionLeftMargin type="Number" default="1" />
+		<selectionRightMargin type="Number" default="1" />
+		<selectionTopMargin type="Number" default="1" />
+		<selectionBottomMargin type="Number" default="2" />
 		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
 		<selectionColour type="Graphics.colours" default="LIGHT_BLUE" />
 		<selectionRadius type="Number" default="2" />

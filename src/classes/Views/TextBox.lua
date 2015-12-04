@@ -41,7 +41,7 @@ class "TextBox" extends "View" {
 	maxScroll = Number( 0 );
 	cursorPosition = 1;
 	maximumLength = false;
-	selectionPosition = false;
+	selectionPosition = Number.allowsNil;
 
 }
 
@@ -80,8 +80,12 @@ function TextBox:onDraw()
     if isFocused then
     	local fontHeight = font.height
     	if self.selectionVisible then
-    		local selectionMask = RoundedRectangleMask( leftMargin + 1 + self.selectionX - scroll, math.floor( fontHeight / 2 ), self.selectionWidth, fontHeight + 1, theme:value( "selectionRadius" ) )
-    		canvas:fill( theme:value( "selectionColour" ), selectionMask )
+    		local selectionWidth = self.selectionWidth
+    		if selectionWidth > 0 then
+	    		local selectionLeftMargin, selectionRightMargin, selectionTopMargin, selectionBottomMargin = theme:value( "selectionLeftMargin" ), theme:value( "selectionRightMargin" ), theme:value( "selectionTopMargin" ), theme:value( "selectionBottomMargin" )
+	    		local selectionMask = RoundedRectangleMask( leftMargin + 1 + self.selectionX - scroll - selectionLeftMargin, math.floor( fontHeight / 2 ) - selectionTopMargin, selectionWidth + selectionLeftMargin + selectionRightMargin, fontHeight + selectionTopMargin + selectionBottomMargin, theme:value( "selectionRadius" ) )
+	    		canvas:fill( theme:value( "selectionColour" ), selectionMask )
+	    	end
     	end
 
     	local cursorPosition = self.cursorPosition
@@ -94,34 +98,6 @@ function TextBox:onDraw()
 
     canvas:fill( theme:value( "textColour" ),  roundedRectangle:intersect( TextMask( leftMargin + 1 - scroll, topMargin + 1, font:getWidth( text ), height - topMargin - bottomMargin, text, font ) ) )
     canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
-
-    -- self.shadowSize = shadowSize
-
-  --   local cursorX = leftMargin + math.max( self:charToViewCoords( cursorPosition ) - 1, 1 ) - self.scroll
-		-- local selectionX = leftMargin + math.max( self:charToViewCoords( selectionPosition ) - 1, 1 ) - self.scroll
-
-		-- if not isVisible then selectionObject.isVisible = true end
-
-		-- local x, width, f
-		-- if cursorX == selectionX then
-		-- 	-- if isVisible then selectionObject.isVisible = false end
-		-- 	local _x, _width = selectionObject.x, selectionObject.width
-		-- 	x = math.floor( _x + _width / 2 )
-		-- 	width = 0
-		-- 	f = function() selectionObject.isVisible = false end
-		-- else
-		-- 	x = math.min( cursorX, selectionX )
-		-- 	width = math.max( cursorX, selectionX ) - x
-		-- end
-
-		-- if not isVisible then
-		-- 	selectionObject.x = x
-		-- 	selectionObject.width = width
-		-- else
-		-- 	self:animate( "selectionX", x, CURSOR_ANIMATION_SPEED, f, Animation.easings.OUT_QUART )
-		-- 	self:animate( "selectionWidth", width, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
-		-- end
-
 end
 
 function TextBox:update( deltaTime )
@@ -170,7 +146,6 @@ function TextBox:viewToCharCoords( x )
 	local text = self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text
 	for i = 1, #text do
 		local characterWidth = getWidth( font, text:sub( i, i ), true )
-		log(text:sub( i, i ))
 		if x <= characterWidth / 2 then
 			return i
 		end
@@ -203,20 +178,22 @@ function TextBox.cursorPosition:set( cursorPosition )
 	-- 	self.scroll = self:charToViewCoords( cursorPosition ) - ( self.width - self.leftMargin - self.rightMargin )
 	-- end
 
+	self:updateSelection()
 	self:updateCursorPosition()
 end
 
 function TextBox:updateCursorPosition()
-	local value = math.max( self:charToViewCoords( self.selectionPosition or self.cursorPosition ) - 1, 1 )
+	local value = math.max( self:charToViewCoords( self.selectionPosition or self.cursorPosition ) - 1, 0 )
 	self:animate( "cursorX", value, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
 end
 
 function TextBox:updateSelection()
 	local selectionPosition = self.selectionPosition
 	local isVisible = self.selectionVisible
-	local cursorX = math.max( self:charToViewCoords( self.cursorPosition ) - 1, 1 )
-	local selectionX = selectionPosition and math.max( self:charToViewCoords( selectionPosition ) - 1, 1 )
-	if not isVisible then
+	local cursorX = math.max( self:charToViewCoords( self.cursorPosition ) - 1, 0 )
+	local selectionX = selectionPosition and math.max( self:charToViewCoords( selectionPosition ) - 1, 0 )
+	log("c "..cursorX.." s "..tostring(selectionX))
+	if not isVisible and selectionPosition then
 		if selectionX then self.selectionX = selectionX end
 		self.selectionVisible = true
 	end
@@ -291,7 +268,7 @@ function TextBox:write( text )
 		selectionPosition = selectionPosition - 1
 		self.text = text:sub( 1, math.min( cursorPosition, selectionPosition ) - 1 ) .. s .. text:sub( math.max( cursorPosition, selectionPosition ) + 1 )
 		self.cursorPosition =  math.min( cursorPosition, selectionPosition ) + #s
-		self.selectionPosition = false
+		self.selectionPosition = nil
 	else
 		self.text = text:sub( 1, cursorPosition - 1 ) .. s .. text:sub( cursorPosition )
 		self.cursorPosition =  cursorPosition + #s
@@ -394,9 +371,8 @@ end
 function TextBox:onMouseDown( Event event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = true
+		self.selectionPosition = nil
 		self.cursorPosition = self:viewToCharCoords( event.x )
-		log(self.cursorPosition)
-		self.selectionPosition = false
 	end
 	return true
 end
