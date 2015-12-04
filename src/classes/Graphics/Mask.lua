@@ -20,7 +20,6 @@ local function shapeMode( self, mask, func )
             pixels[(_y - 1) * width + _x] = func( selfPixel, maskPixel )
         end
     end
-    -- print(textutils.serialize(pixels))
     return Mask( x, y, width, height, pixels )
 end
 

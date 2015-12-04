@@ -110,13 +110,15 @@
 
 	<ProgressBar>
 		<cornerRadius type="Number" default="4" />
-		<stripeWidth type="Number" default="4" />
 		<outlineThickness type="Number" default="1" />
 		<fillColour type="Graphics.colours" default="WHITE" disabled="WHITE"/>
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY"/>
-		<barColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
-		<stripeColour type="Graphics.colours" default="LIGHT_BLUE" disabled="LIGHT_GREY"/>
+		<barFillColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
 		<barOutlineColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
+		<indeterminateFillColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
+		<indeterminateStripeColour type="Graphics.colours" default="LIGHT_BLUE" disabled="LIGHT_GREY"/>
+		<indeterminateStripeWidth type="Number" default="7" />
+		<indeterminateOutlineColour type="Graphics.colours" default="BLUE" disabled="GREY"/>
 	</ProgressBar>
 
 	<Window>

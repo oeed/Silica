@@ -14,75 +14,34 @@ class "ProgressBar" extends "View" {
 
 }
 
---[[
-    @desc Sets up the canvas and it's graphics objects
-]]
--- function ProgressBar:initialiseCanvas()
---     self:super()
---     local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
---     local stripesObject = self.canvas:insert( ProgressBarStripes( 1, 1, math.floor( ( self.value/self.maximum ) * self.width + 0.5 ), self.height, self.theme.barColour, self.theme.barColour, self.theme.stripeColour, self.theme.cornerRadius ) )
---     self.theme:connect( backgroundObject, "fillColour" )
---     self.theme:connect( backgroundObject, "outlineColour" )
---     self.theme:connect( backgroundObject, "radius", "cornerRadius" )
---     self.theme:connect( stripesObject, "fillColour", "barColour" )
---     self.theme:connect( stripesObject, "outlineColour", "barColour" )
---     self.theme:connect( stripesObject, "stripeColour" )
---     self.theme:connect( stripesObject, "radiusLeft", "cornerRadius" )
-
---     self.backgroundObject = backgroundObject
---     self.stripesObject = stripesObject
--- end
-
 function ProgressBar:onDraw()
-    local start = collectgarbage("count")
-    -- print("start "..start)
-    local width, height, theme, canvas, isPressed = self.width, self.height, self.theme, self.canvas
-    local isIndeterminate, value = self.isIndeterminate, self.value
-    local barWidth = isIndeterminate and width or math.floor( ( value / self.maximum ) * width + 0.5 )
-    isIndeterminate = isIndeterminate or barWidth >= width
+    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
+    local isIndeterminate = self.isIndeterminate
 
     -- background shape
-    local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
-    local stripeMask = barWidth > 0 and StripeMask( 1, 1, barWidth, height, self.animationStep, theme:value( "stripeWidth" ) )
-
-    if not isIndeterminate then
-        canvas:fill( theme:value( "fillColour" ), roundedRectangle )
-    end
+    local outlineThickness, cornerRadius = theme:value( "outlineThickness" ), theme:value( "cornerRadius" )
+    local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, cornerRadius )
 
     if isIndeterminate then
-        canvas:fill( theme:value( "barColour" ), roundedRectangle )
+        canvas:fill( theme:value( "indeterminateFillColour" ), roundedRectangle )
+        canvas:fill( theme:value( "indeterminateStripeColour" ), roundedRectangle:subtract( StripeMask( 1, 1, width, height, self.animationStep, theme:value( "indeterminateStripeWidth" ) ) ) )
+        canvas:outline( theme:value( "indeterminateOutlineColour" ), roundedRectangle, outlineThickness )
+    else
+        local barWidth = math.floor( ( self.value / self.maximum ) * width + 0.5 )
+        if barWidth >= width then
+            canvas:fill( theme:value( "barFillColour" ), roundedRectangle )
+            canvas:outline( theme:value( "barOutlineColour" ), roundedRectangle, outlineThickness )
+        else
+            canvas:fill( theme:value( "fillColour" ), roundedRectangle )
+            canvas:outline( theme:value( "outlineColour" ), roundedRectangle, outlineThickness )
+
+            local barMask = RoundedRectangleMask( 1, 1, barWidth, height, cornerRadius, 0 )
+            canvas:fill( theme:value( "barFillColour" ), barMask )
+            canvas:outline( theme:value( "barOutlineColour" ), barMask, outlineThickness, outlineThickness, 0 )
+        end
     end
-
-
-    -- local rectOne = RectangleMask( 6, 1, 5, 5 )
-    -- local rectTwo = RectangleMask( 8, 3, 5, 5 )
-    -- canvas:fill( colours.red, rectOne )
-    -- canvas:fill( colours.green, rectTwo )
-    -- canvas:fill( colours.yellow, rectOne:exclude( rectTwo ) )
-    canvas:fill( theme:value( "stripeColour" ), roundedRectangle:subtract( stripeMask ) )
-
-    if isIndeterminate then
-        canvas:outline( theme:value( "barOutlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
-    end
-    -- canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
-
-
-    -- local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
-    -- text
-    -- canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + shadowX + 1, topMargin + 1 + shadowOffset, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, self.font ) )
-    -- log("Draw stop "..collectgarbage("count") - start)
 end
  
--- function ProgressBar:updateWidth( width )
---     self.backgroundObject.width = width
---     self.stripesObject.width = math.floor( ( self.value/self.maximum ) * width + 0.5 )
--- end
-
--- function ProgressBar:updateHeight( height )
---     self.backgroundObject.height = height
---     self.stripesObject.height = height
--- end
-
 function ProgressBar.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self.theme.style = self.isEnabled and "default" or "disabled"
@@ -94,7 +53,6 @@ end
 ]]
 function ProgressBar.value:set( value )
     self.value = math.min( math.max( value, 0 ), self.maximum )
-    -- self.stripesObject.width = math.floor( ( self.value / self.maximum ) * self.width + 0.5 )
 end
 
 --[[
@@ -103,7 +61,6 @@ end
 ]]
 function ProgressBar.maximum:set( maximum )
     self.maximum = math.max( maximum, 0 )
-    -- self.stripesObject.width = math.floor( ( self.value / self.maximum ) * self.width + 0.5 )
 end
 
 function ProgressBar.animationStep:set( animationStep )
@@ -113,7 +70,6 @@ function ProgressBar.animationStep:set( animationStep )
         self.animationStep = animationStep
         self.needsDraw = true
     end
-    -- self.stripesObject.width = math.floor( ( self.value / self.maximum ) * self.width + 0.5 )
 end
 
 --[[
