@@ -192,7 +192,7 @@ function Font.static:decodeHandle( h )
 	end
 end
 
-function Font:getWidth( text )
+function Font:getWidth( text, withLastSpace )
 	if not text then return 0 end
 	local width = 0
 	local scale, characters, desiredHeight, spacing = self.scale, self.characters, self.desiredHeight, self.spacing
@@ -207,7 +207,7 @@ function Font:getWidth( text )
 		end
 		width = width + bitmap.width * scale + spacing * scale
 	end
-	return width - spacing * scale
+	return width - ( withLastSpace and 0 or spacing * scale )
 end
 
 function Font:getRawWidth( text )
