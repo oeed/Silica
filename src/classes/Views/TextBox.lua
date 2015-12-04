@@ -11,7 +11,7 @@
 		Ctrl-a
 ]]
 
-local CURSOR_ANIMATION_SPEED = 0.45
+local CURSOR_ANIMATION_SPEED = 0.4
 
 local sub = string.sub -- move to top
 local concat = table.concat
