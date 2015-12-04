@@ -97,7 +97,7 @@ end
 	@param [number] time -- the time point
 	@return [boolean] isComplete -- whether the animation is complete
 ]]
-function Animation.time:set( time )
+function Animation:setTime( time )
 	assert( type(time ) == "number" and time >= 0, "time must be a positive number or 0")
 
     local duration
