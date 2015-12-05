@@ -134,11 +134,17 @@
 	<Window>
 		<topCornerRadius type="Number" default="4" />
 		<bottomCornerRadius type="Number" default="2" />
-		<barColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY" />
-		<separatorColour type="Graphics.colours" default="GREY" disabled="LIGHT_GREY" />
+		<fillColour type="Graphics.colours" default="WHITE" />
+		<barFillColour type="Graphics.colours" default="LIGHT_GREY" disabled="LIGHT_GREY" />
+		<separatorColour type="Graphics.colours" default="GREY" disabled="TRANSPARENT" />
+		<separatorThickness type="Number" default="1" />
 		<textColour type="Graphics.colours" default="BLACK" disabled="GREY"/>
-		<shadowColour type="Graphics.colours" default="GREY" />
+		<shadowSize type="Number" default="4" disabled="2" />
 	</Window>
+
+	<WindowContainer>
+		<fillColour type="Graphics.colours" default="RED" />
+	</WindowContainer>
 	
 	<CloseWindowButton>
 		<fillColour type="Graphics.colours" default="RED" pressed="RED" disabled="TRANSPARENT"/>
