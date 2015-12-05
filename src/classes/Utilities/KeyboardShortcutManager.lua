@@ -94,7 +94,7 @@ end
 	@return [string] keyString -- the string value of the key
 ]]
 function KeyboardShortcutManager.static:convert( keyCode )
-	return keyStrings[keyCode]
+	return keyStrings[keyCode] or "unknown"
 end
 
 --[[
