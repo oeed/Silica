@@ -1,12 +1,13 @@
 
+local BUTTON_DIAMETER = 5
+
 class "WindowButton" extends "View" {
 
 	width = Number( 9 );
-	height = Number( 7 );
+	height = Number( 9 );
     isPressed = Boolean( false );
-    backgroundObject = false;
-    symbolObject = false;
-    window = false;
+
+    window = Window;
 
 }
 
@@ -23,17 +24,15 @@ end
 
 function WindowButton:initialiseCanvas()
 	self:super()
+end
 
-    local backgroundObject = self.canvas:insert( Circle( 3, 2, 5, 5 ) )
-    self.theme:connect( backgroundObject, "fillColour" )
-    -- local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height ) )
+function WindowButton:onDraw()
+    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
 
-    self.theme:connect( backgroundObject, "outlineColour" )
-    -- self.theme:connect( backgroundObject, "topLeftRadius", "cornerRadius" )
-
-
-
-    self.backgroundObject = backgroundObject
+    local diameter = theme:value( "diameter" )
+    local circleMask = CircleMask( 1 + math.ceil( ( width - diameter ) / 2 ), 1 + math.ceil( ( height - diameter ) / 2 ), diameter )
+    canvas:fill( theme:value( "fillColour" ), circleMask )
+    canvas:outline( theme:value( "outlineColour" ), circleMask, theme:value( "outlineThickness" ) )
 end
 
 function WindowButton:updateThemeStyle()

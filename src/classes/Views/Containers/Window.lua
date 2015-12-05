@@ -31,9 +31,9 @@ class "Window" extends "Container" {
 ]]
 function Window:initialise( ... )
 	self:super( ... )
-    -- self.closeButton = self:insert( CloseWindowButton( { x = 1, y = 1, window = self } ))
-    -- self.minimiseButton = self:insert( MinimiseWindowButton( { x = 9, y = 1, window = self } ))
-    -- self.maximiseButton = self:insert( MaximiseWindowButton( { x = 17, y = 1, window = self } ))
+    self.closeButton = self:insert( CloseWindowButton( { x = 2, y = 1, window = self } ))
+    self.minimiseButton = self:insert( MinimiseWindowButton( { x = 10, y = 1, window = self } ))
+    self.maximiseButton = self:insert( MaximiseWindowButton( { x = 18, y = 1, window = self } ))
 
     self:loadInterface()
     
