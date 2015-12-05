@@ -68,6 +68,7 @@ function TextBox:initialise( ... )
 	self:event( MouseDragEvent, self.onMouseDrag )
 	self:event( MouseScrollEvent, self.onMouseScroll )
     self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
+    self:event( MouseDoubleClickEvent, self.onMouseDoubleClick )
 	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
@@ -187,12 +188,6 @@ function TextBox.cursorPosition:set( cursorPosition )
 	cursorPosition = math.max( math.min( cursorPosition, #self.text + 1 ), 1 )
 	self.cursorPosition = cursorPosition
 	self.cursorFlashCounter = 0
-	-- if self:charToViewCoords( cursorPosition ) - self.scroll < 1 then
-	-- 	self.scroll = self:charToViewCoords( cursorPosition ) - 1
-	-- elseif self:charToViewCoords( cursorPosition ) - self.scroll > ( self.width - self.leftMargin - self.rightMargin ) then
-	-- 	self.scroll = self:charToViewCoords( cursorPosition ) - ( self.width - self.leftMargin - self.rightMargin )
-	-- end
-
 	self:updateSelection()
 	self:updateCursorPosition()
 end
@@ -318,25 +313,6 @@ function TextBox:write( text )
 end
 
 --[[
-	@desc Returns the character at the given character position
-	@param [number] characterPosition -- the character position
-	@return [string] character -- the character
-]]
-function TextBox:charCoordsToChar( characterPosition )
-	return character -- TODO: is this needed??
-end
-
---[[
-	@desc Converts the character position to screen coordinates
-	@param [number] characterPosition -- the position of the character
-	@return [number] x -- the x coordinate realtive to the text box
-	@return [number] y -- the y coordinate realtive to the text box
-]]
-function TextBox:charCoordsToViewCoordinates( characterPosition )
-	return x, y
-end
-
---[[
 	@desc Set the text of the text box.
 	@param [string] text -- the text of the text box
 ]]
@@ -405,6 +381,18 @@ function TextBox:onMouseUp( Event event, Event.phases phase )
 	return true
 end
 
+function TextBox:onMouseDoubleClick( Event event, Event.phases phase )
+    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+		log("double click")
+    	local left, right = self:wordPosition( self:viewToCharCoords( event.x ), SELECTION_DIRECTIONS.BOTH )
+    	if left ~= right then
+	    	self.selectionPosition = right
+	    	self.cursorPosition = left
+	    end
+    end
+    return true
+end
+
 --[[
 	@desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
 	@param [MouseDownEvent] event -- the mouse down event
@@ -412,6 +400,7 @@ end
 ]]
 function TextBox:onMouseDown( Event event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+		log("mouse down")
 		self.isPressed = true
 		if self.application.keyboardShortcutManager:isOnlyKeyDown( "shift" ) then
 			self.selectionPosition = self:viewToCharCoords( event.x )
@@ -565,12 +554,6 @@ function TextBox:onKeyboardShortcut( Event event, Event.phases phase )
         	self.selectionPosition = nil
         	self.cursorPosition = 1
         	self.text = self.text:sub( cursorPosition )
-        elseif event:matchesKeys( { "ctrl", "home" } ) then
-        	self.cursorPosition = 1
-        	self.selectionPosition = #self.text + 1
-        elseif event:matchesKeys( { "ctrl", "end" } ) then
-        	self.cursorPosition = 1
-        	self.selectionPosition = #self.text + 1
         else
             return false
         end
