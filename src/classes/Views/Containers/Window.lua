@@ -139,7 +139,7 @@ Window:alias( Window.centre, "center" )
 ]]
 function Window:focus()
     if not self.isEnabled then
-        self.application:clearFocus( Window )
+        self.application:unfocusAll( Window )
         self.isEnabled = true
         self.parent:sendToFront( self )
         for i, sibling in ipairs( self:siblingsOfType( Window ) ) do
