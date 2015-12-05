@@ -1,9 +1,6 @@
 
 class "Window" extends "Container" {
 
-	-- separatorObject = false;	
-	-- shadowObject = false;
-	-- barObject = false;
 	barHeight = 7;
 
 	container = false;
@@ -34,9 +31,9 @@ class "Window" extends "Container" {
 ]]
 function Window:initialise( ... )
 	self:super( ... )
-    self.closeButton = self:insert( CloseWindowButton( { x = 1, y = 1, window = self } ))
-    self.minimiseButton = self:insert( MinimiseWindowButton( { x = 9, y = 1, window = self } ))
-    self.maximiseButton = self:insert( MaximiseWindowButton( { x = 17, y = 1, window = self } ))
+    -- self.closeButton = self:insert( CloseWindowButton( { x = 1, y = 1, window = self } ))
+    -- self.minimiseButton = self:insert( MinimiseWindowButton( { x = 9, y = 1, window = self } ))
+    -- self.maximiseButton = self:insert( MaximiseWindowButton( { x = 17, y = 1, window = self } ))
 
     self:loadInterface()
     
@@ -47,26 +44,20 @@ function Window:initialise( ... )
     self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
 end
 
---[[
-    @desc Sets up the canvas and it's graphics objects
-]]
-function Window:initialiseCanvas()
-    self:super()
-    -- self.canvas.fillColour = Graphics.colours.GREEN
-	local barHeight = self.barHeight
-    local shadowObject = self.canvas:insert( RoundedRectangle( 3, 4, self.width - 2, self.height - 3 ) )
-    local barObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 2, barHeight ) )
-    local separatorObject = self.canvas:insert( Rectangle( 1, barHeight + 1, self.width - 2, 1 ) )
+function Window:onDraw()
+    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
 
-    self.theme:connect( barObject, "fillColour", "barColour" )
-    self.theme:connect( barObject, "topRadius", "topCornerRadius" )
-    self.theme:connect( separatorObject, "fillColour", "separatorColour" )
-    self.theme:connect( shadowObject, "topRadius", "topCornerRadius" )
-    self.theme:connect( shadowObject, "bottomRadius", "bottomCornerRadius" )
-    self.theme:connect( shadowObject, "fillColour", "shadowColour" )
-    self.shadowObject = shadowObject
-	self.barObject = barObject
-	self.separatorObject = separatorObject
+    local barHeight = 10
+    local topCornerRadius, bottomCornerRadius = theme:value( "topCornerRadius" ), theme:value( "bottomCornerRadius" )
+    local barRoundedRectangle = RoundedRectangleMask( 1, 1, width, barHeight, topCornerRadius, topCornerRadius, 0, 0 )
+    canvas:fill( theme:value( "barFillColour" ), barRoundedRectangle )
+    canvas:outline( theme:value( "separatorColour" ), barRoundedRectangle, 0, 0, 0, theme:value( "separatorThickness" ) )
+
+    local contentMask = RoundedRectangleMask( 1, 1 + barHeight, width, height - barHeight, 0, 0, bottomCornerRadius, bottomCornerRadius )
+    canvas:fill(  theme:value( "fillColour" ), contentMask )
+
+    self.shadowSize = theme:value( "shadowSize" )
+    return contentMask:add( barRoundedRectangle )
 end
 
 --[[
@@ -83,46 +74,46 @@ function Window:loadInterface()
         container.width = width
         container.height = height
         self.container = self:insert( container )
-    else
-        self.container = self:insert( WindowContainer( { x = x, y = y, width = width, height = height } ) )
     end
 end
 
 function Window.height:set( height )
     height = math.max( math.min( height, self.maxHeight ), self.minHeight )
-    self:super( height )
-    self.shadowObject.height = height - 3
-    local container = self.container
-    if container then container.height = height - self.barHeight - 5 end
+    if self.height ~= height then
+        self:super( height )
+        local container = self.container
+        if container then container.height = height - self.barHeight - 5 end
+    end
 end
 
 function Window.width:set( width )
     width = math.max( math.min( width, self.maxWidth ), self.minWidth )
-    self:super( width )
-    self.shadowObject.width = width - 2
-    self.barObject.width = width - 2
-    self.separatorObject.width = width - 2
-    local container = self.container
-    if container then container.width = width - 2 end
+    if self.width ~= width then
+        self:super( width )
+        local container = self.container
+        if container then container.width = width - 2 end
+    end
 end
 
 function Window:onInterfaceLoaded( Event event, Event.phases phase )
     local currentContainer = self.container
     for i, childView in ipairs( self.children ) do
-        if childView ~= currentContainer and childView:typeOf( WindowContainer ) then
-            childView.x = 1
-            childView.y = self.barHeight + 2
-            childView.width = self.width - 2
-            childView.height = self.height - self.barHeight - 5
-            self:remove( self.container )
-            self.container = childView
-            break
+        if childView:typeOf( WindowContainer ) then
+            if childView ~= currentContainer then
+                childView.x = 1
+                childView.y = 11
+                childView.width = self.width
+                childView.height = self.height - 10
+                self.container = childView
+            end
+            return
         end
     end
+    self.container = self:insert( WindowContainer( { x = x, y = y, width = width, height = height } ) )
 end
 
 function Window:updateThemeStyle()
-    self.theme.style = self.isEnabled and "default" or "disabled"
+    self.theme.style = "default"--self.isEnabled and "default" or "disabled"
 end
 
 function Window.isEnabled:set( isEnabled )
