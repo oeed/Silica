@@ -46,7 +46,6 @@ function MenuBarItem:onReady( ReadyInterfaceEvent event, Event.phases phase  )
         MenuNotSpecifiedException( "A MenuBarItem did not specifiy the property 'menuName'. MenuButtons must specify this property as it indicates what inteface file to load the menu from.", 0 )
     end
     local parent = self.parent
-    log("Ready: " .. tostring(parent))
     menu = Menu.static:fromInterface( menuName )
     menu.owner = self
     menu.isSingleShot = false

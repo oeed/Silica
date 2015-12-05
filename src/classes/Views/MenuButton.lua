@@ -76,51 +76,7 @@ function MenuButton.y:set( y )
         menu.y = y + self.theme:value( "menuOffsetY" )
     end
 end
-
-
--- TODO: update menu location
--- function MenuButton:updateX( x )
---     local menu = self.menu
---     if menu then
---         menu.x = self.x - 5
---     end
--- end
-
--- function MenuButton:updateY( y )
---     local menu = self.menu
---     if menu then
---         menu.y = self.y + 5
---     end
--- end
-
--- function MenuButton:updateHeight( height )
---     self.needsArrowUpdate = true
--- end
-
--- function MenuButton:initialiseCanvas()
---     self:super()
---     local arrowX, arrowY = self.width - 12, math.ceil( ( self.height - 4 ) / 2 )
-
---     local closeArrowObject = Path( 1, 1, 7, 4, 1, 4 )
---     closeArrowObject:lineTo( 4, 1 )
---     closeArrowObject:lineTo( 7, 4 )
---     closeArrowObject:close( false )
---     closeArrowObject.isVisible = false
---     self.closeArrowObject = closeArrowObject
---     self.canvas:insert( closeArrowObject )
-
---     local openArrowObject = Path( 1, 1, 7, 4, 1, 1 )
---     openArrowObject:lineTo( 4, 4 )
---     openArrowObject:lineTo( 7, 1 )
---     openArrowObject:close( false )
---     self.openArrowObject = openArrowObject
---     self.canvas:insert( openArrowObject )
-
---     self.theme:connect( closeArrowObject, "outlineColour", "arrowColour" )
---     self.theme:connect( openArrowObject, "outlineColour", "arrowColour" )
---     self.needsArrowUpdate = true
--- end
-
+ 
 --[[
     @desc Whether the button is pressed or open
     @return [boolean] isActive -- whether the button is active
@@ -136,26 +92,6 @@ end
 function MenuButton:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or ( self.isActive and "active" or "default" ) ) or "disabled"
 end
-
---[[
-    @desc Description
-    @param [type] arg1 -- description
-    @param [type] arg2 -- description
-    @param [type] arg3 -- description
-    @return [type] returnedValue -- description
-]]
--- function MenuButton:updateArrows()
---     local menu = self.menu
---     local isOpen = menu and menu.isOpen
---     local arrowX, arrowY = self.width - 12, math.ceil( ( self.height - 4 ) / 2 ) + 1
---     local activeArrow = isOpen and self.closeArrowObject or self.openArrowObject
---     local inactiveArrow = isOpen and self.openArrowObject or self.closeArrowObject
---     activeArrow.isVisible = true
---     inactiveArrow.isVisible = false
---     activeArrow.x = arrowX + ( self.isPressed and 1 or 0 )
---     activeArrow.y = arrowY + ( self.isPressed and 1 or 0 )
---     self.needsArrowUpdate = false
--- end
 
 --[[
     @desc Fired when the mouse is released while over the button. Toggles the menu if it hit tests.
