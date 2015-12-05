@@ -306,8 +306,9 @@ function TextBox:write( text )
 	local text = self.text
 	local cursorPosition, selectionPosition = self.cursorPosition, self.selectionPosition
 	if selectionPosition then
-		selectionPosition = selectionPosition - 1
-		self.text = text:sub( 1, math.min( cursorPosition, selectionPosition ) - 1 ) .. s .. text:sub( math.max( cursorPosition, selectionPosition ) + 1 )
+		-- selectionPosition = selectionPosition - 1
+		local left, right = math.min( cursorPosition, selectionPosition ), math.max( cursorPosition, selectionPosition )
+		self.text = text:sub( 1, left - 1 ) .. s .. text:sub( right )
 		self.selectionPosition = nil
 		self.cursorPosition =  math.min( cursorPosition, selectionPosition ) + #s
 	else
