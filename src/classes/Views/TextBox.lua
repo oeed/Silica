@@ -406,8 +406,12 @@ end
 function TextBox:onMouseDown( Event event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = true
-		self.selectionPosition = nil
-		self.cursorPosition = self:viewToCharCoords( event.x )
+		if self.application.keyboardShortcutManager:isOnlyKeyDown( "shift" ) then
+			self.selectionPosition = self:viewToCharCoords( event.x )
+		else
+			self.selectionPosition = nil
+			self.cursorPosition = self:viewToCharCoords( event.x )
+		end
 	end
 	return true
 end
