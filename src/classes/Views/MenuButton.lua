@@ -34,8 +34,9 @@ function MenuButton:onReady( ReadyInterfaceEvent event, Event.phases phase  )
     menu.isSingleShot = false
     menu.isVisible = false
     menu.hitTestOwner = true
-    menu.x = self.x + self.theme:value( "menuOffsetX" )
-    menu.y = self.y + self.theme:value( "menuOffsetY" )
+    local theme =self.theme
+    menu.x = self.x + theme:value( "menuOffsetX" )
+    menu.y = self.y + theme:value( "menuOffsetY" )
     self.menu = menu
     self.parent:insert( menu )
 end
