@@ -403,7 +403,9 @@ function View:onMouseDownMetaEvents( Event event, Event.phases phase )
 	local thisLastMouseDown = lastMouseDown[mouseButton]
 	if thisLastMouseDown and time - thisLastMouseDown < MAX_DOUBLE_CLICK_TIME then
 		-- double click
-		self.event:handleEvent( MouseDoubleClickEvent( mouseButton, event.x, event.y, event.globalX, event.globalY ) )
+		if self.event:handleEvent( MouseDoubleClickEvent( mouseButton, event.x, event.y, event.globalX, event.globalY ) ) then
+			return true
+		end
 	else
 		
 		-- start a held timer
@@ -418,7 +420,9 @@ function View:onMouseDownMetaEvents( Event event, Event.phases phase )
 			lastMouseDown.timer = nil
 			local thisLastMouseUp = lastMouseUp[mouseButton]
 			if not thisLastMouseUp or thisLastMouseUp < time then
-				self.event:handleEvent( MouseHeldEvent( mouseButton, x, y, globalX, globalY ) )
+				if self.event:handleEvent( MouseHeldEvent( mouseButton, x, y, globalX, globalY ) ) then
+					return true
+				end
 			end
 		end, MIN_MOUSE_HOLD_TIME )
 		n = lastMouseDown.timer
