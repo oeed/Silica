@@ -223,8 +223,8 @@ function TextBox:updateSelection()
 		x = math.min( cursorX, selectionX )
 		width = math.max( cursorX, selectionX ) - x
 	end
-	self:animate( "selectionX", x, CURSOR_ANIMATION_SPEED, f, CURSOR_ANIMATION_EASING )
-	self:animate( "selectionWidth", width, CURSOR_ANIMATION_SPEED, nil, CURSOR_ANIMATION_EASING )
+	self:animate( "selectionX", x, CURSOR_ANIMATION_SPEED, nil, CURSOR_ANIMATION_EASING )
+	self:animate( "selectionWidth", width, CURSOR_ANIMATION_SPEED, f, CURSOR_ANIMATION_EASING )
 end
 
 --[[
@@ -383,7 +383,6 @@ end
 
 function TextBox:onMouseDoubleClick( Event event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
-		log("double click")
     	local left, right = self:wordPosition( self:viewToCharCoords( event.x ), SELECTION_DIRECTIONS.BOTH )
     	if left ~= right then
 	    	self.selectionPosition = right
@@ -400,7 +399,6 @@ end
 ]]
 function TextBox:onMouseDown( Event event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
-		log("mouse down")
 		self.isPressed = true
 		if self.application.keyboardShortcutManager:isOnlyKeyDown( "shift" ) then
 			self.selectionPosition = self:viewToCharCoords( event.x )
