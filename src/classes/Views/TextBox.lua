@@ -442,18 +442,17 @@ function TextBox:onKeyDown( Event event, Event.phases phase )
 	if self.isFocused then
 		local keyCode = event.keyCode
 		local text = self.text
+		local cursorPosition = self.cursorPosition
+		local selectionPosition = self.selectionPosition
 
 		if keyCode == keys.backspace then
-			if self.selectionPosition then
+			if selectionPosition then
 				self:write ""
-			elseif self.cursorPosition > 1 then
-				self.text = text:sub( 1, self.cursorPosition - 2 ) .. text:sub( self.cursorPosition )
-				self.cursorPosition = self.cursorPosition - 1
+			elseif cursorPosition > 1 then
+				self.text = text:sub( 1, cursorPosition - 2 ) .. text:sub( cursorPosition )
+				self.cursorPosition = cursorPosition - 1
 			end
 		elseif keyCode == keys.left then
-			local selectionPosition = self.selectionPosition
-			local cursorPosition = self.cursorPosition
-
 			if selectionPosition then
 				self.selectionPosition = nil
 				self.cursorPosition = math.min( cursorPosition, selectionPosition )
@@ -461,21 +460,18 @@ function TextBox:onKeyDown( Event event, Event.phases phase )
 				self.cursorPosition = cursorPosition - 1
 			end
 		elseif keyCode == keys.right then
-			local selectionPosition = self.selectionPosition
-			local cursorPosition = self.cursorPosition
-
 			if selectionPosition then
 				self.selectionPosition = nil
 				self.cursorPosition = math.max( cursorPosition, selectionPosition )
 			else
 				self.cursorPosition = cursorPosition + 1
 			end
-		elseif keyCode == keys["end"] then
-
-		elseif keyCode == keys.home then
-
 		elseif keyCode == keys.delete then
-
+			if selectionPosition then
+				self:write ""
+			elseif cursorPosition < #text + 1 then
+				self.text = text:sub( 1, cursorPosition - 1 ) .. text:sub( cursorPosition + 1 )
+			end
 		end
 	end
 end
@@ -500,11 +496,8 @@ function TextBox:wordPosition( Number fromPosition, Number direction, Boolean( t
 		local offset = 0
 		for i = from, to, dir do
 			local char = text:sub( i - 1, i - 1 )
-			log(char)
 			local isPunctuation = char:match( "%p" )
-			log(isPunctuation)
 			if i ~= from and ( char:match( "[%s%c]" ) or ( not allowMiddlePunctuation and isPunctuation ) ) then
-				log("Break on '"..char.."'")
 				return i - offset
 			elseif allowMiddlePunctuation and isPunctuation then
 				offset = dir
