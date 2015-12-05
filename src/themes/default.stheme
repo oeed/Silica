@@ -140,6 +140,8 @@
 		<separatorThickness type="Number" default="1" />
 		<textColour type="Graphics.colours" default="BLACK" disabled="GREY"/>
 		<shadowSize type="Number" default="4" disabled="2" />
+		<outlineThickness type="Number" default="1" />
+		<outlineColour type="Graphics.colours" default="TRANSPARENT"/>
 	</Window>
 
 	<WindowContainer>

@@ -1,8 +1,6 @@
 
 class "Window" extends "Container" {
 
-	barHeight = 7;
-
 	container = false;
     closeButton = false;
     minimiseButton = false;
@@ -55,9 +53,11 @@ function Window:onDraw()
 
     local contentMask = RoundedRectangleMask( 1, 1 + barHeight, width, height - barHeight, 0, 0, bottomCornerRadius, bottomCornerRadius )
     canvas:fill(  theme:value( "fillColour" ), contentMask )
+    local combinedMask = contentMask:add( barRoundedRectangle )
+    canvas:outline(  theme:value( "outlineColour" ), combinedMask, theme:value( "outlineThickness" ) )
 
     self.shadowSize = theme:value( "shadowSize" )
-    return contentMask:add( barRoundedRectangle )
+    return combinedMask
 end
 
 --[[
@@ -113,7 +113,7 @@ function Window:onInterfaceLoaded( Event event, Event.phases phase )
 end
 
 function Window:updateThemeStyle()
-    self.theme.style = "default"--self.isEnabled and "default" or "disabled"
+    self.theme.style = self.isEnabled and "default" or "disabled"
 end
 
 function Window.isEnabled:set( isEnabled )
@@ -127,8 +127,8 @@ end
 function Window:centre()
     local parent = self.parent
     if parent then
-        self.x = math.ceil( ( parent.width - self.width ) / 2)
-        self.y = math.ceil( ( parent.height - self.height ) / 2)
+        self.x = math.ceil( ( parent.width - self.width ) / 2 )
+        self.y = math.ceil( ( parent.height - self.height ) / 2 )
     end
 end
 
