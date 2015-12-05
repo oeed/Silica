@@ -62,12 +62,12 @@
 	</MenuButton>
 	
 	<MenuItem>
-		<topMargin type="Number" default="2" />
+		<topMargin type="Number" default="3" />
 		<bottomMargin type="Number" default="2" />
-		<leftMargin type="Number" default="6" />
-		<rightMargin type="Number" default="6" />
+		<leftMargin type="Number" default="10" />
+		<rightMargin type="Number" default="10" />
 		<shortcutMargin type="Number" default="6" />
-	<fillColour type="Graphics.colours" default="TRANSPARENT" pressed="BLUE" disabled="TRANSPARENT"/>
+		<fillColour type="Graphics.colours" default="TRANSPARENT" pressed="BLUE" disabled="TRANSPARENT"/>
 		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
 		<shortcutColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
 		<font type="Font" default="systemFont"/>
@@ -75,8 +75,8 @@
 	</MenuItem>
 
 	<SeparatorMenuItem>
-		<leftMargin type="Number" default="5" />
-		<rightMargin type="Number" default="5" />
+		<leftMargin type="Number" default="7" />
+		<rightMargin type="Number" default="7" />
 		<topMargin type="Number" default="2" />
 		<bottomMargin type="Number" default="2" />
         <isDashed type="Boolean" default="true"/>
@@ -97,9 +97,9 @@
 		<rightMargin type="Number" default="6" />
 		<topMargin type="Number" default="3" />
 		<bottomMargin type="Number" default="2" />
-		<menuOffsetX type="Number" default="-5" />
-		<menuOffsetY type="Number" default="8" />
-		<menuTopPadding type="Number" default="7" />
+		<menuOffsetX type="Number" default="-4" />
+		<menuOffsetY type="Number" default="-7" />
+		<menuTopPadding type="Number" default="6" />
 		<font type="Font" default="systemFont"/>
 	</MenuBarItem>
 
