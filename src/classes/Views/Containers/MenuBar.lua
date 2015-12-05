@@ -2,16 +2,13 @@
 class "MenuBar" extends "Container" {
 
 	needsLayoutUpdate = false;	
-    separatorObject = false;
 
 }
 
-function MenuBar:initialiseCanvas()
-    self:super()
-    local separatorObject = self.canvas:insert( Rectangle( 1, self.height, self.width, 1 ) )
-    self.theme:connect( separatorObject, "fillColour", "separatorColour" )
-    self.theme:connect( self.canvas, "fillColour" )
-    self.separatorObject = separatorObject
+function MenuBar:onDraw()
+    local width, height, theme, canvas, font = self.width, self.height, self.theme, self.canvas
+    canvas:fill( theme:value( "fillColour" ) )
+    canvas:fill( theme:value( "separatorFillColour" ), theme:value( "separatorIsDashed" ) and SeparatorMask( 1, height, width, 1 ) or RectangleMask( 1, height, width, 1 ) )
 end
 
 function MenuBar:updateThemeStyle()
@@ -22,7 +19,8 @@ end
 	@desc Updates the location of the menu bar items
 ]]
 function MenuBar:updateLayout()
-	local x = 6
+    local theme = self.theme
+	local x = 1 + theme:value( "leftMargin" )
 	local height = 1
 	for i, childView in ipairs( self.children ) do
 		childView.x = x
@@ -40,24 +38,9 @@ function MenuBar:update( deltaTime )
     end
 end
 
-function MenuBar:updateWidth( width )
-	self.separatorObject.width = width
-end
-
-function MenuBar:updateHeight( Height )
-	self.separatorObject.y = Height
-end
-
 function MenuBar.isEnabled:set( isEnabled )
     self.isEnabled = isEnabled
     self:updateThemeStyle()
-end
-
-function MenuBar.isVisible:set( isVisible )
-	self:super( isVisible )
-	if isVisible then
-		self.needsLayoutUpdate = true
-	end
 end
 
 function MenuBar:insert( ... )
