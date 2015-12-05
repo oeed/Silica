@@ -123,7 +123,7 @@ function Container:draw()
 	canvas:clear()
 	
 	-- first draw ourself
-	self:onDraw()
+	local childMask = self:onDraw()
 
 	-- then draw the children
 	for i, childView in ipairs( self.children ) do
@@ -145,7 +145,7 @@ function Container:draw()
 			end
 
 			-- draw the childView to the canvas
-			childView.canvas:drawTo( canvas, x, y )
+			childView.canvas:drawTo( canvas, x, y, childMask )
 			if needsDraw then
 				childView.needsDraw = false
 			end
