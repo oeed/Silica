@@ -175,7 +175,7 @@
 		<rightMargin type="Number" default="7" />
 		<topMargin type="Number" default="4" />
 		<bottomMargin type="Number" default="3" />
-		<selectionLeftMargin type="Number" default="1" />
+		<selectionLeftMargin type="Number" default="0" />
 		<selectionRightMargin type="Number" default="1" />
 		<selectionTopMargin type="Number" default="1" />
 		<selectionBottomMargin type="Number" default="2" />
