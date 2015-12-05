@@ -19,6 +19,12 @@ local sub = string.sub -- move to top
 local concat = table.concat
 local floor = math.floor
 
+local SELECTION_DIRECTIONS = {
+		BOTH = 0;
+		LEFT = -1;
+		RIGHT = 0;
+	}
+
 class "TextBox" extends "View" {
 
 	height = Number( 15 );
@@ -43,6 +49,8 @@ class "TextBox" extends "View" {
 	cursorPosition = 1;
 	maximumLength = false;
 	selectionPosition = Number.allowsNil;
+
+	selectionDirections = Enum( Number, SELECTION_DIRECTIONS );
 
 }
 
@@ -217,8 +225,6 @@ function TextBox:updateSelection()
 		width = 0
 		f = function() self.selectionVisible = false end
 	else
-		log("this "..selectionX)
-		log("Or ".. selectionPosition)
 		x = math.min( cursorX, selectionX )
 		width = math.max( cursorX, selectionX ) - x
 	end
@@ -485,6 +491,37 @@ function TextBox:onCharacter( CharacterEvent event, Event.phases phase )
 	end
 end
 
+-- 										TODO: Number should be TextBox.selectionDirections
+function TextBox:wordPosition( Number fromPosition, Number direction, Boolean( true ) allowMiddlePunctuation )
+	local text = self.text
+	local left, right
+	local function go( from, to, dir )
+		local offset = 0
+		for i = from, to, dir do
+			local char = text:sub( i - 1, i - 1 )
+			log(char)
+			local isPunctuation = char:match( "%p" )
+			log(isPunctuation)
+			if i ~= from and ( char:match( "[%s%c]" ) or ( not allowMiddlePunctuation and isPunctuation ) ) then
+				log("Break on '"..char.."'")
+				return i - offset
+			elseif allowMiddlePunctuation and isPunctuation then
+				offset = dir
+			else
+				offset = 0
+			end
+		end
+		return to
+	end
+	if direction == SELECTION_DIRECTIONS.LEFT or direction == SELECTION_DIRECTIONS.BOTH then
+		left = go( fromPosition, 1, -1 )
+	end
+	if direction == SELECTION_DIRECTIONS.RIGHT or direction == SELECTION_DIRECTIONS.BOTH then
+		right = go( fromPosition + 1, #text + 1, 1 ) - 1
+	end
+	return left, right
+end
+
 --[[
     @desc Fired when the a keyboard shortcut is fired
     @param [Event] event -- the keyboard shortcut
@@ -492,7 +529,6 @@ end
 ]]
 function TextBox:onKeyboardShortcut( Event event, Event.phases phase )
     if self.isFocused then
-    	log(textutils.serialise(event.keys))
         if event:matchesKeys( { "ctrl", "left" } ) or event:matchesKeys( { "home" } ) then
         	self.selectionPosition = nil
         	self.cursorPosition = 1
@@ -503,6 +539,11 @@ function TextBox:onKeyboardShortcut( Event event, Event.phases phase )
         	self.selectionPosition = 1
         elseif event:matchesKeys( { "ctrl", "shift", "right" } ) then
         	self.selectionPosition = #self.text + 1
+        elseif event:matchesKeys( { "alt", "left" } ) then
+        	self.cursorPosition = self:wordPosition( self.cursorPosition, SELECTION_DIRECTIONS.LEFT )
+        elseif event:matchesKeys( { "alt", "right" } ) then
+        	local _, right = self:wordPosition( self.cursorPosition, SELECTION_DIRECTIONS.RIGHT )
+        	self.cursorPosition = right
         elseif event:matchesKeys( { "shift", "left" } ) then
         	local selectionPosition = self.selectionPosition
         	if selectionPosition then
