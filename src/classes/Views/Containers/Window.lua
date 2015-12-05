@@ -1,4 +1,6 @@
 
+local RESIZE_MARGIN_X, RESIZE_MARGIN_Y = 3, 4
+
 class "Window" extends "Container" {
 
 	container = false;
@@ -15,7 +17,7 @@ class "Window" extends "Container" {
 
     minWidth = 60;
     minHeight = 40;
-    maxWidth = 300;
+    maxWidth = 100;
     maxHeight = 150;
 
     isCanvasHitTested = Boolean( false );
@@ -43,7 +45,7 @@ function Window:initialise( ... )
 end
 
 function Window:onDraw()
-    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
+    local width, height, theme, canvas = self.width - RESIZE_MARGIN_X, self.height - RESIZE_MARGIN_Y, self.theme, self.canvas
 
     local barHeight = 10
     local topCornerRadius, bottomCornerRadius = theme:value( "topCornerRadius" ), theme:value( "bottomCornerRadius" )
@@ -66,13 +68,11 @@ end
 function Window:loadInterface()
     local interfaceName = self.interfaceName
     if interfaceName then
-        local barHeight = self.barHeight
-        local x, y, width, height = 1, barHeight + 2, self.width - 2, self.height - barHeight - 5
         local container = Interface( interfaceName, WindowContainer ).container
-        container.x = x
-        container.y = y
-        container.width = width
-        container.height = height
+        container.x = 1
+        container.y = 11
+        container.width = self.width - RESIZE_MARGIN_X
+        container.height = self.height - RESIZE_MARGIN_Y
         self.container = self:insert( container )
     end
 end
@@ -82,7 +82,9 @@ function Window.height:set( height )
     if self.height ~= height then
         self:super( height )
         local container = self.container
-        if container then container.height = height - self.barHeight - 5 end
+        if container then
+            container.height = height - 10 - RESIZE_MARGIN_Y
+        end
     end
 end
 
@@ -91,7 +93,9 @@ function Window.width:set( width )
     if self.width ~= width then
         self:super( width )
         local container = self.container
-        if container then container.width = width - 2 end
+        if container then
+            container.width = width - RESIZE_MARGIN_X
+        end
     end
 end
 
@@ -102,8 +106,8 @@ function Window:onInterfaceLoaded( LoadedInterfaceEvent event, Event.phases phas
             if childView ~= currentContainer then
                 childView.x = 1
                 childView.y = 11
-                childView.width = self.width
-                childView.height = self.height - 10
+                childView.width = self.width - RESIZE_MARGIN_X
+                childView.height = self.height - 10 - RESIZE_MARGIN_Y
                 self.container = childView
             end
             return
@@ -127,8 +131,8 @@ end
 function Window:centre()
     local parent = self.parent
     if parent then
-        self.x = math.ceil( ( parent.width - self.width ) / 2 )
-        self.y = math.ceil( ( parent.height - self.height ) / 2 )
+        self.x = math.ceil( ( parent.width - self.width + RESIZE_MARGIN_X ) / 2 )
+        self.y = math.ceil( ( parent.height - self.height + RESIZE_MARGIN_Y ) / 2 )
     end
 end
 
@@ -171,13 +175,13 @@ end
 ]]
 function Window:onMouseDownAfter( MouseDownEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
-        log("down after")
         x = event.x
         y = event.y
         local width = self.width
         local height = self.height
-        local isResizingX = x >= width - 6
-        local isResizingY = y >= height - 8
+        local isResizingX = x >= width - 2 * RESIZE_MARGIN_X
+        local isResizingY = y >= height - 2 * RESIZE_MARGIN_Y
+        log(isResizingX)
         self.isResizingX = isResizingX
         self.isResizingY = isResizingY
         self.isDragging = not ( isResizingX or isResizingY )
