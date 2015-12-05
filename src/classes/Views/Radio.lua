@@ -12,6 +12,8 @@ class "Radio" extends "View" {
 
 function Radio:initialise( ... )
 	self:super( ... )
+
+    self:event( ParentChangedInterfaceEvent, self.onParentChanged )
     self:event( MouseDownEvent, self.onMouseDown )
     self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
@@ -52,6 +54,13 @@ end
 function Radio.isPressed:set( isPressed )
     self.isPressed = isPressed
     self:updateThemeStyle()
+end
+
+function Radio:onParentChanged( ParentChangedInterfaceEvent event, Event.phases phase )
+    local siblings = self:siblingsOfType( Radio )
+    if #siblings == 0 or self.isChecked then
+        self.isChecked = true -- if we're the first child or we're being added check ourself to ensure there's at least one and interface properties are respected
+    end
 end
 
 --[[
