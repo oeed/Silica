@@ -483,14 +483,17 @@ function TextBox:wordPosition( Number fromPosition, Number direction, Boolean( t
 	local left, right
 	local function go( from, to, dir )
 		local offset = 0
+		local hasFound = false
 		for i = from, to, dir do
 			local char = text:sub( i - 1, i - 1 )
 			local isPunctuation = char:match( "%p" )
-			if i ~= from and ( char:match( "[%s%c]" ) or ( not allowMiddlePunctuation and isPunctuation ) ) then
+			local isSpace = char:match( "[%s%c]" )
+			if hasFound and ( isSpace or ( not allowMiddlePunctuation and isPunctuation ) ) then
 				return i - offset
 			elseif allowMiddlePunctuation and isPunctuation then
 				offset = dir
-			else
+			elseif not isSpace and not isPunctuation then
+				hasFound = true
 				offset = 0
 			end
 		end
@@ -500,7 +503,7 @@ function TextBox:wordPosition( Number fromPosition, Number direction, Boolean( t
 		left = go( fromPosition, 1, -1 )
 	end
 	if direction == SELECTION_DIRECTIONS.RIGHT or direction == SELECTION_DIRECTIONS.BOTH then
-		right = go( fromPosition + 1, #text + 1, 1 ) - 1
+		right = go( fromPosition + 1, #text + 2, 1 ) - 1
 	end
 	return left, right
 end
