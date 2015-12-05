@@ -12,7 +12,6 @@ class "MenuItem" extends "View" {
     shortcut = false;
     text = false;
 
-    backgroundObject = false;
 }
 
 --[[
@@ -26,8 +25,8 @@ function MenuItem:initialise( ... )
     self:event( MouseDownEvent, self.onMouseDown )
     self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
     self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
-    self:event( ThemeChangedInterfaceEvent, self.updateSize )
-    self:updateSize()
+    self:event( ThemeChangedInterfaceEvent, self.updateHeight )
+    self:updateHeight()
 end
 
 function MenuItem:onDraw()
@@ -40,7 +39,7 @@ function MenuItem:onDraw()
     canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, theme:value( "font" ) ) )
 end
 
-function MenuItem:updateSize( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
+function MenuItem:updateHeight( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
     local theme = self.theme
     self.height = 8 + theme:value( "topMargin") + theme:value( "bottomMargin") -- TODO: loading of fonts from theme
 end
