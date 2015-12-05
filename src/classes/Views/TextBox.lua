@@ -529,9 +529,9 @@ function TextBox:onKeyboardShortcut( Event event, Event.phases phase )
         	local _, right = self:wordPosition( self.cursorPosition, SELECTION_DIRECTIONS.RIGHT )
         	self.cursorPosition = right
         elseif event:matchesKeys( { "alt", "shift", "left" } ) then
-        	self.selectionPosition = self:wordPosition( self.cursorPosition, SELECTION_DIRECTIONS.LEFT )
+        	self.selectionPosition = self:wordPosition( math.min( self.cursorPosition, self.selectionPosition or math.huge ), SELECTION_DIRECTIONS.LEFT )
         elseif event:matchesKeys( { "alt", "shift", "right" } ) then
-        	local _, right = self:wordPosition( self.cursorPosition, SELECTION_DIRECTIONS.RIGHT )
+        	local _, right = self:wordPosition( math.max( self.cursorPosition, self.selectionPosition or 0), SELECTION_DIRECTIONS.RIGHT )
         	self.selectionPosition = right
         elseif event:matchesKeys( { "shift", "left" } ) then
         	local selectionPosition = self.selectionPosition
