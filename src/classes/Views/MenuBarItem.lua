@@ -3,17 +3,16 @@ local TEXT_MARGIN = 12
 
 class "MenuBarItem" extends "View" {
 
-	height = Number( 12 );
     isPressed = Boolean( false );
     isEnabled = Boolean( true );
 	isCanvasHitTested = Boolean( false );
-    text = false;
-    font = false;
-    backgroundObject = false;
-    menu = false;
-    menuName = false;
     isFlashing = Boolean( false );
     isActive = Boolean; -- TODO: readonly
+
+    text = String;
+
+    menu = Menu.allowsNil; -- TODO: readonly
+    menuName = String;
 
 }
 
@@ -25,105 +24,76 @@ class "MenuBarItem" extends "View" {
 function MenuBarItem:initialise( ... )
 	self:super( ... )
 
+    -- local menuName = self.menuName
+    -- if not menuName then error( "MenuBarItems must specify the property menuName (the name of the interface file to use).", 0 ) end
+    -- menu = Menu.fromInterface( menuName, Menu )
+    -- menu.owner = self
+    -- menu.isSingleShot = false
+    -- menu.isVisible = false
+    -- menu.hitTestOwner = true
+    -- menu.topMargin = Menu.topMargin + 4
+    -- self.menu = menu
+    self:event( MenuChangedInterfaceEvent, self.onMenuChanged )
+    self:event( MouseDownEvent, self.onMouseDown )
+    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+    self:event( ReadyInterfaceEvent, self.onReady )
+    self:updateHeight()
+end
+
+function MenuBarItem:onReady( ReadyInterfaceEvent event, Event.phases phase  )
     local menuName = self.menuName
-    if not menuName then error( "MenuBarItems must specify the property menuName (the name of the interface file to use).", 0 ) end
-    menu = Menu.fromInterface( menuName, Menu )
+    if not menuName then
+        MenuNotSpecifiedException( "A MenuBarItem did not specifiy the property 'menuName'. MenuButtons must specify this property as it indicates what inteface file to load the menu from.", 0 )
+    end
+    local parent = self.parent
+    log("Ready: " .. tostring(parent))
+    menu = Menu.static:fromInterface( menuName )
     menu.owner = self
     menu.isSingleShot = false
     menu.isVisible = false
     menu.hitTestOwner = true
-    menu.topMargin = Menu.topMargin + 4
+    local theme = self.theme
+    menu.x = self.x + parent.x + - 1 + theme:value( "menuOffsetX" )
+    menu.y = self.y + parent.y + - 1 + theme:value( "menuOffsetY" )
     self.menu = menu
-    self:event( MenuChangedInterfaceEvent, self.onMenuChanged )
-    self:event( MouseDownEvent, self.onMouseDown )
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
-    self:event( ReadyInterfaceEvent, self.onInterfaceReady )
+    parent.parent:insert( menu )
 end
 
-function MenuBarItem:onInterfaceReady( Event event, Event.phases phase )
-    local menu = self.menu
-    if menu then
-        menu = self.menu
-        if menu.parent then
-            menu.parent:removeChild( menu )
-        end
-        local parent = self.parent
-        if parent then
-            menu.x = self.x + parent.x - 6
-            menu.y = self.y + parent.y + 7
-            local parentParent = parent.parent
-            if parentParent then
-                parentParent:insert( menu )
-            end
-        end
-    end
+function MenuBarItem:onDraw()
+    local width, height, theme, canvas, font = self.width, self.height, self.theme, self.canvas
+
+    canvas:fill( theme:value( "fillColour" ) )
+    local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
+    canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, theme:value( "font" ) ) )
 end
 
-function MenuBarItem:initialiseCanvas()
-    self:super()
-    local backgroundObject = self.canvas:insert( Rectangle( 1, 1, self.width, self.height, self.fillColour ) )
-    local textObject = self.canvas:insert( Text( TEXT_MARGIN / 2 + 1, 3, self.height, self.width - TEXT_MARGIN, self.text ) )
-
-    self.theme:connect( backgroundObject, "fillColour" )
-    self.theme:connect( textObject, "textColour" )
-
-    self.backgroundObject = backgroundObject
-    self.textObject = textObject
-
-    if not self.font then
-        self.font = Font.systemFont
-    end
+function MenuBarItem:updateHeight( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
+    local theme = self.theme
+    self.height = theme:value( "font").height + theme:value( "topMargin") + theme:value( "bottomMargin")
 end
 
-function MenuBarItem.font:set( font )
-    self.font = font
-    local textObject = self.textObject
-    if textObject then
-        local fontWidth = self.font:getWidth( text )
-        self.width = fontWidth + TEXT_MARGIN
-        self.textObject.font = font
-        local parent = self.parent
-        if parent then
-            parent.needsLayoutUpdate = true
-        end
+function MenuBarItem:updateWidth( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
+    local theme = self.theme
+    local textWidth = theme:value( "font" ):getWidth( self.text )
+    local width = textWidth + theme:value( "leftMargin" ) + theme:value( "rightMargin" )
+    self.width = width
+    local parent = self.parent
+    if parent then
+        parent.needsLayoutUpdate = true
     end
 end
 
 function MenuBarItem.text:set( text )
     self.text = text
-    local textObject = self.textObject
-    if textObject then
-        local fontWidth = self.font:getWidth( text )
-        self.width = fontWidth + TEXT_MARGIN
-        self.textObject.text = text
-        local parent = self.parent
-        if parent then
-            parent.needsLayoutUpdate = true
-        end
-    end
+    self:updateWidth()
 end
 
-function MenuBarItem:updateX( x )
+function MenuBarItem.x:set( x )
+    self.x = x
     local menu = self.menu
     if menu then
-        menu.x = self.x + ( parent and parent.x or 0 ) -- 4
+        menu.x = self.x + parent.x + - 1 + self.theme:value( "menuOffsetX" )
     end
-end
-
-function MenuBarItem:updateY( y )
-    local menu = self.menu
-    if menu then
-        menu.y = self.y + ( parent and parent.y or 0 ) + 7
-    end
-end
-
-function MenuBarItem:updateWidth( width )
-    self.backgroundObject.width = width
-    self.textObject.width = width - TEXT_MARGIN
-end
-
-function MenuBarItem:updateHeight( height )
-    self.backgroundObject.height = height
 end
 
 function MenuBarItem:update( deltaTime )
@@ -155,11 +125,15 @@ end
     @return [boolean] isActive -- whether the button is active
 ]]
 function MenuBarItem.isActive:get()
-    return self.isPressed or self.isFlashing or self.menu.isOpen
+    if self.isPressed then
+        return true
+    end
+    local menu = self.menu
+    return menu and menu.isOpen or false
 end
 
 function MenuBarItem:updateThemeStyle()
-    self.theme.style = self.isEnabled and ( self.isActive and "pressed" or "default" ) or "disabled"
+    self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or ( self.isActive and "active" or "default" ) ) or "disabled"
 end
 
 function MenuBarItem.isEnabled:set( isEnabled )
