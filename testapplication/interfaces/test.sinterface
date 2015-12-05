@@ -1,28 +1,32 @@
 <ApplicationContainer>
+    <MenuBar width=320 >
+        <MenuBarItem text=File menuName=file />
+        <MenuBarItem text=Edit menuName=edit />
+    </MenuBar>
     
-    <Button x=10 y=10 text="Silica :D" />
+    <Button x=10 y=20 text="Silica :D" />
 
-    <Label x=70 y=14 text="Another" />
+    <Label x=70 y=24 text="Another" />
 
-    <Checkbox x=120 y=15 />
-
-    <Radio x=135 y=10 />
+    <Checkbox x=120 y=25 />
 
     <Radio x=135 y=20 />
 
-    <SeparatorView x=150 y=10 height=18 />
+    <Radio x=135 y=30 />
 
-    <MenuButton x=160 y=10 text="Menu Button" menuName=menu />
+    <SeparatorView x=150 y=20 height=18 />
 
-    <SegmentContainer x=10 y=35>
+    <MenuButton x=160 y=20 text="Menu Button" menuName=menu />
+
+    <SegmentContainer x=10 y=45>
         <SegmentButton text=One />
         <SegmentButton text=Two />
         <SegmentButton text=Three />
     </SegmentContainer>
 
-    <!-- <ProgressBar x=135 y=37 /> -->
+    <!-- <ProgressBar x=135 y=47 /> -->
 
-    <TextBox x=10 y=60 text="abcd efghijk. lmn opqrs tuvwxyz" placeholder="Placeholder :D" />
+    <TextBox x=10 y=70 text="abcd efghijk. lmn opqrs tuvwxyz" placeholder="Placeholder :D" />
 
 
     <!-- <TestView x=50 y=50 width=19 height=25/> -->
