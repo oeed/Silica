@@ -11,7 +11,7 @@ local keyStrings = {
 	"`",	"shift","\\",	"z",	"x",
 	"c",	"v",	"b",	"n",	"m",
 	",",	".",	"/",	"shift",nil,
-	"alt",	nil,	nil,	"f1",	"f2",
+	"alt",	"space",nil,	"f1",	"f2",
 	"f3",	"f4",	"f5",	"f6",	"f7",
 	"f8",	"f9",	"f10",	[87] = "f11",
 	[88] = "f12",	[153] = "ctrl",
