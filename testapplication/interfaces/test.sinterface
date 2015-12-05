@@ -28,7 +28,20 @@
 
     <TextBox x=10 y=70 text="abcd efghijk. lmn opqrs tuvwxyz" placeholder="Placeholder :D" />
 
+    <Window x=50 y=100 width=100 height=60 >
+        <WindowContainer>
+            <!-- <ProgressBar x=6 y=35 /> -->
+            <Button x=5 y=5 text=Okay />
+            <Checkbox identifier=agreeCheckbox x=5 y=25 isChecked=true />
+            <Container x=50 y=5 width=20 height=40>
+                <Radio y=1 isChecked=true />
+                <Radio y=11/>
+                <Radio y=21/>
+            </Container>
+        </WindowContainer>
+    </Window>
 
+    
     <!-- <TestView x=50 y=50 width=19 height=25/> -->
     <!-- <TestView x=50 y=50 width=80 height=80/> -->
 
