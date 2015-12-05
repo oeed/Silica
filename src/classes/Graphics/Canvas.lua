@@ -145,7 +145,6 @@ function Canvas:drawTo( Canvas destinationCanvas, Number x, Number y, Mask.allow
     local destinationWidth, destinationHeight, destinationPixels = destinationCanvas.width, destinationCanvas.height, destinationCanvas.pixels
     local TRANSPARENT = Graphics.colours.TRANSPARENT
     local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
-
     for index, colour in pairs( self.pixels ) do
         if colour and colour ~= TRANSPARENT then
             local _x = (index - 1) % width + x
@@ -153,8 +152,8 @@ function Canvas:drawTo( Canvas destinationCanvas, Number x, Number y, Mask.allow
             if _x >= 1 and _x <= destinationWidth and _y >= 1 and _y <= destinationHeight then
                 local isOkay = true
                 if mask then
-                    local mx = _x - x - maskX + 2
-                    local my = _y - y - maskY + 2
+                    local mx = _x - maskX + 1
+                    local my = _y - maskY + 1
                     if mx >= 1 and mx <= maskWidth and my >= 1 and my <= maskHeight then
                         isOkay = maskPixels[ (my - 1) * maskWidth + mx ]
                     else
