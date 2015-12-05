@@ -88,7 +88,7 @@ function MenuBarItem.text:set( text )
 end
 
 function MenuBarItem.x:set( x )
-    self.x = x
+    self:super( x )
     local menu = self.menu
     if menu then
         menu.x = self.x + self.parent.x + - 1 + self.theme:value( "menuOffsetX" )

@@ -250,6 +250,22 @@ function View.width:set( width )
     self.needsDraw = true
 end
 
+function View.x:set( x )
+	self.x = x
+	local parent = self.parent
+	if parent then
+	    parent.needsDraw = true
+	end
+end
+
+function View.y:set( y )
+	self.y = y
+	local parent = self.parent
+	if parent then
+	    parent.needsDraw = true
+	end
+end
+
 function View.isVisible:get()
 	return self.parent and self.isVisible -- if we don't have a parent we're effectively not visible
 end

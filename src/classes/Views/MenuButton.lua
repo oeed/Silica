@@ -62,7 +62,7 @@ function MenuButton.width:set( width )
 end
 
 function MenuButton.x:set( x )
-    self.x = x
+    self:super( x )
     local menu = self.menu
     if menu then
         menu.x = x + self.theme:value( "menuOffsetX" )
@@ -70,7 +70,7 @@ function MenuButton.x:set( x )
 end
 
 function MenuButton.y:set( y )
-    self.y = y
+    self:super( y )
     local menu = self.menu
     if menu then
         menu.y = y + self.theme:value( "menuOffsetY" )
