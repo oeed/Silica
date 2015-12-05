@@ -143,10 +143,6 @@
 		<outlineThickness type="Number" default="1" />
 		<outlineColour type="Graphics.colours" default="TRANSPARENT"/>
 	</Window>
-
-	<WindowContainer>
-		<fillColour type="Graphics.colours" default="RED" />
-	</WindowContainer>
 	
 	<CloseWindowButton>
 		<fillColour type="Graphics.colours" default="RED" pressed="RED" disabled="TRANSPARENT"/>
