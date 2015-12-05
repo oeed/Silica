@@ -4,6 +4,8 @@ class "SeparatorMenuItem" extends "MenuItem" {
 	height = Number( 3 );
 	width = Number( 51 );
 
+    text = String( "" ); -- we give it a default value because we can't set it to .allowsNil
+
 }
 
 function SeparatorMenuItem:initialise( ... )
