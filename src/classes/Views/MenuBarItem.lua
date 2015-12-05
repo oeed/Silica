@@ -52,8 +52,8 @@ function MenuBarItem:onReady( ReadyInterfaceEvent event, Event.phases phase  )
     menu.isVisible = false
     menu.hitTestOwner = true
     local theme = self.theme
-    menu.x = self.x + parent.x + - 1 + theme:value( "menuOffsetX" )
-    menu.y = self.y + parent.y + - 1 + theme:value( "menuOffsetY" )
+    menu.x = self.x + parent.x + theme:value( "menuOffsetX" )
+    menu.y = self.y + parent.y + self.height + theme:value( "menuOffsetY" )
     self.menu = menu
     parent.parent:insert( menu )
 end
