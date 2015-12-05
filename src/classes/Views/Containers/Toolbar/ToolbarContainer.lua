@@ -51,7 +51,7 @@ function ToolbarContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.ph
     self.needsLayoutUpdate = true
 end
 
-function ToolbarContainer:onChildRemoved( Event event, Event.phases phase )
+function ToolbarContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
     self.needsLayoutUpdate = true
 end
 

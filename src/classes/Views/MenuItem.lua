@@ -125,7 +125,7 @@ end
     @param [Event] event -- the keyboard shortcut
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function MenuItem:onKeyboardShortcut( Event event, Event.phases phase )
+function MenuItem:onKeyboardShortcut( KeyboardShortcutEvent event, Event.phases phase )
     if self.isEnabled then
         local shortcut = self.shortcut
         if shortcut and shortcut:matchesEvent( event ) then

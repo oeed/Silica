@@ -95,7 +95,7 @@ function Window.width:set( width )
     end
 end
 
-function Window:onInterfaceLoaded( Event event, Event.phases phase )
+function Window:onInterfaceLoaded( LoadedInterfaceEvent event, Event.phases phase )
     local currentContainer = self.container
     for i, childView in ipairs( self.children ) do
         if childView:typeOf( WindowContainer ) then
@@ -169,8 +169,9 @@ end
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onMouseDownAfter( Event event, Event.phases phase )
+function Window:onMouseDownAfter( MouseDownEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+        log("down after")
         x = event.x
         y = event.y
         local width = self.width
@@ -217,7 +218,7 @@ end
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onGlobalMouseUp( Event event, Event.phases phase )
+function Window:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
     if (self.isDragging or self.isResizingX or self.isResizingY ) and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.dragX = false
         self.dragY = false

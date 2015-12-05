@@ -31,7 +31,7 @@ function FlowContainer:updateHeight( height )
     -- self.needsLayoutUpdate = true
 end
 
-function FlowContainer:onReady( Event event, Event.phases phase )
+function FlowContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
     self:updateLayout( true )
 end
 
@@ -48,7 +48,7 @@ function FlowContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phase
     end
 end
 
-function FlowContainer:onChildRemoved( Event event, Event.phases phase )
+function FlowContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
     self.needsLayoutUpdate = true
 end
 

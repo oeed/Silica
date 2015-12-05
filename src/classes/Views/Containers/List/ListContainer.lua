@@ -20,7 +20,7 @@ function ListContainer:initialise( ... )
     self:event( ReadyInterfaceEvent, self.onReady )
 end
 
-function ListContainer:onReady( Event event, Event.phases phase )
+function ListContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
     self:updateLayout( true )
 end
 
@@ -38,7 +38,7 @@ function ListContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phase
     self.needsLayoutUpdate = true
 end
 
-function ListContainer:onChildRemoved( Event event, Event.phases phase )
+function ListContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
     self.needsLayoutUpdate = true
 end
 

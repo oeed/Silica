@@ -55,7 +55,7 @@ function KeyboardShortcutManager:onGlobalKeyDown( KeyDownEvent event, Event.phas
 	end
 end
 
-function KeyboardShortcutManager:onGlobalKeyUp( Event event, Event.phases phase )
+function KeyboardShortcutManager:onGlobalKeyUp( KeyUpEvent event, Event.phases phase )
 	local keyString = event.keyString
 	self.keysDown[keyString] = nil
 	self.keysUpdates[keyString] = os.clock()

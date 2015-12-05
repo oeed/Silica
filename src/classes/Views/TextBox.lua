@@ -374,7 +374,7 @@ end
 	@param [MouseDownEvent] event -- the mouse down event
 	@return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function TextBox:onMouseUp( Event event, Event.phases phase )
+function TextBox:onMouseUp( MouseUpEvent event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self:focus( TextBox )
 	end
@@ -397,7 +397,7 @@ end
 	@param [MouseDownEvent] event -- the mouse down event
 	@return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function TextBox:onMouseDown( Event event, Event.phases phase )
+function TextBox:onMouseDown( MouseDownEvent event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = true
 		if self.application.keyboardShortcutManager:isOnlyKeyDown( "shift" ) then
@@ -425,7 +425,7 @@ function TextBox:onMouseScroll( MouseScrollEvent event, Event.phases phase )
 	return true
 end
 
-function TextBox:onKeyDown( Event event, Event.phases phase )
+function TextBox:onKeyDown( KeyDownEvent event, Event.phases phase )
 	if self.isFocused then
 		local keyCode = event.keyCode
 		local text = self.text

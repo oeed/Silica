@@ -41,7 +41,7 @@ function MenuButton:onReady( ReadyInterfaceEvent event, Event.phases phase  )
     self.parent:insert( menu )
 end
 
-function MenuButton:onParentChanged( Event event, Event.phases phase )
+function MenuButton:onParentChanged( ParentChangedInterfaceEvent event, Event.phases phase )
     local menu = self.menu
     if menu then
         if menu.parent then

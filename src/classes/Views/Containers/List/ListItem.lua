@@ -59,7 +59,7 @@ function ListItem.isSelected:set( isSelected )
     self:updateThemeStyle()
 end
 
-function ListItem:onMouseHeld( Event event, Event.phases phase )
+function ListItem:onMouseHeld( MouseHeldEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then
         self.isSelected = true
         self:startDragDrop( event, ListClipboardData( self ), true, function()self.isSelected = false end )

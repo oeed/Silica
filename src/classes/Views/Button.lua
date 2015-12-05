@@ -133,7 +133,7 @@ end
     @param [KeyDownEvent] event -- the key down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Button:onKeyDown( Event event, Event.phases phase )
+function Button:onKeyDown( KeyDownEvent event, Event.phases phase )
     if self.isEnabled and self.isFocused and event.keyCode == keys.enter then
         self.isPressed = true
         return true
@@ -145,7 +145,7 @@ end
     @param [KeyUpEvent] event -- the key down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Button:onKeyUp( Event event, Event.phases phase )
+function Button:onKeyUp( KeyUpEvent event, Event.phases phase )
     if self.isEnabled and self.isPressed and self.isFocused and event.keyCode == keys.enter then
         self.isPressed = false
         self.event:handleEvent( ActionInterfaceEvent( self ) )

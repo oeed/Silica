@@ -153,7 +153,7 @@ end
 	@param [Event] event -- the mouse scroll event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function ScrollView:onMouseScroll( Event event, Event.phases phase )
+function ScrollView:onMouseScroll( MouseScrollEvent event, Event.phases phase )
 	if self.isEnabled then
 		local direction = event.direction
 		local verticalVelocity = self.verticalVelocity

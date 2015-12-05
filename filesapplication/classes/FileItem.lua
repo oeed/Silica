@@ -174,7 +174,7 @@ function FileItem:onMouseDown( MouseDownEvent event, Event.phases phase )
     return true
 end
 
-function FileItem:onMouseHeld( Event event, Event.phases phase )
+function FileItem:onMouseHeld( MouseHeldEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self:addFocus()
         local isMove = not self.application.keyboardShortcutManager:isKeyDown( DRAG_COPY_KEY )
@@ -190,7 +190,7 @@ function FileItem:onMouseHeld( Event event, Event.phases phase )
     return true
 end
 
-function FileItem:onMouseDoubleClick( Event event, Event.phases phase )
+function FileItem:onMouseDoubleClick( MouseDoubleClickEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         -- error('oepn')
     end
