@@ -89,13 +89,13 @@ function TextBox:onDraw()
 	    		local selectionMask = RoundedRectangleMask( leftMargin + 1 + self.selectionX - scroll - selectionLeftMargin, math.floor( fontHeight / 2 ) - selectionTopMargin, selectionWidth + selectionLeftMargin + selectionRightMargin, fontHeight + selectionTopMargin + selectionBottomMargin, theme:value( "selectionRadius" ) )
 	    		canvas:fill( theme:value( "selectionColour" ), selectionMask:intersect( contentMask ) )
 	    	end
-    	end
-
-    	local cursorPosition = self.cursorPosition
-    	local cursorColour = self.cursorColour
-    	if cursorColour ~= fillColour then
-	    	local cursorMask = RectangleMask( leftMargin + 1 + self.cursorX - scroll, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
-    		canvas:fill( cursorColour, cursorMask:intersect( contentMask ) )
+	    else
+	    	local cursorPosition = self.cursorPosition
+	    	local cursorColour = self.cursorColour
+	    	if cursorColour ~= fillColour then
+		    	local cursorMask = RectangleMask( leftMargin + 1 + self.cursorX - scroll, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
+	    		canvas:fill( cursorColour, cursorMask:intersect( contentMask ) )
+	    	end
     	end
     end
 
