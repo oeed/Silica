@@ -55,7 +55,7 @@ end
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function WindowButton:onGlobalMouseUp( Event event, Event.phases phase )
+function WindowButton:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
@@ -69,7 +69,7 @@ end
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function WindowButton:onMouseDown( Event event, Event.phases phase )
+function WindowButton:onMouseDown( MouseDownEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
     end

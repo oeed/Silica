@@ -116,7 +116,7 @@ end
 	@param [Event] -- the mouse down event
 	@desc Closes the menu when somewhere other than the menu is clicked, otherwise handles the event
 ]]
-function Menu:onGlobalMouseDown( Event event, Event.phases phase )
+function Menu:onGlobalMouseDown( MouseDownEvent event, Event.phases phase )
 	if self.isVisible then
         local owner = self.owner
 		if self.hitTestOwner and owner and owner:hitTestEvent( event ) then

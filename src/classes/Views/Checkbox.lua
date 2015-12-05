@@ -58,7 +58,7 @@ end
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Checkbox:onGlobalMouseUp( Event event, Event.phases phase )	
+function Checkbox:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )	
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled then
@@ -70,7 +70,7 @@ function Checkbox:onGlobalMouseUp( Event event, Event.phases phase )
     end
 end
 
-function Checkbox:onMouseDown( Event event, Event.phases phase )
+function Checkbox:onMouseDown( MouseDownEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
     end

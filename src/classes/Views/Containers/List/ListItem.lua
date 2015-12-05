@@ -67,7 +67,7 @@ function ListItem:onMouseHeld( Event event, Event.phases phase )
     return true
 end
 
-function ListItem:onGlobalMouseUp( Event event, Event.phases phase )
+function ListItem:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
     if self.isSelected and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isSelected = false
         if self.isEnabled and self:hitTestEvent( event ) then
@@ -79,7 +79,7 @@ function ListItem:onGlobalMouseUp( Event event, Event.phases phase )
     end
 end
 
-function ListItem:onMouseDown( Event event, Event.phases phase )
+function ListItem:onMouseDown( MouseDownEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isSelected = not self.isSelected
     end

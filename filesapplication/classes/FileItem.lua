@@ -157,7 +157,7 @@ function FileItem:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isDropHovering and "hover" or (self.isFocused and "focused" or "default") ) or "disabled"
 end
 
-function FileItem:onMouseDown( Event event, Event.phases phase )
+function FileItem:onMouseDown( MouseDownEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         if self.application.keyboardShortcutManager:isKeyDown( ADD_FOCUS_KEY ) then
             if self.isFocused then

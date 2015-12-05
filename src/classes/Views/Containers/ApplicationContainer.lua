@@ -64,7 +64,7 @@ end
     @param [MouseDownEvent] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function ApplicationContainer:onMouseDownAfter( Event event, Event.phases phase )
+function ApplicationContainer:onMouseDownAfter( MouseDownEvent event, Event.phases phase )
 	local application = self.application
 	
 	if application:hasFocus() then

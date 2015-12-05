@@ -44,7 +44,7 @@ function ScrollView:initialiseCanvas()
 	self.theme:connect( self.canvas, "fillColour" )
 end
 
-function ScrollView:onInterfaceLoaded( Event event, Event.phases phase )
+function ScrollView:onInterfaceLoaded( LoadedInterfaceEvent event, Event.phases phase )
     local currentContainer = self.container
     for i, childView in ipairs( self.children ) do
         if childView ~= currentContainer and childView:typeOf( ScrollContainer ) then

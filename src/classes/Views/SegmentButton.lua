@@ -60,6 +60,6 @@ end
     @desc Fired when it's siblings changed or it is added/removed from it's parent
     @param [Event] event -- the event
 ]]
-function SegmentButton:onSiblingOrParentChanged( Event event, Event.phases phase )
+function SegmentButton:onSiblingOrParentChanged( ParentChangedInterfaceEvent event, Event.phases phase )
     self.needsDraw = true
 end

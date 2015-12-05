@@ -23,7 +23,7 @@ end
 	@param [Event] event -- description
 	@return [boolean] stopPropagation
 ]]
-function ExampleApplication:onChar( Event event, Event.phases phase )
+function ExampleApplication:onChar( CharacterEvent event, Event.phases phase )
 	if not self:hasFocus() and event.character == '\\' then
 		os.reboot()
 	end

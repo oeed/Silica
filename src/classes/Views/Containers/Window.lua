@@ -169,7 +169,7 @@ end
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onMouseDownBefore( Event event, Event.phases phase )
+function Window:onMouseDownBefore( MouseDownEvent event, Event.phases phase )
     self:focus()
 end
 
@@ -200,7 +200,7 @@ end
     @param [Event] event -- the mouse drag event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onGlobalMouseDrag( Event event, Event.phases phase )
+function Window:onGlobalMouseDrag( MouseDragEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         local preventPropagation = false
         if self.isDragging then

@@ -360,7 +360,7 @@ end
 	@param [Event] event -- the mouse up event
 	@return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function TextBox:onGlobalMouseUp( Event event, Event.phases phase )
+function TextBox:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
 	if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = false
 		if self.isEnabled and self:hitTestEvent( event ) then
@@ -463,7 +463,7 @@ function TextBox:onKeyDown( Event event, Event.phases phase )
 	end
 end
 
-function TextBox:onKeyUp( Event event, Event.phases phase )
+function TextBox:onKeyUp( KeyUpEvent event, Event.phases phase )
 	if self.isFocused then
 		
 	end

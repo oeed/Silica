@@ -396,7 +396,7 @@ end
 --[[
 	@desc Detects when the mouse is pressed. Used to fire mouse held and double click
 ]]
-function View:onMouseDownMetaEvents( Event event, Event.phases phase )
+function View:onMouseDownMetaEvents( MouseDownEvent event, Event.phases phase )
 	local mouseButton, time = event.mouseButton, os.time()
 	local lastMouseDown, lastMouseUp = self.lastMouseDown, self.lastMouseUp
 
@@ -433,7 +433,7 @@ end
 --[[
 	@desc Detects when the mouse is released. Used to fire mouse held and double click
 ]]
-function View:onGlobalMouseUpMetaEvents( Event event, Event.phases phase )
+function View:onGlobalMouseUpMetaEvents( MouseUpEvent event, Event.phases phase )
 	self.lastMouseUp[event.mouseButton] = os.time()
 end
 

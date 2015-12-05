@@ -25,7 +25,7 @@ function FontStudioApplicationContainer:initialise( ... )
     self:event( Event.KEY_DOWN, self.onKeyDown )
 end
 
-function FontStudioApplicationContainer:onReady( Event event, Event.phases phase )
+function FontStudioApplicationContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
     FontDocument:open( "src/fonts/Napier.sfont" )
 
     local document = self.application.document

@@ -165,7 +165,7 @@ function CharacterEditorView:onGlobalMouseUp( Event event, Event.phases phase )
     end
 end
 
-function CharacterEditorView:onGlobalMouseDownOrMove( Event event, Event.phases phase )
+function CharacterEditorView:onGlobalMouseDownOrMove( MouseDownEvent event, Event.phases phase )
     local dragStart = self.dragStart
     local isDragging = ( event.eventType == MouseDragEvent and #dragStart == 4 )
     if isDragging or self:hitTestEvent( event ) then
@@ -212,7 +212,7 @@ function CharacterEditorView:onGlobalMouseDownOrMove( Event event, Event.phases 
     end
 end
 
-function CharacterEditorView:onMouseDownOrMove( Event event, Event.phases phase )
+function CharacterEditorView:onMouseDownOrMove( MouseDownEvent event, Event.phases phase )
     local scale, ceil, width, height = self.scale, math.ceil, self.width, self.height
     local eventX, eventY = event.x, event.y
     local characterX, characterY = ceil( (eventX - RESIZE_MARGIN_SIZE) / scale ), ceil( (eventY - RESIZE_MARGIN_SIZE) / scale )

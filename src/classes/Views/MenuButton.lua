@@ -112,7 +112,7 @@ end
     @param [Event] event -- the menu changed event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function MenuButton:onMenuChanged( Event event, Event.phases phase )
+function MenuButton:onMenuChanged( MenuChangedInterfaceEvent event, Event.phases phase )
     self:updateThemeStyle()
 
     if self.menu.isOpen then

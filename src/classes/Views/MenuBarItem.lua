@@ -150,7 +150,7 @@ end
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function MenuBarItem:onGlobalMouseUp( Event event, Event.phases phase )
+function MenuBarItem:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
     if self.isEnabled and self.isPressed then
         self.isPressed = false
         if self:hitTestEvent( event ) then
@@ -176,7 +176,7 @@ end
     @param [Event] event -- the menu changed event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function MenuBarItem:onMenuChanged( Event event, Event.phases phase )
+function MenuBarItem:onMenuChanged( MenuChangedInterfaceEvent event, Event.phases phase )
     self:updateThemeStyle()
     
     local menu = self.menu

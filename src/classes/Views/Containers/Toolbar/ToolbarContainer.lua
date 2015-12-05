@@ -44,7 +44,7 @@ function ToolbarContainer:update( deltaTime )
     end
 end
 
-function ToolbarContainer:onChildAdded( Event event, Event.phases phase )
+function ToolbarContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
     if not event.childView:typeOf( IToolbarItem ) then
         error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not implement IToolbarItem to '" .. tostring( self ) .. "'", 0 )
     end

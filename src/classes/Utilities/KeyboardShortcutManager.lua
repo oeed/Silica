@@ -45,7 +45,7 @@ function KeyboardShortcutManager:initialise( owner )
 	self.event:connectGlobal( KeyUpEvent, self.onGlobalKeyUp )
 end
 
-function KeyboardShortcutManager:onGlobalKeyDown( Event event, Event.phases phase )
+function KeyboardShortcutManager:onGlobalKeyDown( KeyDownEvent event, Event.phases phase )
 	local keyString = event.keyString
 	if keyString then
 		self.keysDown[keyString] = true

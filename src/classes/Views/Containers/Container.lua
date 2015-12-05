@@ -55,7 +55,7 @@ function Container:loadInterface()
     end
 end
 
-function Container:onInterfaceOutletChanged( Event event, Event.phases phase )
+function Container:onInterfaceOutletChanged( InterfaceOutletChangedInterfaceEvent event, Event.phases phase )
 	local interfaceOutlet = event.interfaceOutlet
 	local oldView = false
 	local newView = false

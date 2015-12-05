@@ -14,7 +14,7 @@ function PathView:initialise( ... )
     self:event( MouseDownEvent, self.onMouseDown )
 end
 
-function PathView:onMouseDown( Event event, Event.phases phase )
+function PathView:onMouseDown( MouseDownEvent event, Event.phases phase )
 	log(event.y)	
 end
 

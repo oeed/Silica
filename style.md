@@ -124,3 +124,9 @@ Find event functions that don't return true or false
 ```
 function \w+:on.*\)\n(.*(?<!return false)(?<!return true)\n)*?end
 ```
+
+Change old event functions to have the correct argument ValueType
+```
+Find: ((?s)self:event\(\s*(\w+)\w*,\s*self\.(\w+).+:\3\(\s*)Event
+Replace: 
+```

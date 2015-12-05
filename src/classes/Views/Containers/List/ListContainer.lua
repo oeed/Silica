@@ -31,7 +31,7 @@ function ListContainer:update( deltaTime )
     end
 end
 
-function ListContainer:onChildAdded( Event event, Event.phases phase )
+function ListContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
     if not event.childView:typeOf( ListItem ) then
         error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not extend ListItem to '" .. tostring( self ) .. "'", 0 )
     end

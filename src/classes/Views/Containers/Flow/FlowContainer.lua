@@ -42,7 +42,7 @@ function FlowContainer:update( deltaTime )
     end
 end
 
-function FlowContainer:onChildAdded( Event event, Event.phases phase )
+function FlowContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
     if event.childView:typeOf( IFlowItem ) then
         self.needsLayoutUpdate = true
     end
