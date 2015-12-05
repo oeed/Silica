@@ -42,7 +42,7 @@ function SegmentButton:onDraw()
         local backgroundMask = RectangleMask( separatorX, 1, 1, height - shadowPressedOffset )
         canvas:fill( theme:value( "fillColour", "default" ), backgroundMask )
         canvas:outline( theme:value( "outlineColour", "default" ), backgroundMask, 0, outlineThickness, 0 )
-        canvas:fill( theme:value( "separatorFillColour" ), theme:value( "separatorIsDashed" ) and SeparatorMask( separatorX, 1 + separatorTopMargin, 1, separatorHeight ) or RectangleMask( separatorX, 1 + separatorTopMargin, 1, separatorHeight ) )
+        canvas:fill( theme:value( "separatorColour" ), theme:value( "separatorIsDashed" ) and SeparatorMask( separatorX, 1 + separatorTopMargin, 1, separatorHeight ) or RectangleMask( separatorX, 1 + separatorTopMargin, 1, separatorHeight ) )
     end
 
     local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )

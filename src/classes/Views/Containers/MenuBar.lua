@@ -8,7 +8,7 @@ class "MenuBar" extends "Container" {
 function MenuBar:onDraw()
     local width, height, theme, canvas, font = self.width, self.height, self.theme, self.canvas
     canvas:fill( theme:value( "fillColour" ) )
-    canvas:fill( theme:value( "separatorFillColour" ), theme:value( "separatorIsDashed" ) and SeparatorMask( 1, height, width, 1 ) or RectangleMask( 1, height, width, 1 ) )
+    canvas:fill( theme:value( "separatorColour" ), theme:value( "separatorIsDashed" ) and SeparatorMask( 1, height, width, 1 ) or RectangleMask( 1, height, width, 1 ) )
 end
 
 function MenuBar:updateThemeStyle()
@@ -27,7 +27,7 @@ function MenuBar:updateLayout()
 		x = x + childView.width
 		height = math.max( height, childView.height )
 	end
-	self.height = height
+	self.height = height + 1
 	self.needsLayoutUpdate = false
 end
 

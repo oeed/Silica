@@ -29,7 +29,7 @@
 
 	<SegmentButton>
 		<centerMargin type="Number" default="4" />
-		<separatorFillColour type="Graphics.colours" default="LIGHT_GREY"/>
+		<separatorColour type="Graphics.colours" default="LIGHT_GREY"/>
 		<separatorTopMargin type="Number" default="2" />
 		<separatorBottomMargin type="Number" default="2" />
 		<separatorIsDashed type="Boolean" default="true"/>
@@ -67,7 +67,7 @@
 		<leftMargin type="Number" default="6" />
 		<rightMargin type="Number" default="6" />
 		<shortcutMargin type="Number" default="6" />
-		<fillColour type="Graphics.colours" default="TRANSPARENT" pressed="BLUE" disabled="TRANSPARENT"/>
+	<fillColour type="Graphics.colours" default="TRANSPARENT" pressed="BLUE" disabled="TRANSPARENT"/>
 		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
 		<shortcutColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
 		<font type="Font" default="systemFont"/>
@@ -87,6 +87,7 @@
 		<leftMargin type="Number" default="6" />
 		<fillColour type="Graphics.colours" default="WHITE" disabled="LIGHT_GREY" />
 		<separatorColour type="Graphics.colours" default="GREY" disabled="LIGHT_GREY" />
+		<separatorIsDashed type="Boolean" default="false"/>
 	</MenuBar>
 	
 	<MenuBarItem>
@@ -94,7 +95,7 @@
 		<textColour type="Graphics.colours" default="BLACK" pressed="WHITE" disabled="LIGHT_GREY"/>
 		<leftMargin type="Number" default="6" />
 		<rightMargin type="Number" default="6" />
-		<topMargin type="Number" default="2" />
+		<topMargin type="Number" default="3" />
 		<bottomMargin type="Number" default="2" />
 		<menuOffsetX type="Number" default="-5" />
 		<menuOffsetY type="Number" default="8" />
