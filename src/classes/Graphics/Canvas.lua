@@ -172,6 +172,18 @@ end
     @desc Draws an image to the canvas, scaling the image if needed
 ]]
 function Canvas:image( Image image, Number x, Number y, Number( image.width ) width, Number( image.height ) height )
+    local pixels = image:getScaledPixels( width, height )
+    local selfWidth, selfHeight, selfPixels = self.width, self.height, self.pixels
+    local TRANSPARENT = Graphics.colours.TRANSPARENT
+    local xLimit, yLimit = math.min( selfWidth, width + x - 1 ), math.min( selfHeight, height + y - 1 )
+    for _y = y, yLimit do
+        for _x = x, xLimit do
+            local pixel = pixels[(_y - y) * width + (_x - x + 1)]
+            if pixel and pixel ~= TRANSPARENT then
+                selfPixels[(_y - 1) * selfWidth + _x] = pixel
+            end
+        end
+    end
 end
 
 --[[
