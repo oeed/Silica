@@ -55,11 +55,12 @@ function DragDropManager:start( views, data, relativeX, relativeY, hideSource, c
 
         local viewX, viewY = view:position()
         local viewWidth, viewHeight = view.width, view.height
+        log("viewX "..viewX)
         x = math.min( x, viewX )
         y = math.min( y, viewY )
         x2 = math.max( x2, viewX + viewWidth - 1 )
         y2 = math.max( y2, viewY + viewHeight - 1 )
-        table.insert( images, { viewX, viewY, view.canvas:toImage(), view.canvas:toShadowImage() } )
+        table.insert( images, { viewX, viewY, view.canvas:toImage(), view.shadowMask } )
 
         if hideSource then
             view.isVisible = false
@@ -68,21 +69,22 @@ function DragDropManager:start( views, data, relativeX, relativeY, hideSource, c
     local width, height = x2 - x + 1, y2 - y + 1
 
     local image = Image.static:blank( width, height )
-    local shadowImage = Image.static:blank( width, height )
+    local shadowMask = Mask( 1, 1, width, height )
+    -- local shadowImage = Image.static:blank( width, height )
     for i, imageData in ipairs( images ) do
         local _x, _y = imageData[1] - x + 1, imageData[2] - y + 1
         image:appendImage( imageData[3], _x, _y )
-        shadowImage:appendImage( imageData[4], _x, _y )
+        shadowMask = shadowMask:add( imageData[4] )
     end
 
     self:cancel()
     local dragView = DragView( {
-            width = width + SHADOW_RATIO * MAX_SHADOW_SIZE;
-            height = height + MAX_SHADOW_SIZE;
+            width = width;
+            height = height;
             x = x;
             y = y;
             image = image;
-            shadowImage = shadowImage;
+            shadowMask = shadowMask;
         } )
     self.owner.container:insert( dragView )
     self.dragView = dragView
@@ -92,7 +94,6 @@ function DragDropManager:start( views, data, relativeX, relativeY, hideSource, c
     self.didHideSource = hideSource or false
     self.completion = completion or false
     self.sourceViews = views
-
     dragView:animate( "shadowSize", MAX_SHADOW_SIZE, 0.2, nil, Animation.easings.IN_SINE )
 end
 
@@ -120,7 +121,7 @@ function DragDropManager:cancel()
                     view.isVisible = true
                 end
             end
-            -- dragView.parent:remove( dragView )
+            dragView.parent:remove( dragView )
             if completion then completion() end
         end, easing )
         dragView:animate( "y", originalY, time, nil, easing )
