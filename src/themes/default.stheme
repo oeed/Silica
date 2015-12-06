@@ -254,7 +254,18 @@
 	<ListItem>
 		<fillColour type="Graphics.colours" default="TRANSPARENT" selected="BLUE" disabled="TRANSPARENT"/>
 		<textColour type="Graphics.colours" default="BLACK" selected="WHITE" disabled="LIGHT_GREY"/>
+		<outlineColour type="Graphics.colours" default="TRANSPARENT" />
+		<outlineThickness type="Number" default="1" />
+		<leftMargin type="Number" default="2" />
+		<rightMargin type="Number" default="2" />
+		<topMargin type="Number" default="0" />
+		<bottomMargin type="Number" default="0" />
+		<leftTextMargin type="Number" default="7" />
+		<rightTextMargin type="Number" default="7" />
+		<topTextMargin type="Number" default="2" />
+		<bottomTextMargin type="Number" default="2" />
         <cornerRadius type="Number" default="6" />
+		<font type="Font" default="systemFont"/>
 	</ListItem>
 
 </Theme>
