@@ -188,7 +188,7 @@ function Image:appendImage( appendingImage, x, y )
         for _y = y, yLimit do
             local appendingPixel = appendingPixels[(_y - y) * appendingHeight + (_x - x + 1)]
             if appendingPixel and appendingPixel ~= TRANSPARENT then
-                selfPixels[(_y - 1) * selfWidth + _x] = appendingPixels
+                selfPixels[(_y - 1) * selfWidth + _x] = appendingPixel
             end
         end
     end
