@@ -42,7 +42,7 @@ function ListContainer:updateLayout( dontAnimate )
     local children, width = self.children, self.width
     local y = self.theme:value( "topMargin" ) + 1
 
-    local time, easing = 0.5, Animation.easings.IN_OUT_SINE
+    local time, easing = 0.2, Animation.easings.IN_OUT_SINE
 
     for i, childView in ipairs( children ) do
         if dontAnimate then
