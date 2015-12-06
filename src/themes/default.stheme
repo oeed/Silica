@@ -254,10 +254,14 @@
 
 	<FlowContainer>
 		<fillColour type="Graphics.colours" default="WHITE" />
+		<leftMargin type="Number" default="6" />
+		<rightMargin type="Number" default="6" />
+		<topMargin type="Number" default="5" />
+		<bottomMargin type="Number" default="5" />
 	</FlowContainer>
 
 	<ListContainer>
-		<fillColour type="Graphics.colours" default="WHITE" />
+		<!-- <fillColour type="Graphics.colours" default="WHITE" /> -->
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" />
 		<outlineThickness type="Number" default="1" />
         <cornerRadius type="Number" default="3" />
