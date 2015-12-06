@@ -48,12 +48,8 @@ function Image.static:blank( width, height )
     image.height = height
     local TRANSPARENT = Graphics.colours.TRANSPARENT
     local pixels = {}
-    for x = 1, width do
-        local pixelsX = {}
-        for y = 1, height do
-            pixelsX[y] = TRANSPARENT
-        end
-        pixels[x] = pixelsX
+    for i = 1, width * height do
+        pixels[i] = TRANSPARENT
     end
     image.pixels = pixels
     return image
