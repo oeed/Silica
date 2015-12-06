@@ -22,10 +22,6 @@ function WindowButton:initialise( ... )
     if self.onMouseUp then self:event( MouseUpEvent, self.onMouseUp ) end
 end
 
-function WindowButton:initialiseCanvas()
-	self:super()
-end
-
 function WindowButton:onDraw()
     local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
 
