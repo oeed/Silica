@@ -14,7 +14,11 @@ function DragView.image:set( image )
     self.needsDraw = true
 end
 
--- function DragView.shadowMask:set( shadowMask )
---     self.shadowMask = shadowMask
---     self.needsDraw = true
--- end
+function DragView.shadowMask:get()
+    return self.shadowMask
+end
+
+function DragView.shadowMask:set( shadowMask )
+    self.shadowMask = shadowMask
+    self.needsDraw = true
+end
