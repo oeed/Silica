@@ -1,11 +1,7 @@
 
-local SIDE_MARGIN = 6
-local TOP_MARGIN = 5
-
 class "ToolbarContainer" extends "Container" {
 
-    needsLayoutUpdate = false;
-    separatorObject = false;
+    needsLayoutUpdate = Boolean( false );
 
 }
 
@@ -16,25 +12,10 @@ function ToolbarContainer:initialise( ... )
     self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
 end
 
-function ToolbarContainer:initialiseCanvas()
-    self:super()
-    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
-    local separatorObject = canvas:insert( Separator( 1, 1, width, height ) )
-
-    theme:connect( separatorObject, "fillColour", "separatorFillColour" )
-    theme:connect( separatorObject, "isDashed", "separatorIsDashed" )
-    theme:connect( canvas, "fillColour" )
-
-    self.separatorObject = separatorObject
-end
-
-function ToolbarContainer:updateWidth( width )
-    -- self:updateLayout( true )
-    self.separatorObject.width = width
-end
-
-function ToolbarContainer:updateHeight( height )
-    self.separatorObject.y = height
+function ToolbarContainer:onDraw()
+    local width, height, theme, canvas, font = self.width, self.height, self.theme, self.canvas
+    canvas:fill( theme:value( "fillColour" ) )
+    canvas:fill( theme:value( "separatorColour" ), theme:value( "separatorIsDashed" ) and SeparatorMask( 1, height, width, 1 ) or RectangleMask( 1, height, width, 1 ) )
 end
 
 function ToolbarContainer:update( deltaTime )
@@ -55,10 +36,11 @@ function ToolbarContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Even
     self.needsLayoutUpdate = true
 end
 
-function ToolbarContainer:updateLayout( )
-    local children, width = self.children, self.width
-    local remainingWidth = width - 2 * SIDE_MARGIN + 1
-    local x = 1 + SIDE_MARGIN
+function ToolbarContainer:updateLayout()
+    local children, width, theme = self.children, self.width, self.theme
+    local leftMargin, rightMargin, topMargin, bottomMargin, itemMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" ), theme:value( "itemMargin" )
+    local remainingWidth = width - leftMargin - rightMargin
+    local x = 1 + leftMargin
     local dynamicItems = 0
     local items = {}
 
@@ -66,7 +48,7 @@ function ToolbarContainer:updateLayout( )
 
     for i, childView in ipairs( children ) do
         local isPressable = childView:typeOf( IToolbarPressableItem )
-        childView.y = 1 + TOP_MARGIN
+        childView.y = 1 + topMargin
         contentHeight = math.max( childView.height - (isPressable and 1 or 0), contentHeight )
 
         if childView:typeOf( ToolbarStaticSpace ) then
@@ -76,15 +58,15 @@ function ToolbarContainer:updateLayout( )
         elseif childView:typeOf( IToolbarDynamicItem ) then
             dynamicItems = dynamicItems + 1
             items[i] = { childView, nil, isPressable }
-            remainingWidth = remainingWidth - SIDE_MARGIN
+            remainingWidth = remainingWidth - itemMargin
         else
             local childWidth = childView.width
-            remainingWidth = remainingWidth - childWidth - SIDE_MARGIN
+            remainingWidth = remainingWidth - childWidth - itemMargin + 1
             items[i] = { childView, childWidth, isPressable }
         end
     end
 
-    local dynamicWidth = (remainingWidth + SIDE_MARGIN) / dynamicItems
+    local dynamicWidth = (remainingWidth + itemMargin) / dynamicItems
     local passedFirstDynamic = false
     for i, item in ipairs( items ) do
         local childView, childWidth, isPressable = item[1], item[2], item[3]
@@ -100,10 +82,10 @@ function ToolbarContainer:updateLayout( )
             childView.x = x
             childView.width = childWidth
         end
-        x = x + childWidth - (isPressable and 1 or 0) + ((not childView or (i < #items and not items[i + 1][1]) ) and 0 or SIDE_MARGIN)
+        x = x + childWidth - (isPressable and 1 or 0) + ((not childView or (i < #items and not items[i + 1][1]) ) and 0 or itemMargin)
     end
 
-    self.height = contentHeight + 2 * TOP_MARGIN + 1 -- + 1 for separator
+    self.height = contentHeight + topMargin + bottomMargin + 1 -- + 1 for separator
 
     self.needsLayoutUpdate = false
 end
