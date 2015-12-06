@@ -171,13 +171,13 @@ function Image:appendImage( appendingImage, x, y )
     local selfWidth, selfHeight, selfPixels = self.width, self.height, self.pixels
     local TRANSPARENT = Graphics.colours.TRANSPARENT
     local xLimit, yLimit = math.min( selfWidth, appendingWidth + x - 1 ), math.min( selfHeight, appendingHeight + y - 1 )
-    for _x = x, xLimit do
-        for _y = y, yLimit do
-            local appendingPixel = appendingPixels[(_y - y) * appendingHeight + (_x - x + 1)]
+    for _y = y, yLimit do
+        for _x = x, xLimit do
+            local appendingPixel = appendingPixels[(_y - y) * appendingWidth + (_x - x + 1)]
             if appendingPixel and appendingPixel ~= TRANSPARENT then
                 selfPixels[(_y - 1) * selfWidth + _x] = appendingPixel
             end
         end
     end
-    self.pixels = pixels
+    self.pixels = selfPixels
 end
