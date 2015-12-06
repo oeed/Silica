@@ -48,7 +48,7 @@ function ListContainer:updateLayout( dontAnimate )
         if dontAnimate then
             childView.y = y
         else
-            childView:animateY( y, time, nil, easing )
+            childView:animate( "y", y, time, nil, easing )
         end
         childView.x = 1
         childView.width = width

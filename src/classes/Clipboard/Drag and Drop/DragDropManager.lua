@@ -114,16 +114,16 @@ function DragDropManager:cancel()
             originalY = math.min( originalY, viewY )
         end
 
-        dragView:animateX( originalX, time, function()
+        dragView:animate( "x", originalX, time, function()
             for i, view in ipairs( sourceViews ) do
                 if didHideSource then
                     view.isVisible = true
                 end
             end
-            dragView.parent:remove( dragView )
+            -- dragView.parent:remove( dragView )
             if completion then completion() end
         end, easing )
-        dragView:animateY( originalY, time, nil, easing )
+        dragView:animate( "y", originalY, time, nil, easing )
         dragView:animate( "shadowSize", 0, time, nil, easing )
         self.dragView = false
     end
@@ -180,7 +180,7 @@ function DragDropManager:onMouseUp( Event event, Event.phases phase )
         else
             destination:dragDropDropped( self.data )
             local dropStyle = destination.dropStyle
-            local dropStyles = self.dropStyles
+            local dropStyles = DragDropManager.dropStyles
             local function done()
                 if self.didHideSource then
                     for i, view in ipairs( self.sourceViews ) do
@@ -194,10 +194,10 @@ function DragDropManager:onMouseUp( Event event, Event.phases phase )
             if dropStyle == dropStyles.SHRINK then
                 local time, easing = 0.5, Animation.easings.OUT_SINE
                 local x, y, width, height = dragView.x, dragView.y, dragView.width, dragView.height
-                dragView:animateWidth( 1, time, done, easing )
-                dragView:animateHeight( 1, time, nil, easing )
-                dragView:animateX( math.ceil( x + self.relativeX - 1 ), time, nil, easing )
-                dragView:animateY( math.ceil( y + self.relativeY - 1), time, nil, easing )
+                dragView:animate( "width", 1, time, done, easing )
+                dragView:animate( "height", 1, time, nil, easing )
+                dragView:animate( "x", math.ceil( x + self.relativeX - 1 ), time, nil, easing )
+                dragView:animate( "y", math.ceil( y + self.relativeY - 1), time, nil, easing )
                 dragView.shadowObject.isVisible = false
             elseif dropStyle == dropStyles.RETURN then
                 local time, easing = 0.5, Animation.easings.OUT_SINE
@@ -207,8 +207,8 @@ function DragDropManager:onMouseUp( Event event, Event.phases phase )
                     originalX = math.min( originalX, viewX )
                     originalY = math.min( originalY, viewY )
                 end
-                dragView:animateX( originalX, time, done, easing )
-                dragView:animateY( originalY, time, nil, easing )
+                dragView:animate( "x", originalX, time, done, easing )
+                dragView:animate( "y", originalY, time, nil, easing )
                 dragView:animate( "shadowSize", 0, time, nil, easing )
             else
                 done()

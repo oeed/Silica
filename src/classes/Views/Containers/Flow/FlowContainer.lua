@@ -116,10 +116,10 @@ function FlowContainer:updateLayout( dontAnimate )
                     childView.width = width
                     childView.height = idealHeight
                 else
-                    childView:animateX( x, time, nil, easing )
-                    childView:animateY( y, time, nil, easing )
-                    childView:animateWidth( width, time, nil, easing )
-                    childView:animateHeight( idealHeight, time, nil, easing )
+                    childView:animate( "x",  x, time, nil, easing )
+                    childView:animate( "y",  y, time, nil, easing )
+                    childView:animate( "width",  width, time, nil, easing )
+                    childView:animate( "height",  idealHeight, time, nil, easing )
                 end
                 x = x + width
                 height = math.max( idealHeight, height )
@@ -128,7 +128,7 @@ function FlowContainer:updateLayout( dontAnimate )
         end
     end
 
-    self:animateHeight( y + BOTTOM_MARGIN, time, nil, easing )
+    self:animate( "height",  y + BOTTOM_MARGIN, time, nil, easing )
 
     self.needsLayoutUpdate = false
 end
