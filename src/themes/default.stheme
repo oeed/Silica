@@ -251,6 +251,15 @@
 		<fillColour type="Graphics.colours" default="WHITE" />
 	</FlowContainer>
 
+	<ListContainer>
+		<fillColour type="Graphics.colours" default="WHITE" />
+		<outlineColour type="Graphics.colours" default="LIGHT_GREY" />
+		<outlineThickness type="Number" default="1" />
+        <cornerRadius type="Number" default="3" />
+		<topMargin type="Number" default="5" />
+		<bottomMargin type="Number" default="5" />
+	</ListContainer>
+
 	<ListItem>
 		<fillColour type="Graphics.colours" default="TRANSPARENT" selected="BLUE" disabled="TRANSPARENT"/>
 		<textColour type="Graphics.colours" default="BLACK" selected="WHITE" disabled="LIGHT_GREY"/>
