@@ -46,7 +46,7 @@ class "View" {
 
 	canvas = Canvas;
 	shadowMask = Mask.allowsNil; -- TODO: .isReadOnly
-	shadowSize = Number( 0 ); -- TODO: .isReadOnly
+	shadowSize = Number( 0 );
 	needsDraw = Boolean( true );
 	isVisible = Boolean( true );
 	theme = false;
@@ -92,7 +92,7 @@ end
     @desc Sets up the canvas and it's graphics objects (used for overriding)
 ]]
 function View:initialiseCanvas()
-	self.canvas = Canvas( self.x, self.y, self.width, self.height, self )
+	self.canvas = Canvas( self.width, self.height, self )
 end
 
 --[[
@@ -100,6 +100,11 @@ end
 ]]
 function View.shadowMask:get()
 	return self.canvas.contentMask -- self.canvas.mask is the mask of the currently drawn pixels to the canvas, i.e. everything will cast a shadow
+end
+
+function View.shadowSize:set( shadowSize )
+	self.shadowSize = shadowSize
+	self.needsDraw = true 
 end
 
 --[[
