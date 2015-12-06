@@ -1,11 +1,11 @@
 
 class "ListContainer" extends "ScrollContainer" implements "IDragDropDestination" {
     
-    needsLayoutUpdate = false;
+    needsLayoutUpdate = Boolean( false );
     isCanvasHitTested = Boolean( false );
-    canRearrange = true;
+    canRearrange = Boolean( true );
     dropStyle = DragDropManager.dropStyles.RETURN;
-    canTransferItems = false;
+    canTransferItems = Boolean( false );
 
 }
 
