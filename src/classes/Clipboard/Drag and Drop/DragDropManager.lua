@@ -67,8 +67,8 @@ function DragDropManager:start( views, data, relativeX, relativeY, hideSource, c
     end
     local width, height = x2 - x + 1, y2 - y + 1
 
-    local image = Image.blank( width, height )
-    local shadowImage = Image.blank( width, height )
+    local image = Image.static:blank( width, height )
+    local shadowImage = Image.static:blank( width, height )
     for i, imageData in ipairs( images ) do
         local _x, _y = imageData[1] - x + 1, imageData[2] - y + 1
         image:appendImage( imageData[3], _x, _y )
