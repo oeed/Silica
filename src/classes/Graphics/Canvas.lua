@@ -169,6 +169,13 @@ function Canvas:drawTo( Canvas destinationCanvas, Number x, Number y, Mask.allow
 end
 
 --[[
+    @desc Creates an image from the Canvas' pixels
+]]
+function Canvas:toImage()
+    return Image.static:fromPixels( self.pixels, self.width, self.height )
+end
+
+--[[
     @desc Draws an image to the canvas, scaling the image if needed
 ]]
 function Canvas:image( Image image, Number x, Number y, Number( image.width ) width, Number( image.height ) height )
