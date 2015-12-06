@@ -396,7 +396,7 @@ end
 --[[
 	@desc Animate a change in the position
 ]]
-function View:animateMove( Number x, Number y, Number( ANIMATION_DEFAULT_TIME ) time, Function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay )
+function View:animateMove(  Number x, Number y, Number( ANIMATION_DEFAULT_TIME ) time, Function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay )
 	self:animate( "x", x, time, onFinish, easing, delay )
 	self:animate( "y", y, time, nil, easing, delay )
 end
@@ -456,7 +456,7 @@ end
 --[[
 	@desc Starts a drag and drop for the view
 ]]
-function View:startDragDrop( MouseDownEvent event, ClipboardData data, Boolean( true ) hideSource, Function.allowsNil completion, Table( {} ) views )
+function View:startDragDrop( MouseDownEvent event, ClipboardData data, Boolean( true ) hideSource, Function.allowsNil completion, Table.allowsNil views )
     self.application.dragDropManager:start( views or { self }, data, event.globalX, event.globalY, hideSource, completion )
 end
 
