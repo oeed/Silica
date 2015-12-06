@@ -52,20 +52,56 @@ function ScreenCanvas:drawToScreen( screen )
         [2^15] = "f"
     }
 
+
+    local currentLength, currentX, currentY, currentColour
+
+    local sBC, sCP, w = term.setBackgroundColour, term.setCursorPos, term.write
+    local function draw()
+        if currentLength == 0 then return end
+        sBC( currentColour )
+        sCP( currentX, currentY )
+        w( (" "):rep( currentLength ) )
+    end
+
     for y = 1, self.height do
-        local changed = false
-        local str = ""
+        currentY = y
+        currentLength = 0
+        currentColour = nil
         for x = 1, width do
-            local p = ( y - 1 ) * width + x
-            local c = pixels[p] or blackColour
-            str = str .. hexes[c]
-            if not changed and c ~= screenBuffer[p] then
-                changed = true
-            end
+         local p = ( y - 1 ) * width + x
+         local c = pixels[p] or colour
+         if c ~= screenBuffer[p] then
+             screenBuffer[p] = c
+             if currentColour == c then
+                 currentLength = currentLength + 1
+             else
+                 draw()
+                 currentLength = 1
+                 currentX = x
+                 currentColour = c
+             end
+         elseif currentLength ~= 0 then
+             draw()
+             currentLength = 0
+             currentColour = nil
+         else
+             currentColour = nil
+         end
         end
-        if changed then
-            term.setCursorPos(1,y)
-            blit(str)
-        end
+        draw()
+        -- local changed = false
+        -- local str = ""
+        -- for x = 1, width do
+        --     local p = ( y - 1 ) * width + x
+        --     local c = pixels[p] or blackColour
+        --     str = str .. hexes[c]
+        --     if not changed and c ~= screenBuffer[p] then
+        --         changed = true
+        --     end
+        -- end
+        -- if changed then
+        --     term.setCursorPos(1,y)
+        --     blit(str)
+        -- end
     end
 end
