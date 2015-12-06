@@ -256,8 +256,8 @@
 		<outlineColour type="Graphics.colours" default="LIGHT_GREY" />
 		<outlineThickness type="Number" default="1" />
         <cornerRadius type="Number" default="3" />
-		<topMargin type="Number" default="5" />
-		<bottomMargin type="Number" default="5" />
+		<topMargin type="Number" default="4" />
+		<bottomMargin type="Number" default="4" />
 	</ListContainer>
 
 	<ListItem>
