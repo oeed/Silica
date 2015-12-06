@@ -19,7 +19,7 @@ function ApplicationContainer:initialise( ... )
 end
 
 function ApplicationContainer:initialiseCanvas()
-	self.canvas = ScreenCanvas( self.x, self.y, self.width, self.height, self )
+	self.canvas = ScreenCanvas( self.width, self.height, self )
 end
 
 function ApplicationContainer.theme:set( theme )

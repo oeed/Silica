@@ -4,8 +4,6 @@ local SHADOW_COLOUR = Graphics.colours.GREY
 
 class "Canvas" {
     
-    x = Number;
-    y = Number;
     width = Number;
     height = Number;
     owner = View.allowsNil;
@@ -21,9 +19,7 @@ class "Canvas" {
 
 }
 
-function Canvas:initialise( Number x, Number y, Number width, Number height, View.allowsNil owner )
-    self.x = x
-    self.y = y
+function Canvas:initialise( Number width, Number height, View.allowsNil owner )
     self.width = width
     self.height = height
     self.owner = owner
