@@ -32,9 +32,9 @@ local IMAGE_MIMES = { "image/paint" }
 
 class "Image" {
     
-    width = false;
-    height = false;
-    pixels = false;
+    width = Number;
+    height = Number;
+    pixels = Table;
     -- resource = false;
     -- file = false;
     contents = false;
@@ -42,63 +42,52 @@ class "Image" {
 
 }
 
+function Image:initialise( Table pixels, Number width, Number height )
+    local newPixels = {}
+    local maxLength = width * height
+    for i, pixel in pairs( pixels ) do
+        if i > maxLength then
+            error( "Image pixels must fit the given size" )
+        end
+        newPixels[i] = pixel
+    end
+    self.width = width
+    self.height = height
+    self.pixels = newPixels
+end
+
 function Image.static:blank( width, height )
-    local image = Image()
-    image.width = width
-    image.height = height
     local TRANSPARENT = Graphics.colours.TRANSPARENT
     local pixels = {}
     for i = 1, width * height do
         pixels[i] = TRANSPARENT
     end
-    image.pixels = pixels
-    return image
+    return Image( pixels, width, height )
 end
 
 function Image.static:fromPath( path )
     local file = File( path )
     if file then
-        local image = Image()
-        image.contents = file.contents
-        image:loadPaintFormat()
-        return image
+        return Image.static:fromPaintFormat( file.contents )
     end
 end
 
 function Image.static:fromName( name )
-    log("name "..name)
     local resource = Resource( name, IMAGE_MIMES )
     if resource then
-        return Image.fromResource( resource )
+        return Image.static:fromResource( resource )
     end
 end
 
 function Image.static:fromResource( resource )
-    local image = Image()
-    image.contents = resource.contents
-    image:loadPaintFormat()
-    return image
+    return Image.static:fromPaintFormat( resource.contents )
 end
 
 function Image.static:fromPixels( pixels, width, height )
-    local image = Image()
-    image.width = width
-    image.height = height
-    image:loadPixels( pixels )
-    return image
+    return Image( pixels, width, height )
 end
 
-function Image:loadPixels( pixels )
-    local newPixels = {}
-
-    for i, pixel in pairs( pixels ) do
-        newPixels[i] = pixel
-    end
-
-    self.pixels = newPixels
-end
-
-function Image:loadPaintFormat()
+function Image.static:fromPaintFormat( contents )
     local lines = split( self.contents, "\n" )
     local pixels = {}
     local width = 0
@@ -106,15 +95,13 @@ function Image:loadPaintFormat()
         width = math.max( width, #line )
     end
 
-    for y, line in ipairs( lines ) do
+    for y, line in pairs( lines ) do
         for x = 1, #line do
             pixels[(y - 1) * width + x] = getColourOf( line:sub( x, x ) )
         end
     end
 
-    self.width = width
-    self.height = #lines
-    self.pixels = pixels
+    return Image( pixels, width, height )
 end
 
 function Image:toPaintFormat()
