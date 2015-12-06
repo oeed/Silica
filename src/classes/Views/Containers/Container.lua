@@ -111,8 +111,14 @@ function Container:update( deltaTime )
 end
 
 function Container:onDraw()
-    local canvas = self.canvas
-    canvas:fill( self.theme:value( "fillColour" ) )
+    local canvas, theme = self.canvas, self.theme
+    local cornerRadius = theme:value( "cornerRadius" )
+    local mask
+    if cornerRadius > 0 then
+    	mask = RoundedRectangleMask( 1, 1, self.width, self.height, cornerRadius )
+    end
+	canvas:fill( theme:value( "fillColour" ), mask )
+	canvas:outline( theme:value( "outlineColour" ), mask, theme:value( "outlineThickness" ) )
 end
 
 --[[

@@ -6,6 +6,9 @@
 	
 	<Container>
 		<fillColour type="Graphics.colours" default="TRANSPARENT" />
+		<outlineColour type="Graphics.colours" default="TRANSPARENT" />
+		<outlineThickness type="Number" default="0" />
+        <cornerRadius type="Number" default="0" />
 	</Container>
 
 	<Button>
