@@ -5,7 +5,6 @@ class "Window" extends "Container" {
 
 	container = false;
     closeButton = false;
-    minimiseButton = false;
     maximiseButton = false;
     isEnabled = Boolean( false );
 
@@ -32,8 +31,7 @@ class "Window" extends "Container" {
 function Window:initialise( ... )
 	self:super( ... )
     self.closeButton = self:insert( CloseWindowButton( { x = 2, y = 1, window = self } ))
-    self.minimiseButton = self:insert( MinimiseWindowButton( { x = 10, y = 1, window = self } ))
-    self.maximiseButton = self:insert( MaximiseWindowButton( { x = 18, y = 1, window = self } ))
+    self.maximiseButton = self:insert( MaximiseWindowButton( { x = 11, y = 1, window = self } ))
 
     self:loadInterface()
     
