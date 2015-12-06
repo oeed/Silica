@@ -66,13 +66,13 @@ end
 
 class "Animation" {
 	easings = Enum( Function, {} );
-	duration = false;
+	duration = Number;
 	subject = false;
 	targetValues = false; -- if a targetValue is an array, not a single value, the values are used as evenly spaced 'keyframes'. This can be used for colours.
 	easingFunc = false;
 	initialValues = false;
-	time = false;
-    round = false;
+	time = Number;
+    round = Boolean( false );
 }
 
 --[[
@@ -100,20 +100,20 @@ end
 function Animation:setTime( time )
 	assert( type(time ) == "number" and time >= 0, "time must be a positive number or 0")
 
-    local duration
-	self.time = time
+    local duration = self.duration
 
 	if time <= 0 then
 		self.time = 0
 		copyTables(self.subject, self.initialValues)
-	elseif time >= self.duration then -- the tween has expired
-		self.time = self.duration
+	elseif time >= duration then -- the tween has expired
+		self.time = duration
 		copyTables(self.subject, self.targetValues)
 	else
-		performEasingOnSubject(self.subject, self.targetValues, self.initialValues, self.time, self.duration, self.easingFunc, self.round)
+        self.time = time
+		performEasingOnSubject(self.subject, self.targetValues, self.initialValues, self.time, duration, self.easingFunc, self.round)
 	end
 
-	return self.time >= self.duration
+	return self.time >= duration
 end
 
 --[[
