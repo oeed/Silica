@@ -95,12 +95,8 @@ end
 function Image:loadPixels( pixels )
     local newPixels = {}
 
-    for x, column in ipairs( pixels ) do
-        local pixelsX = {}
-        for y, colour in ipairs( column ) do
-            pixelsX[y] = colour
-        end
-        newPixels[x] = pixelsX
+    for i, pixel in pairs( pixels ) do
+        newPixels[i] = pixel
     end
 
     self.pixels = newPixels
@@ -109,17 +105,18 @@ end
 function Image:loadPaintFormat()
     local lines = split( self.contents, "\n" )
     local pixels = {}
+    local width = 0
+    for y, line in ipairs( lines ) do
+        width = math.max( width, #line )
+    end
 
     for y, line in ipairs( lines ) do
         for x = 1, #line do
-            if not pixels[x] then
-                pixels[x] = {}
-            end
-            pixels[x][y] = getColourOf( line:sub( x, x ) )
+            pixels[(y - 1) * width + x] = getColourOf( line:sub( x, x ) )
         end
     end
 
-    self.width = #pixels
+    self.width = width
     self.height = #lines
     self.pixels = pixels
 end
@@ -131,7 +128,7 @@ function Image:toPaintFormat()
 
     for y = 1, height do
         for x = 1, width do
-            paintFormat = paintFormat .. getHexOf( pixels[x][y] )
+            paintFormat = paintFormat .. getHexOf( pixels[(y - 1) * width + x] )
         end
         paintFormat = paintFormat .. "\n"
     end
@@ -170,13 +167,9 @@ function Image:getScaledPixels( scaledWidth, scaledHeight )
     local ceil = math.ceil
 
     for x = 1, scaledWidth do
-        local pixelsX = pixels[ ceil( x * widthRatio ) ]
-        if not pixelsX then break end
-        local scaledX = {}
         for y = 1, scaledHeight do
-            scaledX[y] = pixelsX[ ceil( y * heightRatio ) ]
+            scaledPixels[(y - 1) * scaledWidth + x] = pixels[ ceil( y * heightRatio - 1 ) * width + ceil( x * widthRatio ) ]
         end
-        scaledPixels[x] = scaledX
     end
 
     scaledCache[scaledWidth .. ":" .. scaledHeight] = scaledPixels
@@ -191,14 +184,15 @@ end
     @param [number] y
 ]]
 function Image:appendImage( appendingImage, x, y )
-    local appendingPixels = appendingImage.pixels
-    local pixels = self.pixels
-    for _x, column in ipairs( appendingPixels ) do
-        local pixelsX = pixels[x + _x - 1]
-        if not pixelsX then break end
-        for _y, colour in ipairs( column ) do
-            if pixelsX[y + _y - 1] then
-                pixelsX[y + _y - 1] = colour
+    local appendingWidth, appendingHeight, appendingPixels = appendingImage.width, appendingImage.height, appendingImage.pixels
+    local selfWidth, selfHeight, selfPixels = self.width, self.height, self.pixels
+    local TRANSPARENT = Graphics.colours.TRANSPARENT
+    local xLimit, yLimit = math.min( selfWidth, appendingWidth + x - 1 ), math.min( selfHeight, appendingHeight + y - 1 )
+    for _x = x, xLimit do
+        for _y = y, yLimit do
+            local appendingPixel = appendingPixels[(_y - y) * appendingHeight + (_x - x + 1)]
+            if appendingPixel and appendingPixel ~= TRANSPARENT then
+                selfPixels[(_y - 1) * selfWidth + _x] = appendingPixels
             end
         end
     end
