@@ -41,6 +41,9 @@
         <SegmentButton text=Three />
     </SegmentContainer>
 
+    <TestPathView x=135 y=75 width=100 height=100 />
+
+
     <!-- <ProgressBar x=135 y=77 /> -->
 
     <TextBox x=10 y=100 text="abcd efghijk. lmn opqrs tuvwxyz" placeholder="Placeholder :D" />
@@ -51,9 +54,8 @@
         <ListItem text="Three" />
     </ListContainer>
 
-    <Window x=150 y=130 width=100 height=60 >
+    <!-- <Window x=150 y=130 width=100 height=60 >
         <WindowContainer>
-            <!-- <ProgressBar x=6 y=65 /> -->
             <Button x=5 y=5 text=Okay />
             <Checkbox identifier=agreeCheckbox x=5 y=25 isChecked=true />
             <Container x=50 y=5 width=20 height=40>
@@ -62,7 +64,7 @@
                 <Radio y=21/>
             </Container>
         </WindowContainer>
-    </Window>
+    </Window> -->
     
     <!-- <TestView x=50 y=50 width=19 height=25/> -->
     <!-- <TestView x=50 y=50 width=80 height=80/> -->
