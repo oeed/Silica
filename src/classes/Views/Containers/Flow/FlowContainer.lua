@@ -13,8 +13,8 @@ function FlowContainer:initialise( ... )
     self:event( ReadyInterfaceEvent, self.onReady )
 end
 
-function FlowContainer.set:width( ... )
-    self:super( ... )
+function FlowContainer.width:set( width )
+    self:super( width )
     self.needsLayoutUpdate = true
 end
 
