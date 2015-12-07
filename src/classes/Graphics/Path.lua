@@ -1,5 +1,5 @@
 
-local sin, cos, floor, min, max, abs, acos, PI = math.sin, math.cos, math.floor, math.min, math.max, math.abs, math.acos, math.pi
+local sin, cos, floor, min, max, abs, acos, PI, remove = math.sin, math.cos, math.floor, math.min, math.max, math.abs, math.acos, math.pi, table.remove
 
 local function round( num )
     return floor( num + 0.5 )
@@ -274,15 +274,13 @@ function Path:close( linkedToEnd )
         self:lineTo( lines[1].x1, lines[1].y1 )
     end
 
-    self.isClosed = true;
-    self.currentX = false
-    self.currentY = false
+    self.isClosed = true
     return true
 end
 
 local ERROR_MARGIN = 0.001
 
-function Path:getIntersections( Number y, Number minX, Number maxX, Number( 1 ) scale )
+function Path:getIntersections( Number( 1 ) scale )
     local intersections = {}
     local lines, height = self.lines, self.height
 
@@ -291,24 +289,33 @@ function Path:getIntersections( Number y, Number minX, Number maxX, Number( 1 ) 
         intersections[y * scale] = {}
     end
 
+    local slopes = {}
     for i, line in ipairs( lines ) do
         if line.mode == "linear" then
             local x1, x2, y1, y2 = line.x1, line.x2, line.y1, line.y2
             local minX, maxX, minY, maxY = min( x1, x2 ), max( x1, x2 ), min( y1, y2 ), max( y1, y2 )
             local xDiff, yDiff = x2 - x1, y2 - y1
+            local slope
+            local isVertical, isHorizontal = abs( xDiff ) < ERROR_MARGIN, abs( yDiff ) < ERROR_MARGIN
+            if isVertical then
+                slope = math.huge * ( y1 > y2 and -1 or 1 )
+            elseif isHorizontal then
+                slope = 0
+            else
+                slope = yDiff / xDiff
+            end
 
-            if abs( xDiff ) < ERROR_MARGIN then -- the two points are essentially in a vertical line
+            if isVertical then -- the two points are in a vertical line
                 for y = 1, height, inverseScale do
                     if y >= minY - ERROR_MARGIN and y <= maxY + ERROR_MARGIN then
                         local yIntersections = intersections[y * scale]
                         yIntersections[#yIntersections + 1] = x1
                     end
                 end
-            elseif abs( yDiff ) < ERROR_MARGIN then -- the two points are essentially in a horizontal line
+            elseif isHorizontal then -- the two points are in a horizontal line, we can ignore it (can we?)
                 local yIntersections = intersections[floor( y1 * scale + 0.5 )]
-                yIntersections[#yIntersections + 1] = minX -- TODO: we *might* have to also add maxX so there are two points
+                -- yIntersections[#yIntersections + 1] = minX -- TODO: we *might* have to also add maxX so there are two points
             else
-                local slope = yDiff / xDiff
                 local yIntercept = y1 - slope * x1
                 for y = 1, height, inverseScale do
                     local x = ( y - yIntercept ) / slope
@@ -318,6 +325,7 @@ function Path:getIntersections( Number y, Number minX, Number maxX, Number( 1 ) 
                     end
                 end
             end
+            slopes[i] = { slope, slope / abs( slope ) }
         else
         --     if not line.xCoefficients or not line.yCoefficients then
         --         line.xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
@@ -340,9 +348,67 @@ function Path:getIntersections( Number y, Number minX, Number maxX, Number( 1 ) 
         --     -- getCurvedIntersectionPoints( yIntersections, y, line, minX, maxX )
         -- end
         end
-        table.sort( yIntersections )
-        intersections[y] = yIntersections
     end
+
+
+    -- for i, line in ipairs( lines ) do
+    --     local lastIndex = i == 1 and #lines or ( i - 1 )
+    --     log(lastIndex)
+    --     local lastLine = lines[lastIndex]
+    --     local thisSlope, lastSlope = slopes[i], slopes[lastIndex]
+    --     local x, y = line.x1, line.y1
+    --     -- this expliains what's happening:
+    --     -- https://books.google.com.au/books?id=fGX8yC-4vXUC&pg=PA52&lpg=PA52&dq=polygon+scanline+maxima&source=bl&ots=wb9LU6OjYx&sig=crP4WLcvB-VAHFj_WIsmn5HoTZ4&hl=en&sa=X&ved=0ahUKEwjmzbXaz8nJAhUBhqYKHRl5A30Q6AEINTAF#v=onepage&q=polygon%20scanline%20maxima&f=false
+    --     if thisSlope[2] ~= lastSlope[2] then -- they don't have the same slope sign at each other (one is positive one negative), it might be an maxima
+    --         local yIntersections = intersections[y * scale]
+    --         local thisNextY, lastNextY
+    --         if line.mode == "linear" then
+    --             thisNextY = line.y2
+    --         end
+    --         if lastLine.mode == "linear" then
+    --             lastNextY = lastLine.y1
+    --         end
+
+    --         -- if both lines are heading below or above the vertex it's a maxima
+    --         local thisGreaterThan, lastGreaterThan = thisNextY > y, lastNextY > y
+    --         if thisGreaterThan == lastGreaterThan then
+    --             log("Maxima at "..x..", "..y)
+    --         end
+    --     end
+    -- end
+
+    for y = 1, height, inverseScale do
+        local yIntersections = intersections[y * scale]
+        -- table.sort( yIntersections )
+
+        if #intersections[y * scale] % 2 ~= 0 then
+            local i = 2
+            while i <= #yIntersections do
+                local value, previousValue = yIntersections[i], yIntersections[i - 1]
+                -- log(value.." == "..previousValue)
+                if value == previousValue or (value < previousValue + ERROR_MARGIN and value > previousValue - ERROR_MARGIN) then
+                    -- log("==")
+                    -- remove( yIntersections, i )
+                    i = i + 1
+                else
+                    i = i + 2
+                end
+            end
+        end
+
+        -- for i = 2, #yIntersections, 2 do
+        --     if yIntersections[i] == yIntersections[i - 1] then
+        --         -- this point is a duplicate that we don't want, get rid of it
+        --         yIntersections[i] = nil
+        --     end
+        -- end
+
+        if #intersections[y * scale] % 2 ~= 0 then
+            print("Problem at "..y)
+            print(textutils.serialize(intersections[y * scale]))
+        end
+    end
+
     log(textutils.serialize(intersections))
     return intersections
 end
