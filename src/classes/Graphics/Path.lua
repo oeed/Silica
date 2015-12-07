@@ -93,42 +93,6 @@ local function cubicRoots( P )
     return t;
 end
 
-local function getLinearIntersectionPoint( points, y, line, minX, maxX )
-    if abs( line.x1 - line.x2 ) < .00001 then
-        if y >= min( line.y1, line.y2 ) - .00001 and y <= max( line.y1, line.y2 ) + .0001 then
-            points[#points + 1] = floor( line.x1 + .5 )
-        end
-    else
-        local m = ( line.y2 - line.y1 ) / ( line.x2 - line.x1 )
-        local c = line.y1 - m * line.x1
-        local x = ( y - c ) / m
-        if x >= min( line.x1, line.x2 ) - .00001 and x <= max( line.x1, line.x2 ) + .0001 then
-            points[#points + 1] = x
-        end
-    end
-end
-
-local function getCurvedIntersectionPoints( points, y, line, minX, maxX )
-    if not line.xCoefficients or not line.yCoefficients then
-        line.xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
-        line.yCoefficients = bezierCoeffs( line.y1, line.controlPoint1Y, line.controlPoint2Y, line.y2 )
-    end
-
-    local xCoefficients = line.xCoefficients
-    local yCoefficients = line.yCoefficients
-
-    local yRoots = cubicRoots( { yCoefficients[1], yCoefficients[2], yCoefficients[3], yCoefficients[4] - y } )
-
-    for i = 1, 3 do
-        t = yRoots[i];
-        if t > 0 and t < 1 then
-            local x = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4];
-            x = min( max( x, minX ), maxX )
-            points[#points + 1] = x
-        end
-    end
-end
-
 class "Path" {
     
     lines = Table( {} );
@@ -314,4 +278,71 @@ function Path:close( linkedToEnd )
     self.currentX = false
     self.currentY = false
     return true
+end
+
+local ERROR_MARGIN = 0.001
+
+function Path:getIntersections( Number y, Number minX, Number maxX, Number( 1 ) scale )
+    local intersections = {}
+    local lines, height = self.lines, self.height
+
+    local inverseScale = 1 / scale
+    for y = 1, height, inverseScale do
+        intersections[y * scale] = {}
+    end
+
+    for i, line in ipairs( lines ) do
+        if line.mode == "linear" then
+            local x1, x2, y1, y2 = line.x1, line.x2, line.y1, line.y2
+            local minX, maxX, minY, maxY = min( x1, x2 ), max( x1, x2 ), min( y1, y2 ), max( y1, y2 )
+            local xDiff, yDiff = x2 - x1, y2 - y1
+
+            if abs( xDiff ) < ERROR_MARGIN then -- the two points are essentially in a vertical line
+                for y = 1, height, inverseScale do
+                    if y >= minY - ERROR_MARGIN and y <= maxY + ERROR_MARGIN then
+                        local yIntersections = intersections[y * scale]
+                        yIntersections[#yIntersections + 1] = x1
+                    end
+                end
+            elseif abs( yDiff ) < ERROR_MARGIN then -- the two points are essentially in a horizontal line
+                local yIntersections = intersections[floor( y1 * scale + 0.5 )]
+                yIntersections[#yIntersections + 1] = minX -- TODO: we *might* have to also add maxX so there are two points
+            else
+                local slope = yDiff / xDiff
+                local yIntercept = y1 - slope * x1
+                for y = 1, height, inverseScale do
+                    local x = ( y - yIntercept ) / slope
+                    if x >= minX - ERROR_MARGIN and x <= maxX + ERROR_MARGIN then
+                        local yIntersections = intersections[y * scale]
+                        yIntersections[#yIntersections + 1] = x
+                    end
+                end
+            end
+        else
+        --     if not line.xCoefficients or not line.yCoefficients then
+        --         line.xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
+        --         line.yCoefficients = bezierCoeffs( line.y1, line.controlPoint1Y, line.controlPoint2Y, line.y2 )
+        --     end
+
+        --     local xCoefficients = line.xCoefficients
+        --     local yCoefficients = line.yCoefficients
+
+        --     local yRoots = cubicRoots( { yCoefficients[1], yCoefficients[2], yCoefficients[3], yCoefficients[4] - y } )
+
+        --     for i = 1, 3 do
+        --         t = yRoots[i];
+        --         if t > 0 and t < 1 then
+        --             local x = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4];
+        --             x = min( max( x, minX ), maxX )
+        --             points[#points + 1] = x
+        --         end
+        --     end
+        --     -- getCurvedIntersectionPoints( yIntersections, y, line, minX, maxX )
+        -- end
+        end
+        table.sort( yIntersections )
+        intersections[y] = yIntersections
+    end
+    log(textutils.serialize(intersections))
+    return intersections
 end
