@@ -341,23 +341,31 @@ function Path:getIntersections( Number( 1 ) scaleX, Number( 1 ) scaleY )
         -- https://books.google.com.au/books?id=fGX8yC-4vXUC&pg=PA52&lpg=PA52&dq=polygon+scanline+maxima&source=bl&ots=wb9LU6OjYx&sig=crP4WLcvB-VAHFj_WIsmn5HoTZ4&hl=en&sa=X&ved=0ahUKEwjmzbXaz8nJAhUBhqYKHRl5A30Q6AEINTAF#v=onepage&q=polygon%20scanline%20maxima&f=false
 
         -- if both lines are heading below or above the vertex it's a maxima
-        local thisGreaterThan, lastGreaterThan = nextY > y1, lastYs[i == 1 and #lines or ( i - 1 )] > y1
-        if thisGreaterThan ~= lastGreaterThan then
-            disallowedY = y1
+        local lastY = lastYs[i == 1 and #lines or ( i - 1 )]
+        local thisGreaterThan, lastGreaterThan = nextY > y1, lastY > y1
+        local thisLessThan, lastLessThan = nextY < y1, lastY < y1
+        
+        if thisGreaterThan ~= lastGreaterThan and lastGreaterThan ~= lastLessThan then-- and not ( isHorizontal and x2 < x1 ) then --or ( thisGreaterThan == thisLessThan and x1 < x2 ) then--( thisGreaterThan == thisLessThan and lastLessThan ~= lastGreaterThan ) or ( lastGreaterThan == lastLessThan and thisLessThan ~= thisGreaterThan ) then --or thisLessThan ~= lastLessThan then
             disallowedX = x1
+            disallowedY = y1
         end
 
         if isLinear then
             if isVertical then -- the two points are in a vertical line
                 for y = minY, maxY, inverseScale do
-                    if not aproxEqual( y, disallowedY ) and y >= minY - ERROR_MARGIN and y <= maxY + ERROR_MARGIN then
+                    if not aproxEqual( y, disallowedY ) or not aproxEqual( x1, disallowedX ) then
                         local yIntersections = intersections[y * scaleY]
                         yIntersections[#yIntersections + 1] = ( x1 - 1 ) * scaleX + 1
                     end
                 end
             elseif isHorizontal then -- the two points are in a horizontal line
-                local yIntersections = intersections[floor( y1 * scale + 0.5 )]
-                yIntersections[#yIntersections + 1] = ( maxX - 1 ) * scaleX + 1
+                local yIntersections = intersections[floor( y1 * scaleY + 0.5 )]
+                if maxX ~= disallowedX then
+                    -- yIntersections[#yIntersections + 1] = ( maxX - 1 ) * scaleX + 1
+                end
+                if minX ~= disallowedX then
+                    yIntersections[#yIntersections + 1] = ( minX - 1 ) * scaleX + 1
+                end
             else
                 local yIntercept = y1 - slope * x1
                 for y = minY, maxY, inverseScale do
@@ -386,8 +394,13 @@ function Path:getIntersections( Number( 1 ) scaleX, Number( 1 ) scaleY )
     end
 
     for y = 1, height, inverseScale do
-        table.sort( intersections[y * scaleY] )
+        local yIntersections = intersections[y * scaleY]
+        table.sort( yIntersections )
+        if #yIntersections % 2 ~= 0 then
+            error( "Invalid path (uneven intersection count at y = " .. y .. "). This probably isn't your fault, it's most likely a bug in Silica. Please file a GitHub issue ASAP this this information:\n\nPath Width: "..tostring( self.width ) .. "\nPath Height: "..tostring( self.height ) .. "\nPath Lines: "..tostring( textutils.serialize( self.lines ) ) .. "\nScale X: "..tostring( scaleX ) .. "\nScale Y: "..tostring( scaleY ) .. "\nIntersections: "..tostring(textutils.serialize( intersections ) ) )
+        end
     end
+
 
     return intersections
 end

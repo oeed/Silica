@@ -41,7 +41,7 @@
         <SegmentButton text=Three />
     </SegmentContainer>
 
-    <TestPathView x=135 y=75 width=100 height=100 />
+    <!-- <TestPathView x=135 y=75 width=100 height=100 /> -->
 
 
     <!-- <ProgressBar x=135 y=77 /> -->
