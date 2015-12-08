@@ -297,7 +297,7 @@ function Path:getIntersections( Number( 1 ) scaleX, Number( 1 ) scaleY )
 
     local inverseScale = 1 / scaleY
     for y = 1, height, inverseScale do
-        intersections[y * scaleYY] = {}
+        intersections[y * scaleY] = {}
     end
 
     local coefficients = {}
