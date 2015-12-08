@@ -73,7 +73,7 @@ function Font:initialise( name, desiredHeight, reload )
 	self.scale = ( desiredHeight or height ) / height
 end
 
-function Font.static:loadNamed( String name, String.allowsNil alias )
+function Font.static:fromName( String name, String.allowsNil alias )
 	local cache = self.cache
 	local cacheValue = cache[name]
 	if cacheValue then return cacheValue end
@@ -88,7 +88,7 @@ end
 function Font.static:initialisePresets()
 	-- TODO: make this come from the theme
 	-- Font.systemFont = Font( "Napier" )
-	Font.static.systemFont = Font.static:loadNamed( "Auckland", "systemFont" )
+	Font.static.systemFont = Font.static:fromName( "Auckland", "systemFont" )
 end
 
 function Font.static:readMetadata( file )
