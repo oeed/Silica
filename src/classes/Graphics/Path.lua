@@ -291,13 +291,13 @@ local function aproxEqual( n1, n2 )
     return n2 and ( n1 == n2 or ( n1 + ERROR_MARGIN > n2 and n1 - ERROR_MARGIN < n2 ) )
 end
 
-function Path:getIntersections( Number( 1 ) scale )
+function Path:getIntersections( Number( 1 ) scaleX, Number( 1 ) scaleY )
     local intersections = {}
     local lines, height = self.lines, self.height
 
-    local inverseScale = 1 / scale
+    local inverseScale = 1 / scaleY
     for y = 1, height, inverseScale do
-        intersections[y * scale] = {}
+        intersections[y * scaleYY] = {}
     end
 
     local coefficients = {}
@@ -351,33 +351,33 @@ function Path:getIntersections( Number( 1 ) scale )
             if isVertical then -- the two points are in a vertical line
                 for y = minY, maxY, inverseScale do
                     if not aproxEqual( y, disallowedY ) and y >= minY - ERROR_MARGIN and y <= maxY + ERROR_MARGIN then
-                        local yIntersections = intersections[y * scale]
-                        yIntersections[#yIntersections + 1] = x1
+                        local yIntersections = intersections[y * scaleY]
+                        yIntersections[#yIntersections + 1] = ( x1 - 1 ) * scaleX + 1
                     end
                 end
             elseif isHorizontal then -- the two points are in a horizontal line
                 local yIntersections = intersections[floor( y1 * scale + 0.5 )]
-                yIntersections[#yIntersections + 1] = maxX
+                yIntersections[#yIntersections + 1] = ( maxX - 1 ) * scaleX + 1
             else
                 local yIntercept = y1 - slope * x1
                 for y = minY, maxY, inverseScale do
-                    local yIntersections = intersections[y * scale]
+                    local yIntersections = intersections[y * scaleY]
                     local x = ( y - yIntercept ) / slope
                     if ( not aproxEqual( x, disallowedX ) or not aproxEqual( y, disallowedY ) ) and x >= minX - ERROR_MARGIN and x <= maxX + ERROR_MARGIN then
-                        yIntersections[#yIntersections + 1] = x
+                        yIntersections[#yIntersections + 1] = ( x - 1 ) * scaleX + 1
                     end
                 end
             end
         else
             for y = 1, height, inverseScale do
                 local yRoots = cubicRoots( { yCoefficients[1], yCoefficients[2], yCoefficients[3], yCoefficients[4] - y } )
-                local yIntersections = intersections[y * scale]
+                local yIntersections = intersections[y * scaleY]
                 for i = 1, 3 do
                     t = yRoots[i];
                     if 0 <= t and t <= 1 then
                         local x = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4]
                         if not aproxEqual( y, disallowedY ) and not aproxEqual( x, disallowedX ) then
-                            yIntersections[#yIntersections + 1] = x
+                            yIntersections[#yIntersections + 1] = ( x - 1 ) * scaleX + 1
                         end
                     end
                 end
@@ -386,7 +386,7 @@ function Path:getIntersections( Number( 1 ) scale )
     end
 
     for y = 1, height, inverseScale do
-        table.sort( intersections[y * scale] )
+        table.sort( intersections[y * scaleY] )
     end
 
     return intersections
