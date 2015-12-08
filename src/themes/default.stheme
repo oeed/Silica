@@ -57,11 +57,13 @@
 		<fillColour type="Graphics.colours" active="BLUE"/>
 		<textColour type="Graphics.colours" active="WHITE"/>
 		<outlineColour type="Graphics.colours" active="TRANSPARENT"/>
-		<arrowColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
 		<rightMargin type="Number" default="15" />
+		<arrowMargin type="Number" default="7" />
 		<menuOffsetX type="Number" default="-5" />
 		<menuOffsetY type="Number" default="8" />
 		<menuTopPadding type="Number" default="7" />
+		<arrowColour type="Graphics.colours" default="GREY" pressed="LIGHT_BLUE" disabled="LIGHT_GREY"/>
+		<arrowSymbol type="Symbol" default="left" />
 	</MenuButton>
 	
 	<MenuItem>

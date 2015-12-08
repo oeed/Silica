@@ -1,12 +1,12 @@
 
+local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
+
 class "MenuButton" extends "Button" {
 
     width = Number( 45 );
 
     menu = Menu;
     menuName = String;
-
-    menuMargin = 5;
 
     isActive = Boolean.allowsNil; -- TODO: isReadOnly
 
@@ -21,7 +21,21 @@ function MenuButton:initialise( ... )
     self:event( MenuChangedInterfaceEvent, self.onMenuChanged )
     self:event( ParentChangedInterfaceEvent, self.onParentChanged )
     self:event( ReadyInterfaceEvent, self.onReady )
+end
 
+function MenuButton:onDraw()
+    self:super()
+    local theme = self.theme
+    local defaultShadowSize = theme:value( "shadowSize", "default" )
+    local shadowPressedSize = theme:value( "shadowSize", "pressed" )
+    local shadowSize = theme:value( "shadowSize" )
+    local shadowOffset = defaultShadowSize - shadowSize
+    local shadowPressedOffset = defaultShadowSize - shadowPressedSize
+    local shadowX = math.floor( shadowOffset * SHADOW_RATIO + 0.5 )
+
+    local topMargin, arrowMargin = theme:value( "topMargin" ), theme:value( "arrowMargin" )
+    local symbol = theme:value( "arrowSymbol" )
+    self.canvas:fill( theme:value( "arrowColour" ), SymbolMask( self.width - arrowMargin - symbol.width + shadowX, math.floor( ( self.height - shadowOffset - symbol.height ) / 2 ), symbol ) )
 end
 
 function MenuButton:onReady( ReadyInterfaceEvent event, Event.phases phase  )
