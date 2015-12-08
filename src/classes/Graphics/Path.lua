@@ -289,50 +289,54 @@ function Path:getIntersections( Number( 1 ) scale )
         intersections[y * scale] = {}
     end
 
-    local slopes = {}
+    local coefficients = {}
+    local lastYs = {}
     for i, line in ipairs( lines ) do
         if line.mode == "linear" then
-            local x1, x2, y1, y2 = line.x1, line.x2, line.y1, line.y2
-            local minX, maxX, minY, maxY = min( x1, x2 ), max( x1, x2 ), min( y1, y2 ), max( y1, y2 )
-            local xDiff, yDiff = x2 - x1, y2 - y1
-            local slope
-            local isVertical, isHorizontal = abs( xDiff ) < ERROR_MARGIN, abs( yDiff ) < ERROR_MARGIN
-            if isVertical then
-                slope = ( y1 > y2 and -1 or 1 ) -- probably don't need to multiply here
-            elseif isHorizontal then
-                slope = 0
-            else
+            lastYs[i] = line.y1
+        else
+            local xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
+            coefficients[i] = {
+                xCoefficients,
+                bezierCoeffs( line.y1, line.controlPoint1Y, line.controlPoint2Y, line.y2 )
+            }
+
+            local t = 1 - ERROR_MARGIN
+            lastYs[i] = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4]
+        end
+    end
+
+    for i, line in ipairs( lines ) do
+        local isLinear = line.mode == "linear"
+        local x1, x2, y1, y2 = line.x1, line.x2, line.y1, line.y2
+        local minX, maxX, minY, maxY, xDiff, yDiff, slope, isVertical, isHorizontal, nextY, lastY, xCoefficients, yCoefficients
+        if isLinear then
+            minX, maxX, minY, maxY = min( x1, x2 ), max( x1, x2 ), min( y1, y2 ), max( y1, y2 )
+            xDiff, yDiff = x2 - x1, y2 - y1
+            isVertical, isHorizontal = abs( xDiff ) < ERROR_MARGIN, abs( yDiff ) < ERROR_MARGIN
+            if not isVertical and not isHorizontal then
                 slope = yDiff / xDiff
             end
+            nextY = y2
+        else
+            xCoefficients = coefficients[i][1]
+            yCoefficients = coefficients[i][2]
+            nextY = xCoefficients[1] * ERROR_MARGIN * ERROR_MARGIN * ERROR_MARGIN + xCoefficients[2] * ERROR_MARGIN * ERROR_MARGIN + xCoefficients[3] * ERROR_MARGIN + xCoefficients[4]
+        end
 
-            local slopeSign = slope / abs( slope )
-            local disallowedY, disallowedX
-            if i == 1 then
-                disallowedY = y1
-                disallowedX = x1
-            else
-                local lastLine = lines[i - 1]
-                local lastSlope = slopes[i - 1]
 
-                -- the link below expliains what's happening. essentially we need to check if the end point is a maxima. if it isn't we need to prevent the pixel coordinates from duplicating
-                -- https://books.google.com.au/books?id=fGX8yC-4vXUC&pg=PA52&lpg=PA52&dq=polygon+scanline+maxima&source=bl&ots=wb9LU6OjYx&sig=crP4WLcvB-VAHFj_WIsmn5HoTZ4&hl=en&sa=X&ved=0ahUKEwjmzbXaz8nJAhUBhqYKHRl5A30Q6AEINTAF#v=onepage&q=polygon%20scanline%20maxima&f=false
-                local thisNextY, lastNextY
-                if line.mode == "linear" then
-                    thisNextY = y2
-                end
-                if lastLine.mode == "linear" then
-                    lastNextY = lastLine.y1
-                end
+        local disallowedY, disallowedX
+        -- the link below expliains what's happening. essentially we need to check if the end point is a maxima. if it isn't we need to prevent the pixel coordinates from duplicating
+        -- https://books.google.com.au/books?id=fGX8yC-4vXUC&pg=PA52&lpg=PA52&dq=polygon+scanline+maxima&source=bl&ots=wb9LU6OjYx&sig=crP4WLcvB-VAHFj_WIsmn5HoTZ4&hl=en&sa=X&ved=0ahUKEwjmzbXaz8nJAhUBhqYKHRl5A30Q6AEINTAF#v=onepage&q=polygon%20scanline%20maxima&f=false
 
-                -- if both lines are heading below or above the vertex it's a maxima
-                local thisGreaterThan, lastGreaterThan = thisNextY > y1, lastNextY > y1
-                if thisGreaterThan == lastGreaterThan then
-                else
-                    disallowedY = y1
-                    disallowedX = x1
-                end
-            end
+        -- if both lines are heading below or above the vertex it's a maxima
+        local thisGreaterThan, lastGreaterThan = nextY > y1, lastYs[i == 1 and #lines or ( i - 1 )] > y1
+        if thisGreaterThan ~= lastGreaterThan then
+            disallowedY = y1
+            disallowedX = x1
+        end
 
+        if isLinear then
             if isVertical then -- the two points are in a vertical line
                 for y = minY, maxY, inverseScale do
                     if y ~= disallowedY and y >= minY - ERROR_MARGIN and y <= maxY + ERROR_MARGIN then
@@ -341,48 +345,43 @@ function Path:getIntersections( Number( 1 ) scale )
                     elseif y == disallowedY then
                     end
                 end
-            elseif isHorizontal then -- the two points are in a horizontal line, we can ignore it (can we?)
+            elseif isHorizontal then -- the two points are in a horizontal line
                 local yIntersections = intersections[floor( y1 * scale + 0.5 )]
-                yIntersections[#yIntersections + 1] = maxX -- TODO: we *might* have to also add maxX so there are two points
+                yIntersections[#yIntersections + 1] = maxX
             else
                 local yIntercept = y1 - slope * x1
                 for y = minY, maxY, inverseScale do
+                    local yIntersections = intersections[y * scale]
                     local x = ( y - yIntercept ) / slope
                     if ( x ~= disallowedX or y ~= disallowedY ) and x >= minX - ERROR_MARGIN and x <= maxX + ERROR_MARGIN then
-                        local yIntersections = intersections[y * scale]
                         yIntersections[#yIntersections + 1] = x
                     end
                 end
             end
-            slopes[i] = { slope, slopeSign }
         else
-        --     if not line.xCoefficients or not line.yCoefficients then
-        --         line.xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
-        --         line.yCoefficients = bezierCoeffs( line.y1, line.controlPoint1Y, line.controlPoint2Y, line.y2 )
-        --     end
-
-        --     local xCoefficients = line.xCoefficients
-        --     local yCoefficients = line.yCoefficients
-
-        --     local yRoots = cubicRoots( { yCoefficients[1], yCoefficients[2], yCoefficients[3], yCoefficients[4] - y } )
-
-        --     for i = 1, 3 do
-        --         t = yRoots[i];
-        --         if t > 0 and t < 1 then
-        --             local x = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4];
-        --             x = min( max( x, minX ), maxX )
-        --             points[#points + 1] = x
-        --         end
-        --     end
-        --     -- getCurvedIntersectionPoints( yIntersections, y, line, minX, maxX )
-        -- end
+            for y = 1, height, inverseScale do
+                local yRoots = cubicRoots( { yCoefficients[1], yCoefficients[2], yCoefficients[3], yCoefficients[4] - y } )
+                local yIntersections = intersections[y * scale]
+                for i = 1, 3 do
+                    t = yRoots[i];
+                    if 0 <= t and t <= 1 then
+                        local x = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4]
+                        if y ~= disallowedY and x ~= disallowedX then
+                            yIntersections[#yIntersections + 1] = x
+                        end
+                    end
+                end
+            end
         end
     end
 
     for y = 1, height, inverseScale do
         table.sort( intersections[y * scale] )
+        if #intersections[y * scale] % 2 ~= 0 then
+            log("problem at "..y)
+            log(textutils.serialize(intersections[y * scale]))
+        end
     end
-        log(textutils.serialize(intersections))
 
     return intersections
 end
