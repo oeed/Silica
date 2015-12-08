@@ -288,10 +288,9 @@ function class.load( name, contents )
 
     -- TODO: load classes if we index _G with their name and they return nil. only allow self if it is within the static table
     local metatable = {}
-    local selfPseudoReference = pseudoReference( "self" )
     function metatable:__index( key )
         if isLoadingProperties then
-            if key == "self" then return selfPseudoReference end
+            if key == "self" then return pseudoReference( "self" ) end
             local valueTypeValue = valueTypes[key]
             if valueTypeValue ~= nil then return valueTypeValue end
         end
@@ -405,15 +404,12 @@ function stripFunctionArguments( name, contents )
             end
 
             local valueTypeExtractionEnvironment = {}
-            local pseudoReferences = { self = pseudoReference( "self" ) }
             local metatable = {}
             function metatable:__index( key )
                 local valueTypeValue = valueTypes[key]
                 if valueTypeValue ~= nil then return valueTypeValue end
                 local globalValue = _G[key]
                 if globalValue ~= nil then return globalValue end
-                local pseudoReferenceValue = pseudoReferences[key]
-                if pseudoReferenceValue ~= nil then return pseudoReferenceValue end
                 -- if we're loading properties and the value is nil, see if we can find a class with that name and load it
                 if class.exists( key ) then
                     -- there should be a class with that name, load it
@@ -422,7 +418,6 @@ function stripFunctionArguments( name, contents )
                     return valueTypes[key]
                 else
                     pseudoReferenceValue = pseudoReference( key )
-                    pseudoReferences[key] = pseudoReferenceValue
                     return pseudoReferenceValue
                     -- error( "attempt to access undelcared value " .. key .. " in value type declaration", 2 )
                 end
@@ -505,10 +500,6 @@ function stripFunctionArguments( name, contents )
                             end
                         end
                         typeTable[TYPETABLE_IS_VAR_ARG] = isVarArg;
-
-                        if i ~= argumentSubstringPoints then -- add the argument to the environment so it can be referenced
-                            pseudoReferences[argumentName] = pseudoReference( argumentName )
-                        end
                     end
                     table.insert( argumentsTable, typeTable )  
                     argumentsString = argumentsString .. argumentName .. ","
