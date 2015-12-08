@@ -279,6 +279,9 @@ function Path:close( linkedToEnd )
 end
 
 local ERROR_MARGIN = 0.001
+local function aproxEqual( n1, n2 )
+    return n2 and ( n1 == n2 or ( n1 + ERROR_MARGIN > n2 and n1 - ERROR_MARGIN < n2 ) )
+end
 
 function Path:getIntersections( Number( 1 ) scale )
     local intersections = {}
@@ -339,10 +342,9 @@ function Path:getIntersections( Number( 1 ) scale )
         if isLinear then
             if isVertical then -- the two points are in a vertical line
                 for y = minY, maxY, inverseScale do
-                    if y ~= disallowedY and y >= minY - ERROR_MARGIN and y <= maxY + ERROR_MARGIN then
+                    if not aproxEqual( y, disallowedY ) and y >= minY - ERROR_MARGIN and y <= maxY + ERROR_MARGIN then
                         local yIntersections = intersections[y * scale]
                         yIntersections[#yIntersections + 1] = x1
-                    elseif y == disallowedY then
                     end
                 end
             elseif isHorizontal then -- the two points are in a horizontal line
@@ -353,7 +355,7 @@ function Path:getIntersections( Number( 1 ) scale )
                 for y = minY, maxY, inverseScale do
                     local yIntersections = intersections[y * scale]
                     local x = ( y - yIntercept ) / slope
-                    if ( x ~= disallowedX or y ~= disallowedY ) and x >= minX - ERROR_MARGIN and x <= maxX + ERROR_MARGIN then
+                    if ( not aproxEqual( x, disallowedX ) or not aproxEqual( y, disallowedY ) ) and x >= minX - ERROR_MARGIN and x <= maxX + ERROR_MARGIN then
                         yIntersections[#yIntersections + 1] = x
                     end
                 end
@@ -366,7 +368,7 @@ function Path:getIntersections( Number( 1 ) scale )
                     t = yRoots[i];
                     if 0 <= t and t <= 1 then
                         local x = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4]
-                        if y ~= disallowedY and x ~= disallowedX then
+                        if not aproxEqual( y, disallowedY ) and not aproxEqual( x, disallowedX ) then
                             yIntersections[#yIntersections + 1] = x
                         end
                     end
@@ -377,10 +379,6 @@ function Path:getIntersections( Number( 1 ) scale )
 
     for y = 1, height, inverseScale do
         table.sort( intersections[y * scale] )
-        if #intersections[y * scale] % 2 ~= 0 then
-            log("problem at "..y)
-            log(textutils.serialize(intersections[y * scale]))
-        end
     end
 
     return intersections
