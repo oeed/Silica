@@ -218,6 +218,14 @@ function Path:curveTo( endX, endY, controlPoint1X, controlPoint1Y, controlPoint2
 end
 
 --[[
+    @desc Moves the active cordinates (where the next path will go from)
+]]
+function Path:moveTo( Number x, Number y )
+    self.currentX = x
+    self.currentY = x
+end
+
+--[[
     @instance
     @desc Adds an arc at the current position
     @param [number] startAngle -- the angle to start (in radians)
