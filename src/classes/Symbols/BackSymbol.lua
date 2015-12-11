@@ -1,41 +1,19 @@
 
 class "BackSymbol" extends "Symbol" {
 
-    symbolName =  "back";
-
-    width = 4;
-
-    serialisedPaths = {
-        {
-            x = 1,
-            y = 1,
-            lines = {
-                {
-                    y1 = 1,
-                    x1 = 1,
-                    x2 = 4,
-                    mode = "linear",
-                    y2 = 4,
-                },
-                {
-                    y1 = 4,
-                    x1 = 4,
-                    x2 = 1,
-                    mode = "linear",
-                    y2 = 7,
-                },
-                {
-                    y1 = 7,
-                    x1 = 1,
-                    x2 = 1,
-                    mode = "linear",
-                    y2 = 1,
-                },
-            },
-            height = 7,
-            width = 4,
-        }
-    }
-
+    static = {
+        symbolName = String( "back" );
+        width = Number( 4 );
+    };
 
 }
+
+function BackSymbol.static:initialise()
+    local path = Path( self.width, self.height, 1, 1 )
+    path:lineTo( 1, 1 )
+    path:lineTo( 4, 4 )
+    path:lineTo( 1, 7 )
+    path:close()
+
+    self:super( path )
+end

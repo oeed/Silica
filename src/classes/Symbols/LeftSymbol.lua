@@ -2,7 +2,7 @@
 class "LeftSymbol" extends "Symbol" {
 
     static = {
-        symbolName =  String( "left" );
+        symbolName = String( "left" );
     };
 
 }
@@ -19,4 +19,3 @@ function LeftSymbol.static:initialise()
 
     self:super( path )
 end
-
