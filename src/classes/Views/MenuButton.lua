@@ -35,7 +35,7 @@ function MenuButton:onDraw()
 
     local topMargin, arrowMargin = theme:value( "topMargin" ), theme:value( "arrowMargin" )
     local symbol = theme:value( "arrowSymbol" )
-    self.canvas:fill( theme:value( "arrowColour" ), SymbolMask( self.width - arrowMargin - symbol.width + shadowX, math.floor( ( self.height - shadowOffset - symbol.height ) / 2 ), symbol ) )
+    self.canvas:fill( theme:value( "arrowColour" ), SymbolMask( self.width - arrowMargin - symbol.width + shadowX, 1 + math.floor( ( self.height - symbol.height ) / 2 ) + shadowOffset, symbol ) )
 end
 
 function MenuButton:onReady( ReadyInterfaceEvent event, Event.phases phase  )
