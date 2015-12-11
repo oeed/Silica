@@ -325,6 +325,9 @@ function class.load( name, contents )
     end
 
     compileClass( compiledClass, name )
+
+    -- we've loaded the class, remove the auto-loading metatable
+    setmetatable( constructingEnvironment, { __index = _G } )
     local wasInterface = isInterface
     constructingEnvironment, currentlyConstructing, constructorProxy, isLoadingProperties, constructingFunctionArguments, currentCompiledClass, isInterface, expectedName = oldEnvironment, oldConstructing, oldConstructorProxy, oldIsLoadingProperties, oldConstructingFunctionArguments, oldCurrentCompiled, oldIsInterface, oldExpectedName
     return wasInterface and interfaces[name] or classes[name]
