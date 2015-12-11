@@ -1,5 +1,5 @@
 
-local sin, cos, floor, min, max, abs, acos, PI, remove = math.sin, math.cos, math.floor, math.min, math.max, math.abs, math.acos, math.pi, table.remove
+local sin, cos, floor, min, max, abs, acos, PI, remove, insert = math.sin, math.cos, math.floor, math.min, math.max, math.abs, math.acos, math.pi, table.remove, table.insert
 
 local function round( num )
     return floor( num + 0.5 )
@@ -291,20 +291,24 @@ local function aproxEqual( n1, n2 )
     return n2 and ( n1 == n2 or ( n1 + ERROR_MARGIN > n2 and n1 - ERROR_MARGIN < n2 ) )
 end
 
-function Path:getIntersections( Number( 1 ) scaleX, Number( 1 ) scaleY )
-    local intersections = {}
-    local lines, height = self.lines, self.height
+function Path:getFill( Number( 1 ) scaleX, Number( 1 ) scaleY )
+    local intersections, outline = {}, {}
+    local lines, height, width = self.lines, self.height, self.width
 
-    local inverseScale = 1 / scaleY
-    for y = 1, height, inverseScale do
-        intersections[y * scaleY] = {}
+    local inverseScaleY, inverseScaleX = 1 / scaleY, 1 / scaleX
+    for y = 1, height, inverseScaleY do
+        local _y = y * scaleY
+        intersections[_y] = {}
+        outline[_y] = {}
     end
 
     local coefficients = {}
-    local lastYs = {}
+    local lastYs, nextYs = {}, {}
+    local linesCount = #lines
     for i, line in ipairs( lines ) do
         if line.mode == "linear" then
             lastYs[i] = line.y1
+            nextYs[i] = line.y2
         else
             local xCoefficients = bezierCoeffs( line.x1, line.controlPoint1X, line.controlPoint2X, line.x2 )
             coefficients[i] = {
@@ -314,70 +318,38 @@ function Path:getIntersections( Number( 1 ) scaleX, Number( 1 ) scaleY )
 
             local t = 1 - ERROR_MARGIN
             lastYs[i] = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4]
+            nextYs[i] = xCoefficients[1] * ERROR_MARGIN * ERROR_MARGIN * ERROR_MARGIN + xCoefficients[2] * ERROR_MARGIN * ERROR_MARGIN + xCoefficients[3] * ERROR_MARGIN + xCoefficients[4]
         end
     end
 
     for i, line in ipairs( lines ) do
-        local isLinear = line.mode == "linear"
-        local x1, x2, y1, y2 = line.x1, line.x2, line.y1, line.y2
-        local minX, maxX, minY, maxY, xDiff, yDiff, slope, isVertical, isHorizontal, nextY, lastY, xCoefficients, yCoefficients
-        if isLinear then
-            minX, maxX, minY, maxY = min( x1, x2 ), max( x1, x2 ), min( y1, y2 ), max( y1, y2 )
-            xDiff, yDiff = x2 - x1, y2 - y1
-            isVertical, isHorizontal = abs( xDiff ) < ERROR_MARGIN, abs( yDiff ) < ERROR_MARGIN
-            if not isVertical and not isHorizontal then
-                slope = yDiff / xDiff
+        if line.mode == "linear" then
+            local x1, x2, y1, y2 = line.x1, line.x2, line.y1, line.y2
+            local minX, maxX, minY, maxY = min( x1, x2 ), max( x1, x2 ), min( y1, y2 ), max( y1, y2 )
+            local xDiff, yDiff = x2 - x1, y2 - y1
+            for y = 1, height, inverseScaleY do
+                local _y = y * scaleY
+                if maxY > _y and _y >= minY then
+                    insert( intersections[_y], x1 + ( _y - y1 ) / yDiff * xDiff )
+                end
             end
-            nextY = y2
-        else
-            xCoefficients = coefficients[i][1]
-            yCoefficients = coefficients[i][2]
-            nextY = xCoefficients[1] * ERROR_MARGIN * ERROR_MARGIN * ERROR_MARGIN + xCoefficients[2] * ERROR_MARGIN * ERROR_MARGIN + xCoefficients[3] * ERROR_MARGIN + xCoefficients[4]
-        end
 
-
-        local disallowedY, disallowedX
-        -- the link below expliains what's happening. essentially we need to check if the end point is a maxima. if it isn't we need to prevent the pixel coordinates from duplicating
-        -- https://books.google.com.au/books?id=fGX8yC-4vXUC&pg=PA52&lpg=PA52&dq=polygon+scanline+maxima&source=bl&ots=wb9LU6OjYx&sig=crP4WLcvB-VAHFj_WIsmn5HoTZ4&hl=en&sa=X&ved=0ahUKEwjmzbXaz8nJAhUBhqYKHRl5A30Q6AEINTAF#v=onepage&q=polygon%20scanline%20maxima&f=false
-
-        -- if both lines are heading below or above the vertex it's a maxima
-        local lastY = lastYs[i == 1 and #lines or ( i - 1 )]
-        local thisGreaterThan, lastGreaterThan = nextY > y1, lastY > y1
-        local thisLessThan, lastLessThan = nextY < y1, lastY < y1
-        
-        if thisGreaterThan ~= lastGreaterThan and lastGreaterThan ~= lastLessThan then-- and not ( isHorizontal and x2 < x1 ) then --or ( thisGreaterThan == thisLessThan and x1 < x2 ) then--( thisGreaterThan == thisLessThan and lastLessThan ~= lastGreaterThan ) or ( lastGreaterThan == lastLessThan and thisLessThan ~= thisGreaterThan ) then --or thisLessThan ~= lastLessThan then
-            disallowedX = x1
-            disallowedY = y1
-        end
-
-        if isLinear then
-            if isVertical then -- the two points are in a vertical line
-                for y = minY, maxY, inverseScale do
-                    if not aproxEqual( y, disallowedY ) or not aproxEqual( x1, disallowedX ) then
-                        local yIntersections = intersections[y * scaleY]
-                        yIntersections[#yIntersections + 1] = ( x1 - 1 ) * scaleX + 1
-                    end
-                end
-            elseif isHorizontal then -- the two points are in a horizontal line
-                local yIntersections = intersections[floor( y1 * scaleY + 0.5 )]
-                if maxX ~= disallowedX then
-                    -- yIntersections[#yIntersections + 1] = ( maxX - 1 ) * scaleX + 1
-                end
-                if minX ~= disallowedX then
-                    yIntersections[#yIntersections + 1] = ( minX - 1 ) * scaleX + 1
+            if abs( xDiff ) > abs( yDiff ) then
+                local y = minY
+                local dy = ( yDiff / xDiff ) * inverseScaleY
+                for x = minX, maxX, inverseScaleX do
+                    outline[floor( y1 + (x - x1) / xDiff * yDiff + 0.5 )][x * inverseScaleX] = true
                 end
             else
-                local yIntercept = y1 - slope * x1
-                for y = minY, maxY, inverseScale do
-                    local yIntersections = intersections[y * scaleY]
-                    local x = ( y - yIntercept ) / slope
-                    if ( not aproxEqual( x, disallowedX ) or not aproxEqual( y, disallowedY ) ) and x >= minX - ERROR_MARGIN and x <= maxX + ERROR_MARGIN then
-                        yIntersections[#yIntersections + 1] = ( x - 1 ) * scaleX + 1
-                    end
+                local dx = ( yDiff / xDiff ) * inverseScaleX
+                for y = minY, maxY, inverseScaleY do
+                    outline[floor( y * scaleY + 0.5 )][x1 + ( y - y1 ) / yDiff * xDiff] = true
                 end
             end
         else
-            for y = 1, height, inverseScale do
+            local xCoefficients = coefficients[i][1]
+            local yCoefficients = coefficients[i][2]
+            for y = 1, height, inverseScaleY do
                 local yRoots = cubicRoots( { yCoefficients[1], yCoefficients[2], yCoefficients[3], yCoefficients[4] - y } )
                 local yIntersections = intersections[y * scaleY]
                 for i = 1, 3 do
@@ -393,14 +365,29 @@ function Path:getIntersections( Number( 1 ) scaleX, Number( 1 ) scaleY )
         end
     end
 
-    for y = 1, height, inverseScale do
-        local yIntersections = intersections[y * scaleY]
+    local fill = {}
+    local scaledWidth = floor( width * scaleX + 0.5 )
+
+    for y = 1, height, inverseScaleY do
+        local _y = y * scaleY
+        local yIntersections = intersections[_y]
         table.sort( yIntersections )
         if #yIntersections % 2 ~= 0 then
-            error( "Invalid path (uneven intersection count at y = " .. y .. "). This probably isn't your fault, it's most likely a bug in Silica. Please file a GitHub issue ASAP this this information:\n\nPath Width: "..tostring( self.width ) .. "\nPath Height: "..tostring( self.height ) .. "\nPath Lines: "..tostring( textutils.serialize( self.lines ) ) .. "\nScale X: "..tostring( scaleX ) .. "\nScale Y: "..tostring( scaleY ) .. "\nIntersections: "..tostring(textutils.serialize( intersections ) ) )
+            error( "Invalid path (uneven intersection count at y = " .. y .. "). This probably isn't your fault, it's most likely a bug in Silica. Please file a GitHub issue ASAP with this information:\n\nPath Width: "..tostring( self.width ) .. "\nPath Height: "..tostring( self.height ) .. "\nPath Lines: "..tostring( textutils.serialize( self.lines ) ) .. "\nScale X: "..tostring( scaleX ) .. "\nScale Y: "..tostring( scaleY ) .. "\nIntersections: "..tostring(textutils.serialize( intersections ) ) )
+        end
+
+        _y = floor( _y + 0.5 )
+        for i = 1, #yIntersections, 2 do
+            local x1, x2 = yIntersections[i], yIntersections[i + 1]
+            for x = floor( x1 + 0.5), floor( x2 + 0.5 ) do
+                fill[(_y - 1) * scaledWidth + x] = true
+            end
+        end
+
+        for x, _ in pairs( outline[_y] ) do
+            fill[(_y - 1) * scaledWidth + x] = true
         end
     end
 
-
-    return intersections
+    return fill
 end
