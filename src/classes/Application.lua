@@ -54,7 +54,7 @@ function Application.static:load( path )
             local function loadFolder( folder )
                 for i, fileSystemItem in ipairs( folder.items ) do
                     if fileSystemItem.metadata.mime == luaMime then
-                        class.load( fileSystemItem.name, fileSystemItem.contents )
+                        class.get( fileSystemItem.name, fileSystemItem.contents )
                     elseif fileSystemItem:typeOf( Folder ) then
                         loadFolder( fileSystemItem )
                     end
