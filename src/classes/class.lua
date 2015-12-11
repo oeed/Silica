@@ -1101,15 +1101,15 @@ function compileClass( compiledClass, name )
                 for functionName, functionTable in pairs( interface[tableName] ) do
                     local classFunctionTable = classDefined[functionName]
                     if not classFunctionTable then
-                        error( "class does not define function "..functionName )
+                        error( "class does not define function expected by interface '" .. interfaceName .. "': "..functionName )
                     end
                     for i, argument in ipairs( functionTable) do
                         if i > FUNCTIONTABLE_FUNCTION then
                             local classArgument = classFunctionTable[i]
                             if not classArgument then
-                                error( "function does not declare argument "..argument[TYPETABLE_NAME])
+                                error( "function '" .. functionName .. "' does not declare argument expected by interface '" .. interfaceName .. "': "..argument[TYPETABLE_NAME])
                             elseif argument[TYPETABLE_TYPE] ~= classArgument[TYPETABLE_TYPE] or argument[TYPETABLE_CLASS] ~= classArgument[TYPETABLE_CLASS] or argument[TYPETABLE_ALLOWS_NIL] ~= classArgument[TYPETABLE_ALLOWS_NIL] or argument[TYPETABLE_HAS_DEFAULT_VALUE] ~= classArgument[TYPETABLE_HAS_DEFAULT_VALUE] or argument[TYPETABLE_DEFAULT_VALUE] ~= classArgument[TYPETABLE_DEFAULT_VALUE] then
-                                error( "argument does use declare same type as interface", 2 )
+                                error( "argument does use declare same type as interface '" .. interfaceName .. "'", 2 )
                             end
                         end
                     end
