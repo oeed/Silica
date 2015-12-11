@@ -101,8 +101,7 @@ class "Path" {
     height = Number;
     currentX = Number;
     currentY = Number;
-    outlineCache = Table( {} ); -- { [scale] = {} } where scale is the scale multiplier (i.e. 1)
-    fillCache = Table( {} ); -- { [scale] = {} } where scale is the scale multiplier (i.e. 1)
+    cache = Table( {} ); -- { [scaleX .. ":" .. scaleY] = {} } where scale is the scale multiplier (i.e. 1)
     serialisedPath = Table.allowsNil;
 
 }
@@ -292,6 +291,11 @@ local function aproxEqual( n1, n2 )
 end
 
 function Path:getFill( Number( 1 ) scaleX, Number( 1 ) scaleY )
+    local cache = self.cache
+    local scaleCache = cache[scaleX .. ":" .. scaleY]
+    if scaleCache then
+        return unpack( scaleCache )
+    end
     local intersections, outline = {}, {}
     local lines, height, width = self.lines, self.height, self.width
 
@@ -367,6 +371,7 @@ function Path:getFill( Number( 1 ) scaleX, Number( 1 ) scaleY )
     end
 
     local fill = {}
+    local outlineFill = {}
     local scaledWidth = floor( width * scaleX + 0.5 )
 
     for y = 1, height, inverseScaleY do
@@ -386,9 +391,12 @@ function Path:getFill( Number( 1 ) scaleX, Number( 1 ) scaleY )
         end
 
         for x, _ in pairs( outline[_y] ) do
-            fill[(_y - 1) * scaledWidth + x] = true
+            local index = (_y - 1) * scaledWidth + x
+            fill[index] = true
+            outlineFill[index] = true
         end
     end
 
-    return fill
+    cache[scaleX .. ":" .. scaleY] = { fill, outline }
+    return fill, outline
 end
