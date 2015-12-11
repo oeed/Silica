@@ -62,7 +62,7 @@ local g_tLuaKeywords = {
 }
 
 -- A modified textutils.serialise that is slightly smaller (no indents, etc.)
-local function serialise_( t, tTracking )
+local function serialise( t, tTracking )
     local sType = type(t)
     if sType == "table" then
         if tTracking[t] ~= nil then
@@ -117,11 +117,11 @@ function Package.static:make( path, overwrite, Folder folder, isResourcePackage 
                 folders["loadfirst"] = { [Metadata.mimes.SCFG] = item.contents }
             end
         end
-        contents = "local files = " .. serialise_(folders, {}) .. RESOURCE_PACKAGE_TEMPLATE
+        contents = "local files = " .. serialise(folders, {}) .. RESOURCE_PACKAGE_TEMPLATE
         -- contents = textutils.serialize(folders)
     else
         local allItems = folder:serialise( false )
-        contents = serialise_(allItems, {})
+        contents = serialise(allItems, {})
         -- contents = textutils.serialize(allItems)
     end
     -- log(contents)
