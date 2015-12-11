@@ -1,8 +1,4 @@
 
-local TOP_MARGIN = 5
-local BOTTOM_MARGIN = 5
-local SIDE_MARGIN = 6
-
 class "FlowContainer" extends "Container" {
     
     needsLayoutUpdate = false;
@@ -17,21 +13,12 @@ function FlowContainer:initialise( ... )
     self:event( ReadyInterfaceEvent, self.onReady )
 end
 
-function FlowContainer:initialiseCanvas()
-    self:super()
-
-    self.theme:connect( self.canvas, "fillColour" )
-end
-
-function FlowContainer:updateWidth( width )
+function FlowContainer.width:set( width )
+    self:super( width )
     self.needsLayoutUpdate = true
 end
 
-function FlowContainer:updateHeight( height )
-    -- self.needsLayoutUpdate = true
-end
-
-function FlowContainer:onReady( Event event, Event.phases phase )
+function FlowContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
     self:updateLayout( true )
 end
 
@@ -42,18 +29,19 @@ function FlowContainer:update( deltaTime )
     end
 end
 
-function FlowContainer:onChildAdded( Event event, Event.phases phase )
+function FlowContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
     if event.childView:typeOf( IFlowItem ) then
         self.needsLayoutUpdate = true
     end
 end
 
-function FlowContainer:onChildRemoved( Event event, Event.phases phase )
+function FlowContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
     self.needsLayoutUpdate = true
 end
 
 function FlowContainer:updateLayout( dontAnimate )
-    local width, height = self.width, self.height
+    local width, height, theme = self.width, self.height, self.theme
+    local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
 
     local children = {}
     for i, childView in ipairs( self.children ) do
@@ -72,17 +60,17 @@ function FlowContainer:updateLayout( dontAnimate )
         minWidths[i] = childView.minWidth or 1
     end
 
-    local averageWidth = math.min( math.floor( totalWidth / nChildren + 0.5 ), width - 2 * SIDE_MARGIN )
+    local averageWidth = math.min( math.floor( totalWidth / nChildren + 0.5 ), width - leftMargin - rightMargin )
     local maxItemsPerRow = math.floor( totalWidth / averageWidth + 0.5 )
     local idealWidth = math.floor( totalWidth / maxItemsPerRow )
 
-    local y = TOP_MARGIN + 1
+    local y = topMargin + 1
 
     local _i = 0
     for i = 1, nChildren do
         if i > _i then
-            local rowWidth = 2 * SIDE_MARGIN
-            local x = SIDE_MARGIN + 1
+            local rowWidth = leftMargin + rightMargin
+            local x = leftMargin + 1
             local numberOfItems = 1
 
             local totalMinWidths = 0
@@ -116,10 +104,10 @@ function FlowContainer:updateLayout( dontAnimate )
                     childView.width = width
                     childView.height = idealHeight
                 else
-                    childView:animateX( x, time, nil, easing )
-                    childView:animateY( y, time, nil, easing )
-                    childView:animateWidth( width, time, nil, easing )
-                    childView:animateHeight( idealHeight, time, nil, easing )
+                    childView:animate( "x",  x, time, nil, easing )
+                    childView:animate( "y",  y, time, nil, easing )
+                    childView:animate( "width",  width, time, nil, easing )
+                    childView:animate( "height",  idealHeight, time, nil, easing )
                 end
                 x = x + width
                 height = math.max( idealHeight, height )
@@ -128,7 +116,7 @@ function FlowContainer:updateLayout( dontAnimate )
         end
     end
 
-    self:animateHeight( y + BOTTOM_MARGIN, time, nil, easing )
+    self:animate( "height",  y + bottomMargin, time, nil, easing )
 
     self.needsLayoutUpdate = false
 end

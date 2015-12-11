@@ -1,8 +1,10 @@
 
 class "FileMenu" extends "Menu" {
+
 	newMenuItem = InterfaceOutlet( "newMenuItem" );
 	alertMenuItem = InterfaceOutlet( "alertMenuItem" );
 	rebootMenuItem = InterfaceOutlet( "rebootMenuItem" );
+
 }
 
 function FileMenu:onAlertMenuItem( Event event, Event.phases phase )

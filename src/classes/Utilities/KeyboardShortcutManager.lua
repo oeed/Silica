@@ -11,7 +11,7 @@ local keyStrings = {
 	"`",	"shift","\\",	"z",	"x",
 	"c",	"v",	"b",	"n",	"m",
 	",",	".",	"/",	"shift",nil,
-	"alt",	nil,	nil,	"f1",	"f2",
+	"alt",	"space",nil,	"f1",	"f2",
 	"f3",	"f4",	"f5",	"f6",	"f7",
 	"f8",	"f9",	"f10",	[87] = "f11",
 	[88] = "f12",	[153] = "ctrl",
@@ -40,12 +40,12 @@ class "KeyboardShortcutManager" {
 
 function KeyboardShortcutManager:initialise( owner )
 	self.owner = owner
-	-- self.event = EventManager( self )
-	-- self.event:connectGlobal( KeyDownEvent, self.onGlobalKeyDown )
-	-- self.event:connectGlobal( KeyUpEvent, self.onGlobalKeyUp )
+	self.event = EventManager( self )
+	self.event:connectGlobal( KeyDownEvent, self.onGlobalKeyDown )
+	self.event:connectGlobal( KeyUpEvent, self.onGlobalKeyUp )
 end
 
-function KeyboardShortcutManager:onGlobalKeyDown( Event event, Event.phases phase )
+function KeyboardShortcutManager:onGlobalKeyDown( KeyDownEvent event, Event.phases phase )
 	local keyString = event.keyString
 	if keyString then
 		self.keysDown[keyString] = true
@@ -55,7 +55,7 @@ function KeyboardShortcutManager:onGlobalKeyDown( Event event, Event.phases phas
 	end
 end
 
-function KeyboardShortcutManager:onGlobalKeyUp( Event event, Event.phases phase )
+function KeyboardShortcutManager:onGlobalKeyUp( KeyUpEvent event, Event.phases phase )
 	local keyString = event.keyString
 	self.keysDown[keyString] = nil
 	self.keysUpdates[keyString] = os.clock()
@@ -65,8 +65,21 @@ function KeyboardShortcutManager:isKeyDown( keyString )
 	return self.keysDown[keyString] == true
 end
 
+function KeyboardShortcutManager:isOnlyKeyDown( keyString )
+	local keysDown = self.keysDown
+	for k, v in pairs( keysDown ) do
+		if k ~= keyString then
+			if v then
+				return false
+			end
+		elseif not v then
+			return false
+		end
+	end
+	return keysDown[keyString] == true
+end
+
 --[[
-	@static
 	@desc Returns the symbol for a keyString for places such as menus
 	@return [string] keyString -- the string value of the key
 	@return [string] symbol -- the symbol
@@ -76,17 +89,15 @@ function KeyboardShortcutManager.static:symbol( keyString )
 end
 
 --[[
-	@instance
 	@desc Converts a keys API code to the common string value used throughout Silica
 	@param [number] keyCode -- the numerical value of the key
 	@return [string] keyString -- the string value of the key
 ]]
 function KeyboardShortcutManager.static:convert( keyCode )
-	return keyStrings[keyCode]
+	return keyStrings[keyCode] or "unknown"
 end
 
 --[[
-	@instance
 	@desc Returns true if the given key string is valid
 	@param [string] keyString -- the string value of the key
 	@return [boolean] isValid -- whether the key string is valid
@@ -102,7 +113,6 @@ function KeyboardShortcutManager.static:isValid( keyString )
 end
 
 --[[
-	@instance
 	@desc Send the keyboard shortcut event of the currently held keys
 ]]
 function KeyboardShortcutManager:sendEvent()
@@ -110,7 +120,6 @@ function KeyboardShortcutManager:sendEvent()
 end
 
 --[[
-	@instance
 	@desc Fires 10 seconds after a key was pressed. If the key status hasn't changed it sets it to not be pressed.
 	@param [string] keyString -- the key string
 ]]

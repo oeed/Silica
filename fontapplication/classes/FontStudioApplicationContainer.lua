@@ -25,7 +25,7 @@ function FontStudioApplicationContainer:initialise( ... )
     self:event( Event.KEY_DOWN, self.onKeyDown )
 end
 
-function FontStudioApplicationContainer:onReady( Event event, Event.phases phase )
+function FontStudioApplicationContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
     FontDocument:open( "src/fonts/Napier.sfont" )
 
     local document = self.application.document
@@ -96,9 +96,9 @@ function FontStudioApplicationContainer.currentCharacter:set( currentCharacter )
         -- remove not longer used views
         if not positions[char] then
             if char > currentCharacter then
-                previewViews[char]:animateX( width + 1, time, function() _self:remove( self ) end, easing )
+                previewViews[char]:animate( "x",  width + 1, time, function() _self:remove( self ) end, easing )
             else
-                previewViews[char]:animateX( 1 - previewViews[char].width, time, function() _self:remove( self ) end, easing )
+                previewViews[char]:animate( "x",  1 - previewViews[char].width, time, function() _self:remove( self ) end, easing )
             end
             previewViews[char] = nil
         end
@@ -106,13 +106,13 @@ function FontStudioApplicationContainer.currentCharacter:set( currentCharacter )
 
     for char, x in pairs( positions ) do
         if previewViews[char] then
-            previewViews[char]:animateX( x, time, nil, easing )
+            previewViews[char]:animate( "x",  x, time, nil, easing )
             previewViews[char].isActive = char == currentCharacter
         else
             local startX = char < currentCharacter and 1 - characters[char].width or 1 + width
             log(startX)
             previewViews[char] = self:insert( CharacterPreviewView( { x = startX, y = y, characterByte = char, isActive = char == currentCharacter } ) )
-            previewViews[char]:animateX( x, time, nil, easing )
+            previewViews[char]:animate( "x",  x, time, nil, easing )
         end
     end
 

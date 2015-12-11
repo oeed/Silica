@@ -1,16 +1,11 @@
 
-local SIDE_MARGIN = 7
-local TOP_BOTTOM_PADDING = 2
-
 class "ListItem" extends "View" implements "IDraggableView" {
     
-    height = 12;
-    isSelected = false;
-    isCanvasHitTested = false;
+    height = Number( 12 );
+    isSelected = Boolean( false );
+    isCanvasHitTested = Boolean( false );
 
-    backgroundObject = false;
-    textObject = false;
-    text = false;
+    text = String;
 
 }
 
@@ -22,27 +17,20 @@ function ListItem:initialise( ... )
     self:event( MouseHeldEvent, self.onMouseHeld )
 end
 
-function ListItem:initialiseCanvas()
-    self:super()
-    local width, height, canvas = self.width, self.height, self.canvas
-    local backgroundObject = canvas:insert( RoundedRectangle( 2, 1, width - 2, height ) )
-    local textObject = canvas:insert( Text( 1 + SIDE_MARGIN, 1 + TOP_BOTTOM_PADDING, 8, width - 2 * SIDE_MARGIN, self.text ) )
+function ListItem:onDraw()
+    local width, height, theme, canvas, font = self.width, self.height, self.theme, self.canvas
 
-    self.theme:connect( backgroundObject, "radius", "cornerRadius" )
-    self.theme:connect( backgroundObject, "fillColour" )
-    self.theme:connect( textObject, "textColour" )
+    local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
+    local roundedRectangleMask = RoundedRectangleMask( 1 + leftMargin, 1 + topMargin, width - leftMargin - rightMargin, height - topMargin - bottomMargin, theme:value( "cornerRadius" ) )
+    canvas:fill( theme:value( "fillColour" ), roundedRectangleMask )
 
-    self.backgroundObject = backgroundObject
-    self.textObject = textObject
-end
-
-function ListItem:updateWidth( width )
-    self.backgroundObject.width = width - 2
+    local leftTextMargin, rightTextMargin, topTextMargin, bottomTextMargin = theme:value( "leftTextMargin" ), theme:value( "rightTextMargin" ), theme:value( "topTextMargin" ), theme:value( "bottomTextMargin" )
+    canvas:fill( theme:value( "textColour" ),  TextMask( leftTextMargin + 1, topTextMargin + 1, width - leftTextMargin - rightTextMargin, height - topTextMargin - bottomTextMargin, self.text, theme:value( "font" ) ) )
 end
 
 function ListItem.text:set( text )
     self.text = text
-    self.textObject.text = text
+    self.needsDraw = true
 end
 
 function ListItem:updateThemeStyle()
@@ -59,7 +47,7 @@ function ListItem.isSelected:set( isSelected )
     self:updateThemeStyle()
 end
 
-function ListItem:onMouseHeld( Event event, Event.phases phase )
+function ListItem:onMouseHeld( MouseHeldEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then
         self.isSelected = true
         self:startDragDrop( event, ListClipboardData( self ), true, function()self.isSelected = false end )
@@ -67,7 +55,7 @@ function ListItem:onMouseHeld( Event event, Event.phases phase )
     return true
 end
 
-function ListItem:onGlobalMouseUp( Event event, Event.phases phase )
+function ListItem:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
     if self.isSelected and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isSelected = false
         if self.isEnabled and self:hitTestEvent( event ) then
@@ -79,7 +67,7 @@ function ListItem:onGlobalMouseUp( Event event, Event.phases phase )
     end
 end
 
-function ListItem:onMouseDown( Event event, Event.phases phase )
+function ListItem:onMouseDown( MouseDownEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isSelected = not self.isSelected
     end

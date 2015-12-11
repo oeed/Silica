@@ -42,5 +42,5 @@ function FilesApplicationContainer.fileStyle:set( fileStyle )
     -- end
 end
 
-function FilesApplicationContainer:onReady( Event event, Event.phases phase )
+function FilesApplicationContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
 end

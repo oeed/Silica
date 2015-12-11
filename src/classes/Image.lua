@@ -32,9 +32,9 @@ local IMAGE_MIMES = { "image/paint" }
 
 class "Image" {
     
-    width = false;
-    height = false;
-    pixels = false;
+    width = Number;
+    height = Number;
+    pixels = Table;
     -- resource = false;
     -- file = false;
     contents = false;
@@ -42,86 +42,66 @@ class "Image" {
 
 }
 
+function Image:initialise( Table pixels, Number width, Number height )
+    local newPixels = {}
+    local maxLength = width * height
+    for i, pixel in pairs( pixels ) do
+        if i > maxLength then
+            error( "Image pixels must fit the given size" )
+        end
+        newPixels[i] = pixel
+    end
+    self.width = width
+    self.height = height
+    self.pixels = newPixels
+end
+
 function Image.static:blank( width, height )
-    local image = Image()
-    image.width = width
-    image.height = height
     local TRANSPARENT = Graphics.colours.TRANSPARENT
     local pixels = {}
-    for x = 1, width do
-        local pixelsX = {}
-        for y = 1, height do
-            pixelsX[y] = TRANSPARENT
-        end
-        pixels[x] = pixelsX
+    for i = 1, width * height do
+        pixels[i] = TRANSPARENT
     end
-    image.pixels = pixels
-    return image
+    return Image( pixels, width, height )
 end
 
 function Image.static:fromPath( path )
     local file = File( path )
     if file then
-        local image = Image()
-        image.contents = file.contents
-        image:loadPaintFormat()
-        return image
+        return Image.static:fromPaintFormat( file.contents )
     end
 end
 
 function Image.static:fromName( name )
-    log("name "..name)
     local resource = Resource( name, IMAGE_MIMES )
     if resource then
-        return Image.fromResource( resource )
+        return Image.static:fromResource( resource )
     end
 end
 
 function Image.static:fromResource( resource )
-    local image = Image()
-    image.contents = resource.contents
-    image:loadPaintFormat()
-    return image
+    return Image.static:fromPaintFormat( resource.contents )
 end
 
 function Image.static:fromPixels( pixels, width, height )
-    local image = Image()
-    image.width = width
-    image.height = height
-    image:loadPixels( pixels )
-    return image
+    return Image( pixels, width, height )
 end
 
-function Image:loadPixels( pixels )
-    local newPixels = {}
-
-    for x, column in ipairs( pixels ) do
-        local pixelsX = {}
-        for y, colour in ipairs( column ) do
-            pixelsX[y] = colour
-        end
-        newPixels[x] = pixelsX
-    end
-
-    self.pixels = newPixels
-end
-
-function Image:loadPaintFormat()
+function Image.static:fromPaintFormat( contents )
     local lines = split( self.contents, "\n" )
     local pixels = {}
-
+    local width = 0
     for y, line in ipairs( lines ) do
+        width = math.max( width, #line )
+    end
+
+    for y, line in pairs( lines ) do
         for x = 1, #line do
-            if not pixels[x] then
-                pixels[x] = {}
-            end
-            pixels[x][y] = getColourOf( line:sub( x, x ) )
+            pixels[(y - 1) * width + x] = getColourOf( line:sub( x, x ) )
         end
     end
 
-    self.width = #pixels
-    self.height = #lines
-    self.pixels = pixels
+    return Image( pixels, width, height )
 end
 
 function Image:toPaintFormat()
@@ -131,7 +111,7 @@ function Image:toPaintFormat()
 
     for y = 1, height do
         for x = 1, width do
-            paintFormat = paintFormat .. getHexOf( pixels[x][y] )
+            paintFormat = paintFormat .. getHexOf( pixels[(y - 1) * width + x] )
         end
         paintFormat = paintFormat .. "\n"
     end
@@ -147,7 +127,6 @@ function Image.pixels:set( pixels )
 end
 
 --[[
-    @instance
     @desc Returns the image's pixels scaled to the desired dimensions. These are cached so performance should not be a huge concern.
     @param [number] scaledWidth
     @param [number] scaledHeight
@@ -171,13 +150,9 @@ function Image:getScaledPixels( scaledWidth, scaledHeight )
     local ceil = math.ceil
 
     for x = 1, scaledWidth do
-        local pixelsX = pixels[ ceil( x * widthRatio ) ]
-        if not pixelsX then break end
-        local scaledX = {}
         for y = 1, scaledHeight do
-            scaledX[y] = pixelsX[ ceil( y * heightRatio ) ]
+            scaledPixels[(y - 1) * scaledWidth + x] = pixels[ ceil( y * heightRatio - 1 ) * width + ceil( x * widthRatio ) ]
         end
-        scaledPixels[x] = scaledX
     end
 
     scaledCache[scaledWidth .. ":" .. scaledHeight] = scaledPixels
@@ -186,23 +161,23 @@ function Image:getScaledPixels( scaledWidth, scaledHeight )
 end
 
 --[[
-    @instance
     @desc Renders the given image on top of the self image at the given position
     @param [Image] appendingImage -- description
     @param [number] x
     @param [number] y
 ]]
 function Image:appendImage( appendingImage, x, y )
-    local appendingPixels = appendingImage.pixels
-    local pixels = self.pixels
-    for _x, column in ipairs( appendingPixels ) do
-        local pixelsX = pixels[x + _x - 1]
-        if not pixelsX then break end
-        for _y, colour in ipairs( column ) do
-            if pixelsX[y + _y - 1] then
-                pixelsX[y + _y - 1] = colour
+    local appendingWidth, appendingHeight, appendingPixels = appendingImage.width, appendingImage.height, appendingImage.pixels
+    local selfWidth, selfHeight, selfPixels = self.width, self.height, self.pixels
+    local TRANSPARENT = Graphics.colours.TRANSPARENT
+    local xLimit, yLimit = math.min( selfWidth, appendingWidth + x - 1 ), math.min( selfHeight, appendingHeight + y - 1 )
+    for _y = y, yLimit do
+        for _x = x, xLimit do
+            local appendingPixel = appendingPixels[(_y - y) * appendingWidth + (_x - x + 1)]
+            if appendingPixel and appendingPixel ~= TRANSPARENT then
+                selfPixels[(_y - 1) * selfWidth + _x] = appendingPixel
             end
         end
     end
-    self.pixels = pixels
+    self.pixels = selfPixels
 end

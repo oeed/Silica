@@ -1,28 +1,26 @@
 
+local RESIZE_MARGIN_X, RESIZE_MARGIN_Y = 3, 4
+
 class "Window" extends "Container" {
-	-- separatorObject = false;	
-	-- shadowObject = false;
-	-- barObject = false;
-	barHeight = 7;
 
 	container = false;
     closeButton = false;
-    minimiseButton = false;
     maximiseButton = false;
-    isEnabled = false;
+    isEnabled = Boolean( false );
 
 	dragX = false;
 	dragY = false;
-    isDragging = false;
-    isResizingX = false;
-	isResizingY = false;
+    isDragging = Boolean( false );
+    isResizingX = Boolean( false );
+	isResizingY = Boolean( false );
 
     minWidth = 60;
     minHeight = 40;
-    maxWidth = 300;
+    maxWidth = 100;
     maxHeight = 150;
 
-    isCanvasHitTested = false;
+    isCanvasHitTested = Boolean( false );
+
 }
 
 --[[
@@ -32,9 +30,8 @@ class "Window" extends "Container" {
 ]]
 function Window:initialise( ... )
 	self:super( ... )
-    self.closeButton = self:insert( CloseWindowButton( { x = 1, y = 1, window = self } ))
-    self.minimiseButton = self:insert( MinimiseWindowButton( { x = 9, y = 1, window = self } ))
-    self.maximiseButton = self:insert( MaximiseWindowButton( { x = 17, y = 1, window = self } ))
+    self.closeButton = self:insert( CloseWindowButton( { x = 2, y = 1, window = self } ))
+    self.maximiseButton = self:insert( MaximiseWindowButton( { x = 11, y = 1, window = self } ))
 
     self:loadInterface()
     
@@ -45,80 +42,76 @@ function Window:initialise( ... )
     self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
 end
 
---[[
-    @instance
-    @desc Sets up the canvas and it's graphics objects
-]]
-function Window:initialiseCanvas()
-    self:super()
-    -- self.canvas.fillColour = Graphics.colours.GREEN
-	local barHeight = self.barHeight
-    local shadowObject = self.canvas:insert( RoundedRectangle( 3, 4, self.width - 2, self.height - 3 ) )
-    local barObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 2, barHeight ) )
-    local separatorObject = self.canvas:insert( Rectangle( 1, barHeight + 1, self.width - 2, 1 ) )
+function Window:onDraw()
+    local width, height, theme, canvas = self.width - RESIZE_MARGIN_X, self.height - RESIZE_MARGIN_Y, self.theme, self.canvas
 
-    self.theme:connect( barObject, "fillColour", "barColour" )
-    self.theme:connect( barObject, "topRadius", "topCornerRadius" )
-    self.theme:connect( separatorObject, "fillColour", "separatorColour" )
-    self.theme:connect( shadowObject, "topRadius", "topCornerRadius" )
-    self.theme:connect( shadowObject, "bottomRadius", "bottomCornerRadius" )
-    self.theme:connect( shadowObject, "fillColour", "shadowColour" )
-    self.shadowObject = shadowObject
-	self.barObject = barObject
-	self.separatorObject = separatorObject
+    local barHeight = 10
+    local topCornerRadius, bottomCornerRadius = theme:value( "topCornerRadius" ), theme:value( "bottomCornerRadius" )
+    local barRoundedRectangle = RoundedRectangleMask( 1, 1, width, barHeight, topCornerRadius, topCornerRadius, 0, 0 )
+    canvas:fill( theme:value( "barFillColour" ), barRoundedRectangle )
+    canvas:outline( theme:value( "separatorColour" ), barRoundedRectangle, 0, 0, 0, theme:value( "separatorThickness" ) )
+
+    local contentMask = RoundedRectangleMask( 1, 1 + barHeight, width, height - barHeight, 0, 0, bottomCornerRadius, bottomCornerRadius )
+    canvas:fill(  theme:value( "fillColour" ), contentMask )
+    local combinedMask = contentMask:add( barRoundedRectangle )
+    canvas:outline(  theme:value( "outlineColour" ), combinedMask, theme:value( "outlineThickness" ) )
+
+    self.shadowSize = theme:value( "shadowSize" )
+    return combinedMask
 end
 
 --[[
-    @instance
     @desc Loads the interface specified by the self.interfaceName interface name
 ]]
 function Window:loadInterface()
     local interfaceName = self.interfaceName
     if interfaceName then
-        local barHeight = self.barHeight
-        local x, y, width, height = 1, barHeight + 2, self.width - 2, self.height - barHeight - 5
         local container = Interface( interfaceName, WindowContainer ).container
-        container.x = x
-        container.y = y
-        container.width = width
-        container.height = height
+        container.x = 1
+        container.y = 11
+        container.width = self.width - RESIZE_MARGIN_X
+        container.height = self.height - RESIZE_MARGIN_Y
         self.container = self:insert( container )
-    else
-        self.container = self:insert( WindowContainer( { x = x, y = y, width = width, height = height } ) )
     end
 end
 
 function Window.height:set( height )
     height = math.max( math.min( height, self.maxHeight ), self.minHeight )
-    self:super( height )
-    self.shadowObject.height = height - 3
-    local container = self.container
-    if container then container.height = height - self.barHeight - 5 end
+    if self.height ~= height then
+        self:super( height )
+        local container = self.container
+        if container then
+            container.height = height - 10 - RESIZE_MARGIN_Y
+        end
+    end
 end
 
 function Window.width:set( width )
     width = math.max( math.min( width, self.maxWidth ), self.minWidth )
-    self:super( width )
-    self.shadowObject.width = width - 2
-    self.barObject.width = width - 2
-    self.separatorObject.width = width - 2
-    local container = self.container
-    if container then container.width = width - 2 end
-end
-
-function Window:onInterfaceLoaded( Event event, Event.phases phase )
-    local currentContainer = self.container
-    for i, childView in ipairs( self.children ) do
-        if childView ~= currentContainer and childView:typeOf( WindowContainer ) then
-            childView.x = 1
-            childView.y = self.barHeight + 2
-            childView.width = self.width - 2
-            childView.height = self.height - self.barHeight - 5
-            self:remove( self.container )
-            self.container = childView
-            break
+    if self.width ~= width then
+        self:super( width )
+        local container = self.container
+        if container then
+            container.width = width - RESIZE_MARGIN_X
         end
     end
+end
+
+function Window:onInterfaceLoaded( LoadedInterfaceEvent event, Event.phases phase )
+    local currentContainer = self.container
+    for i, childView in ipairs( self.children ) do
+        if childView:typeOf( WindowContainer ) then
+            if childView ~= currentContainer then
+                childView.x = 1
+                childView.y = 11
+                childView.width = self.width - RESIZE_MARGIN_X
+                childView.height = self.height - 10 - RESIZE_MARGIN_Y
+                self.container = childView
+            end
+            return
+        end
+    end
+    self.container = self:insert( WindowContainer( { x = x, y = y, width = width, height = height } ) )
 end
 
 function Window:updateThemeStyle()
@@ -131,26 +124,24 @@ function Window.isEnabled:set( isEnabled )
 end
 
 --[[
-    @instance
     @desc Centres the window relative to it's parent (which should be the application container)
 ]]
 function Window:centre()
     local parent = self.parent
     if parent then
-        self.x = math.ceil( ( parent.width - self.width ) / 2)
-        self.y = math.ceil( ( parent.height - self.height ) / 2)
+        self.x = math.ceil( ( parent.width - self.width + RESIZE_MARGIN_X ) / 2 )
+        self.y = math.ceil( ( parent.height - self.height + RESIZE_MARGIN_Y ) / 2 )
     end
 end
 
 Window:alias( Window.centre, "center" )
 
 --[[
-    @instance
     @desc Focus on the window, bringing it to the front and enabling controls whilst unfocusing other windows
 ]]
 function Window:focus()
     if not self.isEnabled then
-        self.application:clearFocus( Window )
+        self.application:unfocusAll( Window )
         self.isEnabled = true
         self.parent:sendToFront( self )
         for i, sibling in ipairs( self:siblingsOfType( Window ) ) do
@@ -160,7 +151,6 @@ function Window:focus()
 end
 
 --[[
-    @instance
     @desc Unfocus on the window, disabling controls
 ]]
 function Window:unfocus()
@@ -168,29 +158,28 @@ function Window:unfocus()
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is pushed on the window bar before children have recieved the event. Makes the window front most and active
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onMouseDownBefore( Event event, Event.phases phase )
+function Window:onMouseDownBefore( MouseDownEvent event, Event.phases phase )
     self:focus()
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is pushed on the window bar after children have recieved the event. Starts dragging.
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onMouseDownAfter( Event event, Event.phases phase )
+function Window:onMouseDownAfter( MouseDownEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         x = event.x
         y = event.y
         local width = self.width
         local height = self.height
-        local isResizingX = x >= width - 6
-        local isResizingY = y >= height - 8
+        local isResizingX = x >= width - 2 * RESIZE_MARGIN_X
+        local isResizingY = y >= height - 2 * RESIZE_MARGIN_Y
+        log(isResizingX)
         self.isResizingX = isResizingX
         self.isResizingY = isResizingY
         self.isDragging = not ( isResizingX or isResizingY )
@@ -201,12 +190,11 @@ function Window:onMouseDownAfter( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is dragged anywhere on screen. Moves the window if dragging
     @param [Event] event -- the mouse drag event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onGlobalMouseDrag( Event event, Event.phases phase )
+function Window:onGlobalMouseDrag( MouseDragEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         local preventPropagation = false
         if self.isDragging then
@@ -228,12 +216,11 @@ function Window:onGlobalMouseDrag( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Stops dragging
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Window:onGlobalMouseUp( Event event, Event.phases phase )
+function Window:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
     if (self.isDragging or self.isResizingX or self.isResizingY ) and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.dragX = false
         self.dragY = false
@@ -245,7 +232,6 @@ function Window:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Closes the window, removing it from the screen
 ]]
 function Window:close()

@@ -4,32 +4,29 @@ local MENU_OWNER_TOP_OFFSET = 9
 local MENU_CONTEXT_OFFSET = 5
 
 class "Menu" extends "Container" {
+
 -- TODO: prevent menu going out of the screen
 	targetX = 1; -- the desired location of the menu. this is the originally set x value, the actual x value can change to prevent overflowing with the screen
 	targetY = 1;
 
-	isPressed = false;
-    isEnabled = true;
+	isPressed = Boolean( false );
+    isEnabled = Boolean( true );
     -- isVisible acts as the boolans of whether the menu is open or closed.
 
-	isSingleShot = false; -- true if the menu should be removed and unlinked when closed (as opposed to simply hiding for reuse only)
+	isSingleShot = Boolean( false ); -- true if the menu should be removed and unlinked when closed (as opposed to simply hiding for reuse only)
 	hitTestOwner = false; -- true if clicks should first be sent to the owner if they hit test (and it has one)
 
-	topMargin = 3;
-	bottomMargin = 5;
-	shadowRightMargin = 1;
-	shadowTopMargin = 2;
-
-    cornerRadius = 4;
     isOpen = Boolean;
+    owner = View.allowsNil;
 
     shadowObject = false;
     backgroundObject = false;
 
-    width = 40;
-    height = 40;
+    width = Number( 40 );
+    height = Number( 40 );
 
 	needsLayoutUpdate = false;	
+
 }
 
 --[[
@@ -43,83 +40,60 @@ function Menu:initialise( ... )
     self.event:connectGlobal( MouseDownEvent, self.onGlobalMouseDown, Event.phases.BEFORE )
 end
 
---[[
-    @instance
-    @desc Sets up the canvas and it's graphics objects
-]]
-function Menu:initialiseCanvas()
-	self:super()
-    local cornerRadius = self.cornerRadius
-    local shadowObject = self.canvas:insert( RoundedRectangle( 1 + self.shadowRightMargin, 1 + self.shadowTopMargin, self.width - 1, self.height - 2 ) )
-    local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width - 1, self.height - 2 ) )
+function Menu:onDraw()
+    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
 
-    self.theme:connect( backgroundObject, "fillColour" )
-    self.theme:connect( backgroundObject, "outlineColour" )
-    self.theme:connect( backgroundObject, "radius", "cornerRadius" )
-    self.theme:connect( shadowObject, "fillColour", "shadowColour" )
-    self.theme:connect( shadowObject, "radius", "cornerRadius" )
+    -- background shape
+    local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
+    canvas:fill( theme:value( "fillColour" ), roundedRectangle )
+    canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
 
-	self.shadowObject = shadowObject
-	self.backgroundObject = backgroundObject
+    self.shadowSize = theme:value( "shadowSize" )
 end
 
 --[[
-	@instance
 	@desc Show the menu as a context menu (sets it as a single shot)
 	@param [View] owner -- the object that invoked the context menu (usually the thing right clicked)
 	@param [number] x -- the x coordinate of the click (from event.x)
 	@param [number] y -- the y coordinate of the click (from event.y)
 ]]
-function Menu:showContext( owner, x, y )
+function Menu:showContext( View owner, Number x, Number y )
 	self.owner = owner
 	self.isSingleShot = true
 	self.x = x + owner.x - 1 - MENU_CONTEXT_OFFSET
 	self.y = y + owner.y - 1 - MENU_CONTEXT_OFFSET
-	if self.parent then
-        self.parent:removeChild( self )
+    local parent = self.parent
+	if parent then
+        parent:removeChild( self )
     end
 	owner.parent:insert( self )
 	self.isVisible = true
 end
 
-function Menu:updateHeight( height )
-    self.backgroundObject.height = height - self.shadowTopMargin
-    self.shadowObject.height = height - self.shadowTopMargin
-end
-
-function Menu:updateWidth( width )
-	local _width = width - self.shadowRightMargin
-    self.backgroundObject.width = _width
-    self.shadowObject.width = _width
-
-	local height = self.topMargin
-	for i, childView in ipairs( self.children ) do
-		childView.width = _width
-	end
-end
-
 --[[
-	@instance
 	@desc Updates the location and size of the menu as well as the location and size of the menu items
 ]]
 function Menu:updateLayout()
-	local width = self.owner and ( self.owner.menuMargin and self.owner.width + 2 * self.owner.menuMargin or 1 ) or 1
-	local height = self.topMargin
+    local owner = self.owner
+    local ownerTheme = owner and owner.theme
+	local width = owner and ( owner.width - 2 * ( ownerTheme:value( "menuOffsetX" ) or 0 ) ) or 1
+	local height = self.theme:value( "topMargin" ) + ( ownerTheme and ownerTheme:value( "menuTopPadding" ) or 0 )
 	for i, childView in ipairs( self.children ) do
 		width = math.max( width, childView.width )
-	end
-	width = width + (1 - width % 2) -- it must be an odd number (for the separators)
-	-- TODO: target position
-	
-	local height = self.topMargin
-	for i, childView in ipairs( self.children ) do
 		childView.x = 1
 		childView.y = height + 1
 		height = height + childView.height
 	end
-	self.width = width + self.shadowRightMargin
-	self.height = height + self.bottomMargin
+    self.width = width
+	self.height = height + self.theme:value( "bottomMargin" )
 	self.needsLayoutUpdate = false
+end
+
+function Menu.width:set( width )
+    self:super( width + (1 - width % 2) )-- it must be an odd number (for the separators)
+    for i, childView in ipairs( self.children ) do
+        childView.width = width
+    end
 end
 
 function Menu:update( deltaTime )
@@ -128,14 +102,6 @@ function Menu:update( deltaTime )
         self:updateLayout()
     end
 end
-
-function Menu.isVisible:set( isVisible )
-	self:super( isVisible )
-	if isVisible then
-		self.needsLayoutUpdate = true
-	end
-end
-
 function Menu:insert( ... )
 	self:super( ... )
 	self.needsLayoutUpdate = true
@@ -147,14 +113,14 @@ function Menu:removeChild( ... )
 end
 
 --[[
-	@instance
 	@param [Event] -- the mouse down event
 	@desc Closes the menu when somewhere other than the menu is clicked, otherwise handles the event
 ]]
-function Menu:onGlobalMouseDown( Event event, Event.phases phase )
+function Menu:onGlobalMouseDown( MouseDownEvent event, Event.phases phase )
 	if self.isVisible then
-		if self.hitTestOwner and self.owner and self.owner:hitTestEvent( event ) then
-			self.owner.event:handleEvent( event )
+        local owner = self.owner
+		if self.hitTestOwner and owner and owner:hitTestEvent( event ) then
+			owner.event:handleEvent( event )
 			return true
 		elseif self:hitTestEvent( event ) then
 			self.event:handleEvent( event )
@@ -166,7 +132,6 @@ function Menu:onGlobalMouseDown( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Sets the open state of the menu
 	@param [boolean] isOpen -- whether the menu should be open
 ]]
@@ -179,7 +144,6 @@ function Menu.isOpen:set( isOpen )
 end
 
 --[[
-	@instance
 	@desc The open state of the menu
 ]]
 function Menu.isOpen:get()
@@ -187,7 +151,6 @@ function Menu.isOpen:get()
 end
 
 --[[
-	@instance
 	@desc Opens the menu if closed, or closes the menu if open
 ]]
 function Menu:toggle()
@@ -195,24 +158,24 @@ function Menu:toggle()
 end
 
 --[[
-	@instance
 	@desc Open the menu, hiding it from the screen
 ]]
 function Menu:open()
 	self.isVisible = true
-	if self.owner then
-		self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
+    local owner = self.owner
+	if owner then
+		owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
 	end
 end
 
 --[[
-	@instance
 	@desc Closes the menu, hiding it from the screen
 ]]
 function Menu:close()
 	self.isVisible = false
-	if self.owner then
-		self.owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
+    local owner = self.owner
+	if owner then
+		owner.event:handleEvent( MenuChangedInterfaceEvent( self ) )
 	end
 	if self.isSingleShot then
 		self:dispose()

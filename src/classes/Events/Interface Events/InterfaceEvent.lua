@@ -1,6 +1,8 @@
 
 class "InterfaceEvent" extends "Event" {
+
 	owner = false;
+
 }
 
 --[[

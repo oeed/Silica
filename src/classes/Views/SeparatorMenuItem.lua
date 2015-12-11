@@ -1,40 +1,28 @@
 
 class "SeparatorMenuItem" extends "MenuItem" {
-	text = false;
 
-	height = 3;
-	width = 51;
+	height = Number( 3 );
+	width = Number( 51 );
 
-	textColour = Graphics.colours.LIGHT_GREY;
-
-    pressedTextColour = Graphics.colours.WHITE;
-
-    disabledTextColour = Graphics.colours.LIGHT_GREY;
+    text = String( "" ); -- we give it a default value because we can't set it to .allowsNil
 
 }
 
---[[
-	@constructor
-	@desc Initialise a application container instance
-	@param [table] properties -- the properties for the view
-]]
 function SeparatorMenuItem:initialise( ... )
-	self.super:super( ... )
+	self.super:super( ... ) -- by pass the normal menuitem's event connecting, we don't need to get any events
+    self:event( ThemeChangedInterfaceEvent, self.updateSize )
+    self:updateSize()
 end
 
-function SeparatorMenuItem:initialiseCanvas()
-	self.super:super()
-    self.backgroundObject = self.canvas:insert( Separator( 5, 2, self.width - 8, 1 ) )
+function SeparatorMenuItem:onDraw()
+    local width, height, theme, canvas, isPressed = self.width, self.height, self.theme, self.canvas
+    canvas:fill( theme:value( "fillColour" ) )
+    local leftMargin = theme:value( "leftMargin" )
+    local separatorX, separatorY, separatorWidth = 1 + leftMargin, 1 + theme:value( "topMargin" ), width - leftMargin - theme:value( "rightMargin" )
+    canvas:fill( theme:value( "separatorColour" ), theme:value( "isDashed" ) and SeparatorMask( separatorX, separatorY, separatorWidth, 1 ) or RectangleMask( separatorX, separatorY, separatorWidth, 1 ) )
 end
 
-function SeparatorMenuItem.isPressed:set( isPressed )
-    self.isPressed = false
-end
-
-function SeparatorMenuItem:updateWidth( width )
-	self.backgroundObject.width = width - 8
-end
-
-function SeparatorMenuItem:updateHeight( height )
-	self.backgroundObject.height = 1
+function SeparatorMenuItem:updateSize( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
+    local theme = self.theme
+    self.height = 1 + theme:value( "topMargin") + theme:value( "bottomMargin")
 end

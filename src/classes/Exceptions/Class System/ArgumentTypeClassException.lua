@@ -1,0 +1,9 @@
+
+class "ArgumentTypeClassException" extends "ClassException" {
+
+}
+
+function ArgumentTypeClassException:initialise( String message, Number.allowsNil level )
+    message = "Incorrect value/ValueType of argument(s): " .. message
+    self:super( message, level )
+end

@@ -36,19 +36,6 @@ function _G.logtraceback( level )
 	log( "Start of traceback:\n" .. ("-"):rep( 20 ) .. "\nin " .. table.concat( traceback, "\nin ") .. "\n" .. ("-"):rep( 20 ) .. "\nEnd of traceback" )
 end
 
-function _G.error(m,l)
-	term.setBackgroundColor(colors.red)
-	term.clear()
-	logtraceback( 2 )
-	_error(m,l and (l == 0 and l or l + 1) or 2)
-	while true do
-		local event, key = os.pullEvent("char")
-		if key == "\\" then
-			os.reboot()
-		end
-	end
-end
-
 local g_tLuaKeywords = {
     [ "and" ] = true,
     [ "break" ] = true,
@@ -142,18 +129,28 @@ end
 
 term.redirect(term.native())
 
+-- setmetatable( _G, {
+--     __newindex = function( self, k, v )
+--         rawset( self, k, v )
+--         if k:sub(1,1):upper() ~= k:sub(1,1) then
+--             print( "Set _G." .. k .. " to: " .. tostring( v ) )
+--         end
+--         -- logtraceback()
+--     end
+-- } )
+
 if fs.exists("Silica.resourcepkg") then
-    print("Using built package")
+    log("Using built package")
 	local _, err = pcall(function() dofile( "Silica.resourcepkg" ) end)
-    fs.delete("Old-Silica.resourcepkg")
-	fs.move("Silica.resourcepkg","Old-Silica.resourcepkg")
+    fs.delete("OldSilica.resourcepkg")
+	fs.move("Silica.resourcepkg","OldSilica.resourcepkg")
 	if err then error(err,2) end
 else
-    print("Using old style package")
+    log("Using old style package")
 	shell.run( "package /src Silica" )
 	dofile( "Silica" )
 
-    print("Building")
+    log("Building")
 	local folder = Folder( "/src" )
 	log(folder)
 	local package = folder:package( "/Silica.resourcepkg", true, true )
@@ -165,9 +162,13 @@ end
 -- shell.run( "package /application app" )
 -- 
 
+-- the emulator only seems to want to draw after the first yield, so this just yields before we begin
+os.queueEvent("damn_emulator")
+os.pullEvent("damn_emulator")
+
 
 -- dofile( "app" )
-Application.static:load( "/filesapplication" )
+Application.static:load( "/testapplication" )
 
 -- BitmapFont.convertFile( "font src/auckland", "src/fonts/Auckland.sfont", 32, 8, {
 -- 	name = "Auckland";
@@ -180,4 +181,5 @@ Application.static:load( "/filesapplication" )
 -- ExampleApplication():run( ... )
 -- Program functions...
 -- FontStudioApplication():run( ... )
-FilesApplication():run( ... )
+-- FilesApplication():run( ... )
+TestApplication():run( ... )

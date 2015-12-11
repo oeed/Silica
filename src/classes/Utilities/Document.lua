@@ -3,8 +3,8 @@ class "Document" {
 
 	contents = false;
 	file = false;
-	isBinary = false;
-	isModified = false;
+	isBinary = Boolean( false );
+	isModified = Boolean( false );
 
 }
 
@@ -49,7 +49,6 @@ function Document:initialise( path )
 end
 
 --[[
-	@static
 	@desc Opens a file and sets it as the application's active document, opening a file dialouge if neccesary. If there was an error the application's active document will not be changed. Simply use Document( path ) if you want to open a document but not set it as active.
 	@param [Document] documentClass -- the type of Document class you want to use (it's probably easier to do MyDocument:open)
 	@param [string] path -- the path of the document. if empty an open file dialouge will be shown
@@ -78,7 +77,6 @@ function Document.static:open( documentClass, path )
 end
 
 --[[
-	@static
 	@desc Sets self.contents to whatever is required for a blank document. You will normally want to override this.
 ]]
 function Document:blank()
@@ -86,7 +84,6 @@ function Document:blank()
 end
 
 --[[
-	@instance
 	@desc Parses the read handle. If this returns nil :parse is used with the content of .readAll(). When subclassing you MUST override this or parse! (what's the point of subclassing otherwise?)
 	@param [handle] handle -- the handle of the document
 	@return contents -- the parsed contents. return false if handle is invalid.
@@ -96,7 +93,6 @@ function Document:parseHandle( handle )
 end
 
 --[[
-	@instance
 	@desc Parses the raw string from the document. When subclassing you MUST override this or parseHandle! (what's the point of subclassing otherwise?)
 	@param [string] rawContents -- the contents of the document
 	@return contents -- the parsed contents. return false if rawContents is invalid.
@@ -107,7 +103,6 @@ function Document:parse( rawContents )
 end
 
 --[[
-	@instance
 	@desc Called when there was an error reading or writing the document. By default makes the application show an alert box. Override this if you want to change that.
 	@param [string] err -- a description of the error encountered
 ]]
@@ -125,7 +120,6 @@ end
 
 
 --[[
-	@instance
 	@desc Saves the document's contents to it's path. Calls :write with self.path
 	@return [string/nil] err -- the error message if there was an issue with saving, nil otherwise.
 ]]
@@ -142,7 +136,6 @@ function Document:save()
 end
 
 --[[
-	@instance
 	@desc Saves the document's contents to the given path.
 	@param [string] path -- the path to save to
 	@return [string/nil] err -- the error message if there was an issue with saving, nil otherwise.
@@ -161,7 +154,6 @@ function Document:saveAs( path )
 end
 
 --[[
-	@instance
 	@desc Serialises the document's contents to the handle. When subclassing you MUST override this! (what's the point of subclassing otherwise?)
 	@param [handle] handle -- the contents to serialise (don't asume it's equal to self.contents)
 	@return okay -- whether serialisation was okay. return nil if the handle isn't used (you want to use :serialise) return false if there was an eror.
@@ -173,7 +165,6 @@ end
 Document:alias( Document.serialiseHandle, "serializeHandle" )
 
 --[[
-	@instance
 	@desc Serialises the document's contents to it's raw form for saving. When subclassing you MUST override this! (what's the point of subclassing otherwise?)
 	@param [string] contents -- the contents to serialise (don't asume it's equal to self.contents)
 	@return serialisedContents -- the serialised contents. return false if there was an eror.
@@ -186,7 +177,6 @@ end
 Document:alias( Document.serialise, "serialize" )
 
 --[[
-	@instance
 	@desc Called when the path being written to already exists (but not when it's the document's own path). By default makes the application show an alert box. Override this if you want to change that.
 	@param [string] path -- the path being overwritten
 ]]
@@ -196,7 +186,6 @@ function Document:onOverwrite( path )
 end
 
 --[[
-	@instance
 	@desc Tries to close the document, prompting the user (calling :onClose) if it's been modified
 	@param [function( [boolean] isClosed )] callback -- the callback to call either after it was closed or the user cancelled. the argument is true if the document was closed, false it's still open
 ]]
@@ -213,7 +202,6 @@ function Document:close( callback )
 end
 
 --[[
-	@instance
 	@desc Called when the user is asked whether they want to close and save their document. By default makes the application show an alert box. Override this if you want to change that.
 	@param [function( [boolean] isClosed )] callback -- the callback to call either after it was closed or the user cancelled. the argument is true if the document was closed, false it's still open
 ]]

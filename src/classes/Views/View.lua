@@ -1,5 +1,8 @@
 
-local DEFAULT_TIME = .3
+local MAX_DOUBLE_CLICK_TIME = 0.8
+local MIN_MOUSE_HOLD_TIME = 0.3
+
+local ANIMATION_DEFAULT_TIME = 0.3
 local DEFAULT_EASING = Animation.easings.IN_OUT_SINE
 
 local function newAnimation( self, label, time, values, easing, onFinish, round )
@@ -25,89 +28,60 @@ local function newAnimation( self, label, time, values, easing, onFinish, round 
 end
 
 class "View" {
-	x = false;
-	y = false;
-	width = false;
-	height = false;
-	index = false; -- the z index in its parent
-	parent = false;
-	siblings = false;
-	identifier = false;
-	interfaceProperties = false; -- the properties the view was given in the interface XML file
 
-	animations = {};
+	x = Number( 1 );
+	y = Number( 1 );
+	width = Number( 1 );
+	height = Number( 1 );
+	index = Number.allowsNil; -- the z index in its parent
+	parent = Any.allowsNil; -- TODO: if this is Container it loads the Container class before View is loaded so it creates another View class table
+	siblings = Table.allowsNil;
+	identifier = String.allowsNil;
+	isFirst = Boolean.allowsNil;
+	isLast = Boolean.allowsNil; -- TODO: .isReadOnly
 
-	event = false;
-	canvas = false;
+	animations = Table( { names = {} } );
+
+	event = EventManager;
+
+	canvas = Canvas;
+	shadowMask = Mask.allowsNil; -- TODO: .isReadOnly
+	shadowSize = Number( 0 );
+	needsDraw = Boolean( true );
+	isVisible = Boolean( true );
 	theme = false;
-	isCanvasHitTested = true;
-	isVisible = true;
-	isFocused = false;
-	isSingleFocusOnly = false; -- whether only this view can be in-focus when focused (i.e. so 3 textboxes aren't focused at the same time)
-	isFocusDismissable = true; -- whether clicking away from the view when focused will unfocus it
-	isEnabled = true;
 
-	isFirst = Boolean;
-	isLast = Boolean; -- TODO: .isReadOnly
+	isCanvasHitTested = Boolean( true );
+	isFocused = Boolean( false );
+	isSingleFocusOnly = Boolean( false ); -- whether only this view can be in-focus when focused (i.e. so 3 textboxes aren't focused at the same time)
+	isFocusDismissable = Boolean( true ); -- whether clicking away from the view when focused will unfocus it
+	isEnabled = Boolean( true );
 
-	stringConstraints = {}; -- the constraints strings
-	loadedConstraints = {}; -- the parsed constraints
-	constraintsNeedingUpdate = {}; -- the constraints that need to be refreshed next update
-	needsConstraintUpdate = {}; -- whether the constraint values have changed and the view needs to be informed
-	references = {};
-	lastMouseDown = {};
-	lastMouseUp = {};
-	--[[ format:
-		{
-			[property] = {
-				[reference1 (string)] = true;
-				[reference2 (string)] = true;
-			}
-		}
-	]]
+	lastMouseDown = Table( {} );
+	lastMouseUp = Table( {} );
+
 }
 
 --[[
 	@constructor
 	@desc Initialise a view instance
-	@param [table] properties -- the properties for the view
 ]]
-function View:initialise( properties )
-	self.animations.names = {} 
+function View:initialise( Table.allowsNil properties )
 	self:initialiseEventManager()
-	self:initialiseTheme()
+	self.theme = ThemeOutlet( self )
 	self:initialiseCanvas()
 
-	-- setmetatable( self.stringConstraints, {
-	-- 	__index = { parent = self }, __newindex = function( t, k, v )
-	-- 		if t.parent.identifier == "testview" then
-	-- 		end
-	-- 		rawset( t, k, v )
-	-- 	end
-	-- } )
-	
-	if properties and type( properties ) == "table" then
-		-- TODO: replace
+	if properties then
 		for k, v in pairs(properties) do
 			self[k] = v
-			-- Code here...
 		end
-		-- self:properties( properties )
 	end
 
-    self:event( ParentResizedInterfaceEvent, self.onParentResizedConstraintUpdate )
-    self:event( ParentChangedInterfaceEvent, self.onParentChangedConstraintUpdate )
     self:event( MouseDownEvent, self.onMouseDownMetaEvents )
     self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUpMetaEvents )
-    self:event( ReadyInterfaceEvent, self.onReadyConstraintUpdate )
-end
-
-function View:initialiseTheme()
-	self.theme = ThemeOutlet( self )
 end
 
 --[[
-	@instance
 	@desc Initialises the view's event manager (used for overriding)
 ]]
 function View:initialiseEventManager()
@@ -115,15 +89,52 @@ function View:initialiseEventManager()
 end
 
 --[[
-    @instance
-    @desc Sets up the canvas and it's graphics objects
+    @desc Sets up the canvas and it's graphics objects (used for overriding)
 ]]
 function View:initialiseCanvas()
-	self.canvas = Canvas( self.x or 1, self.y or 1, self.width or 1, self.height or 1, self )
+	self.canvas = Canvas( self.width, self.height, self )
 end
 
 --[[
-	@instance
+	@desc The Mask to use for the View's shadow
+]]
+function View.shadowMask:get()
+	return self.canvas.contentMask -- self.canvas.mask is the mask of the currently drawn pixels to the canvas, i.e. everything will cast a shadow
+end
+
+function View.shadowSize:set( shadowSize )
+	self.shadowSize = shadowSize
+	self.needsDraw = true 
+end
+
+--[[
+	@desc Called when a parent Container wants the Canvas to be redraw
+]]
+function View:draw()
+	self.canvas:clear()
+	self:onDraw() -- we have no children, just draw our own content
+end
+
+--[[
+	@desc Called when the contents of the View's Canvas needs to be updated
+]]
+function View:onDraw()
+
+end
+
+function View.needsDraw:set( needsDraw )
+	self.needsDraw = needsDraw
+	if needsDraw then
+		local parent = self.parent
+		if parent then
+			parent.needsDraw = needsDraw -- if we need to draw the parent also has to redraw
+		end
+	end
+end
+
+-- Location --
+
+--[[
 	@desc Returns the view's siblings in it's container
 	@return [table] siblings -- an array of the siblings
 ]]
@@ -142,7 +153,6 @@ function View.siblings:get()
 end
 
 --[[
-	@instance
 	@desc Returns true if the view is the first child of it's parent
 	@return [boolean] isFirst -- whether  the view is the first child of it's parent
 ]]
@@ -151,7 +161,6 @@ function View.isFirst:get()
 end
 
 --[[
-	@instance
 	@desc Returns true if the view is the last child of it's parent
 	@return [boolean] isLast -- whether  the view is the last child of it's parent
 ]]
@@ -161,7 +170,6 @@ function View.isLast:get()
 end
 
 --[[
-	@instance
 	@desc Returns whether the control is enabled, rising up to the parent containers as well
 	@return [boolean] isEnabled -- whether the view is enabled
 ]]
@@ -179,13 +187,13 @@ function View.isEnabled:get()
 end
 
 --[[
-	@instance
 	@desc Returns the index of the view in it's parent. 1 is the bottom most view
 	@return [number] index -- an array of the siblings
 ]]
 function View.index:get()
-	if self.parent then
-		for i, child in ipairs( self.parent.children ) do
+	local parent = self.parent
+	if parent then
+		for i, child in ipairs( parent.children ) do
 			if child == self then
 				return i
 			end
@@ -195,9 +203,7 @@ function View.index:get()
 end
 
 --[[
-	@instance
 	@desc Sets the z index of the view in it's parent container
-	@param [number] index
 ]]
 function View.index:set( index )
 	local parent = self.parent
@@ -221,7 +227,6 @@ function View.index:set( index )
 end
 
 --[[
-	@instance
 	@desc Returns the view's siblings in it's container that are of or inherit from the given class
 	@param [class] _class -- the class type
 	@return [table] siblings -- an array of the siblings
@@ -238,331 +243,53 @@ function View:siblingsOfType( _class )
 	return siblings
 end
 
--- View:alias( View.x, "left" )
--- View:alias( View.y, "top" )
-
--- object.left is the raw left value (i.e. a number, or nil if not yet calculated)
--- object.loadedConstraints.left is the parsed and simplified left value
--- object.stringConstraints.left is the string constraint
-
---[[
-	@instance
-	@desc Parses a constraint and simplifies it
-	@param [string] property - the constraint to parse and simplify
-	@return [table] parsed - the parsed and simplified constraint
-]]
-function View:parseConstraint( property )
-	local loaded = self.loadedConstraints
-	if loaded[property] then return loaded[property] end
-
-	local constraints = self.stringConstraints
-	local constraintString = constraints[property]
-	
-	if not constraintString then
-		-- solve it based on other constraints
-		local left, right, top, bottom, width, height = constraints.left or "1", constraints.right or "1", constraints.top or "1", constraints.bottom or "1", constraints.width or "1", constraints.height or "1"
-
-		if property == "width" then
-			constraintString = "(" .. right .. ")-(" .. left .. ")+1"
-		elseif property == "height" then
-			constraintString = "(" .. bottom .. ")-(" .. top .. ")+1"
-		elseif property == "left" then
-			constraintString = "(" .. right .. ")-(" .. width .. ")+1"
-		elseif property == "right" then
-			constraintString = "(" .. width .. ")+(" .. left .. ")-1"
-		elseif property == "top" then
-			constraintString = "(" .. bottom .. ")-(" .. height .. ")+1"
-		elseif property == "bottom" then
-			constraintString = "(" .. top .. ")+(" .. height .. ")-1"
-		else
-			constraintString = "0"
-		end
-	end
-
-	local parsed = MathParser.static:parseString( tostring( constraintString ) )
-	MathParser.static:simplify( parsed )
-
-	loaded[property] = parsed
-	return parsed
-end
-
---[[
-	@instance
-	@desc Evaluates the numerical value of a constraint
-	@param [string] property -- the name of the property (i.e. left, width, etc.)
-	@return [number] value -- the numerical value
-]]
-function View:evalConstraint( property )
-	local references = {}
-	local parsed = self:parseConstraint( property )
-	local resolved = MathParser.static:resolve( parsed, self, property, references )
-	local value = MathParser.static:eval( resolved )
-
-	local oldValue = self.raw[property]
-	if oldValue ~= value then
-		self.raw[property] = value
-		self.references[property] = references
-		
-		self.needsConstraintUpdate[self:updateConstraint( property, value )] = true
-	end
-	return value
-end
-
-function View:updateConstraint( property, value )
-	local stringConstraints = self.stringConstraints
-	local canvas = self.canvas
-	if property == "top" then
-		self.raw.y = value
-		if canvas then canvas.y = value end
-		return "y"
-	elseif property == "bottom" then
-		if stringConstraints.height then
-			value = value - self.height + 1
-			self.raw.y = value
-			if canvas then canvas.y = value end
-			return "y"
-		else
-			value = value - self.y + 1
-			self.raw.height = value
-			if canvas then canvas.height = value end
-			return "height"
-		end
-	elseif property == "left" then
-		self.raw.x = value
-		if canvas then canvas.x = value end
-		return "x"
-	elseif property == "right" then
-		if stringConstraints.width then
-			value = value - self.width + 1
-			self.raw.x = value
-			if canvas then canvas.x = value end
-			return "x"
-		else
-			value = value - self.x + 1
-			self.raw.width = value
-			if canvas then canvas.width = value end
-			return "width"
-		end
-	elseif property == "width" then
-		self.raw.width = value
-		if canvas then canvas.width = value end
-		return "width"
-	elseif property == "height" then
-		self.raw.height = value
-		if canvas then canvas.height = value end
-		return "height"
-	end
-end
-
---[[
-	@instance
-	@desc Called when the parent changes. This updates constraints.
-	@param [ParentChangedInterfaceEvent] event -- the event
-]]
-function View:onParentChangedConstraintUpdate( Event event, Event.phases phase )
-	for k, v in pairs( self.stringConstraints ) do
-		self.constraintsNeedingUpdate[k] = true
-	end
-end
-
---[[
-	@instance
-	@desc Called when the interface is loaded and ready. This updates constraints.
-	@param [ReadyInterfaceEvent] event -- the event
-]]
-function View:onReadyConstraintUpdate( Event event, Event.phases phase )
-	if event.isInit then
-		for k, v in pairs( self.stringConstraints ) do
-			self.constraintsNeedingUpdate[k] = true
-		end
-	end
-end
-
---[[
-	@instance
-	@desc Called when the parent resizes. This updates constraints.
-	@param [ParentResizedInterfaceEvent] event -- the event
-]]
-function View:onParentResizedConstraintUpdate( Event event, Event.phases phase )
-	local isHorizontal = event.isHorizontal
-	local isVertical = event.isVertical
-	local ident = self.identifier
-	for k, v in pairs( self.stringConstraints ) do
-		local isKHorizontal = ( k == "left" or k == "right" or k == "width" )
-		if isHorizontal and isKHorizontal then
-			self.constraintsNeedingUpdate[k] = true
-		elseif isVertical and not isKHorizontal then
-			self.constraintsNeedingUpdate[k] = true
-		end
-	end
-end
-
---[[
-	@instance
-	@desc Re-evaluates a constraint, reparsing if necessary.
-	@param [string] property -- the name of the property (i.e. left, width, etc.)
-	@param [boolean] isReferenceChange -- false if it should re-parse the constraint
-	@return [number] value
-
-	@note - call when a reference changes with true
-	@note - call when the constraint changes with false
-]]
-function View:reloadConstraint( property, isReferenceChange )
-	if not isReferenceChange then
-		self.loadedConstraints[property] = nil
-	end
-	return self:evalConstraint( property )
-end
-
--- @instance
--- function View.top:get()
--- 	return self.top or self:evalConstraint "top"
--- end
-
--- -- @instance
--- function View.top:set( top )
-	-- if top then
-	-- 	self.stringConstraints.top = top
-	-- 	self:reloadConstraint "top"
-	-- else
-	-- 	self.stringConstraints.top = nil
-	-- end
--- end
-
--- -- @instance
--- function View.bottom:get()
--- 	return self.bottom or self:evalConstraint "bottom"
--- end
-
--- -- @instance
--- function View.bottom:set( bottom )
--- 	if bottom then
--- 		local stringConstraints = self.stringConstraints
--- 		stringConstraints.bottom = bottom
--- 		self:reloadConstraint "bottom"
--- 		if stringConstraints.height then
--- 			stringConstraints.top = nil
--- 		elseif stringConstraints.top then
--- 			stringConstraints.height = nil
--- 		end
--- 	else
--- 		self.stringConstraints.top = nil
--- 	end
--- end
-
--- @instance
--- function View.left:get()
--- 	return self.left or self:evalConstraint "left"
--- end
-
--- -- @instance
--- function View.left:set( left )
-	-- local value
-	-- if left then
-	-- 	local stringConstraints = self.stringConstraints
-	-- 	stringConstraints.left = left
-	-- 	value = self:reloadConstraint "left"
-	-- 	if stringConstraints.width then
-	-- 		stringConstraints.right = nil
-	-- 	elseif stringConstraints.right then
-	-- 		stringConstraints.width = nil
-	-- 	end
-	-- else
-	-- 	self.stringConstraints.left = nil
-	-- end
-	-- return value
--- end
-
--- -- @instance 
--- function View.right:get()
--- 	return self.right or self:evalConstraint "right"
--- end
-
--- -- @instance 
--- function View.right:set( right )
--- 	local value
--- 	if right then
--- 		local stringConstraints = self.stringConstraints
--- 		stringConstraints.right = right
--- 		value = self:reloadConstraint "right"
--- 		if stringConstraints.width then
--- 			stringConstraints.left = nil
--- 		elseif stringConstraints.left then
--- 			stringConstraints.width = nil
--- 		end
--- 	else
--- 		self.stringConstraints.right = nil
--- 	end
--- 	return value
--- end
-
--- @instance 
-function View.width:get()
-	return self.width or self:evalConstraint "width"
-end
-
--- @instance 
-function View.width:set( width )
-	local value
-	if width then
-		local stringConstraints = self.stringConstraints
-		stringConstraints.width = width
-		value = self:reloadConstraint "width"
-		if stringConstraints.left then
-			stringConstraints.right = nil
-		elseif stringConstraints.right then
-			stringConstraints.left = nil
-		end
-	else
-		self.stringConstraints.width = nil
-	end
-	return value
-end
-
--- @instance 
-function View.height:get()
-	return self.height or self:evalConstraint "height"
-end
-
--- @instance 
 function View.height:set( height )
-	local value
-	if height then
-		local stringConstraints = self.stringConstraints
-		stringConstraints.height = height
-		value = self:reloadConstraint "height"
-		if stringConstraints.top then
-			stringConstraints.bottom = nil
-		elseif stringConstraints.bottom then
-			stringConstraints.top = nil
-		end
-	else
-		self.stringConstraints.height = nil
-	end
-	return value
+	self.height = height
+    self.canvas.height = height
+    self.needsDraw = true
 end
 
-function View.isVisible:set( isVisible )
-	self.canvas.isVisible = isVisible
-	self.isVisible = isVisible
+function View.width:set( width )
+	self.width = width
+    self.canvas.width = width
+    self.needsDraw = true
+end
+
+function View.x:set( x )
+	self.x = x
+	local parent = self.parent
+	if parent then
+	    parent.needsDraw = true
+	end
+end
+
+function View.y:set( y )
+	self.y = y
+	local parent = self.parent
+	if parent then
+	    parent.needsDraw = true
+	end
 end
 
 function View.isVisible:get()
 	return self.parent and self.isVisible -- if we don't have a parent we're effectively not visible
 end
 
---[[
-	@instance
-	@desc Converts the local coordinates to local coordinates of a parent (or global if nil) to.
-	@param [number] x -- the local x coordinate
-	@param [number] y -- the local y coordinate
-	@param [View] parent -- the parent to convert to
-	@return [number] x -- the x coordinate in the parent's coordinate system
-	@return [number] y -- the x coordinate in the parent's coordinate system
-]]
-function View:coordinatesTo( x, y, parent )
-	parent = parent or self.application.container
+function View.isVisible:set( isVisible )
+	self.isVisible = isVisible
+	local parent = self.parent
+	if parent then
+		self.parent.needsDraw = true
+	end
+end
 
+--[[
+	@desc Converts the local coordinates to local coordinates of a parent (or global if nil) to.
+	@return Number x -- the x coordinate in the parent's coordinate system
+	@return Number y -- the x coordinate in the parent's coordinate system
+]]
+--									TODO: Any should be Container. If it is it loads another View class, so there are two different ones
+function View:coordinatesTo( Number x, Number y, Any( self.application.container ) parent )
 	local currentParrent = { parent = self }
 	while currentParrent.parent and currentParrent.parent ~= parent do
 		currentParrent = currentParrent.parent
@@ -573,14 +300,15 @@ function View:coordinatesTo( x, y, parent )
 end
 
 --[[
-	@instance
 	@desc Converts the position of the view to the coordinates in a parent (or global if nil)
 	@param [View] parent -- the parent to convert to
 	@return [number] x -- the x coordinate in the parent's coordinate system
 	@return [number] y -- the x coordinate in the parent's coordinate system
 ]]
-function View:position( parent )
-	if not self.parent or parent == self.parent then
+--					TODO: Any should be Container. If it is it loads another View class, so there are two different ones
+function View:position( Any( self.application.container ) parent )
+	local selfParent = self.parent
+	if not selfParent or parent == selfParent then
 		return self.x, self.y
 	else
 		local x, y = self:coordinatesTo( 1, 1, parent )
@@ -589,17 +317,12 @@ function View:position( parent )
 end
 
 --[[
-	@instance
 	@desc Converts the coordinates of a parent (or global if nil) to local coordinates.
-	@param [number] x -- the x coordinate
-	@param [number] y -- the y coordinate
-	@param [View] parent -- the parent to convert from
 	@return [number] x -- the local x coordinate
 	@return [number] y -- the local x coordinate
 ]]
-function View:coordinates( x, y, parent )
-	parent = parent or self.application.container
-	
+--							TODO: Any should be Container. If it is it loads another View class, so there are two different ones
+function View:coordinates( Number x, Number y, Any( self.application.container ) parent )
 	local currentParrent = self
 	while currentParrent and currentParrent ~= parent do
 		x = x - currentParrent.x + 1
@@ -611,13 +334,12 @@ function View:coordinates( x, y, parent )
 end
 
 --[[
-	@instance
 	@desc Hit test the view realative to its parent's coordinates
 	@param [number] x -- the x coordinate to hit test
 	@param [number] y -- the y coorindate to hit test
 	@return [boolean] isHit -- whether the hit test hit
 ]]
-function View:hitTest( x, y )
+function View:hitTest( Number x, Number y )
 	local _x, _y = self.x, self.y
 	return self.isVisible and _x <= x
 	   and x <= _x + self.width - 1
@@ -626,15 +348,15 @@ function View:hitTest( x, y )
 end
 
 --[[
-	@instance
 	@desc Hit tests the view with an event relative to the parent, uses the coordinates if it's a MouseEvent, otherwise it will always return true
 	@param [Event] event -- the event
 	@param [View] parent -- the parent
 	@return [boolean] isHit -- whether the hit test hit
 ]]
-function View:hitTestEvent( event, parent )
-	parent = parent or self.parent
-	if not parent then return false
+--							TODO: Any should be Container. If it is it loads another View class, so there are two different ones
+function View:hitTestEvent( Event event, Any( self.parent ) parent )
+	if not parent then
+		return false
 	elseif event:typeOf( MouseEvent ) then
 		event:makeRelative( parent )
 		local x, y = event.x, event.y
@@ -645,7 +367,6 @@ function View:hitTestEvent( event, parent )
 end
 
 --[[
-	@instance
 	@desc Update the animation
 	@param [number] deltaTime -- time since last update
 ]]
@@ -661,179 +382,51 @@ function View:update( dt )
 			end
 		end
 	end
-
-	local constraintsNeedingUpdate = self.constraintsNeedingUpdate
-	local constraintOrder = { "width", "height", "left", "top", "bottom", "right" }
-	for i, v in ipairs( constraintOrder ) do
-		if constraintsNeedingUpdate[v] then
-			self:reloadConstraint( v, true )
-			constraintsNeedingUpdate[v] = nil
-		end
-	end
-
-	-- if self.hasInitialised then
-		local needsConstraintUpdate = self.needsConstraintUpdate
-		for k, isChanged in pairs( needsConstraintUpdate ) do
-			if isChanged then
-				local _k = k == "x" and "updateX" or k == "y" and "updateY" or k == "width" and "updateWidth" or k == "height" and "updateHeight"
-				if self:isDefined( _k ) then
-					self[_k]( self, self.raw[k] )
-				end
-				needsConstraintUpdate[k] = false
-			end
-		end
-	-- end
 end
 
---[[/
-	@instance
+--[[
 	@desc Animate a change in a certain property
-	@param [string] propertyName -- the name of the property
-	@param [number] value -- the target value
-	@param [number] time -- the duration of the animation
-	@param [function] onFinish -- the function called on completion of the animation
-	@param [boolean] round -- whether values are rounded. For keyframe animations, the keyframes will not be tweened between.
-	@param [Animation.easing] easing -- the easing function of the animation
 ]]
-function View:animate( propertyName, value, time, onFinish, easing, delay, round )
+function View:animate( String propertyName, Number value, Number( ANIMATION_DEFAULT_TIME ) time, Function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay, Boolean( true ) round )
 	local addAnimation = function()
-		newAnimation( self, propertyName, time or DEFAULT_TIME, { [propertyName] = value }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish, round )
+		newAnimation( self, propertyName, time, { [propertyName] = value }, easing or DEFAULT_EASING, onFinish, round )
 	end
-	if not delay or type( delay ) ~= 'number' or delay < 0.05 then
+	if delay <= 0 then
 		addAnimation()
 	else
-		self.application:schedule(addAnimation, delay)
+		self.application:schedule( addAnimation, delay )
 	end
 end
 
 --[[
-	@instance
-	@desc Animate a change in the x coordinate
-	@param [number] x -- the target x coordinate
-	@param [number] time -- the duration of the animation
-	@param [function] onFinish -- the function called on completion of the animation
-	@param [Animation.easing] easing -- the easing function of the animation
-]]
-function View:animateX( x, time, onFinish, easing, delay )
-	local addAnimation = function()
-		newAnimation( self, "x", time or DEFAULT_TIME, { x = x }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
-	end
-	if not delay or type( delay ) ~= 'number' or delay < 0.05 then
-		addAnimation()
-	else
-		self.application:schedule(addAnimation, delay)
-	end
-end
-
---[[
-	@instance
-	@desc Animate a change in the y coordinate
-	@param [number] y -- the target y coordinate
-	@param [number] time -- the duration of the animation
-	@param [function] onFinish -- the function called on completion of the animation
-	@param [Animation.easing] easing -- the easing function of the animation
-]]
-function View:animateY( y, time, onFinish, easing, delay )
-	local addAnimation = function()
-		newAnimation( self, "y", time or DEFAULT_TIME, { y = y }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
-	end
-	if not delay or type( delay ) ~= 'number' or delay < 0.05 then
-		addAnimation()
-	else
-		self.application:schedule(addAnimation, delay)
-	end
-end
-
---[[
-	@instance
-	@desc Animate a change in the width
-	@param [number] width -- the target width
-	@param [number] time -- the duration of the animation
-	@param [function] onFinish -- the function called on completion of the animation
-	@param [Animation.easing] easing -- the easing function of the animation
-]]
-function View:animateWidth( width, time, onFinish, easing, delay )
-	local addAnimation = function()
-		newAnimation( self, "width", time or DEFAULT_TIME, { width = width }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
-	end
-	if not delay or type( delay ) ~= 'number' or delay < 0.05 then
-		addAnimation()
-	else
-		self.application:schedule(addAnimation, delay)
-	end
-end
-
---[[
-	@instance
-	@desc Animate a change in the height
-	@param [number] height -- the target height
-	@param [number] time -- the duration of the animation
-	@param [function] onFinish -- the function called on completion of the animation
-	@param [Animation.easing] easing -- the easing function of the animation
-]]
-function View:animateHeight( height, time, onFinish, easing, delay )
-	local addAnimation = function()
-		newAnimation( self, "height", time or DEFAULT_TIME, { height = height }, easing or DEFAULT_EASING, type( onFinish ) == "function" and onFinish )
-	end
-	if not delay or type( delay ) ~= 'number' or delay < 0.05 then
-		addAnimation()
-	else
-		self.application:schedule(addAnimation, delay)
-	end
-end
-
---[[
-	@instance
 	@desc Animate a change in the position
-	@param [number] x -- the target x coordinate
-	@param [number] y -- the target y coordinate
-	@param [number] time -- the duration of the animation
-	@param [function] onFinish -- the function called on completion of the animation
-	@param [Animation.easing] easing -- the easing function of the animation
 ]]
-function View:move( x, y, time, onFinish, easing )
-	local d = false
-	local function f()
-		if not d then d = true return onFinish() end -- stops the function being called twice
-	end
-	self:animateX( x, time, type( onFinish ) == "function" and f, easing )
-	self:animateY( y, time, type( onFinish ) == "function" and f, easing )
+function View:animateMove(  Number x, Number y, Number( ANIMATION_DEFAULT_TIME ) time, Function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay )
+	self:animate( "x", x, time, onFinish, easing, delay )
+	self:animate( "y", y, time, nil, easing, delay )
 end
 
 --[[
-	@instance
 	@desc Animate a change in the size
-	@param [number] width -- the target width
-	@param [number] height -- the target height
-	@param [number] time -- the duration of the animation
-	@param [function] onFinish -- the function called on completion of the animation
-	@param [Animation.easing] easing -- the easing function of the animation
 ]]
-function View:resize( width, height, time, onFinish, easing )
-	local d = false
-	local function f()
-		if not d then d = true return onFinish() end -- stops the function being called twice
-	end
-	self:animateWidth( width, time, type( onFinish ) == "function" and f, easing )
-	self:animateHeight( height, time, type( onFinish ) == "function" and f, easing )
+function View:animateResize( Number width, Number height, Number( ANIMATION_DEFAULT_TIME ) time, Function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay )
+	self:animate( "width", width, time, onFinish, easing, delay )
+	self:animate( "height", height, time, nil, easing, delay )
 end
 
-local MAX_DOUBLE_CLICK_TIME = 0.8
-local MIN_MOUSE_HOLD_TIME = 0.3
-
 --[[
-	@instance
 	@desc Detects when the mouse is pressed. Used to fire mouse held and double click
-	@param [MouseDownEvent] event
 ]]
-function View:onMouseDownMetaEvents( Event event, Event.phases phase )
+function View:onMouseDownMetaEvents( MouseDownEvent event, Event.phases phase )
 	local mouseButton, time = event.mouseButton, os.time()
 	local lastMouseDown, lastMouseUp = self.lastMouseDown, self.lastMouseUp
 
 	local thisLastMouseDown = lastMouseDown[mouseButton]
 	if thisLastMouseDown and time - thisLastMouseDown < MAX_DOUBLE_CLICK_TIME then
 		-- double click
-		self.event:handleEvent( MouseDoubleClickEvent( mouseButton, event.x, event.y, event.globalX, event.globalY ) )
+		if self.event:handleEvent( MouseDoubleClickEvent( mouseButton, event.x, event.y, event.globalX, event.globalY ) ) then
+			return true
+		end
 	else
 		
 		-- start a held timer
@@ -848,7 +441,9 @@ function View:onMouseDownMetaEvents( Event event, Event.phases phase )
 			lastMouseDown.timer = nil
 			local thisLastMouseUp = lastMouseUp[mouseButton]
 			if not thisLastMouseUp or thisLastMouseUp < time then
-				self.event:handleEvent( MouseHeldEvent( mouseButton, x, y, globalX, globalY ) )
+				if self.event:handleEvent( MouseHeldEvent( mouseButton, x, y, globalX, globalY ) ) then
+					return true
+				end
 			end
 		end, MIN_MOUSE_HOLD_TIME )
 		n = lastMouseDown.timer
@@ -857,24 +452,16 @@ function View:onMouseDownMetaEvents( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Detects when the mouse is released. Used to fire mouse held and double click
-	@param [MouseUpEvent] event
 ]]
-function View:onGlobalMouseUpMetaEvents( Event event, Event.phases phase )
+function View:onGlobalMouseUpMetaEvents( MouseUpEvent event, Event.phases phase )
 	self.lastMouseUp[event.mouseButton] = os.time()
 end
 
 --[[
-	@instance
 	@desc Starts a drag and drop for the view
-	@param [MouseDownEvent] event -- the mouse down event to start the event
-	@param [ClipboardData] data -- the data to associate with the drag
-	@param [boolean] hideSource -- whether the view is hidden when the drag starts
-	@param [function] completion -- a function called when the drag and drop completes (cancelled or successful)
-	@param [table{View}] views -- the list of views your want to be dragged (leave blank for just sel)
 ]]
-function View:startDragDrop( event, data, hideSource, completion, views )
+function View:startDragDrop( MouseDownEvent event, ClipboardData data, Boolean( true ) hideSource, Function.allowsNil completion, Table.allowsNil views )
     self.application.dragDropManager:start( views or { self }, data, event.globalX, event.globalY, hideSource, completion )
 end
 
@@ -882,7 +469,7 @@ function View.isFocused:set( isFocused )
     local wasFocused = self.isFocused
     if wasFocused ~= isFocused then
         self.isFocused = isFocused
-        -- self:updateThemeStyle()
+        self:updateThemeStyle()
     end
 end
 

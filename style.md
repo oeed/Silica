@@ -38,7 +38,7 @@ class "ClassTwo"
 All function calls and definitions must have spaces on either side of the arguments.
 ```lua
 function Class:hello( name, age )
-	print( "Hello, " .. name .. "! You're " .. age .. " years old." )
+	log( "Hello, " .. name .. "! You're " .. age .. " years old." )
 end
 ```
 
@@ -54,7 +54,6 @@ function Class.staticFunction()
 All public functions (and private if you feel like it or it's not obvious) must have comments above them in the structure below. If no return value or arguments are specificed simply ommit the line.
 ```lua
 --[[
-	@instance
 	@desc A reasonable description of what the function does
 	@param [number] arg1 -- a description of what the variable is
 	@param [View] arg2 -- a description of what the variable is
@@ -80,7 +79,7 @@ In source files, locals should be defined at the top, followed by classes, then 
 
 ```lua
 local function printInfo( ... )
-	print( "Info: ", ... )
+	log( "Info: ", ... )
 end
 
 class "MyClass" {
@@ -124,4 +123,10 @@ Find event functions that don't return true or false
 
 ```
 function \w+:on.*\)\n(.*(?<!return false)(?<!return true)\n)*?end
+```
+
+Change old event functions to have the correct argument ValueType
+```
+Find: ((?s)self:event\(\s*(\w+)\w*,\s*self\.(\w+).+:\3\(\s*)Event
+Replace: 
 ```

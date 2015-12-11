@@ -1,0 +1,6 @@
+
+class "UnknownTypeValidationException" extends "ValidationException" {
+
+    
+
+}

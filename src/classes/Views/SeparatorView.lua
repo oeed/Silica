@@ -1,25 +1,12 @@
 
 class "SeparatorView" extends "View" {
 
-    separatorObject = false;
+    width = Number( 1 );
+    height = Number( 1 );
 
 }
 
-function SeparatorView:initialiseCanvas()
-    self:super()
-    local theme = self.theme
-    local separatorObject = self.canvas:insert( Separator( 1, 1, self.width, self.height ) )
-
-    theme:connect( separatorObject, "fillColour", "fillColour" )
-    theme:connect( separatorObject, "isDashed" )
-
-    self.separatorObject = separatorObject
-end
-
-function SeparatorView:updateWidth( width )
-    self.separatorObject.width = width
-end
-
-function SeparatorView:updateHeight( height )
-    self.separatorObject.height = height
+function SeparatorView:onDraw()
+    local width, height, theme, canvas, isPressed = self.width, self.height, self.theme
+    self.canvas:fill( theme:value( "fillColour" ), theme:value( "isDashed" ) and SeparatorMask( 1, 1, width, height ) or RectangleMask( 1, 1, width, height ) )
 end

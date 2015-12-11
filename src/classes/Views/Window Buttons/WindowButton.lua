@@ -1,15 +1,17 @@
 
+local BUTTON_DIAMETER = 5
+
 class "WindowButton" extends "View" {
-	width = 9;
-	height = 7;
-    isPressed = false;
-    backgroundObject = false;
-    symbolObject = false;
-    window = false;
+
+	width = Number( 9 );
+	height = Number( 9 );
+    isPressed = Boolean( false );
+
+    window = Window;
+
 }
 
 --[[
-    @constructor
     @desc Creates a button object and connects the event handlers
 ]]
 function WindowButton:initialise( ... )
@@ -20,19 +22,13 @@ function WindowButton:initialise( ... )
     if self.onMouseUp then self:event( MouseUpEvent, self.onMouseUp ) end
 end
 
-function WindowButton:initialiseCanvas()
-	self:super()
+function WindowButton:onDraw()
+    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
 
-    local backgroundObject = self.canvas:insert( Circle( 3, 2, 5, 5 ) )
-    self.theme:connect( backgroundObject, "fillColour" )
-    -- local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height ) )
-
-    self.theme:connect( backgroundObject, "outlineColour" )
-    -- self.theme:connect( backgroundObject, "topLeftRadius", "cornerRadius" )
-
-
-
-    self.backgroundObject = backgroundObject
+    local diameter = theme:value( "diameter" )
+    local circleMask = CircleMask( 1 + math.ceil( ( width - diameter ) / 2 ), 1 + math.ceil( ( height - diameter ) / 2 ), diameter )
+    canvas:fill( theme:value( "fillColour" ), circleMask )
+    canvas:outline( theme:value( "outlineColour" ), circleMask, theme:value( "outlineThickness" ) )
 end
 
 function WindowButton:updateThemeStyle()
@@ -50,12 +46,11 @@ function WindowButton.isPressed:set( isPressed )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function WindowButton:onGlobalMouseUp( Event event, Event.phases phase )
+function WindowButton:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self.isEnabled and self:hitTestEvent( event ) then
@@ -65,12 +60,11 @@ function WindowButton:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function WindowButton:onMouseDown( Event event, Event.phases phase )
+function WindowButton:onMouseDown( MouseDownEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
     end

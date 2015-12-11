@@ -8,7 +8,7 @@ class "CharacterPreviewView" extends "View" {
     characterByte = false; -- the number of the ascii byte of the character
     scaledCharacterObject = false;
     labelObject = false;
-    isActive = false;
+    isActive = Boolean( false );
 
 }
 

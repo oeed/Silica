@@ -1,11 +1,13 @@
 
 class "Container" extends "View" {
+
 	children = {};
 	interfaceOutlets = {};
 	interfaceName = false;
 	offsetX = 0;
 	offsetY = 0;
 	interfaceOutletActions = {};
+
 }
 
 --[[
@@ -20,7 +22,6 @@ function Container:initialise( ... )
 end
 
 --[[
-	@static
 	@desc Creates a container from interface file
 	@param [string] interfaceName -- the name of the interface file
 	@param [class] _class -- the class that the container must extend (e.g. ApplicationContainer). If this is being called on a subclass you MUST pass in the class.
@@ -29,14 +30,11 @@ end
 function Container.static:fromInterface( interfaceName, _class )
 	local interface = Interface( interfaceName, _class or Container )
 	if interface then
-		local container = interface.container
-		container.interface = interface
-		return container
+		return interface.container
 	end
 end
 
 --[[
-    @instance
     @desc Loads the children and properties of the interface specified by the self.interfaceName interface name. Called automatically during Container:init, do not call this yourself.
 ]]
 function Container:loadInterface()
@@ -57,7 +55,7 @@ function Container:loadInterface()
     end
 end
 
-function Container:onInterfaceOutletChanged( Event event, Event.phases phase )
+function Container:onInterfaceOutletChanged( InterfaceOutletChangedInterfaceEvent event, Event.phases phase )
 	local interfaceOutlet = event.interfaceOutlet
 	local oldView = false
 	local newView = false
@@ -82,7 +80,6 @@ function Container:onInterfaceOutletChanged( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Called when a value is set. Connects InterfaceOutlets to the Container.
 	@param [string] key -- the key of the set value
     @param value -- the value
@@ -96,7 +93,6 @@ end
 -- end
 
 --[[
-	@instance
 	@desc Initialises the custom container event manger
 ]]
 function Container:initialiseEventManager()
@@ -104,7 +100,6 @@ function Container:initialiseEventManager()
 end
 
 --[[
-	@instance
 	@desc Updates the view and it's children When overriding this self.super:update must be called AFTER the custom drawing code.
 	@param [number] deltaTime -- the time since last update
 ]]
@@ -115,8 +110,57 @@ function Container:update( deltaTime )
 	end
 end
 
+function Container:onDraw()
+    local canvas, theme = self.canvas, self.theme
+    local cornerRadius = theme:value( "cornerRadius" )
+    local mask
+    if cornerRadius > 0 then
+    	mask = RoundedRectangleMask( 1, 1, self.width, self.height, cornerRadius )
+    end
+	canvas:fill( theme:value( "fillColour" ), mask )
+	canvas:outline( theme:value( "outlineColour" ), mask, theme:value( "outlineThickness" ) )
+end
+
 --[[
-	@instance
+	@desc Draws the Container and its children to its Canvas
+]]
+function Container:draw()
+	local canvas = self.canvas
+	canvas:clear()
+	
+	-- first draw ourself
+	local childMask = self:onDraw()
+
+	-- then draw the children
+	for i, childView in ipairs( self.children ) do
+		-- only draw if something changed
+		if childView.isVisible then
+			local needsDraw = childView.needsDraw
+			local x, y = childView.x, childView.y
+			-- first draw the contents
+			if needsDraw then
+				childView:draw()
+			end
+
+			local shadowSize = childView.shadowSize
+			if shadowSize > 0 then
+				-- if there's a shadow draw it to the canvas
+				local shadowMask = childView.shadowMask
+				shadowColour = childView.theme:value( "shadowColour" )
+				canvas:drawShadow( shadowColour, x, y, shadowSize, shadowMask )
+			end
+
+			-- draw the childView to the canvas
+			childView.canvas:drawTo( canvas, x, y, childMask )
+			if needsDraw then
+				childView.needsDraw = false
+			end
+		end
+	end
+	self.needsDraw = false
+end
+
+--[[
 	@desc Fired after
 	@param [type] arg1 -- description
 	@param [type] arg2 -- description
@@ -154,7 +198,6 @@ function Container.isEnabled:set( isEnabled )
 end
 
 --[[
-	@instance
 	@desc Moves the view to be the top of it's siblings
 	@param [View] childView -- the view to make front most
 ]]
@@ -167,15 +210,6 @@ function Container:sendToFront( frontView, position )
 			else table.insert( children, childView ) end
 		end
 	end
-	local frontCanvas = frontView.canvas
-	local canvasChildren = self.canvas.children
-	for i, childCanvas in ipairs( canvasChildren ) do
-		if childCanvas == frontCanvas then
-			table.remove( canvasChildren, i )
-			if position then table.insert( canvasChildren, position, childCanvas )
-			else table.insert( canvasChildren, childCanvas ) end
-		end
-	end
 	
 	-- TODO: screen order changed events?
 	-- for i, childView in ipairs( self.children ) do
@@ -183,12 +217,10 @@ function Container:sendToFront( frontView, position )
 	-- 	if onSiblingsChanged then onSiblingsChanged( childView ) end
 	-- end
 
-	self.canvas.hasChanged = true
-	frontView.canvas.hasChanged = true
+	self.needsDraw = true
 end
 
 --[[
-	@instance
 	@desc Moves the view to be the bottom of it's siblings
 	@param [View] childView -- the view to make botom most
 ]]
@@ -197,7 +229,6 @@ function Container:sendToBack( childView )
 end
 
 --[[
-	@instance
 	@desc Adds a child view to the container (on the top by default)
 	@param [View] childView -- the view to add to the container
 	@param [number] position -- the z-position of the child (top by default). higher number means further back
@@ -205,10 +236,8 @@ end
 ]]
 function Container:insert( childView, position )
 	if not childView:typeOf( View ) then
-		error( "Attempted to insert non-View to Container", 4 )
+		error( "Attempted to insert non-View to Container", 3 )
 	end
-
-	log("insert "..tostring(childView))
 
 	local children = self.children
 	if position then
@@ -219,7 +248,7 @@ function Container:insert( childView, position )
 
 	local oldParent = childView.parent 
 	childView.parent = self
-	self.canvas:insert( childView.canvas )
+	-- self.canvas:insert( childView.canvas )
 	-- we need to update the isEnabled value
 	childView.isEnabled = childView.raw.isEnabled
 
@@ -244,11 +273,12 @@ function Container:insert( childView, position )
 
 	self.event:handleEvent( ChildAddedInterfaceEvent( childView ) )
 
+	self.needsDraw = true
+
 	return childView
 end
 
 --[[
-	@instance
 	@desc Removes the first instance of the child view from the container
 	@param [View] childView -- the view to add to the container
 	@return [boolean] didRemove -- whether a child was removed
@@ -259,7 +289,7 @@ function Container:remove( removingView )
 	local children, canvas = self.children, self.canvas
 	for i, childView in ipairs( children ) do
 		if childView == removingView then
-			canvas:remove( removingView.canvas )
+			-- canvas:remove( removingView.canvas )
 			table.remove( children, i )
 			didRemove = true
 			break
@@ -284,7 +314,6 @@ function Container:remove( removingView )
 end
 
 --[[
-	@instance
 	@desc Returns the ( first ) child with the given identifier
 	@param [string] identifier -- the identifier of the child view
 	@param [boolean] descendTree -- true by default. whether child Containers should be looked through
@@ -308,7 +337,6 @@ function Container:findChild( identifier, descendTree )
 end
 
 --[[
-	@instance
 	@desc Returns all children with the given identifier
 	@param [string] identifier -- the identifier of the child view
 	@param [boolean] descendTree -- true by default. whether child Containers should be looked through

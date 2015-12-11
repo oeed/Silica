@@ -66,17 +66,16 @@ end
 
 class "Animation" {
 	easings = Enum( Function, {} );
-	duration = false;
+	duration = Number;
 	subject = false;
 	targetValues = false; -- if a targetValue is an array, not a single value, the values are used as evenly spaced 'keyframes'. This can be used for colours.
 	easingFunc = false;
 	initialValues = false;
-	time = false;
-    round = false;
+	time = Number;
+    round = Boolean( false );
 }
 
 --[[
-    @constructor
     @desc Creates an animation instance for internal use
     @param [number] duration -- the duration of the animation
     @param [class] subject -- the subject of the animation
@@ -94,32 +93,30 @@ function Animation:initialise( duration, subject, targetValues, easingFunc, roun
 end
 
 --[[
-	@instance
 	@desc Sets the animation to the specificed time point
 	@param [number] time -- the time point
 	@return [boolean] isComplete -- whether the animation is complete
 ]]
-function Animation.time:set( time )
+function Animation:setTime( time )
 	assert( type(time ) == "number" and time >= 0, "time must be a positive number or 0")
 
-    local duration
-	self.time = time
+    local duration = self.duration
 
 	if time <= 0 then
 		self.time = 0
 		copyTables(self.subject, self.initialValues)
-	elseif time >= self.duration then -- the tween has expired
-		self.time = self.duration
+	elseif time >= duration then -- the tween has expired
+		self.time = duration
 		copyTables(self.subject, self.targetValues)
 	else
-		performEasingOnSubject(self.subject, self.targetValues, self.initialValues, self.time, self.duration, self.easingFunc, self.round)
+        self.time = time
+		performEasingOnSubject(self.subject, self.targetValues, self.initialValues, self.time, duration, self.easingFunc, self.round)
 	end
 
-	return self.time >= self.duration
+	return self.time >= duration
 end
 
 --[[
-	@instance
 	@desc Resets the animation back to the start
 	@return [boolean] isComplete -- whether the animation is complete
 ]]
@@ -128,7 +125,6 @@ function Animation:reset()
 end
 
 --[[
-	@instance
 	@desc Updates the animation given a change in time, returning true if the animation is complete
 	@param [number] deltaTime -- the change in time since the last update
 	@return [boolean] isComplete -- whether the animation is complete

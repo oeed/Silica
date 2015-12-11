@@ -1,9 +1,11 @@
 
 class "KeyboardShortcutEvent" extends "Event" {
+
     static = {
         eventType = "interface_keyboard_shortcut";
     };
 	keys = false;
+
 }
 
 --[[
@@ -16,7 +18,6 @@ function KeyboardShortcutEvent:initialise( keys )
 end
 
 --[[
-	@instance
 	@desc Returns true if the keys in the given table match those of the event
 	@param [table] keys -- a table of keys (key strings like { 'ctrl', 'a' })
 	@param [type] arg2 -- description

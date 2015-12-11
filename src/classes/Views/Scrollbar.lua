@@ -1,12 +1,14 @@
 
 class "Scrollbar" extends "View" {
-	width = 7;
-    isHorizontal = false;
+
+	width = Number( 7 );
+    isHorizontal = Boolean( false );
 	scrollerObject = false;
 	grabberObject = false;
     dragPoint = false;
     direction = false;
-    isPressed = false;
+    isPressed = Boolean( false );
+
 }
 
 function Scrollbar:initialise( ... )
@@ -18,7 +20,6 @@ function Scrollbar:initialise( ... )
 end
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function Scrollbar:initialiseCanvas()
@@ -59,7 +60,6 @@ function Scrollbar.isPressed:set( isPressed )
 end
 
 --[[
-    @instance
     @desc Gets and updates the size and location of the scroller
     @return [number] position -- the position of the scroller
     @return [number] size -- the size of the scroller
@@ -97,24 +97,22 @@ function Scrollbar:getScroller( dontSetPosition )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Scrollbar:onGlobalMouseUp( Event event, Event.phases phase )
+function Scrollbar:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
     end
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
     @param [MouseDownEvent] event -- the mouse down event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Scrollbar:onMouseDown( Event event, Event.phases phase )
+function Scrollbar:onMouseDown( MouseDownEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
         local position, size = self:getScroller( true )
@@ -124,12 +122,11 @@ function Scrollbar:onMouseDown( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is dragged anywhere on screen. Moves the window if dragging
     @param [Event] event -- the mouse drag event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Scrollbar:onGlobalMouseDrag( Event event, Event.phases phase )
+function Scrollbar:onGlobalMouseDrag( MouseDragEvent event, Event.phases phase )
     if self.isPressed and self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         local oldRelative = event.relativeView
         event:makeRelative( self )

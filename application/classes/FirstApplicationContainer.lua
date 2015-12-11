@@ -1,6 +1,8 @@
 
 class "FirstApplicationContainer" extends "ApplicationContainer" {
+
 	firstButton = InterfaceOutlet( "firstButton" )
+
 }
 
 function FirstApplicationContainer:initialise( ... )
@@ -8,7 +10,7 @@ function FirstApplicationContainer:initialise( ... )
 	self:event( ReadyInterfaceEvent, self.onReady)
 end
 
-function FirstApplicationContainer:onReady( Event event, Event.phases phase )
+function FirstApplicationContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
 	-- self.firstButton:focus()
 
 

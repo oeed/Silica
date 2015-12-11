@@ -7,7 +7,6 @@ class "PathView" extends "View" {
 }
 
 --[[
-    @constructor
     @desc Creates a button object and connects the event handlers
 ]]
 function PathView:initialise( ... )
@@ -15,13 +14,12 @@ function PathView:initialise( ... )
     self:event( MouseDownEvent, self.onMouseDown )
 end
 
-function PathView:onMouseDown( Event event, Event.phases phase )
+function PathView:onMouseDown( MouseDownEvent event, Event.phases phase )
 	log(event.y)	
 end
 
 
 --[[
-    @instance
     @desc Sets up the canvas and it's graphics objects
 ]]
 function PathView:initialiseCanvas()

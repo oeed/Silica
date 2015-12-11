@@ -37,7 +37,7 @@
 		<scrollerColour type="Graphics.colours" pressed="RED" />
 		<outlineColour type="Graphics.colours" />
 		<grabberColour type="Graphics.colours" />
-		<cornerRadius type="number" default="2" />
+		<cornerRadius type="Number" default="2" />
 	</Scrollbar>
 
 	<TextBox>

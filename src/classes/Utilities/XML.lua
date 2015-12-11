@@ -246,7 +246,6 @@ end
 class "XML" {}
 
 --[[
-	@static
 	@desc Loads XML from source text
 	@param [string] xmlText -- the XML text to parse
 	@return [table] xmlNodes -- the parsed XML nodes
@@ -273,7 +272,6 @@ function XML.static:fromText( xmlText )
 end
 
 --[[
-	@static
 	@desc Loads an XML file
 	@param [string] filePath -- the path to the XML file
 	@return [table] xmlNodes -- the parsed XML nodes

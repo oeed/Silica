@@ -1,104 +1,27 @@
 
 class "SettingsSymbol" extends "Symbol" {
 
-    symbolName =  "settings";
-
-    width = 6;
-
-    serialisedPaths = {
-        {
-            x = 1,
-            y = 1,
-            lines = {
-                {
-                    y1 = 1,
-                    x1 = 2,
-                    x2 = 2,
-                    mode = "linear",
-                    y2 = 4,
-                },
-                {
-                    y1 = 4,
-                    x1 = 2,
-                    x2 = 5,
-                    mode = "linear",
-                    y2 = 4,
-                },
-                {
-                    y1 = 4,
-                    x1 = 5,
-                    x2 = 5,
-                    mode = "linear",
-                    y2 = 1,
-                },
-                {
-                    y1 = 1,
-                    x1 = 5,
-                    x2 = 6,
-                    mode = "linear",
-                    y2 = 2,
-                },
-                {
-                    y1 = 2,
-                    x1 = 6,
-                    x2 = 6,
-                    mode = "linear",
-                    y2 = 3,
-                },
-                {
-                    y1 = 3,
-                    x1 = 6,
-                    x2 = 4,
-                    mode = "linear",
-                    y2 = 5,
-                },
-                {
-                    y1 = 5,
-                    x1 = 4,
-                    x2 = 4,
-                    mode = "linear",
-                    y2 = 7,
-                },
-                {
-                    y1 = 7,
-                    x1 = 4,
-                    x2 = 3,
-                    mode = "linear",
-                    y2 = 7,
-                },
-                {
-                    y1 = 7,
-                    x1 = 3,
-                    x2 = 3,
-                    mode = "linear",
-                    y2 = 5,
-                },
-                {
-                    y1 = 5,
-                    x1 = 3,
-                    x2 = 1,
-                    mode = "linear",
-                    y2 = 3,
-                },
-                {
-                    y1 = 3,
-                    x1 = 1,
-                    x2 = 1,
-                    mode = "linear",
-                    y2 = 2,
-                },
-                {
-                    y1 = 2,
-                    x1 = 1,
-                    x2 = 2,
-                    mode = "linear",
-                    y2 = 1,
-                },
-            },
-            height = 7,
-            width = 6,
-        }
-    }
-
+    static = {
+        symbolName = String( "settings" );
+        width = Number( 6 );
+    };
 
 }
+
+function SettingsSymbol.static:initialise()
+    local path = Path( self.width, self.height, 2, 1 )
+    path:lineTo( 2, 4 )
+    path:lineTo( 5, 4 )
+    path:lineTo( 5, 1 )
+    path:lineTo( 6, 2 )
+    path:lineTo( 6, 3 )
+    path:lineTo( 4, 5 )
+    path:lineTo( 4, 7 )
+    path:lineTo( 3, 7 )
+    path:lineTo( 3, 5 )
+    path:lineTo( 1, 3 )
+    path:lineTo( 1, 2 )
+    path:close()
+
+    self:super( path )
+end

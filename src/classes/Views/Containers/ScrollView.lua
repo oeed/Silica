@@ -9,6 +9,7 @@ local SCROLL_ACCELERATION = 1.2--0.97
 local SPEED_CUTOFF = 0.2
 
 class "ScrollView" extends "Container" {
+
 	contents = false;
 	horizontalScrollbar = false;
 	verticalScrollbar = false;
@@ -16,6 +17,7 @@ class "ScrollView" extends "Container" {
 	verticalVelocityTime = 0;
 	verticalVelocity = 0;
 	horizontalVelocity = 0;
+
 }
 
 --[[
@@ -42,7 +44,7 @@ function ScrollView:initialiseCanvas()
 	self.theme:connect( self.canvas, "fillColour" )
 end
 
-function ScrollView:onInterfaceLoaded( Event event, Event.phases phase )
+function ScrollView:onInterfaceLoaded( LoadedInterfaceEvent event, Event.phases phase )
     local currentContainer = self.container
     for i, childView in ipairs( self.children ) do
         if childView ~= currentContainer and childView:typeOf( ScrollContainer ) then
@@ -86,7 +88,6 @@ function ScrollView:updateHeight( height )
 end
 
 --[[
-	@instance
 	@desc Set vertical scroll offset of the contents
 	@param [number] offsetY -- the vertical offset
 ]]
@@ -128,7 +129,6 @@ function ScrollView:update( deltaTime )
 end
 
 --[[
-	@instance
 	@desc Scrolls the scroll view to the offset given, animating the value
 	@param [number] offsetY -- the direction/distance to scroll
 ]]
@@ -149,12 +149,11 @@ function ScrollView:scrollTo( offsetY )
 end
 
 --[[
-	@instance
 	@desc Fired when the mouse is scrolled over the scroll view
 	@param [Event] event -- the mouse scroll event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function ScrollView:onMouseScroll( Event event, Event.phases phase )
+function ScrollView:onMouseScroll( MouseScrollEvent event, Event.phases phase )
 	if self.isEnabled then
 		local direction = event.direction
 		local verticalVelocity = self.verticalVelocity

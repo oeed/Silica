@@ -17,12 +17,12 @@ class "FileItem" extends "View" implements "IDraggableView" implements "IFlowIte
     subtitleObject = false;
     imageObject = false;
     focusObject = false;
-    isFocused = false;
-    isCanvasHitTested = false;
+    isFocused = Boolean( false );
+    isCanvasHitTested = Boolean( false );
 
     title = false;
     subtitle = false;
-    isFolder = true;
+    isFolder = Boolean( true );
 
     minWidth = 85;
     idealWidth = 1;
@@ -38,7 +38,7 @@ class "FileItem" extends "View" implements "IDraggableView" implements "IFlowIte
     };
 
     dropStyle = DragDropManager.dropStyles.SHRINK;
-    isDropHovering = false;
+    isDropHovering = Boolean( false );
 
 }
 
@@ -157,7 +157,7 @@ function FileItem:updateThemeStyle()
     self.theme.style = self.isEnabled and ( self.isDropHovering and "hover" or (self.isFocused and "focused" or "default") ) or "disabled"
 end
 
-function FileItem:onMouseDown( Event event, Event.phases phase )
+function FileItem:onMouseDown( MouseDownEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         if self.application.keyboardShortcutManager:isKeyDown( ADD_FOCUS_KEY ) then
             if self.isFocused then
@@ -174,7 +174,7 @@ function FileItem:onMouseDown( Event event, Event.phases phase )
     return true
 end
 
-function FileItem:onMouseHeld( Event event, Event.phases phase )
+function FileItem:onMouseHeld( MouseHeldEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self:addFocus()
         local isMove = not self.application.keyboardShortcutManager:isKeyDown( DRAG_COPY_KEY )
@@ -190,7 +190,7 @@ function FileItem:onMouseHeld( Event event, Event.phases phase )
     return true
 end
 
-function FileItem:onMouseDoubleClick( Event event, Event.phases phase )
+function FileItem:onMouseDoubleClick( MouseDoubleClickEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         -- error('oepn')
     end

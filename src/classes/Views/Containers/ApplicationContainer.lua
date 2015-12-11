@@ -1,11 +1,11 @@
 
 class "ApplicationContainer" extends "Container" {
+
 	-- TODO: make this use a Constraint
-	x = 1;
-	y = 1;
-	width = 320;
-	height = 200;
-	themeName = false;
+	width = Number( 320 );
+	height = Number( 200 );
+	themeName = String( "default" );
+
 }
 
 --[[
@@ -14,19 +14,12 @@ class "ApplicationContainer" extends "Container" {
 	@param [table] properties -- the properties for the view
 ]]
 function ApplicationContainer:initialise( ... )
-	if not self.themeName then
-		self.themeName = "default"
-	end
-
 	self:super( ... )
-
     self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
 end
 
 function ApplicationContainer:initialiseCanvas()
-	local canvas = ScreenCanvas( self.x, self.y, self.width, self.height )
-    self.canvas = canvas
-    -- self.theme:connect( self.canvas, "fillColour" )
+	self.canvas = ScreenCanvas( self.width, self.height, self )
 end
 
 function ApplicationContainer.theme:set( theme )
@@ -35,7 +28,6 @@ function ApplicationContainer.theme:set( theme )
 end
 
 --[[
-	@instance
 	@desc Sets the container's theme based upon it's name
 	@return [string] themeName -- the name of the theme
 ]]
@@ -43,20 +35,36 @@ function ApplicationContainer.themeName:set( themeName )
 	local oldThemeName = self.themeName
 	self.themeName = themeName
 	Theme.static.active = Theme.static:named( themeName )
-	self.application.event:handleEvent( ThemeChangedInterfaceEvent( themeName, oldThemeName ) )
+	if oldThemeName then
+		self.application.event:handleEvent( ThemeChangedInterfaceEvent( themeName, oldThemeName ) )
+	end
 end
 
+
+--[[
+	@desc Redraws the container and draws it to the screen if neccesary
+]]
 function ApplicationContainer:draw()
-	self.canvas:drawToTerminal()
+	if self.isVisible and self.needsDraw then
+		self:super()
+		self.canvas:drawToScreen( term )
+	end
 end
 
 --[[
-    @instance
+	@desc Update the container than draw the changes (if any) to the screen
+]]
+function ApplicationContainer:update( ... )
+	self:super( ... )
+	self:draw()
+end
+
+--[[
     @desc Fired when the mouse is released and doesn't hit anything else. Unfocuses the focused view, if any.
     @param [MouseDownEvent] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function ApplicationContainer:onMouseDownAfter( Event event, Event.phases phase )
+function ApplicationContainer:onMouseDownAfter( MouseDownEvent event, Event.phases phase )
 	local application = self.application
 	
 	if application:hasFocus() then
@@ -71,4 +79,12 @@ end
 function ApplicationContainer:dispose()
 	self:super()
 	self.application:clearFocus()
+end
+
+function ApplicationContainer.isVisible:get()
+	return self.isVisible -- View requires having a parent to be visible, but we never have a parent
+end
+
+function ApplicationContainer.needsDraw:set( needsDraw )
+	self.needsDraw = needsDraw -- View passed needsDraw to parent, but we never have a aprent
 end

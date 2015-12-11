@@ -1,9 +1,11 @@
 
 class "CharacterEvent" extends "Event" {
+
     static = {
         eventType = "char";
     };
 	character = false;
+
 }
 
 --[[

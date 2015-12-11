@@ -1,30 +1,32 @@
 
-class "Symbol" {
-    
-    symbolName = false;
-    width = 7;
-    height = 7;
-    serialisedPaths = {};
-    
-}
-
 local symbolClasses = {}
 
-function Symbol.static:register( symbolName, subclass )
-    if not symbolName then
-        error( "Symbol subclass '" .. tostring( subclass ) .. "' does not have a symbolName.", 0 )
-    end
+class "Symbol" {
+    
+    static = {
 
-    if symbolClasses[symbolName] then
-        error( "Symbol subclass '" .. tostring( subclass ) .. "' attempted to overwite symbol with name '" .. symbolName .. "' ('" .. tostring( symbolClasses[symbolName] ) .. "')", 0 )
-    end
+        symbolName = String( "" );
+        width = Number( 7 );
+        height = Number( 7 );
+        path = Path.allowsNil;
 
-    symbolClasses[symbolName] = subclass
-end
+    };
 
-function Symbol.static:constructed( _class )
-    if _class ~= Symbol then
-        Symbol.register( _class.symbolName, _class )
+}
+
+function Symbol.static:initialise( Path.allowsNil path )
+    if path then
+        local symbolName = self.symbolName
+        if not symbolName then
+            error( "Symbol '" .. tostring( self ) .. "' does not have a symbolName.", 0 )
+        end
+
+        if symbolClasses[symbolName] then
+            error( "Symbol '" .. tostring( self ) .. "' attempted to overwite symbol with name '" .. symbolName .. "' ('" .. tostring( symbolClasses[symbolName] ) .. "')", 0 )
+        end
+
+        self.path = path
+        symbolClasses[symbolName] = self
     end
 end
 

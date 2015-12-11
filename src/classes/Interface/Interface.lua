@@ -1,22 +1,13 @@
 
--- local function callSetters( instance, _class )
--- 	local definedFunctions, setters, raw = _class.definedFunctions, class.setters, instance.raw
--- 	for k, _ in pairs( _class.definedProperties ) do
--- 		local classValue = _class[k]
--- 		local instanceValue = raw[k]
--- 		if classValue and type( classValue ) ~= "table" and instanceValue == classValue and definedFunctions[setters[k]] then
--- 			instance[k] = classValue
--- 		end
--- 	end
--- end
+local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true }
+local TYPETABLE_ALLOWS_NIL = 4
 
 class "Interface" {
-	name = false; -- the name of the interface (the file name without the extension)
-	container = false; -- if you want to generate a container based on the interface (i.e. not use the properties and children for an already made interface) you can use the value
-	containerProperties = false; -- the properties given to the root element
-	children = false; -- the children of the interface
-	containerClass = false; -- the class type of the interface
-	childNodes = false; -- the nodes from the root elements XML
+
+	name = String; -- the name of the interface (the file name without the extension)
+	container = Container; -- if you want to generate a container based on the interface (i.e. not use the properties and children for an already made interface) you can use the value
+	containerNode = Table; -- the properties given to the root element
+
 }
 
 --[[
@@ -47,9 +38,8 @@ function Interface:initialise( interfaceName, extend )
 		elseif not containerClass:typeOf( extend ) then
 			err = "Container class does not extend '" .. extend.className .. "': " .. rootNode.type
 		else
-			self.containerClass = containerClass
-			self.containerProperties = rootNode.attributes
-			self.childNodes = rootNode.body
+			self.containerNode = rootNode
+			self:loadContainer()
 		end
 
 		if err then
@@ -61,46 +51,12 @@ function Interface:initialise( interfaceName, extend )
 end
 
 --[[
-	@instance
 	@desc Returns and generates if needed a container from the interface.
 	@return [Container] container -- the container
 ]]
-function Interface.container:get()
-	local container = self.container
-	if container then return container end
-
-	local containerProperties = self.containerProperties
-	local containerClass = self.containerClass
-	container = containerClass.spawn( containerProperties )
-	container.interfaceProperties = containerProperties
-	if not container then
-		error( "Interface XML invaid: " .. self.name .. ".sinterface. Error: Failed to initialise Container class: " .. tostring( self.class ) .. ". Identifier: " .. tostring( properties.identifier ), 0 )
-	end
-
-	self.container = container
-	-- callSetters( container, containerClass )
-
-	local children = self.children
-	for i, childView in ipairs( children ) do
-		container:insert( childView )
-		-- callSetters( childView, childView.class )
-	end
-
-
-	container.event:handleEvent( LoadedInterfaceEvent( container ) )
-	return container
-end
-
---[[
-	@instance
-	@desc Creates a table of children from the interface file
-	@return [table] children -- the table of child views
-]]
-function Interface.children:get()
-	log("get chilfdren")
-	local children = self.children
-	if children then return children end
-	local function insertTo( childNode, parentContainer )
+function Interface:loadContainer()
+	local readyEvent = ReadyInterfaceEvent()
+	local function loadChild( childNode, parentContainer )
 		local childClass = class.get( childNode.type )
 		if not childClass then
 			return nil, "Class not found: " .. childNode.type
@@ -108,41 +64,46 @@ function Interface.children:get()
 			return nil,"Class does not extend 'View': " .. childNode.type
 		end
 
-		local interfaceProperties = {}
-		for k, v in pairs( childNode.attributes ) do
-			interfaceProperties[k] = v
-		end
-		childNode.attributes.interfaceProperties = interfaceProperties
-		local childView = childClass( childNode.attributes )--:new( false, childNode.attributes )
-	log("got "..tostring(childView))
-
+		local childView = childClass.spawn( true )
 		if not childView then
 			return nil, "Failed to initialise " .. childNode.type .. ". Identifier: " .. tostring( childNode.attributes.identifier )
 		end
 
+		if parentContainer then
+			parentContainer:insert( childView )
+		end
+		
+		for k, v in pairs( childNode.attributes ) do
+			childView[k] = v
+		end
 
+		local children = {}
 		if childNode.body and #childNode.body > 0 then
 			if not childClass:typeOf( Container ) then
 				return nil, "Class does not extend 'Container' but has children: " .. childNode.type
 			else
 				for i, _childNode in ipairs( childNode.body ) do
-					local child, err = insertTo( _childNode, childView )
-					if err then return nil, err end
-					if child then childView:insert( child ) end
+					table.insert( children, loadChild( _childNode, childView ) )
 				end
 			end
 		end
 
+		childView.event:handleEvent( readyEvent )
+
+	    -- check for any nil values that aren't allowed to be nil
+	    local instanceProperties = childClass.instanceProperties
+	    for k, v in pairs( childClass.instanceDefinedProperties ) do
+	        if not RESERVED_NAMES[v] and k == v and not instanceProperties[k][TYPETABLE_ALLOWS_NIL] then -- i.e. it's not an alias
+	            if childView[k] == nil then -- TODO: maybe this should use instance[k] so getters are called
+	                error( childNode.type .. "." .. k .. " was nil after initialisation and ReadyInterfaceEvent, but type does not specify .allowsNil" )
+	            end
+	        end
+	    end
+
 		return childView
 	end
 
-	local children = {}
-	for i, childNode in ipairs( self.childNodes ) do
-		log("node")
-		local childView, err = insertTo( childNode )
-		if err then error( "Interface XML invaid: " .. self.name .. ".sinterface. Error: " .. err, 0 ) end
-		if childView then table.insert( children, childView ) end
-	end
-	self.children = children
-	return children
+	local container = loadChild( self.containerNode )
+	container.event:handleEvent( LoadedInterfaceEvent( container ) )
+	self.container = container
 end

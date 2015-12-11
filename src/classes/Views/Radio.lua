@@ -1,48 +1,32 @@
 
 class "Radio" extends "View" {
 
-    width = 7;
-    height = 7;
+    width = Number( 8 );
+    height = Number( 8 );
 
-    isPressed = false;
-    isEnabled = true;
-    isChecked = false;
+    isPressed = Boolean( false );
+    isEnabled = Boolean( true );
+    isChecked = Boolean( false );
 
 }
 
---[[
-    @constructor
-    @desc Creates a button object and connects the event handlers
-]]
 function Radio:initialise( ... )
 	self:super( ... )
+
+    self:event( ParentChangedInterfaceEvent, self.onParentChanged )
     self:event( MouseDownEvent, self.onMouseDown )
     self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
-    end
-
---[[
-    @instance
-    @desc Sets up the canvas and it's graphics objects
-]]
-function Radio:initialiseCanvas()
-    self:super()
-    local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, self.width, self.height, self.theme.fillColour, self.theme.outlineColour, self.theme.cornerRadius ) )
-    self.theme:connect( backgroundObject, "fillColour" )
-    self.theme:connect( backgroundObject, "outlineColour" )
-    self.theme:connect( backgroundObject, "radius", "cornerRadius" )
-    self.backgroundObject = backgroundObject
 end
 
-function Radio:updateHeight( height )
-    self.backgroundObject.height = height
-end
+function Radio:onDraw()
+    local width, height, theme, canvas = self.width, self.height, self.theme, self.canvas
 
-function Radio:updateWidth( width )
-    self.backgroundObject.width = width
+    local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
+    canvas:fill( theme:value( "fillColour" ), roundedRectangle )
+    canvas:outline( theme:value( "outlineColour" ), roundedRectangle, theme:value( "outlineThickness" ) )
 end
 
 --[[
-    @instance
     @desc Sets the checked state of the radio button. Sets all other sibling (in the same container) radios to false if being set to true
     @param [boolean] isChecked -- the new checked state
 ]]
@@ -67,22 +51,24 @@ function Radio.isEnabled:set( isEnabled )
     self:updateThemeStyle()
 end
 
---[[
-    @instance
-    @desc Sets whether the button is pressed, changing the drawing state
-]]
 function Radio.isPressed:set( isPressed )
     self.isPressed = isPressed
     self:updateThemeStyle()
 end
 
+function Radio:onParentChanged( ParentChangedInterfaceEvent event, Event.phases phase )
+    local siblings = self:siblingsOfType( Radio )
+    if #siblings == 0 or self.isChecked then
+        self.isChecked = true -- if we're the first child or we're being added check ourself to ensure there's at least one and interface properties are respected
+    end
+end
+
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Radio:onGlobalMouseUp( Event event, Event.phases phase )
+function Radio:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
     if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = false
         if self:hitTestEvent( event ) then
@@ -93,12 +79,11 @@ function Radio:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
     @desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
     @param [Event] event -- the mouse up event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function Radio:onMouseDown( Event event, Event.phases phase )
+function Radio:onMouseDown( MouseDownEvent event, Event.phases phase )
     if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
         self.isPressed = true
     end

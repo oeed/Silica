@@ -1,7 +1,9 @@
 
 class "FilesApplication" extends "Application" {
+
 	name = "Files";
 	interfaceName = "files";
+
 }
 
 -- For the demo the below code isn't really needed, it's just for debug
@@ -60,7 +62,6 @@ function FilesApplication:initialise()
 end
 
 --[[
-	@instance
 	@desc React to a character being fired
 	@param [Event] event -- description
 	@return [boolean] stopPropagation

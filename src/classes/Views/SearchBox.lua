@@ -1,8 +1,7 @@
 
 class "SearchBox" extends "TextBox" {
     
-    symbolObject = false;
-    placeholder = "Search...";
+    placeholder = String( "Search..." ).allowsNil;
 
 }
 

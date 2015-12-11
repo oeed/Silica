@@ -1,7 +1,9 @@
 
 class "AlertWindow" extends "Window" {
+
 	interfaceName = "alert";
 	okayButton = InterfaceOutlet( "okayButton" );
+
 }
 
 function AlertWindow:initialise( ... )
@@ -14,7 +16,7 @@ function AlertWindow:initialise( ... )
 	self.height = 40
 end
 
-function AlertWindow:onReady( Event event, Event.phases phase )
+function AlertWindow:onReady( ReadyInterfaceEvent event, Event.phases phase )
 	self:centre()
 	self:focus()
 	self.okayButton:focus()

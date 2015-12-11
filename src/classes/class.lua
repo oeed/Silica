@@ -11,27 +11,30 @@ local valueTypes = {}
 local compiledClassDetails, compiledInstances, compiledStatics = {}, {}, {}
 local currentlyConstructing, expectedName -- the class that is currently being constructed
 local constructingEnvironment, constructorProxy, constructingFunctionArguments, currentCompiledClass
-local stripFunctionArguments, loadProperties, compileClass, loadPropertiesTableSection, checkValue, constructSuper, isInterface
-local allLockedGetters, allLockedSetters = {}, {}
+local environments = {}
+local stripFunctionArguments, loadProperties, compileClass, loadPropertiesTableSection, checkValue, constructSuper, isInterface, pseudoReference, checkValue, compileClass, compileInstanceClass, compileAndSpawnStatic, spawnInstance, createValueType
+local implements, extends, interface
 local isLoadingProperties
 local interface
 
 local application -- the running application
 
-local TYPETABLE_NAME, TYPETABLE_TYPE, TYPETABLE_CLASS, TYPETABLE_ALLOWS_NIL, TYPETABLE_IS_VAR_ARG, TYPETABLE_IS_ENUM, TYPETABLE_ENUM_ITEM_TYPE, TYPETABLE_HAS_DEFAULT_VALUE, TYPETABLE_DEFAULT_VALUE = 1, 2, 3, 4, 5, 6, 7, 8, 9
+local TYPETABLE_NAME, TYPETABLE_TYPE, TYPETABLE_CLASS, TYPETABLE_ALLOWS_NIL, TYPETABLE_IS_VAR_ARG, TYPETABLE_IS_ENUM, TYPETABLE_ENUM_ITEM_TYPE, TYPETABLE_HAS_DEFAULT_VALUE, TYPETABLE_IS_DEFAULT_VALUE_REFERENCE, TYPETABLE_DEFAULT_VALUE = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 local FUNCTIONTABLE_FUNCTION = 1
+local VALUE_TYPE_UID = {} -- just a unique identifier to indicate that this is a valueType
+local REFERENCE_UID = {} -- just a unique identifier to indicate that this is a valueType
 
 local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true }
+local DISALLOWED_CLASS_NAMES = { Number = true, String = true, Boolean = true, Any = true, Table = true, Function = true, Thread = true, Enum = true }
 
 -- Create the value types --
 
-local valueTypeUID = {} -- just a unique identifier to indicate that this is a valueType
 function createValueType( name, typeStr, classType, destinationKey, destination )
     destination = destination or valueTypes
     destinationKey = destinationKey or name
     classType = classType or false
     local valueType = {
-        valueTypeUID;
+        VALUE_TYPE_UID;
         [TYPETABLE_TYPE] = typeStr;
         [TYPETABLE_CLASS] = classType;
         [TYPETABLE_ALLOWS_NIL] = false;
@@ -39,12 +42,13 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
         [TYPETABLE_IS_ENUM] = false;
         [TYPETABLE_ENUM_ITEM_TYPE] = false;
         [TYPETABLE_HAS_DEFAULT_VALUE] = false;
+        [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
     }
 
     local metatable = {}
     function metatable:__call( ... )
         local valueInstance = {
-            valueTypeUID;
+            VALUE_TYPE_UID;
             [TYPETABLE_TYPE] = typeStr;
             [TYPETABLE_CLASS] = classType;
             [TYPETABLE_ALLOWS_NIL] = false;
@@ -52,12 +56,19 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             [TYPETABLE_IS_ENUM] = false;
             [TYPETABLE_ENUM_ITEM_TYPE] = false;
             [TYPETABLE_HAS_DEFAULT_VALUE] = true;
+            [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
         }
+
         local args = { ... }
-        if not classType then
+        if #args == 1 and type( args[1] ) == "table" and args[1][0] == REFERENCE_UID then
+            -- this is a reference value
+            valueInstance[TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = true
+            valueInstance[TYPETABLE_DEFAULT_VALUE] = args[1]
+        elseif not classType then
             if #args >= 2 then
-                error( "non-class types are only allowed 1 argument, the default value" , 2 )
+                ArgumentCountClassException( "Non-class ValueTypes can only have one argument, the default value. e.g. String( \"The default value\" )", 2 )
             end
+            -- TODO: this *will* cause issues if nil is given as the default value but .allowsNil is then specified
             valueInstance[TYPETABLE_DEFAULT_VALUE] = checkValue( args[1], valueInstance ) -- check the default value actually complies with the type if it's not a class (class default values are parsed as arguments)
         else
             for i, v in ipairs( args ) do
@@ -68,15 +79,18 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
         local metatable = {}
         function metatable:__index( k )
             if k == "allowsNil" then
+                if valueInstance[TYPETABLE_ALLOWS_NIL] then
+                    ValueTypeClassException( "Tried to repeatedly index '" .. name .. ".allowsNil' (i.e. you did '" .. name .. ".allowsNil.allowsNil'). This is unnecessary.", 2 )
+                end
                 valueInstance[TYPETABLE_ALLOWS_NIL] = true
                 return valueInstance
             elseif type( k ) ~= "number" then -- if it's a number it would've been trying to get a default value, don't error
-                error( "tried to index '" .. k .. "', types only support .allowsNil" , 2 )
+                ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. ValueTypes only support accessing the key .allowsNil" , 2 )
             end
         end
 
         function metatable:__newindex( k )
-            error("attempt to set property of valueType", 2 )
+            ValueTypeClassException( "Tried to set value of '" .. name .. "." .. k .. "'. ValueTypes do not support assignment of values." , 2 )
         end
 
         local __tostring = "value type instance (w. default) '" .. name .. "': " ..  tostring( valueInstance ):sub( 8 )
@@ -88,15 +102,26 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
 
     function metatable:__index( k )
         if k == "allowsNil" then
-            valueType[TYPETABLE_ALLOWS_NIL] = true -- this sets it for the type everywhere, we then MUST reset it once we've accessed it
-            return valueType
+            -- we have to make a unique copy because setting allows nil would apply it to all types
+            local newValueType = {}
+            for i = 1, #valueType do
+                newValueType[i] = valueType[i]
+            end
+            newValueType[TYPETABLE_ALLOWS_NIL] = true
+            local newMetatable = { __index = metatable.index, __newindex = metatable.__newindex}
+            local __tostring = "value type instance '" .. name .. "': " ..  tostring( valueType ):sub( 8 )
+            function newMetatable:__tostring() return __tostring end
+            setmetatable( newValueType, newMetatable )
+            return newValueType
+        elseif k == "static" and classType then
+            return pseudoReference( name ).static -- if you do, for example, Font.static return a psuedo reference to it
         elseif type( k ) ~= "number" then -- if it's a number it would've been trying to get a default value, don't error
-            error( "tried to index '" .. k .. "', types only support .allowsNil", 2 )
+            ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. ValueTypes only support accessing the key .allowsNil" , 2 )
         end
     end
 
     function metatable:__newindex( k )
-        error("attempt to set property of valueType", 2 )
+        ValueTypeClassException( "Tried to set value of '" .. name .. "." .. k .. "'. ValueTypes do not support assignment of values." , 2 )
     end
 
     local __tostring = "value type '" .. name .. "': " ..  tostring( valueType ):sub( 8 )
@@ -121,7 +146,7 @@ createValueType( "Thread", "thread" )
 local function createEnumType()
     local metatable = {}
     local valueType = {
-        valueTypeUID;
+        VALUE_TYPE_UID;
         [TYPETABLE_TYPE] = "table";
         [TYPETABLE_CLASS] = false;
         [TYPETABLE_ALLOWS_NIL] = false;
@@ -129,36 +154,46 @@ local function createEnumType()
         [TYPETABLE_IS_ENUM] = true;
         [TYPETABLE_ENUM_ITEM_TYPE] = false;
         [TYPETABLE_HAS_DEFAULT_VALUE] = false;
+        [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
     }
     function metatable:__call( ... )
         local valueInstance = {
-            valueTypeUID;
+            VALUE_TYPE_UID;
             [TYPETABLE_TYPE] = "table";
             [TYPETABLE_CLASS] = false;
             [TYPETABLE_ALLOWS_NIL] = false;
             [TYPETABLE_IS_VAR_ARG] = false;
             [TYPETABLE_IS_ENUM] = true;
             [TYPETABLE_HAS_DEFAULT_VALUE] = true;
+            [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
         }
         local args = { ... }
-        if #args ~= 2 then
-            error( "enums only support 2 arguments: valueType, table" , 2 )
+        local itemValueType, values
+        if #args == 2 then
+            local isOkay = false
+            itemValueType = args[1]
+            if type( itemValueType ) == "table" and itemValueType[1] == VALUE_TYPE_UID and not itemValueType[TYPETABLE_HAS_DEFAULT_VALUE] then
+                values = args[2]
+                if type( values ) == "table" then
+                    isOkay = true
+                end
+            end
+            if not isOkay then
+                ArgumentTypeClassException( "Enum ValueType declarations only accept 2 arguments, the ValueType (without a default value) of the Enum's items and a table of the items. (e.g. Enum( Number, { CAT = 0; DOG = 1; } ) )", 2 )
+            end
+        else
+            ArgumentCountClassException( "Enum ValueType declarations only accept 2 arguments, the ValueType (without a default value) of the Enum's items and a table of the items. (e.g. Enum( Number, { CAT = 0; DOG = 1; } ) )", 2 )
         end
-        local itemValueType = args[1]
-        if type( itemValueType ) ~= "table" or itemValueType[1] ~= valueTypeUID or itemValueType[TYPETABLE_HAS_DEFAULT_VALUE] then
-            error( "1st argument must be ValueType without a default value" , 2 )
-        end
-        local values = args[2]
-        if not type( value ) == "table" then
-            error( "2nd argument must be table" , 2 )
-        end
+
         valueInstance[TYPETABLE_ENUM_ITEM_TYPE] = itemValueType
 
         for k, v in pairs( values ) do
             if type( func ) == "function" then
                 error( "function enum values must not be defined in properties table" , 2 )
+                EnumValueTypeClassException( "Enum ValueTypes cannot define function values in the declaration table. Instead define the function with the other functions. (e.g. function ClassName.enumNames.VALUE_KEY( ... ) )" )
             end
             if not type( k ) == "string" or not k:match( "^[_%u]+$" ) then
+                StyleClassException( "EnumValueType keys must be all uppercase with underscores separating words. (e.g. LIGHT_BLUE)" )
                 error( "Enum keys must be all uppercase with _" , 2 )
             end
 
@@ -169,11 +204,15 @@ local function createEnumType()
 
         local metatable = {}
         function metatable:__index( k )
-            error( "Enum does not support .allowsNil or indexing other properties" , 2 )
+            if k == "allowsNil" then
+                EnumValueTypeClassException( "Enum ValueTypes do not support .allowsNil" )
+            else
+                ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. Enum ValueTypes only support accessing any key." , 2 )
+            end
         end
 
         function metatable:__newindex( k, v )
-            error( "attempt to change enum valuetype" , 2 )
+            ValueTypeClassException( "Tried to set value of '" .. name .. "." .. k .. "'. ValueTypes do not support assignment of values." , 2 )
         end
 
         local __tostring = "value type instance (w. default & item type) 'Enum': " ..  tostring( valueInstance ):sub( 8 )
@@ -184,11 +223,15 @@ local function createEnumType()
     end
 
     function metatable:__index( k )
-        error( "Enum does not support .allowsNil or other properties" , 2 )
+        if k == "allowsNil" then
+            EnumValueTypeClassException( "Enum ValueTypes do not support .allowsNil" )
+        else
+            ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. Enum ValueTypes only support accessing any key." , 2 )
+        end
     end
 
     function metatable:__newindex( k )
-        error("attempt to set property of Enum", 2 )
+        ValueTypeClassException( "Tried to set value of '" .. name .. "." .. k .. "'. ValueTypes do not support assignment of values." , 2 )
     end
 
     local __tostring = "value type 'Enum': " ..  tostring( valueType ):sub( 8 )
@@ -224,8 +267,12 @@ end
 
 function class.load( name, contents )
     if classes[name] or interfaces[name] then
-        error( "class already loaded: "..name)
+        LoadingClassException( "Class/interface '" .. name .. "' has already been loaded OR there is a class file with a duplicate name. Duplicate class names are now allowed. Loading the same class file should never happen as the class system will automatically load the classes as needed, make sure you're not manually loading classes or use 'class.get' instead of 'class.load'", 2 )
     end
+    if DISALLOWED_CLASS_NAMES[name] then
+        LoadingClassException( "Class/interface cannot be called '" .. name .. "', it is a reserved name.", 0 )
+    end
+
     local oldConstructing, oldEnvironment, oldConstructorProxy, oldIsLoadingProperties, oldConstructingFunctionArguments, oldCurrentCompiled, oldIsInterface, oldExpectedName = currentlyConstructing, constructingEnvironment, constructorProxy, isLoadingProperties, constructingFunctionArguments, currentCompiledClass, isInterface, expectedName
     isLoadingProperties = false
     currentlyConstructing = nil
@@ -233,6 +280,7 @@ function class.load( name, contents )
     expectedName = name
     constructingFunctionArguments = {}
     constructingEnvironment = { class = class, extends = extends, interface = interface, implements = implements }
+    environments[name] = constructingEnvironment
 
     local compiledClass = {}
     createValueType( name, "table", compiledClass ) -- generate the value type for this class. the future table for the compiled class is used, which will be filled later
@@ -240,10 +288,14 @@ function class.load( name, contents )
 
     -- TODO: load classes if we index _G with their name and they return nil. only allow self if it is within the static table
     local metatable = {}
-
     function metatable:__index( key )
+        if isLoadingProperties then
+            if key == "self" then return pseudoReference( "self" ) end
+            local valueTypeValue = valueTypes[key]
+            if valueTypeValue ~= nil then return valueTypeValue end
+        end
         local globalValue = _G[key]
-        if globalValue then return globalValue end
+        if globalValue ~= nil then return globalValue end
         -- if the value is nil see if we can find a class with that name and load it
         if class.exists( key ) then
             -- there should be a class with that name, load it
@@ -261,7 +313,7 @@ function class.load( name, contents )
 
     local func, err = loadstring( stripFunctionArguments( name, contents ), name )
     if not func then
-        error( "could not parse " .. name .. ": ".. err )
+        LoadingClassException( "Class/interface '" .. name .. "' could not be parsed. Error: " .. err, 0 )
     else
         setfenv( func, constructingEnvironment )
         func()
@@ -269,7 +321,7 @@ function class.load( name, contents )
 
 
     if not currentlyConstructing then
-        error( "expected a class/interface to be defined but it wasn't in file "..name )
+        LoadingClassException( "File '" .. name .. "' did not define a class or interface. Files in the 'classes' folder MUST be a class.", 0 )
     end
 
     compileClass( compiledClass, name )
@@ -284,7 +336,7 @@ end
 
 -- Start loading the class and get the argument types from the functions --
 
-function lines(str)
+local function lines(str)
   local t = {}
   local function helper(line) table.insert(t, line) return "" end
   helper((str:gsub("(.-)\r?\n", helper)))
@@ -294,10 +346,30 @@ end
 local function loadClassLines( name, contents )
     local file = contents or class.exists( name )
     if not file then
-        error( "Unable to find class " .. name )
+        LoadingClassException( "The class/interface '" .. name .. "' was could not be found. Check the spelling and that the class file exists. This should not occur when using the automatic loading system, check you are not manually loading any classes.", 0 )
     end
     local lines = lines( file, "\n" )
     return lines
+end
+
+function pseudoReference( name )
+    local referenceTable = {
+        [0] = REFERENCE_UID;
+        name;
+    }
+
+    local metatable = {}
+    function metatable:__index( key )
+        table.insert( referenceTable, key )
+        return referenceTable
+    end
+
+    function metatable:__newindex( key )
+        PseudoReferenceClassException( "Tried to set value of a '" .. name .. " PseudoReference."  .. k .. "'. PseudoReferences (the references to variables as default values in ValueType declarations) do not support assignment of values." , 2 )
+    end
+    setmetatable( referenceTable, metatable )
+
+    return referenceTable
 end
 
 function stripFunctionArguments( name, contents )
@@ -323,7 +395,7 @@ function stripFunctionArguments( name, contents )
                     if not firstLevel then
                         functionName, arguments = line:match( "^function " .. name .. ":([_%w]+)%s*%((.*)%)%s*$" )
                         if not functionName or not arguments then
-                            error(name..": "..n..": function malformed", 2 )
+                            ArgumentValueTypeParsingClassException( "Function declaration malformed in class '" ..name .. "' on line " .. n .. ". Function declarations must follow a strict style and cannot have anything other than the declaration on the line. Read the 'Class System' wiki page for all the possible formats.", 0 )
                         end
                     else
                         isEnum = true
@@ -334,8 +406,10 @@ function stripFunctionArguments( name, contents )
             local valueTypeExtractionEnvironment = {}
             local metatable = {}
             function metatable:__index( key )
-                local globalValue = valueTypes[key]
-                if globalValue then return globalValue end
+                local valueTypeValue = valueTypes[key]
+                if valueTypeValue ~= nil then return valueTypeValue end
+                local globalValue = _G[key]
+                if globalValue ~= nil then return globalValue end
                 -- if we're loading properties and the value is nil, see if we can find a class with that name and load it
                 if class.exists( key ) then
                     -- there should be a class with that name, load it
@@ -343,7 +417,9 @@ function stripFunctionArguments( name, contents )
                     -- now we want to return its valueType
                     return valueTypes[key]
                 else
-                    error( "attempt to access undelcared value " .. key .. " in value type declaration ", 2 )
+                    pseudoReferenceValue = pseudoReference( key )
+                    return pseudoReferenceValue
+                    -- error( "attempt to access undelcared value " .. key .. " in value type declaration", 2 )
                 end
             end
             setmetatable( valueTypeExtractionEnvironment, metatable )
@@ -380,7 +456,7 @@ function stripFunctionArguments( name, contents )
                     if not isVarArg then
                         type, argumentName = argument:match( "^(.-)([_%w]+)%s*$" )
                         if not type or not argumentName then
-                            error( name .. ": " .. n .. ": argument formatting wrong", 0 )
+                            ArgumentValueTypeParsingClassException( "Formatting of arguments was malformed in class '" ..name .. "' on line " .. n .. ". This probably isn't valid Lua. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                     end
 
@@ -397,19 +473,20 @@ function stripFunctionArguments( name, contents )
                             [TYPETABLE_IS_ENUM] = false;
                             [TYPETABLE_ENUM_ITEM_TYPE] = false;
                             [TYPETABLE_HAS_DEFAULT_VALUE] = true;
+                            [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
                             [TYPETABLE_DEFAULT_VALUE] = nil;
                         }
                     else
                         local func = loadstring( "return " .. type, name )
                         if not func then
-                            error("argument did bad: " .. name .. ": " .. n)
+                            ArgumentValueTypeParsingClassException( "Syntax of argument ValueType declaration was malformed in class '" ..name .. "' on line " .. n .. ". Check your spelling, syntax and that if you are use a class it exists. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         setfenv( func, valueTypeExtractionEnvironment )
-                        value = func()
+                        local value = func()
 
                         if not value then
-                            error( "error extracting value type from " .. type )
-                        elseif value[TYPETABLE_HAS_DEFAULT_VALUE] then -- this was created like String(), not String, so it created its own instance. hence we can use the value directly
+                            ArgumentValueTypeParsingClassException( "Argument ValueType was invalid value in class '" ..name .. "' on line " .. n .. ". Check your spelling, syntax and that if you are use a class it exists. Read the 'Class System' wiki page if you're still stuck.", 0 )
+                        elseif value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] then -- this was created like String(), not String, or indexed .allowsNil so it created its own instance. hence we can use the value directly
                             value[TYPETABLE_NAME] = argumentName
                             typeTable = value
                         else
@@ -421,8 +498,6 @@ function stripFunctionArguments( name, contents )
                             for i = TYPETABLE_TYPE, #value do
                                 typeTable[i] = value[i]
                             end
-
-                            rawset( value, "allowsNil", false )
                         end
                         typeTable[TYPETABLE_IS_VAR_ARG] = isVarArg;
                     end
@@ -448,18 +523,18 @@ function stripFunctionArguments( name, contents )
                     -- as this is a getter or a setter force the type and name of argument to match the property
                     if functionName == "get" then
                         if #argumentsTable ~= 0 then
-                            error( name .. ": " .. n .. ": getters cannot have any arguments" , 2 )
+                            ArgumentValueTypeParsingClassException( "Invalid getter arguments in class '" ..name .. "' on line " .. n .. ". Getters should NOT have any arguments. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                     elseif functionName == "set" then
                         if #argumentsTable ~= 1 then
-                            error( name .. ": " .. n .. ": setters can only have one argument" , 2 )
+                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". Getters should can only have ONE argument. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         local tableItem = argumentsTable[1]
                         if tableItem[TYPETABLE_NAME] ~= (secondLevel and secondLevel or firstLevel) then
-                            error( name .. ": " .. n .. ": setters argument must be called the same name as the property" , 2 )
+                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". The name of the setter's argument must be identical to the property name. (e.g. function View.isFocused:set( isFocused ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         if tableItem[TYPETABLE_TYPE] then
-                            error( name .. ": " .. n .. ": setters argument should not indicate a type, it is automatically inferred" , 2 )
+                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". The setter's argument cannot declare a ValueType, it is automatically inferred. (e.g. function View.isFocused:set( isFocused ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                     end
                 end
@@ -479,9 +554,9 @@ function stripFunctionArguments( name, contents )
             else
                 constructingFunctionArguments[functionName] = argumentsTable
             end
-            line = replacementLine .. ":" .. functionName .. "(" .. argumentsString .. ")" .. (isInterface and " end" or "")
+            line = replacementLine .. ( isEnum and "." or ":" ) .. functionName .. "(" .. argumentsString .. ")" .. (isInterface and " end" or "")
         elseif isInterface and line:match( "^%s*end%s*$" ) then
-            error( name .. ": " .. "interfaces mustnt use end with functions" , 2 )
+            ArgumentValueTypeParsingClassException( "Invalid function declaration in interface '" ..name .. "' on line " .. n .. ". Interface functions cannot include 'end'. Simply state the function declaration without the 'end'. (e.g. function IVehicle:drive( Number speed ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
         end
         classString = classString .. line .. "\n"
     end
@@ -490,8 +565,14 @@ end
 
 -- Being the creation of the class
 local function constructClass( _, name )
+    if type( name ) ~= "string" then
+        ConstructionClassException( "'class' argument must be a string with the name of the class being defined, got type " .. type( name ), 2 )
+    end
     if name ~= expectedName then
-        error( "wrong name, got "..name.." expected "..tostring(expectedName) ) -- wrong name
+        ConstructionClassException( "Attempted to construct the class/interface '" .. name .. "' but was expecting to load class/interface '" .. expectedName .. "'. This should never happen... soooooo... no idea what you're doing." )
+    end
+    if name:sub( 1, 1) ~= name:sub( 1, 1):upper() then
+        StyleClassException( "Class names must start with a capital letter. (e.g. TextBox)", 2 )
     end
     isInterface = false
     local constructing = {
@@ -522,21 +603,22 @@ local function constructClass( _, name )
     currentlyConstructing = constructing
     isLoadingProperties = true
 
-    -- insert all the valueTypes in to the environment for property loading
-    for name, valueType in pairs( valueTypes ) do
-        constructingEnvironment[name] = valueType
-    end
-
     return loadProperties
 end
 
 function interface( name )
-    if #name < 2 or name:sub( 1, 1) ~= "I" then
-        error('must start with I')
+    if type( name ) ~= "string" then
+        ConstructionClassException( "'interface' argument must be a string with the name of the interface being defined, got type " .. type( name ), 2 )
     end
     if name ~= expectedName then
-        error( "wrong name" , 2 ) -- wrong name
+        ConstructionClassException( "Attempted to construct the interface '" .. name .. "' but was expecting to load interface '" .. expectedName .. "'. This should never happen... soooooo... no idea what you're doing.", 2 )
     end
+    if #name < 2 or name:sub( 1, 1) ~= "I" then
+        StyleClassException( "Interface names must start with a capital 'I' and must be longer than 1 character. (e.g. IVehicle)", 2 )
+    elseif name:sub( 2, 1) ~= name:sub( 2, 1):upper() then
+        StyleClassException( "Interface names (excluding the 'I') must start with a capital letter. (e.g. IVehicle)", 2 )
+    end
+
     isInterface = true
     local constructing = {
         name = name;
@@ -565,8 +647,11 @@ function interface( name )
 end
 
 function extends( name )
+    if type( name ) ~= "string" then
+        ConstructionClassException( "'extends' argument must be a string with the name of the extending class, got type " .. type( name ), 2 )
+    end
     if isInterface then
-        error("interfaces can't extend", 2 ) -- TODO: maybe make possible
+        ConstructionClassException( "Interface '" .. currentlyConstructing.name .. "' attempted to extend '" .. name .. "'. Interfaces are not (yet) able to extend other interfaces. It *might* be possible to add this in, so if you think you might find it useful make an issue on GitHub for it.", 2 )
     end
     if name ~= currentlyConstructing.name then
         local ext = class.get( name )
@@ -578,31 +663,34 @@ function extends( name )
 
         currentlyConstructing.superName = name
     else
-        error( "can't extend self" , 2 )
+        ConstructionClassException( "Class '" .. currentlyConstructing.name .. "' attempted to extend '" .. name .. "' (i.e. self). Classes cannot extend themselves.", 2 )
     end
     return loadProperties
 end
 
 function implements( name )
+    if type( name ) ~= "string" then
+        ConstructionClassException( "'implements' argument must be a string with the name of the interface, got type " .. type( name ), 2 )
+    end
     if isInterface then
+        ConstructionClassException( "Interface '" .. currentlyConstructing.name .. "' attempted to implement '" .. name .. "'. Interfaces are not able to implement other interfaces.", 2 )
         error("interfaces can't implements", 2 )
     end
     if name ~= currentlyConstructing.name then
         local interface = class.get( name )
+        if not interface then
+            ConstructionClassException( "Class '" .. currentlyConstructing.name .. "' attempted to implement '" .. name .. "', but the interface could not be found. Alterntively the class attempted to implement a class. Only interfaces can be implemented.", 2 )
+        end
         currentlyConstructing.interfaces[name] = interface
         currentlyConstructing.typeOfCache[interface] = true
     else
-        error( "can't extend self" , 2 )
+        ConstructionClassException( "Class '" .. currentlyConstructing.name .. "' attempted to implement '" .. name .. "' (i.e. self). Classes cannot implement themselves.", 2 )
     end
     return loadProperties
 end
 
 function loadProperties( propertiesTable )
     -- take all the valueTypes back out of the environment
-    for name, valueType in pairs( valueTypes ) do
-        constructingEnvironment[name] = nil
-    end
-
     isLoadingProperties = false
     local staticPropertiesTable = propertiesTable.static
     local metatableProxy = {}
@@ -658,7 +746,7 @@ function loadProperties( propertiesTable )
                 if not type( key ) == "string" or not key:match( "^[_%u]+$" ) then
                     error( "Enum keys must be all uppercase with _" , 2 )
                 end
-                checkValue( func, itemValueType )
+                checkValue( func, itemValueType, nil, { self = self }, key )
                 if superOnlyEnums[k] then
                     __tostring = selfTostring
                     superOnlyEnums[k] = false
@@ -775,7 +863,7 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
     for propertyName, value in pairs( fromTable ) do
         if propertyName ~= ignoreKey then
             local isEnum = false
-            if type( value ) == "table" and value[1] == valueTypeUID then
+            if type( value ) == "table" and value[1] == VALUE_TYPE_UID then
                 -- this is a value type
                 if value[TYPETABLE_IS_ENUM] then
                     if not enumsTable then
@@ -793,10 +881,10 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                         -- TODO: type of!
                         if classType and classType == compiledClass then --classType:typeOf( "self??" ) then
                             -- don't allow value types that is type of self or are subclasses of self for non-static properties, that would cause an infinite loop
-                            error( "self refernce not in static" , 2 )
+                            error( "self refernce only in static" , 2 )
                         end
                     end
-                    if value[TYPETABLE_HAS_DEFAULT_VALUE] then -- this was created like String(), not String. hence we can use the value table directly
+                    if value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] then -- this was created like String(), not String. hence we can use the value table directly
                         value[TYPETABLE_NAME] = propertyName
                         toTable[propertyName] = value
                     else
@@ -809,8 +897,6 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                             uniqueValue[i] = value[i]
                         end
                         toTable[propertyName] = uniqueValue
-
-                        rawset( value, "allowsNil", false )
                     end
                 end
             else
@@ -824,6 +910,7 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                     [TYPETABLE_IS_ENUM] = false;
                     [TYPETABLE_ENUM_ITEM_TYPE] = false;
                     [TYPETABLE_HAS_DEFAULT_VALUE] = true;
+                    [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
                     [TYPETABLE_DEFAULT_VALUE] = value;
                 }
             end
@@ -872,46 +959,65 @@ end
 
 -- We have collected all the information about the class now, compile it in to the static class --
 
-local function generateDefaultValue( typeTable )
-    -- this asumes TYPETABLE_HAS_DEFAULT_VALUE is true and TYPETABLE_TYPE is "table" and should only be called when that is true
-    local classType = typeTable[TYPETABLE_CLASS]
-    if classType then
-        return classType( unpack( typeTable, TYPETABLE_DEFAULT_VALUE ))
-    else
-        local defaultTable = typeTable[TYPETABLE_DEFAULT_VALUE]
-        -- if it's a plain table make a deep copy of it
-        local function uniqueTable( default )
-            local new = {}
-            for k, v in pairs( default ) do
-                if type( v ) == "table" then
-                    new[k] = uniqueTable( v )
-                else
-                    new[k] = v
-                end
+local function generateDefaultValue( typeTable, context, circularKey )
+    local hasDefaultValue = typeTable[TYPETABLE_HAS_DEFAULT_VALUE]
+    if hasDefaultValue then
+        local defaultValue = typeTable[TYPETABLE_DEFAULT_VALUE]
+        if typeTable[TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] then
+            -- this is a reference, we need to get the value out of the content
+            if not context then
+                error( "attempted to use reference in invalid location (no context)" )
             end
-            return new
+            local value = context
+            for i, key in ipairs( typeTable[TYPETABLE_DEFAULT_VALUE] ) do
+                value = value[key]
+                -- TODO: circular references
+                -- if circularKey and circularKey[i] == key then
+                    -- error( "attempted to make circular reference " )
+                -- end
+            end
+            -- don't return because we'll need to check if the value it gave was okay
+            return value, false
+        elseif typeTable[TYPETABLE_TYPE] ~= "table" and type( defaultValue ) ~= "table" then
+            return defaultValue
+        else
+            -- this asumes TYPETABLE_HAS_DEFAULT_VALUE is true and TYPETABLE_TYPE is "table" and should only be called when that is true
+            local classType = typeTable[TYPETABLE_CLASS]
+            if classType then
+                return classType( unpack( typeTable, TYPETABLE_DEFAULT_VALUE )), true
+            else
+                local defaultTable = defaultValue
+                -- if it's a plain table make a deep copy of it
+                local function uniqueTable( default )
+                    local new = {}
+                    for k, v in pairs( default ) do
+                        if type( v ) == "table" then
+                            new[k] = uniqueTable( v )
+                        else
+                            new[k] = v
+                        end
+                    end
+                    return new
+                end
+                return uniqueTable( defaultTable ), true
+            end
         end
-        return uniqueTable( defaultTable )
     end
 end
 
-function checkValue( value, typeTable, isSelf ) -- TODO: error level and message based on where it's called form
+function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: error level and message based on where it's called form
     if value == nil  then
-        -- if the value is nil try loading the default value
-        local hasDefaultValue = typeTable[TYPETABLE_HAS_DEFAULT_VALUE]
-        if hasDefaultValue then
-            if typeTable[TYPETABLE_TYPE] ~= "table" then
-                return typeTable[TYPETABLE_DEFAULT_VALUE]
-            else
-                return generateDefaultValue( typeTable )                
-            end
+        local isOkay
+        value, isOkay = generateDefaultValue( typeTable, context, circularKey )
+        if isOkay then
+            return value
         end
     end
 
     if value == nil  then
         -- if a default value couldn't be loaded and the argument doesn't accept nil then error
         if not typeTable[TYPETABLE_ALLOWS_NIL] then
-            error("can't be nil", 2 )
+            error("can't be nil: " .. tostring(typeTable[TYPETABLE_NAME]), 2 )
         else
             -- otherwise, if nil is okay, continue with nil
             return nil
@@ -933,13 +1039,20 @@ function checkValue( value, typeTable, isSelf ) -- TODO: error level and message
         if isSelf then
             error("self not passed to function, you probably used . instead of :", 3)
         else
-            error(typeTable[TYPETABLE_NAME] .. " was wrong type, expected "..expectedType .. " got " .. type( value ), 4)
+            local expectedString
+            local expectedClass = typeTable[TYPETABLE_CLASS]
+            if expectedClass then
+                expectedString = expectedClass.className
+            else
+                expectedString = expectedType
+            end
+            error(typeTable[TYPETABLE_NAME] .. " was wrong type, expected "..expectedString .. " got " .. type( value ) .. ": "..tostring(value), 4)
         end
     end
     return value
 end
 
-local function mergeProperties( classProperties, staticProperties )
+local function mergeProperties( classProperties, staticProperties, name )
     for k, staticTypeTable in pairs( staticProperties ) do
         if not classProperties[k] then
             -- subclass doesn't define the property, copy it
@@ -950,7 +1063,7 @@ local function mergeProperties( classProperties, staticProperties )
 
             -- ensure that the types and allows nil are the same
             if classTypeTable[TYPETABLE_NAME] ~= staticTypeTable[TYPETABLE_NAME] or classTypeTable[TYPETABLE_TYPE] ~= staticTypeTable[TYPETABLE_TYPE] or classTypeTable[TYPETABLE_CLASS] ~= staticTypeTable[TYPETABLE_CLASS] or classTypeTable[TYPETABLE_ALLOWS_NIL] ~= staticTypeTable[TYPETABLE_ALLOWS_NIL] then
-                error("cannot change type or allows nil of super class' property", 2 )
+                error(name .. ": cannot change type or allows nil of super class' property: " .. k, 2 )
             end
         end
     end
@@ -976,8 +1089,8 @@ function compileClass( compiledClass, name )
 
         -- add super properties and ensure they don't conflict
         if compiledSuperDetails then
-            mergeProperties( currentlyConstructing.instanceProperties, compiledSuperDetails.instanceProperties )
-            mergeProperties( currentlyConstructing.staticProperties, compiledSuperDetails.staticProperties )
+            mergeProperties( currentlyConstructing.instanceProperties, compiledSuperDetails.instanceProperties, name )
+            mergeProperties( currentlyConstructing.staticProperties, compiledSuperDetails.staticProperties, name )
         end
 
         -- all the properties and functions have been added now, check that the class complies with its interfaces
@@ -1015,7 +1128,8 @@ function compileClass( compiledClass, name )
         compiledClass.super = classes[superName]
 
         local enumTypes = currentlyConstructing.enumTypes 
-        for k, enum in pairs( currentlyConstructing.enums  ) do
+        local enums = currentlyConstructing.enums
+        for k, enum in pairs( enums  ) do
             if not next( enum ) then
                 error( "Enums must have at least one value" , 2 )
             end
@@ -1066,10 +1180,10 @@ function compileClass( compiledClass, name )
 
         if not metatable.__call then 
             function metatable:__call( ... )
-                return spawnInstance( name, ... )
+                return spawnInstance( false, name, ... )
            end
         end
-        compiledClass.spawn = function( ... ) return spawnInstance( name, ... ) end
+        compiledClass.spawn = function( ignoreAllowsNil, ... ) return spawnInstance( ignoreAllowsNil, name, ... ) end
 
         if not metatable.__tostring then 
             local __tostring = "class '" .. name .. "': " ..  tostring( compiledClass ):sub( 8 )
@@ -1088,6 +1202,8 @@ function compileClass( compiledClass, name )
             function metatable:__index( key )
                 if key == "application" then
                     return application
+                elseif key == "super" then
+                    return -- this class doesn't have a super
                 end
                 error("attempt to get undefined class property "..key, 2)
             end
@@ -1096,6 +1212,9 @@ function compileClass( compiledClass, name )
 
 
         compileInstanceClass( name, compiledClass, static )
+        rawset( compiledClass, "instanceDefinedIndexes", compiledInstances[name].definedIndexes )
+        rawset( compiledClass, "instanceDefinedProperties", compiledInstances[name].definedProperties )
+        rawset( compiledClass, "instanceProperties", currentlyConstructing.instanceProperties )
         classes[name] = compiledClass
         static = compileAndSpawnStatic( static, name, compiledClass )
     end
@@ -1105,15 +1224,15 @@ function compileClass( compiledClass, name )
     return compiledClass
 end
 
-local function constructSuper( prebuiltFunctions )
+local function constructSuper( prebuiltFunctions, self, locked )
     if #prebuiltFunctions == 1 then return end
     local lastSuper
     for i = 1, #prebuiltFunctions - 1 do
-        local super, func = {}, prebuiltFunctions[i]( lastSuper )
-        local __tostring = "super " .. tostring(prebuiltFunctions[i])
+        local super, func = {}, prebuiltFunctions[i]( lastSuper, locked )
+        local __tostring = "super " .. i .. ": " .. tostring(prebuiltFunctions[i])
         setmetatable( super, {
             __tostring = function() return __tostring end;
-            __call = function( self, ... ) return func( ... ) end
+            __call = function( _, __, ... ) return func( self, ... ) end
         } )
         super.super = lastSuper
         lastSuper = super
@@ -1155,7 +1274,7 @@ local function addPrebuilt( functionName, prebuiltFunction, prebuiltFunctions, s
         end
     end
     prebuilts[#prebuilts + 1] = prebuiltFunction
-    return prebuiltFunction( constructSuper( prebuilts ) )
+    -- return prebuiltFunction( constructSuper( prebuilts ) )
 end
 
 local function addMissingSuper( superPrebuilt, prebuiltFunctions, outValues, definedIndexes )
@@ -1164,13 +1283,13 @@ local function addMissingSuper( superPrebuilt, prebuiltFunctions, outValues, def
             if not prebuiltFunctions[functionName] then
                 prebuiltFunctions[functionName] = funcs -- TODO: check this doesn't cause issues due to using the same table
                 if definedIndexes then definedIndexes[functionName] = functionName end
-                outValues[functionName] = funcs[#funcs]( constructSuper( funcs ) )
+                -- outValues[functionName] = funcs[#funcs]
             end
         end
     end
 end
 
-local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, superPrebuiltFunctions, outValues, selfTypeTable )
+local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, superPrebuiltFunctions, outValues, selfTypeTable, name, name )
     for functionName, functionTable in pairs( classFunctions ) do
         definedIndexes[functionName] = functionName
         local func = functionTable[FUNCTIONTABLE_FUNCTION]
@@ -1191,11 +1310,18 @@ local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, 
                     error( functionName .. ": wrong number of arguments, got "..argumentsLength.." expected between ".. minArgs .. " and " .. maxArgs, 2 )
                 end
 
-                local values = { checkValue( self, selfTypeTable, true ) }
-
+                local context = { self = self }
+                setmetatable( context, { __index = environments[name] } )
+                local values = { checkValue( self, selfTypeTable, true, context, functionName ) }
                 local argumentCount = (argumentsLength > minChecked and argumentsLength or minChecked)
                 for i = 1 + FUNCTIONTABLE_FUNCTION, argumentCount + FUNCTIONTABLE_FUNCTION do
-                    values[i] = checkValue( arguments[i - FUNCTIONTABLE_FUNCTION], (i > functionTableLength) and varargTypeTable or functionTable[i] )
+                    local valueType = (i > functionTableLength) and varargTypeTable or functionTable[i]
+                    local valueName = valueType[TYPETABLE_NAME]
+                    local value = checkValue( arguments[i - FUNCTIONTABLE_FUNCTION], valueType, nil, context, valueName )
+                    values[i] = value
+                    if i < functionTableLength then
+                        context[valueName] = value
+                    end
                 end
 
                 local oldSuper = rawget( self, "super" )
@@ -1206,19 +1332,18 @@ local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, 
                 return unpack( response )
             end
         end
-        outValues[functionName] = addPrebuilt( functionName, prebuiltFunction, prebuiltFunctions, superPrebuiltFunctions )
+        addPrebuilt( functionName, prebuiltFunction, prebuiltFunctions, superPrebuiltFunctions )
     end
     addMissingSuper( superPrebuiltFunctions, prebuiltFunctions, outValues, definedIndexes )
 end
 
-local function addGetter( getters, properties, outGetters, prebuiltGetters, superPrebuiltGetters )
+local function addGetter( getters, properties, prebuiltGetters, superPrebuiltGetters )
     for propertyName, getterFunction in pairs( getters ) do
         local propertyTypeTable = properties[propertyName]
-        local function prebuiltGetter( super )
+        local function prebuiltGetter( super, lockedGetters )
             return function( self )
                 local oldSuper = rawget( self, "super" )
                 rawset( self, "super", super )
-                local lockedGetters = allLockedGetters[self]
                 lockedGetters[propertyName] = true
                 value = checkValue( getterFunction( self ), propertyTypeTable ) -- we know that this is defintely self as it's only called by the class system
                 lockedGetters[propertyName] = false
@@ -1226,19 +1351,18 @@ local function addGetter( getters, properties, outGetters, prebuiltGetters, supe
                 return value
             end
         end
-        outGetters[propertyName] = addPrebuilt( propertyName, prebuiltGetter, prebuiltGetters, superPrebuiltGetters )
+        addPrebuilt( propertyName, prebuiltGetter, prebuiltGetters, superPrebuiltGetters )
     end
     addMissingSuper( superPrebuiltGetters, prebuiltGetters, outGetters )
 end
 
-local function addSetter( setters, properties, outSetters, prebuiltSetters, superPrebuiltSetters )
+local function addSetter( setters, properties, prebuiltSetters, superPrebuiltSetters )
     for propertyName, setterFunction in pairs( setters ) do
         local propertyTypeTable = properties[propertyName]
-        local function prebuiltSetter( super )
+        local function prebuiltSetter( super, lockedSetters )
             return function( self, value )
                 local oldSuper = rawget( self, "super" )
                 rawset( self, "super", super )
-                local lockedSetters = allLockedSetters[self]
                 lockedSetters[propertyName] = true
                 setterFunction( self, checkValue( value, propertyTypeTable ) ) -- we know that this is defintely self as it's only called by the class system
                 lockedSetters[propertyName] = false
@@ -1246,13 +1370,13 @@ local function addSetter( setters, properties, outSetters, prebuiltSetters, supe
                 return value
             end
         end
-        outSetters[propertyName] = addPrebuilt( propertyName, prebuiltSetter, prebuiltSetters, superPrebuiltSetters )
+        addPrebuilt( propertyName, prebuiltSetter, prebuiltSetters, superPrebuiltSetters )
     end
     addMissingSuper( superPrebuiltSetters, prebuiltSetters, outSetters )
 end
 
 function compileInstanceClass( name, compiledClass, static )
-    local initialValues, prebuiltGetters, prebuiltSetters, requireDefaultGeneration, definedIndexes, definedProperties = { static = static, class = compiledClass, }, {}, {}, {}, { static = "static", class = "class", typeOf = "typeOf", isDefined = "isDefined", isDefinedProperty = "isDefinedProperty", isDefinedFunction = "isDefinedFunction" }, { static = "static", class = "class" }
+    local initialValues, requireDefaultGeneration, definedIndexes, definedProperties = { static = static, class = compiledClass, }, {}, { static = "static", class = "class", typeOf = "typeOf", isDefined = "isDefined", isDefinedProperty = "isDefinedProperty", isDefinedFunction = "isDefinedFunction" }, { static = "static", class = "class" }
     local classDetails = compiledClassDetails[name]
     local superName = classDetails.superName
     local compiledSuperDetails = superName and compiledClassDetails[superName]
@@ -1286,10 +1410,12 @@ function compileInstanceClass( name, compiledClass, static )
     end
 
     -- add the instance functions
-    addFunctions( classDetails.instanceFunctions, definedIndexes, currentlyConstructing.prebuiltInstanceFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceFunctions, initialValues, selfTypeTable )
+    local prebuiltFunctions = currentlyConstructing.prebuiltInstanceFunctions
+    addFunctions( classDetails.instanceFunctions, definedIndexes, prebuiltFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceFunctions, initialValues, selfTypeTable, name )
 
-    addGetter( classDetails.instanceGetters, instanceProperties, prebuiltGetters, currentlyConstructing.prebuiltInstanceGetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceGetters )
-    addSetter( classDetails.instanceSetters, instanceProperties, prebuiltSetters, currentlyConstructing.prebuiltInstanceSetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceSetters )
+    local prebuiltGetters, prebuiltSetters = currentlyConstructing.prebuiltInstanceGetters, currentlyConstructing.prebuiltInstanceSetters
+    addGetter( classDetails.instanceGetters, instanceProperties, prebuiltGetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceGetters )
+    addSetter( classDetails.instanceSetters, instanceProperties, prebuiltSetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceSetters )
 
     local typeOfCache = classDetails.typeOfCache
     function initialValues:typeOf( object )
@@ -1360,14 +1486,25 @@ function compileAndSpawnStatic( static, name, compiledClass )
         end
     end
 
-    addFunctions( classDetails.staticFunctions, definedIndexes, classDetails.prebuiltStaticFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltStaticFunctions, values, selfTypeTable )
+    local prebuiltFunctions = classDetails.prebuiltStaticFunctions
+    addFunctions( classDetails.staticFunctions, definedIndexes, prebuiltFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltStaticFunctions, values, selfTypeTable, name )
+    for functionName, funcs in pairs( prebuiltFunctions ) do
+        values[functionName] = funcs[#funcs]( constructSuper( funcs, static ) )
+    end
+
+
+    local prebuiltGetters, prebuiltSetters = currentlyConstructing.prebuiltStaticGetters, currentlyConstructing.prebuiltStaticSetters
+    addGetter( classDetails.staticGetters, staticProperties, prebuiltGetters, compiledSuperDetails and compiledSuperDetails.prebuiltStaticGetters )
+    addSetter( classDetails.staticSetters, staticProperties, prebuiltSetters, compiledSuperDetails and compiledSuperDetails.prebuiltStaticSetters )
 
     local lockedGetters, lockedSetters = {}, {}
-    allLockedGetters[static] = lockedGetters
-    allLockedSetters[static] = lockedSetters
+    for propertyName, funcs in pairs( prebuiltGetters ) do
+        getters[propertyName] = funcs[#funcs]( constructSuper( funcs, static, lockedGetters ), lockedGetters )
+    end
 
-    addGetter( classDetails.staticGetters, staticProperties, getters, currentlyConstructing.prebuiltInstanceGetters, compiledSuperDetails and compiledSuperDetails.prebuiltStaticGetters )
-    addSetter( classDetails.staticSetters, staticProperties, setters, currentlyConstructing.prebuiltInstanceSetters, compiledSuperDetails and compiledSuperDetails.prebuiltStaticSetters )
+    for propertyName, funcs in pairs( prebuiltSetters ) do
+        setters[propertyName] = funcs[#funcs]( constructSuper( funcs, static, lockedSetters ), lockedSetters )
+    end
 
     local typeOfCache = classDetails.typeOfCache
     function static:typeOf( object )
@@ -1406,7 +1543,8 @@ function compileAndSpawnStatic( static, name, compiledClass )
             if setter and not lockedSetters[locatedKey] then
                 setter( self, value )
             else
-                values[locatedKey] = checkValue( value, staticProperties[locatedKey] )
+                local context = setmetatable( { self = self }, { __index = environments[name] } )
+                values[locatedKey] = checkValue( value, staticProperties[locatedKey], nil, context, key )
             end
         else
             error("attempt to set undefined property or function", 2 )
@@ -1455,12 +1593,12 @@ function compileAndSpawnStatic( static, name, compiledClass )
     return static
 end
 
-
-function spawnInstance( name, ... )
+function spawnInstance( ignoreAllowsNil, name, ... )
     local compiledInstance = compiledInstances[name]
     local classDetails = compiledClassDetails[name]
     local instanceProperties = classDetails.instanceProperties
 
+    local instance = {}
     local values, getters, setters = {}, {}, {}
 
     for key, value in pairs( compiledInstance.initialValues ) do
@@ -1468,28 +1606,32 @@ function spawnInstance( name, ... )
     end
 
     -- for default values that are tables make them unique or create class instances
+    local context = setmetatable( { self = instance }, { __index = environments[name] } )
     for propertyName, typeTable in pairs( compiledInstance.requireDefaultGeneration ) do
-        if propertyName == "handles" then log "Generating" end
-        values[propertyName] = generateDefaultValue( typeTable )
+        values[propertyName] = generateDefaultValue( typeTable, context )
+    end
+
+
+    local prebuiltFunctions = compiledInstance.prebuiltFunctions
+    for functionName, funcs in pairs( prebuiltFunctions ) do
+        values[functionName] = funcs[#funcs]( constructSuper( funcs, instance ) )
+        -- values[functionName] = addPrebuilt( functionName, prebuiltFunction, prebuiltFunctions, superPrebuiltFunctions )
     end
 
     local lockedGetters, lockedSetters = {}, {}
 
     -- unwrap the prebuilt getter/setter functions so we can use our unique locking tables
-    for propertyName, func in pairs( compiledInstance.prebuiltGetters ) do
-        getters[propertyName] = func
+    for propertyName, funcs in pairs( compiledInstance.prebuiltGetters ) do
+        getters[propertyName] = funcs[#funcs]( constructSuper( funcs, instance, lockedGetters ), lockedGetters )
     end
 
-    for propertyName, func in pairs( compiledInstance.prebuiltSetters ) do
-        setters[propertyName] = func
+    for propertyName, funcs in pairs( compiledInstance.prebuiltSetters ) do
+        setters[propertyName] = funcs[#funcs]( constructSuper( funcs, instance, lockedSetters ), lockedSetters )
     end
 
     local aliases = classDetails.aliases.instance
 
     local definedIndexes, definedProperties = compiledInstance.definedIndexes, compiledInstance.definedProperties
-    local instance = {}
-    allLockedGetters[instance] = lockedGetters
-    allLockedSetters[instance] = lockedSetters
     local metatable = {}
     function metatable:__newindex( key, value )
         if RESERVED_NAMES[key] then error( "reserved name" , 2 ) end
@@ -1500,10 +1642,11 @@ function spawnInstance( name, ... )
             if setter and not lockedSetters[locatedKey] then
                 setter( self, value )
             else
-                values[locatedKey] = checkValue( value, instanceProperties[locatedKey] )
+                local context = setmetatable( { self = self }, { __index = environments[name] } )
+                values[locatedKey] = checkValue( value, instanceProperties[locatedKey], nil, context, key )
             end
         else
-            error("attempt to set undefined property or function", 2 )
+            error("attempt to set undefined property or function '" .. key .. "'", 2 )
         end
     end
 
@@ -1512,7 +1655,7 @@ function spawnInstance( name, ... )
         if locatedKey then
             local getter = getters[locatedKey]
             if getter and not lockedGetters[locatedKey] then
-                return getter( self )
+                return getter( self ) -- TODO: maybe check value the return value of the getter
             else
                 return values[locatedKey]
             end
@@ -1534,6 +1677,19 @@ function spawnInstance( name, ... )
     instance.raw = values
     setmetatable( instance, metatable )
 
+    -- insert default values
+    local generatedDefault = {}
+    for k, v in pairs( definedProperties ) do
+        if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
+            local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
+            if value == nil then
+                local defaultValue = generateDefaultValue( instanceProperties[k], context, k )
+                generatedDefault[k] = defaultValue
+                values[k] = defaultValue
+            end
+        end
+    end
+
     -- run the initialiser
     for i, key in ipairs( { "initialise", "intialize" } ) do
         if definedIndexes[key] then
@@ -1545,7 +1701,24 @@ function spawnInstance( name, ... )
         end
     end
 
-    -- TODO: check for any nil values that aren't allowed to be nil
+    -- call setters on the default values if they haven't changed
+    for k, defaultValue in pairs( generatedDefault ) do
+        if values[k] == defaultValue then
+            instance[k] = defaultValue
+        end
+    end
+
+    if not ignoreAllowsNil then
+        -- check for any nil values that aren't allowed to be nil
+        for k, v in pairs( definedProperties ) do
+            if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
+                local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
+                if value == nil and not instanceProperties[k][TYPETABLE_ALLOWS_NIL] then
+                    error( name .. "." .. k .. " was nil after initialisation but type does not specify .allowsNil" )
+                end
+            end
+        end
+    end
 
     return instance
 end

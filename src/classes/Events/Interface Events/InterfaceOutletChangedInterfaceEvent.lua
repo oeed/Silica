@@ -1,13 +1,15 @@
 
 class "InterfaceOutletChangedInterfaceEvent" extends "InterfaceEvent" {
+
     static = {
         eventType = "interface_outlet_changed";
     };
 	interfaceOutlet = false;
 	oldView = false;
 	newView = false;
-	isSentToChildren = false;
-	isSentToSender = false;
+	isSentToChildren = Boolean( false );
+	isSentToSender = Boolean( false );
+
 }
 
 --[[

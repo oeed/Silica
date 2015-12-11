@@ -1,0 +1,4 @@
+
+class "MenuNotSpecifiedException" extends "Exception" {
+
+}

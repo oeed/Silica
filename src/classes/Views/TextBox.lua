@@ -11,41 +11,46 @@
 		Ctrl-a
 ]]
 
-local CURSOR_ANIMATION_SPEED = 0.45
+local CURSOR_ANIMATION_SPEED = 0.4
+local CURSOR_ANIMATION_EASING = Animation.easings.OUT_QUART
+local SCROLL_SPEED = 4
 
+local sub = string.sub -- move to top
+local concat = table.concat
 local floor = math.floor
+
+local SELECTION_DIRECTIONS = {
+		BOTH = 0;
+		LEFT = -1;
+		RIGHT = 0;
+	}
 
 class "TextBox" extends "View" {
 
-	height = 15; -- the default height
-	width = 120;
-	text = "";
-	placeholder = "";
+	height = Number( 15 );
+	width = Number( 120 );
+	text = String( "" );
+	placeholder = String.allowsNil;
 
-	font = false;
-
-	backgroundObject = false;
-	textObject = false;
-	placeholderObject = false;
-	cursorObject = false;
-	selectionObject = false;
 	cursorFlashCounter = 0;
+	cursorColour = Graphics.colours( Graphics.colours.BLACK );
 
-	cursorX = Number;
-	selectionX = Number;
-	selectionWidth = Number;
+	cursorX = Number( 0 );
+	selectionX = Number.allowsNil;
+	selectionWidth = Number( 0 );
+	selectionVisible = Boolean( false );
 
-	margin = Number;
-	leftMargin = 0;
-	rightMargin = 0;
-	isFocused = false;
-	isPressed = false;
-	isMasked = false; -- whether bullets are shown instead of characters (for passwords)
+	isFocused = Boolean( false );
+	isPressed = Boolean( false );
+	isMasked = Boolean( false ); -- whether bullets are shown instead of characters (for passwords)
 
-	scroll = 0;
+	scroll = Number( 0 );
+	maxScroll = Number( 0 );
 	cursorPosition = 1;
 	maximumLength = false;
-	selectionPosition = false;
+	selectionPosition = Number.allowsNil;
+
+	selectionDirections = Enum( Number, SELECTION_DIRECTIONS );
 
 }
 
@@ -61,44 +66,54 @@ function TextBox:initialise( ... )
 	self:event( MouseDownEvent, self.onMouseDown )
 	self:event( MouseUpEvent, self.onMouseUp )
 	self:event( MouseDragEvent, self.onMouseDrag )
+	self:event( MouseScrollEvent, self.onMouseScroll )
     self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
+    self:event( MouseDoubleClickEvent, self.onMouseDoubleClick )
 	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
---[[
-	@instance
-	@desc Sets up the canvas and it's graphics objects
-]]
-function TextBox:initialiseCanvas()
-	self:super()
-	local width, height, theme = self.width, self.height, self.theme
-	local backgroundObject = self.canvas:insert( RoundedRectangle( 1, 1, width, height ) )
-	local selectionObject = self.canvas:insert( Rectangle( 0, 4, 1, self.height - 6 ) )
-	local placeholderObject = self.canvas:insert( Text( self.leftMargin, 5, self.width, 10, self.placeholder ) )
-	local textObject = self.canvas:insert( Text( self.leftMargin, 5, self.width, 10, self.text ) )
-	local cursorObject = self.canvas:insert( Cursor( 0, 4, self.height - 6 ) )
-	cursorObject.isVisible = false
-	selectionObject.isVisible = false
+function TextBox:onDraw()
+    local width, height, theme, canvas, isFocused = self.width, self.height, self.theme, self.canvas, self.isFocused
+    local font, text = theme:value( "font" ), ( self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text )
 
-	theme:connect( backgroundObject, "fillColour" )
-	theme:connect( backgroundObject, "outlineColour" )
-	theme:connect( backgroundObject, "radius", "cornerRadius" )
-	theme:connect( textObject, "textColour" )
-	theme:connect( placeholderObject, "textColour", "placeholderColour" )
-	theme:connect( cursorObject, "fillColour", "cursorColour" )
-	theme:connect( selectionObject, "fillColour", "selectionColour" )
-	theme:connect( self, "leftMargin" )
-	theme:connect( self, "rightMargin" )
+    local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
+    local fillColour = theme:value( "fillColour" )
+    canvas:fill( fillColour, roundedRectangle )
 
-	self.backgroundObject = backgroundObject
-	self.textObject = textObject
-	self.placeholderObject = placeholderObject
-	self.cursorObject = cursorObject
-	self.selectionObject = selectionObject
+    local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
 
-	if not self.font then
-		self.font = Font.systemFont
+	if #text == 0 then
+	    canvas:fill( theme:value( "placeholderColour" ),  roundedRectangle:intersect( TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.placeholder, font ) ) )
 	end
+
+    local scroll = self.scroll
+    local outlineThickness = theme:value( "outlineThickness" )
+    if isFocused then
+    	local fontHeight = font.height
+		local contentMask = RectangleMask( leftMargin - 1, 1 + outlineThickness, width - leftMargin - rightMargin + 4, height - 2 * outlineThickness )
+    	if self.selectionVisible then
+    		local selectionWidth = self.selectionWidth
+    		if selectionWidth > 0 then
+	    		local selectionLeftMargin, selectionRightMargin, selectionTopMargin, selectionBottomMargin = theme:value( "selectionLeftMargin" ), theme:value( "selectionRightMargin" ), theme:value( "selectionTopMargin" ), theme:value( "selectionBottomMargin" )
+	    		local selectionMask = RoundedRectangleMask( leftMargin + 1 + self.selectionX - scroll - selectionLeftMargin, math.floor( fontHeight / 2 ) - selectionTopMargin, selectionWidth + selectionLeftMargin + selectionRightMargin, fontHeight + selectionTopMargin + selectionBottomMargin, theme:value( "selectionRadius" ) )
+	    		canvas:fill( theme:value( "selectionColour" ), selectionMask:intersect( contentMask ) )
+	    	end
+	    else
+	    	local cursorPosition = self.cursorPosition
+	    	local cursorColour = self.cursorColour
+	    	if cursorColour ~= fillColour then
+		    	local cursorMask = RectangleMask( leftMargin + 1 + self.cursorX - scroll, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
+	    		canvas:fill( cursorColour, cursorMask:intersect( contentMask ) )
+	    	end
+    	end
+    end
+
+    local textMask = roundedRectangle:intersect( TextMask( leftMargin + 1 - scroll, topMargin + 1, font:getWidth( text ), height - topMargin - bottomMargin, text, font ) )
+    canvas:fill( theme:value( "textColour" ), textMask  )
+    canvas:fill( theme:value( "fadeOneColour" ), OutlineMask( leftMargin, topMargin, width - leftMargin - rightMargin + 2, height - topMargin - bottomMargin + 2 * outlineThickness ):intersect( textMask )  )
+    canvas:fill( theme:value( "fadeTwoColour" ), OutlineMask( leftMargin - 1, topMargin - 1, width - leftMargin - rightMargin + 4, height - topMargin - bottomMargin + 4 * outlineThickness ):intersect( textMask )  )
+    canvas:fill( theme:value( "fillColour" ), OutlineMask( 1 + outlineThickness, 1 + outlineThickness, width - 2 * outlineThickness, height - 2 * outlineThickness, leftMargin - 2 - outlineThickness, topMargin - 2 - outlineThickness, rightMargin - 2 - outlineThickness, bottomMargin - 2 - outlineThickness ):intersect( textMask ) )
+    canvas:outline( theme:value( "outlineColour" ), roundedRectangle, outlineThickness )
 end
 
 function TextBox:update( deltaTime )
@@ -108,85 +123,30 @@ function TextBox:update( deltaTime )
 		local cursorFlashCounter = self.cursorFlashCounter
 		local visible = cursorFlashCounter % 2 < 1
 		local rem = cursorFlashCounter % 1
-		local colour
 		if rem > .85 then
 			if visible then
-				colour = ( rem > .95 and colours.lightGrey ) or colours.grey
+				self.cursorColour = ( rem > .95 and Graphics.colours.LIGHT_GREY ) or Graphics.colours.GREY
 			else
-				colour = ( rem > .95 and colours.grey ) or colours.lightGrey
+				self.cursorColour = ( rem > .95 and Graphics.colours.GREY ) or Graphics.colours.LIGHT_GREY
 				visible = true
 			end
+		elseif not visible then
+			self.cursorColour = Graphics.colours.WHITE
 		else
-			colour = colours.black
+			self.cursorColour = Graphics.colours.BLACK
 		end
-		self.cursorObject.fillColour = colour
-		self.cursorObject.isVisible = visible
-		self.cursorFlashCounter = cursorFlashCounter + deltaTime
+		self.cursorFlashCounter = cursorFlashCounter + deltaTime * 2
 	end
 end
 
-function TextBox:updateHeight( height )
-	self.backgroundObject.height = height
-end
-
-function TextBox:updateWidth( width )
-	self.backgroundObject.width = width
-	local textObject = self.textObject
-	textObject.x = self.leftMargin + 1 - self.scroll
-	textObject.width = width - self.leftMargin - self.rightMargin
-	local placeholderObject = self.placeholderObject
-	placeholderObject.x = self.leftMargin + 1
-	placeholderObject.width = width - self.leftMargin - self.rightMargin
-end
-
-function TextBox.leftMargin:set( leftMargin )
-	self.leftMargin = leftMargin
-	local textObject = self.textObject
-	if textObject then
-		textObject.x = leftMargin + 1 - self.scroll
-		self.placeholderObject.x = leftMargin + 2
-	end
-end
-
-function TextBox:updateSelection()
-	local selectionObject = self.selectionObject
-	local leftMargin = self.leftMargin
-	local cursorPosition = self.cursorPosition
-	local selectionPosition = self.selectionPosition
-
-	local isVisible = selectionObject.isVisible
-	if not selectionPosition then--or cursorPosition == selectionPosition then
-		if isVisible then selectionObject.isVisible = false end
-	else
-		local cursorX = leftMargin + math.max( self:charToViewCoords( cursorPosition ) - 1, 1 ) - self.scroll
-		local selectionX = leftMargin + math.max( self:charToViewCoords( selectionPosition ) - 1, 1 ) - self.scroll
-
-		if not isVisible then selectionObject.isVisible = true end
-
-		local x, width, f
-		if cursorX == selectionX then
-			-- if isVisible then selectionObject.isVisible = false end
-			local _x, _width = selectionObject.x, selectionObject.width
-			x = math.floor( _x + _width / 2 )
-			width = 0
-			f = function() selectionObject.isVisible = false end
-		else
-			x = math.min( cursorX, selectionX )
-			width = math.max( cursorX, selectionX ) - x
-		end
-
-		if not isVisible then
-			selectionObject.x = x
-			selectionObject.width = width
-		else
-			self:animate( "selectionX", x, CURSOR_ANIMATION_SPEED, f, Animation.easings.OUT_QUART )
-			self:animate( "selectionWidth", width, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
-		end
-	end
+function TextBox.cursorColour:set( cursorColour )
+    if self.cursorColour ~= cursorColour then
+    	self.cursorColour = cursorColour
+    	self.needsDraw = true
+    end
 end
 
 --[[
-	@instance
 	@desc Converts the coordinates relative to the text box to the character position
 	@param [number] x -- the x coordinate
 	@return [number] characterPosition -- the charcter position
@@ -195,26 +155,27 @@ function TextBox:viewToCharCoords( x )
 	if x <= 0 then
 		return 1
 	end
-	local font = self.font
-	local width = font.getWidth
+	local theme = self.theme
+	x = x - theme:value( "leftMargin" ) + self.scroll
+	local font = theme:value( "font" )
+	local getWidth = font.getWidth
 	local text = self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text
 	for i = 1, #text do
-		local cw = width( font, text:sub( i, i ) )
-		if x <= cw / 2 then
+		local characterWidth = getWidth( font, text:sub( i, i ), true )
+		if x <= characterWidth / 2 then
 			return i
 		end
-		x = x - cw
+		x = x - characterWidth
 	end
 	return #text + 1
 end
 
 function TextBox:charToViewCoords( char )
 	local text = self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text
-	return self.font:getWidth( text:sub( 1, char - 1 ) ) + 1
+	return self.theme:value( "font" ):getWidth( text:sub( 1, char - 1 ) ) + 1
 end
 
 --[[
-	@instance
 	@desc Callback to check whether a character entered by the user is valid, intended to be overridden by sub-classes
 	@param [string] character
 	@return [boolean] isValid
@@ -223,169 +184,152 @@ function TextBox:isValidChar( character )
 	return true
 end
 
-function TextBox.scroll:set( scroll )
-	self.scroll = scroll
-	self.textObject.x = self.leftMargin + 1 - self.scroll
-	self:updateSelection()
-	self:updateCursorPosition()
-end
-
 function TextBox.cursorPosition:set( cursorPosition )
 	cursorPosition = math.max( math.min( cursorPosition, #self.text + 1 ), 1 )
 	self.cursorPosition = cursorPosition
 	self.cursorFlashCounter = 0
-	if self:charToViewCoords( cursorPosition ) - self.scroll < 1 then
-		self.scroll = self:charToViewCoords( cursorPosition ) - 1
-	elseif self:charToViewCoords( cursorPosition ) - self.scroll > ( self.width - self.leftMargin - self.rightMargin ) then
-		self.scroll = self:charToViewCoords( cursorPosition ) - ( self.width - self.leftMargin - self.rightMargin )
-	end
-
+	self:updateSelection()
 	self:updateCursorPosition()
 end
 
-function TextBox.cursorX:set( cursorX )
-	self.cursorObject.x = cursorX
+function TextBox:updateCursorPosition()
+	local value = math.max( self:charToViewCoords( self.selectionPosition or self.cursorPosition ) - 1, 0 )
+	self:animate( "cursorX", value, CURSOR_ANIMATION_SPEED, nil, CURSOR_ANIMATION_EASING )
 end
 
-function TextBox.cursorX:get()
-	return self.cursorObject.x
+function TextBox:updateSelection()
+	local selectionPosition = self.selectionPosition
+	local isVisible = self.selectionVisible
+	local cursorX = math.max( self:charToViewCoords( self.cursorPosition ) - 1, 0 )
+	local selectionX = selectionPosition and math.max( self:charToViewCoords( selectionPosition ) - 1, 0 )
+	local _x = self.selectionX
+	if not isVisible and selectionPosition then
+		if selectionX and not _x then self.selectionX = selectionX end
+		self.selectionVisible = true
+	end
+
+	local x, width, f
+	if not selectionPosition or cursorX == selectionX then
+		local _width = self.selectionWidth
+		if not selectionPosition and not _x then
+			self.selectionX = cursorX
+			self.selectionWidth = 0
+			return
+		end
+		x = cursorX
+		width = 0
+		f = function() self.selectionVisible = false end
+	else
+		x = math.min( cursorX, selectionX )
+		width = math.max( cursorX, selectionX ) - x
+	end
+	self:animate( "selectionX", x, CURSOR_ANIMATION_SPEED, nil, CURSOR_ANIMATION_EASING )
+	self:animate( "selectionWidth", width, CURSOR_ANIMATION_SPEED, f, CURSOR_ANIMATION_EASING )
+end
+
+--[[
+	@desc Updates the maximum scroll value to account for the change in of the text or textbox
+]]
+function TextBox:updateMaxScroll()
+	local theme = self.theme
+	self.maxScroll = theme:value( "font" ):getWidth( self.text ) - ( self.width - theme:value( "leftMargin" ) - theme:value( "rightMargin" ) )
+end
+
+function TextBox.scroll:set( scroll )
+	self.scroll = math.max( math.min( scroll, self.maxScroll ), 0 )
+	self.needsDraw = true
+end
+
+function TextBox.maxScroll:set( maxScroll )
+	self.maxScroll = math.max( maxScroll, 0 )
+	self.scroll = self.scroll -- this will check that the scroll value is okay
+end
+
+function TextBox.cursorX:set( cursorX )
+	self.cursorX = cursorX
+
+	-- if the cursor is extending past the visible bounds adjust scroll to keep it visible
+	local width, scroll = self.width, self.scroll
+    local relativeX = cursorX - scroll
+    if relativeX < 0 then
+    	-- the cursor is to the left of the screen
+    	self.scroll = scroll + relativeX
+    else
+    	local theme = self.theme
+    	local leftMargin, rightMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" )
+    	local rightOverflow = relativeX - width + leftMargin + rightMargin + 1
+    	if rightOverflow > 0 then
+	    	self.scroll = scroll + rightOverflow
+	    else
+			self.needsDraw = true -- we can put this here because setting scroll does it, so it's not always needed
+	    end
+    end
 end
 
 function TextBox.selectionX:set( selectionX )
-	self.selectionObject.x = selectionX
-end
-
-function TextBox.selectionX:get()
-	return self.selectionObject.x
+	self.selectionX = selectionX
+	self.needsDraw = true
 end
 
 function TextBox.selectionWidth:set( selectionWidth )
-	self.selectionObject.width = selectionWidth
-end
-
-function TextBox.selectionWidth:get()
-	return self.selectionObject.width
-end
-
-function TextBox:updateCursorPosition()
-	local value = self.leftMargin + math.max( self:charToViewCoords( self.selectionPosition or self.cursorPosition ) - 1, 1 ) - self.scroll
-	self:animate( "cursorX", value, CURSOR_ANIMATION_SPEED, nil, Animation.easings.OUT_QUART )
+	self.selectionWidth = selectionWidth
+	self.needsDraw = true
 end
 
 function TextBox.selectionPosition:set( selectionPosition )
 	self.selectionPosition = selectionPosition
 	self.cursorFlashCounter = 0
 	self:updateSelection()
-	self:updateCursorPosition()
+	self.needsDraw = true
 end
 
 --[[
-	@instance
-	@desc ima leave this... until floobits,.. just yeah
-	es@param [string] character
+	@desc Insert text into the text box at the current cursor position
+	@param [string] character
 	@return [boolean] isValid
 ]]
-local sub = string.sub -- move to top
-local concat = table.concat
 function TextBox:write( text )
 	local t = {}
 	local valid = self.isValidChar
+	local s = ""
 	for i = 1, #text do
 		local char = sub( text, 1, 1 )
 		if valid( self, char ) then
-			t[#t + 1] = char
+			s = s .. char
 		end
 	end
 	local text = self.text
-	local s = concat( t )
-	local cp, sp = self.cursorPosition, self.selectionPosition
-	if sp then
-		sp = sp - 1
-		self.text = text:sub( 1, math.min( cp, sp ) - 1 ) .. s .. text:sub( math.max( cp, sp ) + 1 )
-		self.cursorPosition =  math.min( cp, sp ) + #s
-		self.selectionPosition = false
+	local cursorPosition, selectionPosition = self.cursorPosition, self.selectionPosition
+	if selectionPosition then
+		-- selectionPosition = selectionPosition - 1
+		local left, right = math.min( cursorPosition, selectionPosition ), math.max( cursorPosition, selectionPosition )
+		self.text = text:sub( 1, left - 1 ) .. s .. text:sub( right )
+		self.selectionPosition = nil
+		self.cursorPosition =  math.min( cursorPosition, selectionPosition ) + #s
 	else
-		self.text = text:sub( 1, cp - 1 ) .. s .. text:sub( cp )
-		self.cursorPosition =  cp + #s
+		self.text = text:sub( 1, cursorPosition - 1 ) .. s .. text:sub( cursorPosition )
+		self.cursorPosition =  cursorPosition + #s
 	end
 end
 
 --[[
-	@instance
-	@desc Returns the character at the given character position
-	@param [number] characterPosition -- the character position
-	@return [string] character -- the character
-]]
-function TextBox:charCoordsToChar( characterPosition )
-	return character
-end
-
---[[
-	@instance
-	@desc What does this actually do?
-	@param [type] arg1 -- description
-	@param [type] arg2 -- description
-	@param [type] arg3 -- description
-	@return [type] returnedValue -- description
-]]
-function TextBox:charToCharCoords( arg1, arg2, arg3 )
-	return returnedValue
-end
-
---[[
-	@instance
-	@desc Converts the character position to screen coordinates
-	@param [number] characterPosition -- the position of the character
-	@return [number] x -- the x coordinate realtive to the text box
-	@return [number] y -- the y coordinate realtive to the text box
-]]
-function TextBox:charCoordsToViewCoordinates( characterPosition )
-	return x, y
-end
-
---[[
-	@instance
 	@desc Set the text of the text box.
 	@param [string] text -- the text of the text box
 ]]
 function TextBox.text:set( text )
 	self.text = text
-	self.textObject.text = self.isMasked and string.rep( string.char( 149 ), #text ) or text
-	self.placeholderObject.isVisible = #text == 0
+	self:updateMaxScroll()
+	self.needsDraw = true
 end
 
 function TextBox.placeholder:set( placeholder )
 	self.placeholder = placeholder
-	local placeholderObject = self.placeholderObject
-	if placeholderObject then
-		placeholderObject.text = placeholder or ''
-	end
+	self.needsDraw = true
 end
 
 function TextBox.isMasked:set( isMasked )
 	self.isMasked = isMasked
-	self.text = self.text
-end
-
---[[
-	@instance
-	@desc Set the margin on either side of the text
-	@param [number] margin -- the space around the text
-]]
-function TextBox.margin:set( margin )
-	self.leftMargin = margin
-	self.rightMargin = margin
-end
-
-function TextBox.font:set( font )
-	self.font = font
-	local textObject = self.textObject
-	if textObject then
-		textObject.font = font
-		self.placeholderObject.font = font
-		self.cursorObject.height = font.height + 1
-		self.selectionObject.height = font.height + 1
-	end
+	self.needsDraw = true
 end
 
 function TextBox:updateThemeStyle()
@@ -407,19 +351,16 @@ end
 
 function TextBox.isFocused:set( isFocused )
 	self.isFocused = isFocused
-	self.cursorObject.isVisible = isFocused
 	self.cursorPosition = self.cursorPosition or 1
-	self.isFocused = isFocused
 	self:updateThemeStyle()
 end
 
 --[[
-	@instance
 	@desc Fired when the mouse is released anywhere on screen. Removes the pressed appearance.
 	@param [Event] event -- the mouse up event
 	@return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function TextBox:onGlobalMouseUp( Event event, Event.phases phase )
+function TextBox:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
 	if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = false
 		if self.isEnabled and self:hitTestEvent( event ) then
@@ -429,29 +370,42 @@ function TextBox:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-	@instance
 	@desc Fired when the mouse is released. Focuses on the text box
 	@param [MouseDownEvent] event -- the mouse down event
 	@return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function TextBox:onMouseUp( Event event, Event.phases phase )
+function TextBox:onMouseUp( MouseUpEvent event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self:focus( TextBox )
 	end
 	return true
 end
 
+function TextBox:onMouseDoubleClick( Event event, Event.phases phase )
+    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+    	local left, right = self:wordPosition( self:viewToCharCoords( event.x ), SELECTION_DIRECTIONS.BOTH )
+    	if left ~= right then
+	    	self.selectionPosition = right
+	    	self.cursorPosition = left
+	    end
+    end
+    return true
+end
+
 --[[
-	@instance
 	@desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
 	@param [MouseDownEvent] event -- the mouse down event
 	@return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function TextBox:onMouseDown( Event event, Event.phases phase )
+function TextBox:onMouseDown( MouseDownEvent event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = true
-		self.cursorPosition = self:viewToCharCoords( event.x - self.leftMargin + self.scroll )
-		self.selectionPosition = false
+		if self.application.keyboardShortcutManager:isOnlyKeyDown( "shift" ) then
+			self.selectionPosition = self:viewToCharCoords( event.x )
+		else
+			self.selectionPosition = nil
+			self.cursorPosition = self:viewToCharCoords( event.x )
+		end
 	end
 	return true
 end
@@ -459,68 +413,100 @@ end
 function TextBox:onMouseDrag( Event event, Event.phases phase )
 	if self.isPressed and self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = true
-		self.selectionPosition = self:viewToCharCoords( event.x - self.leftMargin + self.scroll )
+		self.selectionPosition = self:viewToCharCoords( event.x )
 	end
 	return true
 end
 
-function TextBox:onKeyDown( Event event, Event.phases phase )
+function TextBox:onMouseScroll( MouseScrollEvent event, Event.phases phase )
+	if self.isEnabled then
+		self.scroll = self.scroll + event.direction * SCROLL_SPEED
+	end
+	return true
+end
+
+function TextBox:onKeyDown( KeyDownEvent event, Event.phases phase )
 	if self.isFocused then
 		local keyCode = event.keyCode
 		local text = self.text
+		local cursorPosition = self.cursorPosition
+		local selectionPosition = self.selectionPosition
 
 		if keyCode == keys.backspace then
-			if self.selectionPosition then
+			if selectionPosition then
 				self:write ""
-			elseif self.cursorPosition > 1 then
-				self.text = text:sub( 1, self.cursorPosition - 2 ) .. text:sub( self.cursorPosition )
-				self.cursorPosition = self.cursorPosition - 1
+			elseif cursorPosition > 1 then
+				self.text = text:sub( 1, cursorPosition - 2 ) .. text:sub( cursorPosition )
+				self.cursorPosition = cursorPosition - 1
 			end
 		elseif keyCode == keys.left then
-			local selectionPosition = self.selectionPosition
-			local cursorPosition = self.cursorPosition
-
 			if selectionPosition then
+				self.selectionPosition = nil
 				self.cursorPosition = math.min( cursorPosition, selectionPosition )
-				self.selectionPosition = false
 			else
 				self.cursorPosition = cursorPosition - 1
 			end
 		elseif keyCode == keys.right then
-			local selectionPosition = self.selectionPosition
-			local cursorPosition = self.cursorPosition
-
 			if selectionPosition then
+				self.selectionPosition = nil
 				self.cursorPosition = math.max( cursorPosition, selectionPosition )
-				self.selectionPosition = false
 			else
 				self.cursorPosition = cursorPosition + 1
 			end
-		elseif keyCode == keys["end"] then
-
-		elseif keyCode == keys.home then
-
 		elseif keyCode == keys.delete then
-
+			if selectionPosition then
+				self:write ""
+			elseif cursorPosition < #text + 1 then
+				self.text = text:sub( 1, cursorPosition - 1 ) .. text:sub( cursorPosition + 1 )
+			end
 		end
 	end
 end
 
-function TextBox:onKeyUp( Event event, Event.phases phase )
+function TextBox:onKeyUp( KeyUpEvent event, Event.phases phase )
 	if self.isFocused then
 		
 	end
 end
 
-function TextBox:onCharacter( Event event, Event.phases phase )
+function TextBox:onCharacter( CharacterEvent event, Event.phases phase )
 	if self.isFocused then
-		local text = self.text
-		self:write( CharacterEvent )
+		self:write( event.character )
 	end
 end
 
+-- 										TODO: Number should be TextBox.selectionDirections
+function TextBox:wordPosition( Number fromPosition, Number direction, Boolean( true ) allowMiddlePunctuation )
+	local text = self.text
+	local left, right
+	local function go( from, to, dir )
+		local offset = 0
+		local hasFound = false
+		for i = from, to, dir do
+			local char = text:sub( i - 1, i - 1 )
+			local isPunctuation = char:match( "%p" )
+			local isSpace = char:match( "[%s%c]" )
+			if hasFound and ( isSpace or ( not allowMiddlePunctuation and isPunctuation ) ) then
+				return i - offset
+			elseif allowMiddlePunctuation and isPunctuation then
+				offset = dir
+			elseif not isSpace and not isPunctuation then
+				hasFound = true
+				offset = 0
+			end
+		end
+		return to
+	end
+	if direction == SELECTION_DIRECTIONS.LEFT or direction == SELECTION_DIRECTIONS.BOTH then
+		left = go( fromPosition, 1, -1 )
+	end
+	if direction == SELECTION_DIRECTIONS.RIGHT or direction == SELECTION_DIRECTIONS.BOTH then
+		right = go( fromPosition + 1, #text + 2, 1 ) - 1
+	end
+	return left, right
+end
+
 --[[
-    @instance
     @desc Fired when the a keyboard shortcut is fired
     @param [Event] event -- the keyboard shortcut
     @return [boolean] preventPropagation -- prevent anyone else using the event
@@ -528,15 +514,25 @@ end
 function TextBox:onKeyboardShortcut( Event event, Event.phases phase )
     if self.isFocused then
         if event:matchesKeys( { "ctrl", "left" } ) or event:matchesKeys( { "home" } ) then
-        	self.selectionPosition = false
+        	self.selectionPosition = nil
         	self.cursorPosition = 1
         elseif event:matchesKeys( { "ctrl", "right" } ) or event:matchesKeys( { "end" } ) then
-        	self.selectionPosition = false
+        	self.selectionPosition = nil
         	self.cursorPosition = #self.text + 1
-        elseif event:matchesKeys( { "ctrl", "shift", "left" } ) then -- ehm, nope, select a word
+        elseif event:matchesKeys( { "ctrl", "shift", "left" } ) then
         	self.selectionPosition = 1
-        elseif event:matchesKeys( { "ctrl", "shift", "right" } ) then -- ehm, nope, select a word
+        elseif event:matchesKeys( { "ctrl", "shift", "right" } ) then
         	self.selectionPosition = #self.text + 1
+        elseif event:matchesKeys( { "alt", "left" } ) then
+        	self.cursorPosition = self:wordPosition( self.cursorPosition, SELECTION_DIRECTIONS.LEFT )
+        elseif event:matchesKeys( { "alt", "right" } ) then
+        	local _, right = self:wordPosition( self.cursorPosition, SELECTION_DIRECTIONS.RIGHT )
+        	self.cursorPosition = right
+        elseif event:matchesKeys( { "alt", "shift", "left" } ) then
+        	self.selectionPosition = self:wordPosition( math.min( self.cursorPosition, self.selectionPosition or math.huge ), SELECTION_DIRECTIONS.LEFT )
+        elseif event:matchesKeys( { "alt", "shift", "right" } ) then
+        	local _, right = self:wordPosition( math.max( self.cursorPosition, self.selectionPosition or 0), SELECTION_DIRECTIONS.RIGHT )
+        	self.selectionPosition = right
         elseif event:matchesKeys( { "shift", "left" } ) then
         	local selectionPosition = self.selectionPosition
         	if selectionPosition then
@@ -556,15 +552,9 @@ function TextBox:onKeyboardShortcut( Event event, Event.phases phase )
         	self.selectionPosition = #self.text + 1
         elseif event:matchesKeys( { "ctrl", "backspace" } ) then
         	local cursorPosition = self.cursorPosition
+        	self.selectionPosition = nil
         	self.cursorPosition = 1
-        	self.selectionPosition = false
         	self.text = self.text:sub( cursorPosition )
-        elseif event:matchesKeys( { "ctrl", "home" } ) then
-        	self.cursorPosition = 1
-        	self.selectionPosition = #self.text + 1
-        elseif event:matchesKeys( { "ctrl", "end" } ) then
-        	self.cursorPosition = 1
-        	self.selectionPosition = #self.text + 1
         else
             return false
         end

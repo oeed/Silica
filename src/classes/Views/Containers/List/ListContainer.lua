@@ -1,15 +1,11 @@
 
-local SIDE_MARGIN = 6
-local TOP_MARGIN = 5
-local BOTTOM_MARGIN = TOP_MARGIN
-
 class "ListContainer" extends "ScrollContainer" implements "IDragDropDestination" {
     
-    needsLayoutUpdate = false;
-    isCanvasHitTested = false;
-    canRearrange = true;
+    needsLayoutUpdate = Boolean( false );
+    isCanvasHitTested = Boolean( false );
+    canRearrange = Boolean( true );
     dropStyle = DragDropManager.dropStyles.RETURN;
-    canTransferItems = false;
+    canTransferItems = Boolean( false );
 
 }
 
@@ -20,7 +16,7 @@ function ListContainer:initialise( ... )
     self:event( ReadyInterfaceEvent, self.onReady )
 end
 
-function ListContainer:onReady( Event event, Event.phases phase )
+function ListContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
     self:updateLayout( true )
 end
 
@@ -31,35 +27,35 @@ function ListContainer:update( deltaTime )
     end
 end
 
-function ListContainer:onChildAdded( Event event, Event.phases phase )
+function ListContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
     if not event.childView:typeOf( ListItem ) then
         error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not extend ListItem to '" .. tostring( self ) .. "'", 0 )
     end
     self.needsLayoutUpdate = true
 end
 
-function ListContainer:onChildRemoved( Event event, Event.phases phase )
+function ListContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
     self.needsLayoutUpdate = true
 end
 
 function ListContainer:updateLayout( dontAnimate )
     local children, width = self.children, self.width
-    local y = TOP_MARGIN + 1
+    local y = self.theme:value( "topMargin" ) + 1
 
-    local time, easing = 0.5, Animation.easings.SINE_IN_OUT
+    local time, easing = 0.2, Animation.easings.IN_OUT_SINE
 
     for i, childView in ipairs( children ) do
         if dontAnimate then
             childView.y = y
         else
-            childView:animateY( y, time, nil, easing )
+            childView:animate( "y", y, time, nil, easing )
         end
         childView.x = 1
         childView.width = width
         y = y + childView.height
     end
 
-    self.height = y + BOTTOM_MARGIN
+    self.height = y + self.theme:value( "bottomMargin" )
 
     self.needsLayoutUpdate = false
 end
@@ -72,7 +68,7 @@ function ListContainer:dragDropMoved( data, dragView )
     local _, selfY = self:position()
     local listItem = data.listItem
     local children = self.children
-    local index = math.max( math.min( math.floor( ( dragView.y - selfY - TOP_MARGIN - 1 ) / listItem.height + 1.5 ), #children), 1 )
+    local index = math.max( math.min( math.floor( ( dragView.y - selfY - self.theme:value( "topMargin" ) - 1 ) / listItem.height + 1.5 ), #children), 1 )
     if listItem.index ~= index then
         listItem.index = index
         self.needsLayoutUpdate = true

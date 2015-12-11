@@ -1,12 +1,13 @@
 
 class "MouseDoubleClickEvent" extends "MouseEvent" {
+
     eventType = "mouse_double_click";
     mouseButton = false;
-    isSentToChildren = false;
+    isSentToChildren = Boolean( false );
+
 }
 
 --[[
-    @constructor
     @desc Creates a mouse held event from the arguments
     @param [MouseEvent.mouseButtons] mouseButton -- the mouse button (left, right, etc.)
     @param [number] x -- the x screen coordinate

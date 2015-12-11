@@ -1,7 +1,9 @@
 
 class "MenuChangedInterfaceEvent" extends "InterfaceEvent" {
+
     static = {
         eventType = "interface_menu_changed";
     };
-	isSentToChildren = false;
+	isSentToChildren = Boolean( false );
+
 }

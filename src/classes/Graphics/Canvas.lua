@@ -1,226 +1,210 @@
 
-class "Canvas" extends "GraphicsObject" {
-    fillColour = Graphics.colours.TRANSPARENT; -- The colour of the Canvas when it clears
-    buffer = {};
-    children = {};
-    owner = false; -- @property [View] - The view that owns this objects
+local SHADOW_RATIO = 2 / 3
+local SHADOW_COLOUR = Graphics.colours.GREY
+
+class "Canvas" {
+    
+    width = Number;
+    height = Number;
+    owner = View.allowsNil;
+    mask = Mask.allowsNil; -- the canvas' rectangle
+    contentMask = Mask.allowsNil; -- the canvas' content
+
+    pixels = Table( {} );
+
+    shadows = Enum( Number, {
+        SHADOW_RATIO = SHADOW_RATIO;
+        SHADOW_COLOUR = SHADOW_COLOUR;
+    } )
+
 }
 
---[[
-    @constructor
-    @desc Creates a canvas
-    @param [number] width -- the width of the canvas
-    @param [number] height -- the height of the canvas
-]]
-function Canvas:initialise( x, y, width, height, owner )
-    self:super( x, y, width, height )
-    self.owner = owner or false
+function Canvas:initialise( Number width, Number height, View.allowsNil owner )
+    self.width = width
+    self.height = height
+    self.owner = owner
 end
 
 --[[
-    @instance
-    @desc Sets the pixel colour and the given coordinates
-    @param [number] x -- the x coordinate of the pixel
-    @param [number] y -- the y coordinate of the pixel
-    @param [colour] colour -- the colour coordinate of the pixel
+    @desc Creates a mask which covers the entire canvas
 ]]
-function Canvas:setPixel( x, y, colour )
-    if colour ~= Graphics.colours.TRANSPARENT and x >= 1 and y >= 1 and x <= self.width and y <= self.height then
-        self.buffer[ ( y - 1 ) * self.width + x ] = colour
+function Canvas.mask:get()
+    return RectangleMask( 1, 1, self.width, self.height )
+end
+
+--[[
+    @desc Creates a mask which covers the filled pixels of the canvas
+]]
+function Canvas.contentMask:get()
+    local pixels = {}
+    local TRANSPARENT = Graphics.colours.TRANSPARENT
+    for k, v in pairs( self.pixels ) do
+        if v ~= TRANSPARENT then
+            pixels[k] = true
+        end
     end
-    return self
+    return Mask( 1, 1, self.width, self.height, pixels )
 end
 
 --[[
-    @instance
-    @desc Gets the pixel colour and the given coordinates
-    @param [number] x -- the x coordinate of the pixel
-    @param [number] y -- the y coordinate of the pixel
-    @return [colour] colour -- the colour of the pixel
-]]
-function Canvas:getPixel( x, y )
-    return self.buffer[ ( y - 1 ) * self.width + x ] or self.fillColour
-end
-
---[[
-    @instance
-    @desc Clears the buffer
-    @return self
+    @desc Clears all pixels from the canvas
 ]]
 function Canvas:clear()
-    self.buffer = {}
-    return self
+    self.pixels = {}
 end
 
 --[[
-    @instance
-    @desc Adds a shader to screen area
-    @param [Canvas.shader] shader -- the shader to use
-    @param [number] x -- default 1, the x coordinate of the area
-    @param [number] y -- default 1, the y coordinate of the area
-    @param [number] width -- default canvas width, the width of the area
-    @param [number] height -- default canvas height, the height of the area
-    @return self
+    @desc Hit test the current contents of the canvas
+    @return Boolean didHit
 ]]
-function Canvas:map( shader, x, y, width, height )
-    local changes = {}
-    for _x = x or 1, ( x or 1 ) + ( width or self.width ) - 1 do
-        for _y = y or 1, ( x or 1 ) + ( height or self.height ) - 1 do
-            local colour = shader( _x, _y, self:getPixel( _x, _y ) )
-            if colour and colour ~= 0 then
-                changes[#changes + 1] = { _x, _y, colour }
+function Canvas:hitTest( Number x, Number y )
+    local colour = self.pixels[ ( y - 1 ) * self.width + x ]
+    return colour and colour ~= Graphics.colours.TRANSPARENT
+end
+
+--[[
+    @desc Fills an area in the given mask with the given colour, defaulting to the entire canvas
+]]
+function Canvas:fill( Graphics.colours colour, Mask( self.mask ) mask )
+    if colour == Graphics.colours.TRANSPARENT then return end
+    local pixels, width, height = self.pixels, self.width, self.height
+    local maskX, maskY, maskWidth, maskHeight = mask.x, mask.y, mask.width, mask.height
+    for index, isFilled in pairs( mask.pixels ) do
+        if isFilled then
+            local x = (index - 1) % maskWidth + maskX
+            local y = math.floor( ( index - 1) / maskWidth ) + maskY
+            if x >= 1 and x <= width and y >= 1 and y <= height then
+                pixels[( y - 1 ) * width + x] = colour
             end
         end
     end
-    local buffer = self.buffer
-    local width, height = self.width, self.height
-    local TRANSPARENT = Graphics.colours.TRANSPARENT
-    local function setPixel( x, y, colour )
-        if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= width and y <= height then
-            buffer[ ( y - 1 ) * width + x ] = colour
-        end
-        return self
-    end
-    for i = 1, #changes do
-        setPixel( unpack( changes[i] ) )
-    end
-    return self
 end
 
 --[[
-    @instance
-    @desc Adds a graphics object to the canvas
-    @param [GraphicsObject] graphicsObject -- the graphics object to add
-    @return self
+    @desc Draws an outline around the given mask, defaulting to the canvas' content mask
 ]]
-function Canvas:insert( graphicsObject )
-    if not graphicsObject then
-        error( "GraphicsObject not supplied in canvas:insert", 3 )
-    end
-    self.hasChanged = true
-    if graphicsObject.parent then
-        graphicsObject.parent:remove( graphicsObject )
-    end
-    graphicsObject.raw.parent = self
-    log("insert "..tostring(graphicsObject))
-    self.children[#self.children + 1] = graphicsObject
-    return graphicsObject
-end
-
---[[
-    @instance
-    @desc Removes a graphics object from the canvas
-    @param [GraphicsObject] graphicsObject -- the graphics object to remove
-    @return self
-]]
-function Canvas:remove( graphicsObject )
-    local c = false
-    for i = #self.children, 1, -1 do
-        if self.children[i] == graphicsObject then
-            table.remove( self.children, i )
-            graphicsObject.raw.parent = false
-            c = true
-        end
-    end
-    if c then
-        self.hasChanged = true
-    end
-    return graphicsObject
-end
-
---[[
-    @instance
-    @desc Clears the buffer then draws the objects of the canvas
-    @return self
-]]
-function Canvas:draw( isShadow )
-    if self.isVisible then
-        self.buffer = {}
-        local children = self.children
-        log("childred of " .. tostring(self))
-        for i = 1, #children do
-            log(children[i])
-            children[i]:drawTo( self, isShadow )
-        end
-        self.hasChanged = false
-    end
-    return self
-end
-
---[[
-    @instance
-    @desc Draws the canvas to another canvas
-    @param [Canvas] canvas -- the canvas to draw to
-    @return self
-]]
-function Canvas:drawTo( canvas, isShadow )
-    local drawsShadow = self.drawsShadow
-    if self.isVisible then
-        if isShadow or self.hasChanged then
-            -- local drawdt = os.clock()
-            self:draw( isShadow )
-        end
-        
-        local width = self.width
-        local height = self.height
-        local fillColour = self.fillColour
-        local buffer = self.buffer
-        local _x = self.x - 1
-        local _y = self.y
-        
-
-        local setPixel
-        local TRANSPARENT = Graphics.colours.TRANSPARENT
-
-        local canvasWidth = canvas.width
-        local canvasHeight = canvas.height
-        local canvasBuffer = canvas.buffer
-        if isShadow then
-            local shadowColour
-            local owner = self.owner
-            if owner then
-                shadowColour = owner.theme.shadowColour
-            else
-                shadowColour = Graphics.colours.GREEN
-            end
-            setPixel = function( x, y, colour )
-                if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= canvasWidth and y <= canvasHeight then
-                    canvasBuffer[ ( y - 1 ) * canvasWidth + x ] = shadowColour
-                end
-            end
-        else
-            setPixel = function( x, y, colour )
-                if colour ~= TRANSPARENT and x >= 1 and y >= 1 and x <= canvasWidth and y <= canvasHeight then
-                    canvasBuffer[ ( y - 1 ) * canvasWidth + x ] = colour
+function Canvas:outline( Graphics.colours colour, Mask( self.contentMask ) mask, Number( 1 ) leftThickness, Number( leftThickness ) topThickness, Number( leftThickness ) rightThickness, Number( topThickness ) bottomThickness )
+    if colour == Graphics.colours.TRANSPARENT then return end
+    local width, height, pixels = self.width, self.height, self.pixels
+    local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
+    local function xScanline( min, max, inc, thickness )
+        for y = 1, height do
+            local distance = 0
+            for x = min, max, inc do
+                local mx = x - maskX + 1
+                local my = y - maskY + 1
+                if mx >= 1 and mx <= maskWidth and my >= 1 and my <= maskHeight and maskPixels[ (my - 1) * maskWidth + mx ] then
+                    if distance < thickness then
+                        distance = distance + 1
+                        pixels[(y - 1) * width + x] = colour
+                        if distance >= thickness then
+                            break
+                        end
+                    end
                 end
             end
         end
+    end
 
-        -- local start = os.clock()
-
+    local function yScanline( min, max, inc, thickness )
         for x = 1, width do
-            for y = 0, height - 1 do -- just so there's no need for y-1 below
-                local colour = buffer[y * width + x] or fillColour
-                local nx, ny = x + _x, y + _y
-                setPixel( nx, ny, colour )
-                -- if colour ~= TRANSPARENT and nx >= 1 and ny >= 1 and nx <= canvasWidth and ny <= canvasHeight then
-                --     canvasBuffer[( ny - 1 ) * canvasWidth + nx] = colour
-                -- end
+            local distance = 0
+            for y = min, max, inc do
+                local mx = x - maskX + 1
+                local my = y - maskY + 1
+                if mx >= 1 and mx <= maskWidth and my >= 1 and my <= maskHeight and maskPixels[ (my - 1) * maskWidth + mx ] then
+                    if distance < thickness then
+                        distance = distance + 1
+                        pixels[(y - 1) * width + x] = colour
+                        if distance >= thickness then
+                            break
+                        end
+                    end
+                end
             end
         end
-
-
     end
-    return self
+
+    xScanline( 1, width, 1, leftThickness )
+    xScanline( width, 1, -1, rightThickness )
+    yScanline( 1, height, 1, topThickness )
+    yScanline( height, 1, -1, bottomThickness )
+
+    return pixels
 end
 
 --[[
-    @instance
-    @desc Hit tests the canvas' buffer to see if the colour is set (return false if transparent)
-    @param [number] x -- the x coordinate to hit test
-    @param [number] y -- the y coordinate to hit test
-    @return [boolean] didHit -- whether the colour was set/not transparent
+    @desc Draws the canvas to another canvas. If mask is provided the canvas content will be masked (mask pixels will be drawn, pixels not in the mask won't). Mask cordinates are relative to self, not the destination
 ]]
-function Canvas:hitTest( x, y )
-    return self:getPixel( x, y ) ~= 0
+function Canvas:drawTo( Canvas destinationCanvas, Number x, Number y, Mask.allowsNil mask )
+    local width, height = self.width, self.height
+    local destinationWidth, destinationHeight, destinationPixels = destinationCanvas.width, destinationCanvas.height, destinationCanvas.pixels
+    local TRANSPARENT = Graphics.colours.TRANSPARENT
+    local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
+    for index, colour in pairs( self.pixels ) do
+        if colour and colour ~= TRANSPARENT then
+            local _x = (index - 1) % width + x
+            local _y = math.floor( ( index - 1) / width ) + y
+            if _x >= 1 and _x <= destinationWidth and _y >= 1 and _y <= destinationHeight then
+                local isOkay = true
+                if mask then
+                    local mx = _x - maskX + 1
+                    local my = _y - maskY + 1
+                    if mx >= 1 and mx <= maskWidth and my >= 1 and my <= maskHeight then
+                        isOkay = maskPixels[ (my - 1) * maskWidth + mx ]
+                    else
+                        isOkay = false
+                    end
+                end
+                if isOkay then
+                    destinationPixels[( _y - 1 ) * destinationWidth + _x] = colour
+                end
+            end
+        end
+    end
+end
+
+--[[
+    @desc Creates an image from the Canvas' pixels
+]]
+function Canvas:toImage()
+    return Image.static:fromPixels( self.pixels, self.width, self.height )
+end
+
+--[[
+    @desc Draws an image to the canvas, scaling the image if needed
+]]
+function Canvas:image( Image image, Number x, Number y, Number( image.width ) width, Number( image.height ) height )
+    local pixels = image:getScaledPixels( width, height )
+    local selfWidth, selfHeight, selfPixels = self.width, self.height, self.pixels
+    local TRANSPARENT = Graphics.colours.TRANSPARENT
+    local xLimit, yLimit = math.min( selfWidth, width + x - 1 ), math.min( selfHeight, height + y - 1 )
+    for _y = y, yLimit do
+        for _x = x, xLimit do
+            local pixel = pixels[(_y - y) * width + (_x - x + 1)]
+            if pixel and pixel ~= TRANSPARENT then
+                selfPixels[(_y - 1) * selfWidth + _x] = pixel
+            end
+        end
+    end
+end
+
+--[[
+    @desc Draws a shadow mask to the parent's canvas
+]]
+function Canvas:drawShadow( Graphics.colours( SHADOW_COLOUR ) shadowColour, Number x, Number y, Number shadowSize, Mask( self.contentMask ) shadowMask )
+    if shadowSize == 0 or shadowColour == Graphics.colours.TRANSPARENT then return end
+    x = math.floor( x + shadowSize * SHADOW_RATIO + 0.5 )
+    y = y + shadowSize
+    local pixels, width, height = self.pixels, self.width, self.height
+    local maskX, maskY, maskWidth, maskHeight = shadowMask.x, shadowMask.y, shadowMask.width, shadowMask.height
+    for index, isFilled in pairs( shadowMask.pixels ) do
+        if isFilled then
+            local x = (index - 1) % maskWidth + maskX + x - 1
+            local y = math.floor( ( index - 1) / maskWidth ) + maskY + y - 1
+            if x >= 1 and x <= width and y >= 1 and y <= height then
+                pixels[( y - 1 ) * width + x] = shadowColour
+            end
+        end
+    end
 end

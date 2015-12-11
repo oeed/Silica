@@ -1,43 +1,63 @@
 
+local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
+
 class "MenuButton" extends "Button" {
 
-    width = 45;
+    width = Number( 45 );
 
-    menu = false;
-    menuName = false;
+    menu = Menu;
+    menuName = String;
 
-    menuMargin = 5;
+    isActive = Boolean.allowsNil; -- TODO: isReadOnly
 
-    isActive = Boolean; -- TODO: isReadOnly
-
-    closeArrowObject = false;
-    openArrowObject = false;
-    needsArrowUpdate = false;
 }
 
 --[[
-    @constructor
     @desc Creates a MenuButton object and connects the event handlers
 ]]
 function MenuButton:initialise( ... )
     self:super( ... )
+
+    self:event( MenuChangedInterfaceEvent, self.onMenuChanged )
+    self:event( ParentChangedInterfaceEvent, self.onParentChanged )
+    self:event( ReadyInterfaceEvent, self.onReady )
+end
+
+function MenuButton:onDraw()
+    self:super()
+    local theme = self.theme
+    local defaultShadowSize = theme:value( "shadowSize", "default" )
+    local shadowPressedSize = theme:value( "shadowSize", "pressed" )
+    local shadowSize = theme:value( "shadowSize" )
+    local shadowOffset = defaultShadowSize - shadowSize
+    local shadowPressedOffset = defaultShadowSize - shadowPressedSize
+    local shadowX = math.floor( shadowOffset * SHADOW_RATIO + 0.5 )
+
+    local topMargin, arrowMargin = theme:value( "topMargin" ), theme:value( "arrowMargin" )
+    local symbol = theme:value( "arrowSymbol" )
+    self.canvas:fill( theme:value( "arrowColour" ), SymbolMask( self.width - arrowMargin - symbol.width + shadowX, 1 + math.floor( ( self.height - symbol.height ) / 2 ) + shadowOffset, symbol ) )
+end
+
+function MenuButton:onReady( ReadyInterfaceEvent event, Event.phases phase  )
     local menuName = self.menuName
-    if not menuName then error( "MenuButtons must specify the property menuName (the name of the interface file to use).", 0 ) end
-    menu = Menu.fromInterface( menuName )
+    if not menuName then
+        MenuNotSpecifiedException( "A MenuButton did not specifiy the property 'menuName'. MenuButtons must specify this property as it indicates what inteface file to load the menu from.", 0 )
+    end
+    menu = Menu.static:fromInterface( menuName )
     menu.owner = self
     menu.isSingleShot = false
     menu.isVisible = false
     menu.hitTestOwner = true
-    menu.topMargin = Menu.topMargin + 8
+    local theme =self.theme
+    menu.x = self.x + theme:value( "menuOffsetX" )
+    menu.y = self.y + theme:value( "menuOffsetY" )
     self.menu = menu
-    self:event( MenuChangedInterfaceEvent, self.onMenuChanged )
-    self:event( ParentChangedInterfaceEvent, self.onParentChanged )
+    self.parent:insert( menu )
 end
 
-function MenuButton:onParentChanged( Event event, Event.phases phase )
+function MenuButton:onParentChanged( ParentChangedInterfaceEvent event, Event.phases phase )
     local menu = self.menu
     if menu then
-        menu = self.menu
         if menu.parent then
             menu.parent:removeChild( menu )
         end
@@ -47,96 +67,47 @@ function MenuButton:onParentChanged( Event event, Event.phases phase )
     end
 end
 
-function MenuButton:updateX( x )
+function MenuButton.width:set( width )
+    self:super( width )
     local menu = self.menu
     if menu then
-        menu.x = self.x - 5
+        menu.width = width
     end
 end
 
-function MenuButton:updateY( y )
+function MenuButton.x:set( x )
+    self:super( x )
     local menu = self.menu
     if menu then
-        menu.y = self.y + 5
+        menu.x = x + self.theme:value( "menuOffsetX" )
     end
 end
 
-function MenuButton:updateHeight( height )
-    self.needsArrowUpdate = true
+function MenuButton.y:set( y )
+    self:super( y )
+    local menu = self.menu
+    if menu then
+        menu.y = y + self.theme:value( "menuOffsetY" )
+    end
 end
-
-function MenuButton:initialiseCanvas()
-    self:super()
-    local arrowX, arrowY = self.width - 12, math.ceil( ( self.height - 4 ) / 2 )
-
-    local closeArrowObject = Path( 1, 1, 7, 4, 1, 4 )
-    closeArrowObject:lineTo( 4, 1 )
-    closeArrowObject:lineTo( 7, 4 )
-    closeArrowObject:close( false )
-    closeArrowObject.isVisible = false
-    self.closeArrowObject = closeArrowObject
-    self.canvas:insert( closeArrowObject )
-
-    local openArrowObject = Path( 1, 1, 7, 4, 1, 1 )
-    openArrowObject:lineTo( 4, 4 )
-    openArrowObject:lineTo( 7, 1 )
-    openArrowObject:close( false )
-    self.openArrowObject = openArrowObject
-    self.canvas:insert( openArrowObject )
-
-    self.theme:connect( closeArrowObject, "outlineColour", "arrowColour" )
-    self.theme:connect( openArrowObject, "outlineColour", "arrowColour" )
-    self.needsArrowUpdate = true
-end
-
+ 
 --[[
-    @instance
     @desc Whether the button is pressed or open
     @return [boolean] isActive -- whether the button is active
 ]]
 function MenuButton.isActive:get()
-    return self.isPressed or self.menu.isOpen
+    if self.isPressed then
+        return true
+    end
+    local menu = self.menu
+    return menu and menu.isOpen or false
 end
 
 function MenuButton:updateThemeStyle()
-    self.theme.style = self.isEnabled and ( self.isActive and "pressed" or "default" ) or "disabled"
-end
-
-function MenuButton:update()
-    self:super()
-    if self.needsArrowUpdate then
-        self:updateArrows()
-    end
+    self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or ( self.isActive and "active" or "default" ) ) or "disabled"
 end
 
 --[[
-    @instance
-    @desc Description
-    @param [type] arg1 -- description
-    @param [type] arg2 -- description
-    @param [type] arg3 -- description
-    @return [type] returnedValue -- description
-]]
-function MenuButton:updateArrows()
-    local menu = self.menu
-    local isOpen = menu and menu.isOpen
-    local arrowX, arrowY = self.width - 12, math.ceil( ( self.height - 4 ) / 2 ) + 1
-    local activeArrow = isOpen and self.closeArrowObject or self.openArrowObject
-    local inactiveArrow = isOpen and self.openArrowObject or self.closeArrowObject
-    activeArrow.isVisible = true
-    inactiveArrow.isVisible = false
-    activeArrow.x = arrowX + ( self.isPressed and 1 or 0 )
-    activeArrow.y = arrowY + ( self.isPressed and 1 or 0 )
-    self.needsArrowUpdate = false
-end
-
-function MenuButton.isPressed:set( isPressed )
-    self:super( isPressed )
-    self.needsArrowUpdate = true
-end
-
---[[
-    @instance
     @desc Fired when the mouse is released while over the button. Toggles the menu if it hit tests.
     @param [Event] event -- the mouse up event
 ]]
@@ -151,18 +122,17 @@ function MenuButton:onGlobalMouseUp( Event event, Event.phases phase )
 end
 
 --[[
-    @instance
-    @desc Fired when the owned menu opens or closes
+    @desc Fired when the menu opens or closes
     @param [Event] event -- the menu changed event
     @return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
-function MenuButton:onMenuChanged( Event event, Event.phases phase )
-    self:updateArrows()
+function MenuButton:onMenuChanged( MenuChangedInterfaceEvent event, Event.phases phase )
     self:updateThemeStyle()
 
     if self.menu.isOpen then
-        self.parent:sendToFront( self.menu )
-        self.parent:sendToFront( self )
+        local parent = self.parent
+        parent:sendToFront( self.menu )
+        parent:sendToFront( self )
     end
     return true
 end

@@ -22,6 +22,13 @@ if err then error( err, 0 ) end
 
 table.insert( class.tables, classes )
 
+-- we need to load any Exception subclasses first
+for name, contents in pairs( classes ) do
+    if name:sub( -9 ) == "Exception" then
+        class.get( name )
+    end
+end
+
 for name, contents in pairs( classes ) do
     if name ~= "class" then
         class.get( name )
