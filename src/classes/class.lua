@@ -267,7 +267,7 @@ end
 
 function class.load( name, contents )
     if classes[name] or interfaces[name] then
-        LoadingClassException( "Class/interface '" .. name .. "' has already been loaded OR there is a class file with a duplicate name. Duplicate class names are now allowed. Loading the same class file should never happen as the class system will automatically load the classes as needed, make sure you're not manually loading classes or use 'class.get' instead of 'class.load'", 2 )
+        LoadingClassException( "Class/interface '" .. name .. "' has already been loaded OR there is a class file with a duplicate name. Duplicate class names are not allowed. Loading the same class file should never happen as the class system will automatically load the classes as needed, make sure you're not manually loading classes or use 'class.get' instead of 'class.load'", 2 )
     end
     if DISALLOWED_CLASS_NAMES[name] then
         LoadingClassException( "Class/interface cannot be called '" .. name .. "', it is a reserved name.", 0 )
@@ -1101,13 +1101,13 @@ function compileClass( compiledClass, name )
                 for functionName, functionTable in pairs( interface[tableName] ) do
                     local classFunctionTable = classDefined[functionName]
                     if not classFunctionTable then
-                        error( "class does not define function expected by interface '" .. interfaceName .. "': "..functionName )
+                        error( "class does not define function expected by interface '" .. interfaceName .. "': "..name ..":" .. functionName )
                     end
                     for i, argument in ipairs( functionTable) do
                         if i > FUNCTIONTABLE_FUNCTION then
                             local classArgument = classFunctionTable[i]
                             if not classArgument then
-                                error( "function '" .. functionName .. "' does not declare argument expected by interface '" .. interfaceName .. "': "..argument[TYPETABLE_NAME])
+                                error( "function '" .. name ..":" .. functionName .. "' does not declare argument expected by interface '" .. interfaceName .. "': "..argument[TYPETABLE_NAME])
                             elseif argument[TYPETABLE_TYPE] ~= classArgument[TYPETABLE_TYPE] or argument[TYPETABLE_CLASS] ~= classArgument[TYPETABLE_CLASS] or argument[TYPETABLE_ALLOWS_NIL] ~= classArgument[TYPETABLE_ALLOWS_NIL] or argument[TYPETABLE_HAS_DEFAULT_VALUE] ~= classArgument[TYPETABLE_HAS_DEFAULT_VALUE] or argument[TYPETABLE_DEFAULT_VALUE] ~= classArgument[TYPETABLE_DEFAULT_VALUE] then
                                 error( "argument does use declare same type as interface '" .. interfaceName .. "'", 2 )
                             end
