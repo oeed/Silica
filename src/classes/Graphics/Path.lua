@@ -323,9 +323,9 @@ function Path:getFill( Number( 1 ) scaleX, Number( 1 ) scaleY )
     end
 
     for i, line in ipairs( lines ) do
+        local x1, x2, y1, y2 = line.x1, line.x2, line.y1, line.y2
+        local minY, maxY = min( y1, y2 ), max( y1, y2 )
         if line.mode == "linear" then
-            local x1, x2, y1, y2 = line.x1, line.x2, line.y1, line.y2
-            local minX, maxX, minY, maxY = min( x1, x2 ), max( x1, x2 ), min( y1, y2 ), max( y1, y2 )
             local xDiff, yDiff = x2 - x1, y2 - y1
             for y = 1, height, inverseScaleY do
                 local _y = y * scaleY
@@ -337,7 +337,7 @@ function Path:getFill( Number( 1 ) scaleX, Number( 1 ) scaleY )
             if abs( xDiff ) > abs( yDiff ) then
                 local y = minY
                 local dy = ( yDiff / xDiff ) * inverseScaleY
-                for x = minX, maxX, inverseScaleX do
+                for x = min( x1, x2 ), max( x1, x2 ), inverseScaleX do
                     outline[floor( y1 + (x - x1) / xDiff * yDiff + 0.5 )][x * inverseScaleX] = true
                 end
             else
@@ -347,18 +347,19 @@ function Path:getFill( Number( 1 ) scaleX, Number( 1 ) scaleY )
                 end
             end
         else
-            local xCoefficients = coefficients[i][1]
-            local yCoefficients = coefficients[i][2]
+            local xCoefficients = bezierCoeffs( x1, line.controlPoint1X, line.controlPoint2X, x2 )
+            local yCoefficients = bezierCoeffs( y1, line.controlPoint1Y, line.controlPoint2Y, y2 )
             for y = 1, height, inverseScaleY do
                 local yRoots = cubicRoots( { yCoefficients[1], yCoefficients[2], yCoefficients[3], yCoefficients[4] - y } )
                 local yIntersections = intersections[y * scaleY]
                 for i = 1, 3 do
                     t = yRoots[i];
-                    if 0 <= t and t <= 1 then
+                    if 0 - ERROR_MARGIN <= t and t <= 1 + ERROR_MARGIN then
                         local x = xCoefficients[1] * t * t * t + xCoefficients[2] * t * t + xCoefficients[3] * t + xCoefficients[4]
-                        if not aproxEqual( y, disallowedY ) and not aproxEqual( x, disallowedX ) then
+                        if not aproxEqual( y, maxY ) then
                             yIntersections[#yIntersections + 1] = ( x - 1 ) * scaleX + 1
                         end
+                        outline[floor( y * scaleY + 0.5 )][math.floor(( x - 1 ) * scaleX + 1 + 0.5 )] = true
                     end
                 end
             end
@@ -373,7 +374,7 @@ function Path:getFill( Number( 1 ) scaleX, Number( 1 ) scaleY )
         local yIntersections = intersections[_y]
         table.sort( yIntersections )
         if #yIntersections % 2 ~= 0 then
-            error( "Invalid path (uneven intersection count at y = " .. y .. "). This probably isn't your fault, it's most likely a bug in Silica. Please file a GitHub issue ASAP with this information:\n\nPath Width: "..tostring( self.width ) .. "\nPath Height: "..tostring( self.height ) .. "\nPath Lines: "..tostring( textutils.serialize( self.lines ) ) .. "\nScale X: "..tostring( scaleX ) .. "\nScale Y: "..tostring( scaleY ) .. "\nIntersections: "..tostring(textutils.serialize( intersections ) ) )
+            error( "Invalid path (uneven intersection count at y = " .. y .. "). This probably isn't your fault, it's most likely a bug in Silica. Please file a GitHub issue ASAP with this information:\n\nPath Width: "..tostring( self.width ) .. "\nPath Height: "..tostring( self.height ) .. "\nPath Lines: "..tostring( textutils.serialize( self.lines ) ) .. "\nScale X: "..tostring( scaleX ) .. "\nScale Y: "..tostring( scaleY ) .. "\nIntersections: "..tostring(textutils.serialize( intersections ) .. "\nOutline: "..tostring( textutils.serialize( outline ) ) ) )
         end
 
         _y = floor( _y + 0.5 )
