@@ -55,11 +55,8 @@ end
 	@return [Container] container -- the container
 ]]
 function Interface:loadContainer( containerView )
-	log("load container")
-	logtraceback()
 	local readyEvent = ReadyInterfaceEvent()
 	local function loadChild( childNode, parentContainer, childView )
-		log("load childNode "..childNode.type)
 		local childClass = class.get( childNode.type )
 		if not childClass then
 			return nil, "Class not found: " .. childNode.type
