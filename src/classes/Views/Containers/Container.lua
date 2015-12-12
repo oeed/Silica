@@ -271,7 +271,7 @@ function Container:insert( childView, position )
 		view = view and view.parent
 	end
 
-	self.event:handleEvent( ChildAddedInterfaceEvent( childView ) )
+	self.event:handleEvent( ChildAddedInterfaceEvent( childView, self ) )
 
 	self.needsDraw = true
 
@@ -306,9 +306,10 @@ function Container:remove( removingView )
 			end
 			view = view.parent
 		end
+	
+		self.event:handleEvent( ChildRemovedInterfaceEvent( removingView, self ) )
 	end
 
-	self.event:handleEvent( ChildRemovedInterfaceEvent( removingView ) )
 
 	return didRemove
 end
