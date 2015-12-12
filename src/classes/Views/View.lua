@@ -49,7 +49,7 @@ class "View" {
 	shadowSize = Number( 0 );
 	needsDraw = Boolean( true );
 	isVisible = Boolean( true );
-	theme = false;
+	theme = ThemeOutlet;
 
 	isCanvasHitTested = Boolean( true );
 	isFocused = Boolean( false );
