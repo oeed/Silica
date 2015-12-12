@@ -1434,6 +1434,8 @@ function compileInstanceClass( name, compiledClass, static )
         end
     end
 
+    initialValues.interfaceLinks = interfaceLinks;
+
     local aliases = classDetails.aliases.instance
     for k, v in pairs( aliases ) do -- copy the aliases to definedIndexes
         definedIndexes[k] = v
@@ -1485,6 +1487,7 @@ function compileInstanceClass( name, compiledClass, static )
         requireDefaultGeneration = requireDefaultGeneration;
         definedIndexes = definedIndexes;
         definedProperties = definedProperties;
+        interfaceLinks = interfaceLinks;
     }
 end
 
@@ -1643,7 +1646,6 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     for propertyName, typeTable in pairs( compiledInstance.requireDefaultGeneration ) do
         values[propertyName] = generateDefaultValue( typeTable, context )
     end
-
 
     local prebuiltFunctions = compiledInstance.prebuiltFunctions
     for functionName, funcs in pairs( prebuiltFunctions ) do
