@@ -1406,14 +1406,18 @@ function compileInstanceClass( name, compiledClass, static )
     local compiledSuperDetails = superName and compiledClassDetails[superName]
     local instanceProperties = classDetails.instanceProperties
     local selfTypeTable = classDetails.typeTable
+    local interfaceLinks = {}
 
-
-    -- add default property values if they have them
     for propertyName, typeTable in pairs( instanceProperties ) do
         definedIndexes[propertyName] = propertyName
         definedProperties[propertyName] = propertyName
 
-        if typeTable[TYPETABLE_HAS_DEFAULT_VALUE] then
+        if typeTable[TYPETABLE_IS_LINK] then
+            -- link interface links
+            local identifier = typeTable[TYPETABLE_DEFAULT_VALUE]
+            interfaceLinks[propertyName] = identifier
+        elseif typeTable[TYPETABLE_HAS_DEFAULT_VALUE] then
+            -- add default property values if they have them
             local defaultValue = typeTable[TYPETABLE_DEFAULT_VALUE]
             if ( typeTable[TYPETABLE_TYPE] or type( defaultValue ) ) ~= "table" then
                 if typeTable[TYPETABLE_ALLOWS_NIL] and defaultValue ~= nil then -- there isn't a value here yet. don't assign the value yet, but if after initialisation there isn't a value an error will be thrown if it doesn't allow nil
@@ -1700,8 +1704,6 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     instance.metatable = metatable
     instance.raw = values
     setmetatable( instance, metatable )
-
-    -- link interface links
 
     -- insert default values
     local generatedDefault = {}
