@@ -56,11 +56,16 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             self[TYPETABLE_ALLOWS_NIL] = true
             return self
         elseif k == INTERFACE_LINK_KEY then
-            if type( self[TYPETABLE_DEFAULT_VALUE] ) ~= "string" or #self ~= TYPETABLE_DEFAULT_VALUE then
-                ValueTypeClassException( "InterfaceLinks must have ONE default value, a string with the identifier of the view.", 2 )
+            if self[TYPETABLE_HAS_DEFAULT_VALUE] and ( type( self[TYPETABLE_DEFAULT_VALUE] ) ~= "string" or #self ~= TYPETABLE_DEFAULT_VALUE ) then
+                ValueTypeClassException( "InterfaceLinks must have ONE default value, a string with the identifier of the view, or have NO default value (i.e. no brackets, not just empty) to default to the property name.", 2 )
             end
             if self[TYPETABLE_IS_LINK] then
                 ValueTypeClassException( "Tried to repeatedly index '" .. name .. "." .. INTERFACE_LINK_KEY .. "' (i.e. you did '" .. name .. "." .. INTERFACE_LINK_KEY .. "." .. INTERFACE_LINK_KEY .. "'). This is unnecessary.", 2 )
+            end
+            if not self[TYPETABLE_HAS_DEFAULT_VALUE] then
+                -- if there isn't a default value given (the identifier) we use the property name instead
+                self[TYPETABLE_HAS_DEFAULT_VALUE] = true
+                self[TYPETABLE_DEFAULT_VALUE] = name
             end
             self[TYPETABLE_ALLOWS_NIL] = true -- interface links always need to allow nil
             self[TYPETABLE_IS_LINK] = true
@@ -116,13 +121,16 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
     end
 
     function metatable:__index( k )
-        if k == INTERFACE_LINK_KEY then
-            ValueTypeClassException( "InterfaceLinks must have ONE default value, a string with the identifier of the view.", 2 )
-        elseif k == ALLOWS_NIL_KEY then
+        if k == ALLOWS_NIL_KEY or k == INTERFACE_LINK_KEY then
             -- we have to make a unique copy because setting allows nil would apply it to all types
             local newValueType = {}
             for i = 1, #valueType do
                 newValueType[i] = valueType[i]
+            end
+            if k == INTERFACE_LINK_KEY then
+                newValueType[TYPETABLE_IS_LINK] = true
+                newValueType[TYPETABLE_HAS_DEFAULT_VALUE] = true
+                newValueType[TYPETABLE_DEFAULT_VALUE] = name
             end
             newValueType[TYPETABLE_ALLOWS_NIL] = true
             local newMetatable = { __index = instance__index, __newindex = metatable.__newindex}
