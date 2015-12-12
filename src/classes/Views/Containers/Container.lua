@@ -3,7 +3,7 @@ class "Container" extends "View" {
 
 	children = {};
 	interfaceLinks = Table; -- TODO: .isReadOnly
-	interfaceLinkActions = Table; -- TODO: .isReadOnly
+	-- interfaceLinkActions = Table; -- TODO: .isReadOnly
 	interfaceName = false;
 	offsetX = 0;
 	offsetY = 0;
@@ -19,6 +19,9 @@ function Container:initialise( ... )
 	self:super( ... )
 	self:loadInterface()
 	self:event( InterfaceOutletChangedInterfaceEvent, self.onInterfaceOutletChanged )
+
+    self:event( ChildAddedInterfaceEvent, self.onChildOfChildAdded )
+    self:event( ChildRemovedInterfaceEvent, self.onChildOfChildRemoved )
 end
 
 --[[
@@ -78,19 +81,6 @@ function Container:onInterfaceOutletChanged( InterfaceOutletChangedInterfaceEven
 	end
 
 end
-
---[[
-	@desc Called when a value is set. Connects InterfaceOutlets to the Container.
-	@param [string] key -- the key of the set value
-    @param value -- the value
-]]
--- function Container:set( key, value )
--- 	if value and type( value ) == "table" and value.typeOf and value:typeOf( InterfaceOutlet ) then
--- 		value:connect( key, self )
--- 	elseif self.interfaceLinks[key] and not value then
--- 		self.interfaceLinks[key]:disconnect()
--- 	end
--- end
 
 --[[
 	@desc Initialises the custom container event manger
@@ -228,17 +218,43 @@ function Container:sendToBack( childView )
 	self:sendToFront( childView, 1 )
 end
 
+function Container:onChildOfChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
+	if event.owner ~= self then
+		local childView = event.childView
+		local identifier = childView.identifier
+		if identifier then
+			for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
+				if linkIdentifier == identifier then
+					-- if there's an existing view at the propertyName we'll overwrite the property
+					self[propertyName] = childView
+				end
+			end
+		end
+    end
+end
+
+function Container:onChildOfChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
+	if event.owner ~= self then
+		local childView = event.childView
+		local identifier = childView.identifier
+		for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
+			if linkIdentifier == identifier then
+				-- if there's an existing view at the propertyName we'll overwrite the property
+				if self[propertyName] == childView then
+					self[propertyName] = self:findChild( identifier )
+				end
+			end
+		end
+	end
+end
+
 --[[
 	@desc Adds a child view to the container (on the top by default)
 	@param [View] childView -- the view to add to the container
 	@param [number] position -- the z-position of the child (top by default). higher number means further back
 	@return [View] childView -- the sent child view
 ]]
-function Container:insert( childView, position )
-	if not childView:typeOf( View ) then
-		error( "Attempted to insert non-View to Container", 3 )
-	end
-
+function Container:insert( View childView, Number.allowsNil position )
 	local children = self.children
 	if position then
 		table.insert( children, position, childView )
@@ -248,7 +264,7 @@ function Container:insert( childView, position )
 
 	local oldParent = childView.parent 
 	childView.parent = self
-	-- self.canvas:insert( childView.canvas )
+
 	-- we need to update the isEnabled value
 	childView.isEnabled = childView.raw.isEnabled
 
@@ -260,15 +276,14 @@ function Container:insert( childView, position )
 		end
 	end
 
-	local view = self
-	while view do
-		-- for key, interfaceLink in pairs( view.interfaceLinks ) do
-		-- 	if interfaceLink:childAdded( childView, view == self ) then
-		-- 		view = false
-		-- 		break
-		-- 	end
-		-- end
-		view = view and view.parent
+	local identifier = childView.identifier
+	if identifier then
+		for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
+			if linkIdentifier == identifier then
+				-- if there's an existing view at the propertyName we'll overwrite the property
+				self[propertyName] = childView
+			end
+		end
 	end
 
 	self.event:handleEvent( ChildAddedInterfaceEvent( childView, self ) )
@@ -299,12 +314,14 @@ function Container:remove( removingView )
 	removingView.parent = false
 
 	if didRemove then
-		local view = self
-		while view do
-			for key, interfaceLink in pairs( view.interfaceLinks ) do
-				interfaceLink:childRemoved( removingView )
+		local identifier = removingView.identifier
+		for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
+			if linkIdentifier == identifier then
+				-- if there's an existing view at the propertyName we'll overwrite the property
+				if self[propertyName] == removingView then
+					self[propertyName] = self:findChild( identifier )
+				end
 			end
-			view = view.parent
 		end
 	
 		self.event:handleEvent( ChildRemovedInterfaceEvent( removingView, self ) )
@@ -320,8 +337,7 @@ end
 	@param [boolean] descendTree -- true by default. whether child Containers should be looked through
 	@return [View] childView -- the found child view
 ]]
-function Container:findChild( identifier, descendTree )
-	descendTree = (descendTree == nil and true or descendTree)
+function Container:findChild( String identifier, Boolean( true ) descendTree )
 	for i, childView in ipairs( self.children ) do
 		if childView.identifier == identifier then
 			return childView
