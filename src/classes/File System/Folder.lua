@@ -189,7 +189,6 @@ function Folder.fs:get()
     for i, name in ipairs( resolveFunctions ) do
         local func = fs[name]
         _fs[name] = function ( path, ... )
-            log("func "..name.." : "..tostring(path))
             path = path and resolve( path ) or path
             return func( path, ... )
         end
