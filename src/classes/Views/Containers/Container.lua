@@ -40,7 +40,7 @@ end
 function Container:loadInterface()
     local interfaceName = self.interfaceName
     if interfaceName then
-        local interface = Interface( interfaceName, self.class )
+        local interface = Interface( interfaceName, self.class, self )
 
         local containerInterfaceProperties = self.interfaceProperties
         for k, v in pairs( interface.containerProperties ) do

@@ -125,7 +125,7 @@ function Application:reloadInterface()
 		oldContainer:dispose()
 	end
 
-	if interfaceName then		
+	if interfaceName then
 		self.container = Interface( interfaceName ).container
 	else
 		local container = ApplicationContainer()
