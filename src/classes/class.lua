@@ -1408,7 +1408,7 @@ function compileInstanceClass( name, compiledClass, static )
     local selfTypeTable = classDetails.typeTable
 
     local interfaceLinksProperty = instanceProperties.interfaceLinks
-    local interfaceLinks = ( interfaceLinksProperty[TYPETABLE_TYPE] == "table" and not interfaceLinksProperty[TYPETABLE_HAS_DEFAULT_VALUE] and not interfaceLinksProperty[TYPETABLE_IS_ENUM] and not interfaceLinksProperty[TYPETABLE_CLASS] ) and {} -- only classes that define interfaceLinks = Table; will have interface links connected
+    local interfaceLinks = ( interfaceLinksProperty and interfaceLinksProperty[TYPETABLE_TYPE] == "table" and not interfaceLinksProperty[TYPETABLE_HAS_DEFAULT_VALUE] and not interfaceLinksProperty[TYPETABLE_IS_ENUM] and not interfaceLinksProperty[TYPETABLE_CLASS] ) and {} -- only classes that define interfaceLinks = Table; will have interface links connected
 
     for propertyName, typeTable in pairs( instanceProperties ) do
         definedIndexes[propertyName] = propertyName
