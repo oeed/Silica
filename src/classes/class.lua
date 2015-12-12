@@ -62,11 +62,6 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             if self[TYPETABLE_IS_LINK] then
                 ValueTypeClassException( "Tried to repeatedly index '" .. name .. "." .. INTERFACE_LINK_KEY .. "' (i.e. you did '" .. name .. "." .. INTERFACE_LINK_KEY .. "." .. INTERFACE_LINK_KEY .. "'). This is unnecessary.", 2 )
             end
-            if not self[TYPETABLE_HAS_DEFAULT_VALUE] then
-                -- if there isn't a default value given (the identifier) we use the property name instead
-                self[TYPETABLE_HAS_DEFAULT_VALUE] = true
-                self[TYPETABLE_DEFAULT_VALUE] = name
-            end
             self[TYPETABLE_ALLOWS_NIL] = true -- interface links always need to allow nil
             self[TYPETABLE_IS_LINK] = true
             return self
@@ -129,8 +124,6 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             end
             if k == INTERFACE_LINK_KEY then
                 newValueType[TYPETABLE_IS_LINK] = true
-                newValueType[TYPETABLE_HAS_DEFAULT_VALUE] = true
-                newValueType[TYPETABLE_DEFAULT_VALUE] = name
             end
             newValueType[TYPETABLE_ALLOWS_NIL] = true
             local newMetatable = { __index = instance__index, __newindex = metatable.__newindex}
@@ -1427,8 +1420,8 @@ function compileInstanceClass( name, compiledClass, static )
                 error( "InterfaceLinks can only be made on classes which define a table an interfaceLinks table (i.e. any Container subclass)." )
             end
             -- link interface links
-            local identifier = typeTable[TYPETABLE_DEFAULT_VALUE]
-            interfaceLinks[identifier] = propertyName
+            local identifier = typeTable[TYPETABLE_DEFAULT_VALUE] or propertyName
+            interfaceLinks[propertyName] = identifier
         elseif typeTable[TYPETABLE_HAS_DEFAULT_VALUE] then
             -- add default property values if they have them
             local defaultValue = typeTable[TYPETABLE_DEFAULT_VALUE]
