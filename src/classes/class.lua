@@ -1715,7 +1715,7 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     -- insert default values
     local generatedDefault = {}
     for k, v in pairs( definedProperties ) do
-        if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
+        if not RESERVED_NAMES[v] and k == v and not instanceProperties[k][TYPETABLE_IS_LINK] then -- i.e. it's not an alias and not an interface link
             local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
             if value == nil then
                 local defaultValue = generateDefaultValue( instanceProperties[k], context, k )
@@ -1746,7 +1746,7 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     if not ignoreAllowsNil then
         -- check for any nil values that aren't allowed to be nil
         for k, v in pairs( definedProperties ) do
-            if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
+            if not RESERVED_NAMES[v] and k == v and not instanceProperties[k][TYPETABLE_IS_LINK] then -- i.e. it's not an alias and not an interface link
                 local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
                 if value == nil and not instanceProperties[k][TYPETABLE_ALLOWS_NIL] then
                     error( name .. "." .. k .. " was nil after initialisation but type does not specify .allowsNil" )
