@@ -59,7 +59,7 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             if type( self[TYPETABLE_DEFAULT_VALUE] ) ~= "string" or #self ~= TYPETABLE_DEFAULT_VALUE then
                 ValueTypeClassException( "InterfaceLinks must have ONE default value, a string with the identifier of the view.", 2 )
             end
-            if self[INTERFACE_LINK_KEY] then
+            if self[TYPETABLE_IS_LINK] then
                 ValueTypeClassException( "Tried to repeatedly index '" .. name .. "." .. INTERFACE_LINK_KEY .. "' (i.e. you did '" .. name .. "." .. INTERFACE_LINK_KEY .. "." .. INTERFACE_LINK_KEY .. "'). This is unnecessary.", 2 )
             end
             self[TYPETABLE_ALLOWS_NIL] = true -- interface links always need to allow nil
