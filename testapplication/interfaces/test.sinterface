@@ -1,4 +1,4 @@
-<ApplicationContainer>
+<TestApplicationContainer>
     <MenuBar width=320 >
         <MenuBarItem text=File menuName=file />
         <MenuBarItem text=Edit menuName=edit />
@@ -69,4 +69,4 @@
     <!-- <TestView x=50 y=50 width=19 height=25/> -->
     <!-- <TestView x=50 y=50 width=80 height=80/> -->
 
-</ApplicationContainer>
+</TestApplicationContainer>
