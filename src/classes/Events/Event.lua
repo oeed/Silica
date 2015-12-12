@@ -14,6 +14,7 @@ class "Event" {
 
 	isSentToChildren = Boolean( true ); -- whether the event will be passed to children
 	isSentToSender = Boolean( true ); -- whether the event will be handled by the sender
+	isSentToParents = Boolean( false ); -- whether the event will be passed to the parent
 
 	-- functions can be called either before or after tickle down
 	phases = Enum( Number, {
