@@ -1,7 +1,7 @@
 
 class "FirstApplicationContainer" extends "ApplicationContainer" {
 
-	firstButton = InterfaceOutlet( "firstButton" )
+	firstButton = View( "firstButton" )
 
 }
 

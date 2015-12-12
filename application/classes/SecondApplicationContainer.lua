@@ -1,7 +1,7 @@
 
 class "SecondApplicationContainer" extends "ApplicationContainer" {
 
-	secondButton = InterfaceOutlet( "secondButton" )
+	secondButton = View( "secondButton" )
 
 }
 
