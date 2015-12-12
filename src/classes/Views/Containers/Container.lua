@@ -2,11 +2,11 @@
 class "Container" extends "View" {
 
 	children = {};
-	interfaceOutlets = {};
+	interfaceLinks = Table; -- TODO: .isReadOnly
+	interfaceLinkActions = Table; -- TODO: .isReadOnly
 	interfaceName = false;
 	offsetX = 0;
 	offsetY = 0;
-	interfaceOutletActions = {};
 
 }
 
@@ -56,19 +56,19 @@ function Container:loadInterface()
 end
 
 function Container:onInterfaceOutletChanged( InterfaceOutletChangedInterfaceEvent event, Event.phases phase )
-	local interfaceOutlet = event.interfaceOutlet
+	local interfaceLink = event.interfaceLink
 	local oldView = false
 	local newView = false
-	local interfaceOutletActions = self.interfaceOutletActions
+	local interfaceLinkActions = self.interfaceLinkActions
 	local BEFORE = Event.phases.BEFORE
 	local ACTION = ActionInterfaceEvent
 
-	for k, outlet in pairs( self.interfaceOutlets ) do
-		if interfaceOutlet == outlet then
+	for k, outlet in pairs( self.interfaceLinks ) do
+		if interfaceLink == outlet then
 			oldView = oldView == false and event.oldView or oldView
 			newView = newView == false and event.newView or newView
 			if oldView ~= newView then
-				local func = interfaceOutletActions[k]
+				local func = interfaceLinkActions[k]
 				if func then
 					if oldView and #oldView == 0 then oldView.event:disconnect( ACTION, func, BEFORE, nil, self ) end
 					if newView and #newView == 0 then newView:event( ACTION, func, BEFORE, nil, self ) end
@@ -87,8 +87,8 @@ end
 -- function Container:set( key, value )
 -- 	if value and type( value ) == "table" and value.typeOf and value:typeOf( InterfaceOutlet ) then
 -- 		value:connect( key, self )
--- 	elseif self.interfaceOutlets[key] and not value then
--- 		self.interfaceOutlets[key]:disconnect()
+-- 	elseif self.interfaceLinks[key] and not value then
+-- 		self.interfaceLinks[key]:disconnect()
 -- 	end
 -- end
 
@@ -262,12 +262,12 @@ function Container:insert( childView, position )
 
 	local view = self
 	while view do
-		for key, interfaceOutlet in pairs( view.interfaceOutlets ) do
-			if interfaceOutlet:childAdded( childView, view == self ) then
-				view = false
-				break
-			end
-		end
+		-- for key, interfaceLink in pairs( view.interfaceLinks ) do
+		-- 	if interfaceLink:childAdded( childView, view == self ) then
+		-- 		view = false
+		-- 		break
+		-- 	end
+		-- end
 		view = view and view.parent
 	end
 
@@ -301,8 +301,8 @@ function Container:remove( removingView )
 	if didRemove then
 		local view = self
 		while view do
-			for key, interfaceOutlet in pairs( view.interfaceOutlets ) do
-				interfaceOutlet:childRemoved( removingView )
+			for key, interfaceLink in pairs( view.interfaceLinks ) do
+				interfaceLink:childRemoved( removingView )
 			end
 			view = view.parent
 		end
