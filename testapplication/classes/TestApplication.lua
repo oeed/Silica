@@ -3,7 +3,6 @@ class "TestApplication" extends "Application" {
 
 	name = "Test";
 	interfaceName = "test";
-	label = Label( "label" ).link;
 
 }
 
