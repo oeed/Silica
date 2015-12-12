@@ -19,10 +19,12 @@ local interface
 
 local application -- the running application
 
-local TYPETABLE_NAME, TYPETABLE_TYPE, TYPETABLE_CLASS, TYPETABLE_ALLOWS_NIL, TYPETABLE_IS_VAR_ARG, TYPETABLE_IS_ENUM, TYPETABLE_ENUM_ITEM_TYPE, TYPETABLE_HAS_DEFAULT_VALUE, TYPETABLE_IS_DEFAULT_VALUE_REFERENCE, TYPETABLE_DEFAULT_VALUE = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+local TYPETABLE_NAME, TYPETABLE_TYPE, TYPETABLE_CLASS, TYPETABLE_ALLOWS_NIL, TYPETABLE_IS_VAR_ARG, TYPETABLE_IS_LINK, TYPETABLE_IS_ENUM, TYPETABLE_ENUM_ITEM_TYPE, TYPETABLE_HAS_DEFAULT_VALUE, TYPETABLE_IS_DEFAULT_VALUE_REFERENCE, TYPETABLE_DEFAULT_VALUE = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 local FUNCTIONTABLE_FUNCTION = 1
 local VALUE_TYPE_UID = {} -- just a unique identifier to indicate that this is a valueType
 local REFERENCE_UID = {} -- just a unique identifier to indicate that this is a valueType
+
+local ALLOWS_NIL_KEY, INTERFACE_LINK_KEY = "allowsNil", "link"
 
 local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true }
 local DISALLOWED_CLASS_NAMES = { Number = true, String = true, Boolean = true, Any = true, Table = true, Function = true, Thread = true, Enum = true }
@@ -38,12 +40,32 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
         [TYPETABLE_TYPE] = typeStr;
         [TYPETABLE_CLASS] = classType;
         [TYPETABLE_ALLOWS_NIL] = false;
+        [TYPETABLE_IS_LINK] = false;
         [TYPETABLE_IS_VAR_ARG] = false;
         [TYPETABLE_IS_ENUM] = false;
         [TYPETABLE_ENUM_ITEM_TYPE] = false;
         [TYPETABLE_HAS_DEFAULT_VALUE] = false;
         [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
     }
+
+    local function instance__index( self, k )
+        if k == ALLOWS_NIL_KEY then
+            if self[TYPETABLE_ALLOWS_NIL] then
+                ValueTypeClassException( "Tried to repeatedly index '" .. name .. "." .. ALLOWS_NIL_KEY .. "' (i.e. you did '" .. name .. "." .. ALLOWS_NIL_KEY .. "." .. ALLOWS_NIL_KEY .. "'). This is unnecessary. Alternatively you've indexed ." .. INTERFACE_LINK_KEY .. ", interface links automatically set ." .. ALLOWS_NIL_KEY .. ".", 2 )
+            end
+            self[TYPETABLE_ALLOWS_NIL] = true
+            return self
+        elseif k == INTERFACE_LINK_KEY then
+            if self[INTERFACE_LINK_KEY] then
+                ValueTypeClassException( "Tried to repeatedly index '" .. name .. "." .. INTERFACE_LINK_KEY .. "' (i.e. you did '" .. name .. "." .. INTERFACE_LINK_KEY .. "." .. INTERFACE_LINK_KEY .. "'). This is unnecessary.", 2 )
+            end
+            self[TYPETABLE_ALLOWS_NIL] = true -- interface links always need to allow nil
+            self[TYPETABLE_IS_LINK] = true
+            return self
+        elseif type( k ) ~= "number" then -- if it's a number it would've been trying to get a default value, don't error
+            ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. ValueTypes only support accessing the key ." .. ALLOWS_NIL_KEY .. " or ." .. INTERFACE_LINK_KEY , 2 )
+        end
+    end
 
     local metatable = {}
     function metatable:__call( ... )
@@ -52,6 +74,7 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             [TYPETABLE_TYPE] = typeStr;
             [TYPETABLE_CLASS] = classType;
             [TYPETABLE_ALLOWS_NIL] = false;
+            [TYPETABLE_IS_LINK] = false;
             [TYPETABLE_IS_VAR_ARG] = false;
             [TYPETABLE_IS_ENUM] = false;
             [TYPETABLE_ENUM_ITEM_TYPE] = false;
@@ -76,18 +99,7 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             end
         end
 
-        local metatable = {}
-        function metatable:__index( k )
-            if k == "allowsNil" then
-                if valueInstance[TYPETABLE_ALLOWS_NIL] then
-                    ValueTypeClassException( "Tried to repeatedly index '" .. name .. ".allowsNil' (i.e. you did '" .. name .. ".allowsNil.allowsNil'). This is unnecessary.", 2 )
-                end
-                valueInstance[TYPETABLE_ALLOWS_NIL] = true
-                return valueInstance
-            elseif type( k ) ~= "number" then -- if it's a number it would've been trying to get a default value, don't error
-                ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. ValueTypes only support accessing the key .allowsNil" , 2 )
-            end
-        end
+        local metatable = { __index = instance__index }
 
         function metatable:__newindex( k )
             ValueTypeClassException( "Tried to set value of '" .. name .. "." .. k .. "'. ValueTypes do not support assignment of values." , 2 )
@@ -101,14 +113,18 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
     end
 
     function metatable:__index( k )
-        if k == "allowsNil" then
+        if k == ALLOWS_NIL_KEY or k == INTERFACE_LINK_KEY then
             -- we have to make a unique copy because setting allows nil would apply it to all types
             local newValueType = {}
             for i = 1, #valueType do
                 newValueType[i] = valueType[i]
             end
             newValueType[TYPETABLE_ALLOWS_NIL] = true
-            local newMetatable = { __index = metatable.index, __newindex = metatable.__newindex}
+            if k == INTERFACE_LINK_KEY then
+                newValueType[TYPETABLE_IS_LINK] = true
+            end
+
+            local newMetatable = { __index = instance__index, __newindex = metatable.__newindex}
             local __tostring = "value type instance '" .. name .. "': " ..  tostring( valueType ):sub( 8 )
             function newMetatable:__tostring() return __tostring end
             setmetatable( newValueType, newMetatable )
@@ -150,6 +166,7 @@ local function createEnumType()
         [TYPETABLE_TYPE] = "table";
         [TYPETABLE_CLASS] = false;
         [TYPETABLE_ALLOWS_NIL] = false;
+        [TYPETABLE_IS_LINK] = false;
         [TYPETABLE_IS_VAR_ARG] = false;
         [TYPETABLE_IS_ENUM] = true;
         [TYPETABLE_ENUM_ITEM_TYPE] = false;
@@ -162,6 +179,7 @@ local function createEnumType()
             [TYPETABLE_TYPE] = "table";
             [TYPETABLE_CLASS] = false;
             [TYPETABLE_ALLOWS_NIL] = false;
+            [TYPETABLE_IS_LINK] = false;
             [TYPETABLE_IS_VAR_ARG] = false;
             [TYPETABLE_IS_ENUM] = true;
             [TYPETABLE_HAS_DEFAULT_VALUE] = true;
@@ -204,7 +222,7 @@ local function createEnumType()
 
         local metatable = {}
         function metatable:__index( k )
-            if k == "allowsNil" then
+            if k == ALLOWS_NIL_KEY then
                 EnumValueTypeClassException( "Enum ValueTypes do not support .allowsNil" )
             else
                 ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. Enum ValueTypes only support accessing any key." , 2 )
@@ -223,7 +241,7 @@ local function createEnumType()
     end
 
     function metatable:__index( k )
-        if k == "allowsNil" then
+        if k == ALLOWS_NIL_KEY then
             EnumValueTypeClassException( "Enum ValueTypes do not support .allowsNil" )
         else
             ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. Enum ValueTypes only support accessing any key." , 2 )
@@ -472,6 +490,7 @@ function stripFunctionArguments( name, contents )
                             [TYPETABLE_TYPE] = false;
                             [TYPETABLE_CLASS] = false;
                             [TYPETABLE_ALLOWS_NIL] = true;
+                            [TYPETABLE_IS_LINK] = false;
                             [TYPETABLE_IS_VAR_ARG] = isVarArg;
                             [TYPETABLE_IS_ENUM] = false;
                             [TYPETABLE_ENUM_ITEM_TYPE] = false;
@@ -489,7 +508,7 @@ function stripFunctionArguments( name, contents )
 
                         if not value then
                             ArgumentValueTypeParsingClassException( "Argument ValueType was invalid value in class '" ..name .. "' on line " .. n .. ". Check your spelling, syntax and that if you are use a class it exists. Read the 'Class System' wiki page if you're still stuck.", 0 )
-                        elseif value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] then -- this was created like String(), not String, or indexed .allowsNil so it created its own instance. hence we can use the value directly
+                        elseif value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] or value[TYPETABLE_IS_LINK] then -- this was created like String(), not String, or indexed .allowsNil so it created its own instance. hence we can use the value directly
                             value[TYPETABLE_NAME] = argumentName
                             typeTable = value
                         else
@@ -682,7 +701,7 @@ function implements( name )
     if name ~= currentlyConstructing.name then
         local interface = class.get( name )
         if not interface then
-            ConstructionClassException( "Class '" .. currentlyConstructing.name .. "' attempted to implement '" .. name .. "', but the interface could not be found. Alterntively the class attempted to implement a class. Only interfaces can be implemented.", 2 )
+            ConstructionClassException( "Class '" .. currentlyConstructing.name .. "' attempted to implement '" .. name .. "', but the interface could not be found. Alternatively the class attempted to implement a class. Only interfaces can be implemented.", 2 )
         end
         currentlyConstructing.interfaces[name] = interface
         currentlyConstructing.typeOfCache[interface] = true
@@ -887,7 +906,7 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                             error( "self refernce only in static" , 2 )
                         end
                     end
-                    if value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] then -- this was created like String(), not String. hence we can use the value table directly
+                    if value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] or value[TYPETABLE_IS_LINK] then -- this was created like String(), not String. hence we can use the value table directly
                         value[TYPETABLE_NAME] = propertyName
                         toTable[propertyName] = value
                     else
@@ -909,6 +928,7 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                     [TYPETABLE_TYPE] = false;
                     [TYPETABLE_CLASS] = false;
                     [TYPETABLE_ALLOWS_NIL] = true;
+                    [TYPETABLE_IS_LINK] = false;
                     [TYPETABLE_IS_VAR_ARG] = false;
                     [TYPETABLE_IS_ENUM] = false;
                     [TYPETABLE_ENUM_ITEM_TYPE] = false;
@@ -1065,7 +1085,7 @@ local function mergeProperties( classProperties, staticProperties, name )
             local classTypeTable = classProperties[k]
 
             -- ensure that the types and allows nil are the same
-            if classTypeTable[TYPETABLE_NAME] ~= staticTypeTable[TYPETABLE_NAME] or classTypeTable[TYPETABLE_TYPE] ~= staticTypeTable[TYPETABLE_TYPE] or classTypeTable[TYPETABLE_CLASS] ~= staticTypeTable[TYPETABLE_CLASS] or classTypeTable[TYPETABLE_ALLOWS_NIL] ~= staticTypeTable[TYPETABLE_ALLOWS_NIL] then
+            if classTypeTable[TYPETABLE_NAME] ~= staticTypeTable[TYPETABLE_NAME] or classTypeTable[TYPETABLE_TYPE] ~= staticTypeTable[TYPETABLE_TYPE] or classTypeTable[TYPETABLE_CLASS] ~= staticTypeTable[TYPETABLE_CLASS] or classTypeTable[TYPETABLE_ALLOWS_NIL] ~= staticTypeTable[TYPETABLE_ALLOWS_NIL]  or classTypeTable[TYPETABLE_IS_LINK] ~= staticTypeTable[TYPETABLE_IS_LINK] then
                 error(name .. ": cannot change type or allows nil of super class' property: " .. k, 2 )
             end
         end
@@ -1111,7 +1131,7 @@ function compileClass( compiledClass, name )
                             local classArgument = classFunctionTable[i]
                             if not classArgument then
                                 error( "function '" .. name ..":" .. functionName .. "' does not declare argument expected by interface '" .. interfaceName .. "': "..argument[TYPETABLE_NAME])
-                            elseif argument[TYPETABLE_TYPE] ~= classArgument[TYPETABLE_TYPE] or argument[TYPETABLE_CLASS] ~= classArgument[TYPETABLE_CLASS] or argument[TYPETABLE_ALLOWS_NIL] ~= classArgument[TYPETABLE_ALLOWS_NIL] or argument[TYPETABLE_HAS_DEFAULT_VALUE] ~= classArgument[TYPETABLE_HAS_DEFAULT_VALUE] or argument[TYPETABLE_DEFAULT_VALUE] ~= classArgument[TYPETABLE_DEFAULT_VALUE] then
+                            elseif argument[TYPETABLE_TYPE] ~= classArgument[TYPETABLE_TYPE] or argument[TYPETABLE_CLASS] ~= classArgument[TYPETABLE_CLASS] or argument[TYPETABLE_ALLOWS_NIL] ~= classArgument[TYPETABLE_ALLOWS_NIL] or argument[TYPETABLE_IS_LINK] ~= classArgument[TYPETABLE_IS_LINK] or argument[TYPETABLE_HAS_DEFAULT_VALUE] ~= classArgument[TYPETABLE_HAS_DEFAULT_VALUE] or argument[TYPETABLE_DEFAULT_VALUE] ~= classArgument[TYPETABLE_DEFAULT_VALUE] then
                                 error( "argument does use declare same type as interface '" .. interfaceName .. "'", 2 )
                             end
                         end
@@ -1679,6 +1699,8 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     instance.metatable = metatable
     instance.raw = values
     setmetatable( instance, metatable )
+
+    -- link interface links
 
     -- insert default values
     local generatedDefault = {}
