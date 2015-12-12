@@ -84,7 +84,7 @@
 		<rightMargin type="Number" default="7" />
 		<topMargin type="Number" default="2" />
 		<bottomMargin type="Number" default="2" />
-        <isDashed type="Boolean" default="true"/>
+        <separatorIsDashed type="Boolean" default="true"/>
 		<separatorColour type="Graphics.colours" default="LIGHT_GREY" />
 	</SeparatorMenuItem>
 

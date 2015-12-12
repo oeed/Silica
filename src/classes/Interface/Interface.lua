@@ -15,7 +15,7 @@ class "Interface" {
 	@desc Creates and loads an interface with the given name
 	@param [string] interfaceName -- the file name of the interface
 ]]
-function Interface:initialise( interfaceName, extend )
+function Interface:initialise( interfaceName, extend, containerView )
 	self.name = interfaceName
 	extend = extend or ApplicationContainer
 
@@ -39,7 +39,7 @@ function Interface:initialise( interfaceName, extend )
 			err = "Container class does not extend '" .. extend.className .. "': " .. rootNode.type
 		else
 			self.containerNode = rootNode
-			self:loadContainer()
+			self:loadContainer( containerView )
 		end
 
 		if err then
@@ -54,9 +54,12 @@ end
 	@desc Returns and generates if needed a container from the interface.
 	@return [Container] container -- the container
 ]]
-function Interface:loadContainer()
+function Interface:loadContainer( containerView )
+	log("load container")
+	logtraceback()
 	local readyEvent = ReadyInterfaceEvent()
-	local function loadChild( childNode, parentContainer )
+	local function loadChild( childNode, parentContainer, childView )
+		log("load childNode "..childNode.type)
 		local childClass = class.get( childNode.type )
 		if not childClass then
 			return nil, "Class not found: " .. childNode.type
@@ -64,7 +67,7 @@ function Interface:loadContainer()
 			return nil,"Class does not extend 'View': " .. childNode.type
 		end
 
-		local childView = childClass.spawn( true )
+		childView = childView or childClass.spawn( true )
 		if not childView then
 			return nil, "Failed to initialise " .. childNode.type .. ". Identifier: " .. tostring( childNode.attributes.identifier )
 		end
@@ -103,7 +106,7 @@ function Interface:loadContainer()
 		return childView
 	end
 
-	local container = loadChild( self.containerNode )
+	local container = loadChild( self.containerNode, nil, containerView )
 	container.event:handleEvent( LoadedInterfaceEvent( container ) )
 	self.container = container
 end
