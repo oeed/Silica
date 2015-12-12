@@ -1428,7 +1428,7 @@ function compileInstanceClass( name, compiledClass, static )
             end
             -- link interface links
             local identifier = typeTable[TYPETABLE_DEFAULT_VALUE]
-            interfaceLinks[propertyName] = identifier
+            interfaceLinks[identifier] = propertyName
         elseif typeTable[TYPETABLE_HAS_DEFAULT_VALUE] then
             -- add default property values if they have them
             local defaultValue = typeTable[TYPETABLE_DEFAULT_VALUE]
