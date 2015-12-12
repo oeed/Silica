@@ -1572,6 +1572,9 @@ function compileAndSpawnStatic( static, name, compiledClass )
 
     local metatable = {}
     function metatable:__newindex( key, value )
+        if key == nil then
+            error( "Classes do not support nil property names." )
+        end
         if RESERVED_NAMES[key] then error( "reserved name" , 2 ) end
 
         local locatedKey = definedProperties[key]
@@ -1589,6 +1592,9 @@ function compileAndSpawnStatic( static, name, compiledClass )
     end
 
     function metatable:__index( key )
+        if key == nil then
+            error( "Classes do not support nil property names." )
+        end
         local locatedKey = definedIndexes[key]
         if locatedKey then
             local getter = getters[locatedKey]
@@ -1670,6 +1676,9 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     local definedIndexes, definedProperties = compiledInstance.definedIndexes, compiledInstance.definedProperties
     local metatable = {}
     function metatable:__newindex( key, value )
+        if key == nil then
+            error( "Classes do not support nil property names." )
+        end
         if RESERVED_NAMES[key] then error( "reserved name" , 2 ) end
 
         local locatedKey = definedProperties[key]
@@ -1687,6 +1696,9 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     end
 
     function metatable:__index( key )
+        if key == nil then
+            error( "Classes do not support nil property names." )
+        end
         local locatedKey = definedIndexes[key]
         if locatedKey then
             local getter = getters[locatedKey]
