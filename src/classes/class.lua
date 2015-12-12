@@ -1406,13 +1406,18 @@ function compileInstanceClass( name, compiledClass, static )
     local compiledSuperDetails = superName and compiledClassDetails[superName]
     local instanceProperties = classDetails.instanceProperties
     local selfTypeTable = classDetails.typeTable
-    local interfaceLinks = {}
+
+    local interfaceLinksProperty = instanceProperties.interfaceLinks
+    local interfaceLinks = ( interfaceLinksProperty[TYPETABLE_TYPE] == "table" and not interfaceLinksProperty[TYPETABLE_HAS_DEFAULT_VALUE] and not interfaceLinksProperty[TYPETABLE_IS_ENUM] and not interfaceLinksProperty[TYPETABLE_CLASS] ) and {} -- only classes that define interfaceLinks = Table; will have interface links connected
 
     for propertyName, typeTable in pairs( instanceProperties ) do
         definedIndexes[propertyName] = propertyName
         definedProperties[propertyName] = propertyName
 
         if typeTable[TYPETABLE_IS_LINK] then
+            if not interfaceLinks then
+                error( "InterfaceLinks can only be made on classes which define a table an interfaceLinks table (i.e. any Container subclass)." )
+            end
             -- link interface links
             local identifier = typeTable[TYPETABLE_DEFAULT_VALUE]
             interfaceLinks[propertyName] = identifier
