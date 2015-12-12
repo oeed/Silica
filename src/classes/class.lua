@@ -1251,14 +1251,14 @@ local function argumentLimits( functionTable )
     if functionTable[functionTableLength][TYPETABLE_IS_VAR_ARG] then -- the last value is ..., so there is no maximum
         maxArgs = math.huge
     end
-    local minChecked = 0 -- the minimum number of arguments that need to be checkValued (so optionals can be loaded)
+    local minArgs, minChecked = 0, 0 -- the minimum number of arguments that need to be checkValued (so optionals can be loaded)
     for i = functionTableLength, FUNCTIONTABLE_FUNCTION + 1, -1 do
         local funcTbl = functionTable[i]
         if funcTbl[TYPETABLE_IS_VAR_ARG] then -- varargs are always optional
         elseif funcTbl[TYPETABLE_HAS_DEFAULT_VALUE] then
             minChecked = math.max( minChecked, i - 1 ) -- this value has a default value, so it will ALWAYS need to be checked
         elseif not funcTbl[TYPETABLE_ALLOWS_NIL] then
-            return i - 1, maxArgs, minChecked
+            return i - 2, maxArgs, minChecked
         end
     end
 
