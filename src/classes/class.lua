@@ -56,6 +56,9 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             self[TYPETABLE_ALLOWS_NIL] = true
             return self
         elseif k == INTERFACE_LINK_KEY then
+            if type( self[TYPETABLE_DEFAULT_VALUE] ) == "string" and #self == TYPETABLE_DEFAULT_VALUE then
+                ValueTypeClassException( "InterfaceLinks must have ONE default value, a string with the identifier of the view.", 2 )
+            end
             if self[INTERFACE_LINK_KEY] then
                 ValueTypeClassException( "Tried to repeatedly index '" .. name .. "." .. INTERFACE_LINK_KEY .. "' (i.e. you did '" .. name .. "." .. INTERFACE_LINK_KEY .. "." .. INTERFACE_LINK_KEY .. "'). This is unnecessary.", 2 )
             end
@@ -113,17 +116,15 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
     end
 
     function metatable:__index( k )
-        if k == ALLOWS_NIL_KEY or k == INTERFACE_LINK_KEY then
+        if k == INTERFACE_LINK_KEY then
+            ValueTypeClassException( "InterfaceLinks must have ONE default value, a string with the identifier of the view.", 2 )
+        elseif k == ALLOWS_NIL_KEY then
             -- we have to make a unique copy because setting allows nil would apply it to all types
             local newValueType = {}
             for i = 1, #valueType do
                 newValueType[i] = valueType[i]
             end
             newValueType[TYPETABLE_ALLOWS_NIL] = true
-            if k == INTERFACE_LINK_KEY then
-                newValueType[TYPETABLE_IS_LINK] = true
-            end
-
             local newMetatable = { __index = instance__index, __newindex = metatable.__newindex}
             local __tostring = "value type instance '" .. name .. "': " ..  tostring( valueType ):sub( 8 )
             function newMetatable:__tostring() return __tostring end
