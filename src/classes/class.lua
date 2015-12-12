@@ -56,6 +56,7 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             self[TYPETABLE_ALLOWS_NIL] = true
             return self
         elseif k == INTERFACE_LINK_KEY then
+            if type( self[TYPETABLE_DEFAULT_VALUE] ) ~= "string" or #self ~= TYPETABLE_DEFAULT_VALUE then
                 ValueTypeClassException( "InterfaceLinks must have ONE default value, a string with the identifier of the view.", 2 )
             end
             if self[INTERFACE_LINK_KEY] then
