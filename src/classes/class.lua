@@ -1548,6 +1548,7 @@ function compileInstanceClass( name, compiledClass, static )
         prebuiltFunctions = prebuiltFunctions;
         prebuiltGetters = prebuiltGetters;
         prebuiltSetters = prebuiltSetters;
+        prebuiltActions = prebuiltActions;
         requireDefaultGeneration = requireDefaultGeneration;
         definedIndexes = definedIndexes;
         definedProperties = definedProperties;
@@ -1705,11 +1706,21 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     local instanceProperties = classDetails.instanceProperties
 
     local instance = {}
-    local values, getters, setters = {}, {}, {}
+    local values, getters, setters, interfaceLinkActions = {}, {}, {}, {}
 
     for key, value in pairs( compiledInstance.initialValues ) do
         values[key] = value
     end
+
+    -- insert the actions to the interfaceLinkActions table
+    local interfaceLinkActionsProperty = instanceProperties.interfaceLinkActions
+    for propertyName, funcs in pairs( compiledInstance.prebuiltActions ) do
+        if not interfaceLinkActionsProperty then
+            error( "InterfaceLink actions can only be made on classes which define a table an interfaceLinkActions table (i.e. any Container subclass)." )
+        end
+        interfaceLinkActions[propertyName] = funcs[#funcs]( constructSuper( funcs, instance ) )
+    end
+    values.interfaceLinkActions = interfaceLinkActions
 
     -- for default values that are tables make them unique or create class instances
     local context = setmetatable( { self = instance }, { __index = environments[name] } )
