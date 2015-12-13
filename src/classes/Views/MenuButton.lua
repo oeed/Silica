@@ -20,7 +20,7 @@ function MenuButton:initialise( ... )
 
     self:event( MenuChangedInterfaceEvent, self.onMenuChanged )
     self:event( ParentChangedInterfaceEvent, self.onParentChanged )
-    self:event( ReadyInterfaceEvent, self.onReady )
+    self:event( LoadedInterfaceEvent, self.onLoaded )
 end
 
 function MenuButton:onDraw()
@@ -38,7 +38,7 @@ function MenuButton:onDraw()
     self.canvas:fill( theme:value( "arrowColour" ), SymbolMask( self.width - arrowMargin - symbol.width + shadowX, 1 + math.floor( ( self.height - symbol.height ) / 2 ) + shadowOffset, symbol ) )
 end
 
-function MenuButton:onReady( ReadyInterfaceEvent event, Event.phases phase  )
+function MenuButton:onLoaded( LoadedInterfaceEvent event, Event.phases phase  )
     local menuName = self.menuName
     if not menuName then
         MenuNotSpecifiedException( "A MenuButton did not specifiy the property 'menuName'. MenuButtons must specify this property as it indicates what inteface file to load the menu from.", 0 )
