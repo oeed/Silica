@@ -19,4 +19,5 @@ class "ChildRemovedInterfaceEvent" extends "InterfaceEvent" {
 ]]
 function ChildRemovedInterfaceEvent:initialise( View childView, Container container )
 	self.childView = childView
+    self.container = container
 end
