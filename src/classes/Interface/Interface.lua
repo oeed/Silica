@@ -118,5 +118,5 @@ end
 ]]
 function Interface:ready()
 	local container = self.container
-	container.event:handleEvent( ReadyInterfaceEvent( container ) )
+	container.event:handleEvent( ReadyInterfaceEvent() )
 end
