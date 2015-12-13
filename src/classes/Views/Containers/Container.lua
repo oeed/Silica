@@ -219,7 +219,7 @@ function Container:sendToBack( childView )
 end
 
 function Container:onChildOfChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
-	if event.owner ~= self then
+	if event.container ~= self then
 		local childView = event.childView
 		local identifier = childView.identifier
 		if identifier then
@@ -234,7 +234,7 @@ function Container:onChildOfChildAdded( ChildAddedInterfaceEvent event, Event.ph
 end
 
 function Container:onChildOfChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
-	if event.owner ~= self then
+	if event.container ~= self then
 		local childView = event.childView
 		local identifier = childView.identifier
 		for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
@@ -282,7 +282,15 @@ function Container:insert( View childView, Number.allowsNil position )
 		for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
 			if linkIdentifier == identifier then
 				-- if there's an existing view at the propertyName we'll overwrite the property
-				self[propertyName] = childView
+				try( function() 
+					self[propertyName] = childView
+				end ) {
+
+					catch( InvalidValueTypeClassException, function( exception )
+						error( "Attempted to attach " .. tostring( childView ) .. " with identifier '" .. identifier .. "' to property '" .. propertyName .. "' with an invalid ValueType of " .. tostring( self ) .. ". The ValueType you specified in the properties table is not the same as the one being linked to, either change the property' ValueType or change the identifier of the invalid View." )
+					end )
+
+				}
 				local action = interfaceLinkActions[propertyName]
 				if action then
     				childView:event( ActionInterfaceEvent, action, Event.phases.BEFORE, nil, self )
