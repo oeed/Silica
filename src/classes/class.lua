@@ -1107,6 +1107,12 @@ function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: e
             else
                 return value
             end
+        elseif expectedType == "number" and type( value ) == "string" then
+            -- automatically cast strings to numbers
+            local numberValue = tonumber( value )
+            if numberValue then
+                return numberValue
+            end
         end
         if isSelf then
             error("self not passed to function, you probably used . instead of :", 3)
