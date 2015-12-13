@@ -616,6 +616,7 @@ local function constructClass( _, name )
         prebuiltInstanceGetters = {};
         instanceSetters = {};
         prebuiltInstanceSetters = {};
+        instanceActions = {};
         staticProperties = {};
         staticFunctions = {};
         prebuiltStaticFunctions = {};
@@ -661,6 +662,7 @@ function interface( name )
         prebuiltInstanceGetters = {};
         instanceSetters = {};
         prebuiltInstanceSetters = {};
+        instanceActions = {};
         staticProperties = {};
         staticFunctions = {};
         prebuiltStaticFunctions = {};
@@ -733,7 +735,7 @@ function loadProperties( propertiesTable )
     local compiledSuperDetails = superName and compiledClassDetails[superName]
     local enums = currentlyConstructing.enums
     local superEnums = compiledSuperDetails and compiledSuperDetails.enums
-    loadPropertiesTableSection( propertiesTable, compiledSuperDetails and compiledSuperDetails.instanceProperties, currentlyConstructing.instanceProperties, constructorProxy, currentlyConstructing.instanceGetters, currentlyConstructing.instanceSetters, enums, "static", currentCompiledClass )
+    loadPropertiesTableSection( propertiesTable, compiledSuperDetails and compiledSuperDetails.instanceProperties, currentlyConstructing.instanceProperties, constructorProxy, currentlyConstructing.instanceGetters, currentlyConstructing.instanceSetters, currentlyConstructing.instanceActions, enums, "static", currentCompiledClass )
     if staticPropertiesTable then
         loadPropertiesTableSection( staticPropertiesTable, compiledSuperDetails and compiledSuperDetails.staticProperties, currentlyConstructing.staticProperties, staticConstructorProxy, currentlyConstructing.staticGetters, currentlyConstructing.staticSetters )
     end
