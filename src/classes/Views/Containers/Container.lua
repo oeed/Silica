@@ -48,7 +48,7 @@ function Container:loadInterface()
     local interfaceName = self.interfaceName
     if interfaceName then
     	-- this does all the work for us
-        Interface( interfaceName, self.class, self ):ready()
+        Interface( interfaceName, self.class, self ):ready( true )
     end
 end
 

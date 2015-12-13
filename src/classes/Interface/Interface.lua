@@ -128,7 +128,11 @@ end
 	@desc Must be called when the container has been assigned to, for example, Application.container
 	@return Any returnedValue
 ]]
-function Interface:ready()
+function Interface:ready( isContainer )
 	local container = self.container
-	container.event:handleEvent( ReadyInterfaceEvent() )
+	if isContainer then
+		container.event:handleEvent( ContainerReadyInterfaceEvent() )
+	else
+		container.event:handleEvent( ReadyInterfaceEvent() )
+	end
 end
