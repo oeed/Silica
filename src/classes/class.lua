@@ -217,7 +217,7 @@ local function createEnumType()
                 error( "Enum keys must be all uppercase with _" , 2 )
             end
 
-            checkValue( v, itemValueType ) -- check that the default values comply with the required type
+            checkValue( v, itemValueType, nil, nil, nil, "Enum value" ) -- check that the default values comply with the required type
         end
 
         valueInstance[TYPETABLE_DEFAULT_VALUE] = values
@@ -1075,7 +1075,7 @@ local function generateDefaultValue( typeTable, context, circularKey )
     end
 end
 
-function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: error level and message based on where it's called form
+function checkValue( value, typeTable, isSelf, context, circularKey, name ) -- TODO: error level and message based on where it's called form
     if value == nil  then
         local isOkay
         value, isOkay = generateDefaultValue( typeTable, context, circularKey )
@@ -1124,7 +1124,7 @@ function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: e
             else
                 expectedString = expectedType
             end
-            InvalidValueTypeClassException(typeTable[TYPETABLE_NAME] .. " was wrong type, expected "..expectedString .. " got " .. type( value ) .. ": "..tostring(value), 4)
+            InvalidValueTypeClassException( ( name or typeTable[TYPETABLE_NAME] ) .. " was wrong type, expected "..expectedString .. " got " .. type( value ) .. ": "..tostring(value), 4)
         end
     end
     return value
