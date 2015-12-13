@@ -1,9 +1,9 @@
 
 class "FileMenu" extends "Menu" {
 
-	newMenuItem = InterfaceOutlet( "newMenuItem" );
-	alertMenuItem = InterfaceOutlet( "alertMenuItem" );
-	rebootMenuItem = InterfaceOutlet( "rebootMenuItem" );
+	newMenuItem = View( "newMenuItem" );
+	alertMenuItem = View( "alertMenuItem" );
+	rebootMenuItem = View( "rebootMenuItem" );
 
 }
 

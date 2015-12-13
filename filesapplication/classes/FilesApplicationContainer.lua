@@ -1,7 +1,7 @@
 
 class "FilesApplicationContainer" extends "ApplicationContainer" {
     
-    -- filesContainer = InterfaceOutlet();
+    -- filesContainer = View();
     fileStyle = 1;
 
 }

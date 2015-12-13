@@ -8,8 +8,8 @@ local RESIZE_MARGIN_SIZE = 5
 
 class "FontStudioApplicationContainer" extends "ApplicationContainer" {
     
-    characterEditorView = InterfaceOutlet( "characterEditorView" );
-    saveButton = InterfaceOutlet( "saveButton" );
+    characterEditorView = View( "characterEditorView" );
+    saveButton = View( "saveButton" );
     visibleCharacters = {};
     documentContents = false;
     previewViews = {};

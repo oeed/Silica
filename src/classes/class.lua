@@ -12,17 +12,19 @@ local compiledClassDetails, compiledInstances, compiledStatics = {}, {}, {}
 local currentlyConstructing, expectedName -- the class that is currently being constructed
 local constructingEnvironment, constructorProxy, constructingFunctionArguments, currentCompiledClass
 local environments = {}
-local stripFunctionArguments, loadProperties, compileClass, loadPropertiesTableSection, checkValue, constructSuper, isInterface, pseudoReference, checkValue, compileClass, compileInstanceClass, compileAndSpawnStatic, spawnInstance, createValueType
+local stripFunctionArguments, loadProperties, compileClass, loadPropertiesTableSection, checkValue, constructSuper, isInterface, pseudoReference, compileClass, compileInstanceClass, compileAndSpawnStatic, spawnInstance, createValueType
 local implements, extends, interface
 local isLoadingProperties
 local interface
 
 local application -- the running application
 
-local TYPETABLE_NAME, TYPETABLE_TYPE, TYPETABLE_CLASS, TYPETABLE_ALLOWS_NIL, TYPETABLE_IS_VAR_ARG, TYPETABLE_IS_ENUM, TYPETABLE_ENUM_ITEM_TYPE, TYPETABLE_HAS_DEFAULT_VALUE, TYPETABLE_IS_DEFAULT_VALUE_REFERENCE, TYPETABLE_DEFAULT_VALUE = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+local TYPETABLE_NAME, TYPETABLE_TYPE, TYPETABLE_CLASS, TYPETABLE_ALLOWS_NIL, TYPETABLE_IS_VAR_ARG, TYPETABLE_IS_LINK, TYPETABLE_IS_ENUM, TYPETABLE_ENUM_ITEM_TYPE, TYPETABLE_HAS_DEFAULT_VALUE, TYPETABLE_IS_DEFAULT_VALUE_REFERENCE, TYPETABLE_DEFAULT_VALUE = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 local FUNCTIONTABLE_FUNCTION = 1
 local VALUE_TYPE_UID = {} -- just a unique identifier to indicate that this is a valueType
 local REFERENCE_UID = {} -- just a unique identifier to indicate that this is a valueType
+
+local ALLOWS_NIL_KEY, INTERFACE_LINK_KEY = "allowsNil", "link"
 
 local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true }
 local DISALLOWED_CLASS_NAMES = { Number = true, String = true, Boolean = true, Any = true, Table = true, Function = true, Thread = true, Enum = true }
@@ -38,12 +40,35 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
         [TYPETABLE_TYPE] = typeStr;
         [TYPETABLE_CLASS] = classType;
         [TYPETABLE_ALLOWS_NIL] = false;
+        [TYPETABLE_IS_LINK] = false;
         [TYPETABLE_IS_VAR_ARG] = false;
         [TYPETABLE_IS_ENUM] = false;
         [TYPETABLE_ENUM_ITEM_TYPE] = false;
         [TYPETABLE_HAS_DEFAULT_VALUE] = false;
         [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
     }
+
+    local function instance__index( self, k )
+        if k == ALLOWS_NIL_KEY then
+            if self[TYPETABLE_ALLOWS_NIL] then
+                ValueTypeClassException( "Tried to repeatedly index '" .. name .. "." .. ALLOWS_NIL_KEY .. "' (i.e. you did '" .. name .. "." .. ALLOWS_NIL_KEY .. "." .. ALLOWS_NIL_KEY .. "'). This is unnecessary. Alternatively you've indexed ." .. INTERFACE_LINK_KEY .. ", interface links automatically set ." .. ALLOWS_NIL_KEY .. ".", 2 )
+            end
+            self[TYPETABLE_ALLOWS_NIL] = true
+            return self
+        elseif k == INTERFACE_LINK_KEY then
+            if self[TYPETABLE_HAS_DEFAULT_VALUE] and ( type( self[TYPETABLE_DEFAULT_VALUE] ) ~= "string" or #self ~= TYPETABLE_DEFAULT_VALUE ) then
+                ValueTypeClassException( "InterfaceLinks must have ONE default value, a string with the identifier of the view, or have NO default value (i.e. no brackets, not just empty) to default to the property name.", 2 )
+            end
+            if self[TYPETABLE_IS_LINK] then
+                ValueTypeClassException( "Tried to repeatedly index '" .. name .. "." .. INTERFACE_LINK_KEY .. "' (i.e. you did '" .. name .. "." .. INTERFACE_LINK_KEY .. "." .. INTERFACE_LINK_KEY .. "'). This is unnecessary.", 2 )
+            end
+            self[TYPETABLE_ALLOWS_NIL] = true -- interface links always need to allow nil
+            self[TYPETABLE_IS_LINK] = true
+            return self
+        elseif type( k ) ~= "number" then -- if it's a number it would've been trying to get a default value, don't error
+            ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. ValueTypes only support accessing the key ." .. ALLOWS_NIL_KEY .. " or ." .. INTERFACE_LINK_KEY , 2 )
+        end
+    end
 
     local metatable = {}
     function metatable:__call( ... )
@@ -52,6 +77,7 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             [TYPETABLE_TYPE] = typeStr;
             [TYPETABLE_CLASS] = classType;
             [TYPETABLE_ALLOWS_NIL] = false;
+            [TYPETABLE_IS_LINK] = false;
             [TYPETABLE_IS_VAR_ARG] = false;
             [TYPETABLE_IS_ENUM] = false;
             [TYPETABLE_ENUM_ITEM_TYPE] = false;
@@ -76,18 +102,7 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
             end
         end
 
-        local metatable = {}
-        function metatable:__index( k )
-            if k == "allowsNil" then
-                if valueInstance[TYPETABLE_ALLOWS_NIL] then
-                    ValueTypeClassException( "Tried to repeatedly index '" .. name .. ".allowsNil' (i.e. you did '" .. name .. ".allowsNil.allowsNil'). This is unnecessary.", 2 )
-                end
-                valueInstance[TYPETABLE_ALLOWS_NIL] = true
-                return valueInstance
-            elseif type( k ) ~= "number" then -- if it's a number it would've been trying to get a default value, don't error
-                ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. ValueTypes only support accessing the key .allowsNil" , 2 )
-            end
-        end
+        local metatable = { __index = instance__index }
 
         function metatable:__newindex( k )
             ValueTypeClassException( "Tried to set value of '" .. name .. "." .. k .. "'. ValueTypes do not support assignment of values." , 2 )
@@ -101,14 +116,17 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
     end
 
     function metatable:__index( k )
-        if k == "allowsNil" then
+        if k == ALLOWS_NIL_KEY or k == INTERFACE_LINK_KEY then
             -- we have to make a unique copy because setting allows nil would apply it to all types
             local newValueType = {}
             for i = 1, #valueType do
                 newValueType[i] = valueType[i]
             end
+            if k == INTERFACE_LINK_KEY then
+                newValueType[TYPETABLE_IS_LINK] = true
+            end
             newValueType[TYPETABLE_ALLOWS_NIL] = true
-            local newMetatable = { __index = metatable.index, __newindex = metatable.__newindex}
+            local newMetatable = { __index = instance__index, __newindex = metatable.__newindex}
             local __tostring = "value type instance '" .. name .. "': " ..  tostring( valueType ):sub( 8 )
             function newMetatable:__tostring() return __tostring end
             setmetatable( newValueType, newMetatable )
@@ -150,6 +168,7 @@ local function createEnumType()
         [TYPETABLE_TYPE] = "table";
         [TYPETABLE_CLASS] = false;
         [TYPETABLE_ALLOWS_NIL] = false;
+        [TYPETABLE_IS_LINK] = false;
         [TYPETABLE_IS_VAR_ARG] = false;
         [TYPETABLE_IS_ENUM] = true;
         [TYPETABLE_ENUM_ITEM_TYPE] = false;
@@ -162,6 +181,7 @@ local function createEnumType()
             [TYPETABLE_TYPE] = "table";
             [TYPETABLE_CLASS] = false;
             [TYPETABLE_ALLOWS_NIL] = false;
+            [TYPETABLE_IS_LINK] = false;
             [TYPETABLE_IS_VAR_ARG] = false;
             [TYPETABLE_IS_ENUM] = true;
             [TYPETABLE_HAS_DEFAULT_VALUE] = true;
@@ -204,8 +224,8 @@ local function createEnumType()
 
         local metatable = {}
         function metatable:__index( k )
-            if k == "allowsNil" then
-                EnumValueTypeClassException( "Enum ValueTypes do not support .allowsNil" )
+            if k == ALLOWS_NIL_KEY or k == INTERFACE_LINK_KEY then
+                EnumValueTypeClassException( "Enum ValueTypes do not support ." .. k )
             else
                 ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. Enum ValueTypes only support accessing any key." , 2 )
             end
@@ -223,8 +243,8 @@ local function createEnumType()
     end
 
     function metatable:__index( k )
-        if k == "allowsNil" then
-            EnumValueTypeClassException( "Enum ValueTypes do not support .allowsNil" )
+        if k == ALLOWS_NIL_KEY or k == INTERFACE_LINK_KEY then
+            EnumValueTypeClassException( "Enum ValueTypes do not support ." .. k )
         else
             ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. Enum ValueTypes only support accessing any key." , 2 )
         end
@@ -472,6 +492,7 @@ function stripFunctionArguments( name, contents )
                             [TYPETABLE_TYPE] = false;
                             [TYPETABLE_CLASS] = false;
                             [TYPETABLE_ALLOWS_NIL] = true;
+                            [TYPETABLE_IS_LINK] = false;
                             [TYPETABLE_IS_VAR_ARG] = isVarArg;
                             [TYPETABLE_IS_ENUM] = false;
                             [TYPETABLE_ENUM_ITEM_TYPE] = false;
@@ -489,7 +510,7 @@ function stripFunctionArguments( name, contents )
 
                         if not value then
                             ArgumentValueTypeParsingClassException( "Argument ValueType was invalid value in class '" ..name .. "' on line " .. n .. ". Check your spelling, syntax and that if you are use a class it exists. Read the 'Class System' wiki page if you're still stuck.", 0 )
-                        elseif value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] then -- this was created like String(), not String, or indexed .allowsNil so it created its own instance. hence we can use the value directly
+                        elseif value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] or value[TYPETABLE_IS_LINK] then -- this was created like String(), not String, or indexed .allowsNil so it created its own instance. hence we can use the value directly
                             value[TYPETABLE_NAME] = argumentName
                             typeTable = value
                         else
@@ -530,14 +551,22 @@ function stripFunctionArguments( name, contents )
                         end
                     elseif functionName == "set" then
                         if #argumentsTable ~= 1 then
-                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". Getters should can only have ONE argument. Read the 'Class System' wiki page if you're still stuck.", 0 )
+                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". Setters should only have ONE argument. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         local tableItem = argumentsTable[1]
                         if tableItem[TYPETABLE_NAME] ~= (secondLevel and secondLevel or firstLevel) then
                             ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". The name of the setter's argument must be identical to the property name. (e.g. function View.isFocused:set( isFocused ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         if tableItem[TYPETABLE_TYPE] then
-                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". The setter's argument cannot declare a ValueType, it is automatically inferred. (e.g. function View.isFocused:set( isFocused ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
+                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". An setter's argument cannot declare a ValueType, it is automatically inferred. (e.g. function View.isFocused:set( isFocused ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
+                        end
+                    elseif functionName == "action" then
+                        if #argumentsTable ~= 1 then
+                            ArgumentValueTypeParsingClassException( "Invalid action arguments in class '" ..name .. "' on line " .. n .. ". Actions should only have ONE argument. Read the 'Class System' wiki page if you're still stuck.", 0 )
+                        end
+                        local tableItem = argumentsTable[1]
+                        if tableItem[TYPETABLE_CLASS] ~= classes['ActionInterfaceEvent'] or tableItem[TYPETABLE_HAS_DEFAULT_VALUE] then
+                            ArgumentValueTypeParsingClassException( "Invalid action arguments in class '" ..name .. "' on line " .. n .. ". An action's argument must be an ActionInterfaceEvent without a default value (e.g. propertyName:action( ActionInterfaceEvent event) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                     end
                 end
@@ -587,6 +616,8 @@ local function constructClass( _, name )
         prebuiltInstanceGetters = {};
         instanceSetters = {};
         prebuiltInstanceSetters = {};
+        instanceActions = {};
+        prebuiltInstanceActions = {};
         staticProperties = {};
         staticFunctions = {};
         prebuiltStaticFunctions = {};
@@ -632,6 +663,8 @@ function interface( name )
         prebuiltInstanceGetters = {};
         instanceSetters = {};
         prebuiltInstanceSetters = {};
+        instanceActions = {};
+        prebuiltInstanceActions = {};
         staticProperties = {};
         staticFunctions = {};
         prebuiltStaticFunctions = {};
@@ -682,7 +715,7 @@ function implements( name )
     if name ~= currentlyConstructing.name then
         local interface = class.get( name )
         if not interface then
-            ConstructionClassException( "Class '" .. currentlyConstructing.name .. "' attempted to implement '" .. name .. "', but the interface could not be found. Alterntively the class attempted to implement a class. Only interfaces can be implemented.", 2 )
+            ConstructionClassException( "Class '" .. currentlyConstructing.name .. "' attempted to implement '" .. name .. "', but the interface could not be found. Alternatively the class attempted to implement a class. Only interfaces can be implemented.", 2 )
         end
         currentlyConstructing.interfaces[name] = interface
         currentlyConstructing.typeOfCache[interface] = true
@@ -704,7 +737,7 @@ function loadProperties( propertiesTable )
     local compiledSuperDetails = superName and compiledClassDetails[superName]
     local enums = currentlyConstructing.enums
     local superEnums = compiledSuperDetails and compiledSuperDetails.enums
-    loadPropertiesTableSection( propertiesTable, compiledSuperDetails and compiledSuperDetails.instanceProperties, currentlyConstructing.instanceProperties, constructorProxy, currentlyConstructing.instanceGetters, currentlyConstructing.instanceSetters, enums, "static", currentCompiledClass )
+    loadPropertiesTableSection( propertiesTable, compiledSuperDetails and compiledSuperDetails.instanceProperties, currentlyConstructing.instanceProperties, constructorProxy, currentlyConstructing.instanceGetters, currentlyConstructing.instanceSetters, currentlyConstructing.instanceActions, enums, "static", currentCompiledClass )
     if staticPropertiesTable then
         loadPropertiesTableSection( staticPropertiesTable, compiledSuperDetails and compiledSuperDetails.staticProperties, currentlyConstructing.staticProperties, staticConstructorProxy, currentlyConstructing.staticGetters, currentlyConstructing.staticSetters )
     end
@@ -862,7 +895,7 @@ function loadProperties( propertiesTable )
     constructingEnvironment[currentlyConstructing.name] = constructorProxy
 end
 
-function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, gettersTable, settersTable, enumsTable, ignoreKey, compiledClass )
+function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, gettersTable, settersTable, actionsTable, enumsTable, ignoreKey, compiledClass )
     for propertyName, value in pairs( fromTable ) do
         if propertyName ~= ignoreKey then
             local isEnum = false
@@ -887,7 +920,7 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                             error( "self refernce only in static" , 2 )
                         end
                     end
-                    if value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] then -- this was created like String(), not String. hence we can use the value table directly
+                    if value[TYPETABLE_HAS_DEFAULT_VALUE] or value[TYPETABLE_ALLOWS_NIL] or value[TYPETABLE_IS_LINK] then -- this was created like String(), not String. hence we can use the value table directly
                         value[TYPETABLE_NAME] = propertyName
                         toTable[propertyName] = value
                     else
@@ -909,6 +942,7 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                     [TYPETABLE_TYPE] = false;
                     [TYPETABLE_CLASS] = false;
                     [TYPETABLE_ALLOWS_NIL] = true;
+                    [TYPETABLE_IS_LINK] = false;
                     [TYPETABLE_IS_VAR_ARG] = false;
                     [TYPETABLE_IS_ENUM] = false;
                     [TYPETABLE_ENUM_ITEM_TYPE] = false;
@@ -932,8 +966,20 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                             else
                                 settersTable[propertyName] = func
                             end
+                        elseif key == "action" then
+                            if not actionsTable then
+                                error( "Static classes do not allow :action functions." )
+                            elseif not toTable[propertyName][TYPETABLE_IS_LINK] then
+                                error( ":action functions can only be linked to InterfaceLinked (." .. INTERFACE_LINK_KEY .. ") properties." )
+                            else
+                                if actionsTable[propertyName] then
+                                    error( "attempt to redefine action for " .. propertyName )
+                                else
+                                    actionsTable[propertyName] = func
+                                end
+                            end
                         else
-                            error(":get and :set only", 2 )
+                            error(":get, :action and :set only", 2 )
                         end
                     end
                 } )
@@ -941,17 +987,38 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
         end
     end
 
+    -- add proxies for super functions
     if fromSuper then
-        for propertyName, v in pairs( fromSuper ) do
+        for propertyName, toTable in pairs( fromSuper ) do
             if not RESERVED_NAMES[propertyName] and not proxyTable[propertyName] then
                 proxyTable[propertyName] = setmetatable( {}, {
                     __newindex = function(_, key, func)
                         if key == "get" then
-                            gettersTable[propertyName] = func
+                            if gettersTable[propertyName] then
+                                error( "attempt to redefine getter for " .. propertyName )
+                            else
+                                gettersTable[propertyName] = func
+                            end
                         elseif key == "set" then
-                            settersTable[propertyName] = func
+                            if settersTable[propertyName] then
+                                error( "attempt to redefine setter for " .. propertyName )
+                            else
+                                settersTable[propertyName] = func
+                            end
+                        elseif key == "action" then
+                            if not actionsTable then
+                                error( "Static classes do not allow :action functions." )
+                            elseif not toTable[propertyName][TYPETABLE_IS_LINK] then
+                                error( ":action functions can only be linked to InterfaceLinked (." .. INTERFACE_LINK_KEY .. ") properties." )
+                            else
+                                if actionsTable[propertyName] then
+                                    error( "attempt to redefine action for " .. propertyName )
+                                else
+                                    actionsTable[propertyName] = func
+                                end
+                            end
                         else
-                            error(":get and :set only, not "..key)
+                            error(":get, :action and :set only", 2 )
                         end
                     end
                 } )
@@ -1032,8 +1099,10 @@ function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: e
         if type( value ) == expectedType then
             local expectedClass = typeTable[TYPETABLE_CLASS]
             if expectedClass then
-                if true or value.typeOf and value:typeOf( expectedClass ) then -- TODO: typeOf
+                if value.typeOf and value:typeOf( expectedClass ) then -- TODO: typeOf
                     return value
+                else
+                    InvalidValueTypeClassException( "'" .. tostring( value ) .. "' given to property/argument '" .. tostring(typeTable[TYPETABLE_NAME]) .. "', but it is not type of required class " .. tostring( expectedClass ) )
                 end
             else
                 return value
@@ -1049,7 +1118,7 @@ function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: e
             else
                 expectedString = expectedType
             end
-            error(typeTable[TYPETABLE_NAME] .. " was wrong type, expected "..expectedString .. " got " .. type( value ) .. ": "..tostring(value), 4)
+            InvalidValueTypeClassException(typeTable[TYPETABLE_NAME] .. " was wrong type, expected "..expectedString .. " got " .. type( value ) .. ": "..tostring(value), 4)
         end
     end
     return value
@@ -1065,7 +1134,7 @@ local function mergeProperties( classProperties, staticProperties, name )
             local classTypeTable = classProperties[k]
 
             -- ensure that the types and allows nil are the same
-            if classTypeTable[TYPETABLE_NAME] ~= staticTypeTable[TYPETABLE_NAME] or classTypeTable[TYPETABLE_TYPE] ~= staticTypeTable[TYPETABLE_TYPE] or classTypeTable[TYPETABLE_CLASS] ~= staticTypeTable[TYPETABLE_CLASS] or classTypeTable[TYPETABLE_ALLOWS_NIL] ~= staticTypeTable[TYPETABLE_ALLOWS_NIL] then
+            if classTypeTable[TYPETABLE_NAME] ~= staticTypeTable[TYPETABLE_NAME] or classTypeTable[TYPETABLE_TYPE] ~= staticTypeTable[TYPETABLE_TYPE] or classTypeTable[TYPETABLE_CLASS] ~= staticTypeTable[TYPETABLE_CLASS] or classTypeTable[TYPETABLE_ALLOWS_NIL] ~= staticTypeTable[TYPETABLE_ALLOWS_NIL]  or classTypeTable[TYPETABLE_IS_LINK] ~= staticTypeTable[TYPETABLE_IS_LINK] then
                 error(name .. ": cannot change type or allows nil of super class' property: " .. k, 2 )
             end
         end
@@ -1085,7 +1154,7 @@ function compileClass( compiledClass, name )
             return __tostring
         end } )
     else
-        currentlyConstructing.typeTable = { "self", "table", type, false, false, false }
+        currentlyConstructing.typeTable = { "self", "table", compiledClass, false, false, false }
 
         local superName = currentlyConstructing.superName
         local compiledSuperDetails = superName and compiledClassDetails[superName] 
@@ -1098,7 +1167,7 @@ function compileClass( compiledClass, name )
 
         -- all the properties and functions have been added now, check that the class complies with its interfaces
         for interfaceName, interface in pairs( currentlyConstructing.interfaces ) do
-            local functionTables, propertyTables, getterSetterTables = { "instanceFunctions", "staticFunctions" }, { "instanceProperties", "staticProperties", "enums" }, { "instanceGetters", "staticGetters", "staticSetters", "instanceSetters" }
+            local functionTables, propertyTables, getterSetterTables = { "instanceFunctions", "staticFunctions" }, { "instanceProperties", "staticProperties", "enums" }, { "instanceGetters", "staticGetters", "staticSetters", "instanceSetters" } -- make sure we check actions too!
             for i, tableName in ipairs( functionTables ) do
                 local classDefined = currentlyConstructing[tableName]
                 for functionName, functionTable in pairs( interface[tableName] ) do
@@ -1111,7 +1180,7 @@ function compileClass( compiledClass, name )
                             local classArgument = classFunctionTable[i]
                             if not classArgument then
                                 error( "function '" .. name ..":" .. functionName .. "' does not declare argument expected by interface '" .. interfaceName .. "': "..argument[TYPETABLE_NAME])
-                            elseif argument[TYPETABLE_TYPE] ~= classArgument[TYPETABLE_TYPE] or argument[TYPETABLE_CLASS] ~= classArgument[TYPETABLE_CLASS] or argument[TYPETABLE_ALLOWS_NIL] ~= classArgument[TYPETABLE_ALLOWS_NIL] or argument[TYPETABLE_HAS_DEFAULT_VALUE] ~= classArgument[TYPETABLE_HAS_DEFAULT_VALUE] or argument[TYPETABLE_DEFAULT_VALUE] ~= classArgument[TYPETABLE_DEFAULT_VALUE] then
+                            elseif argument[TYPETABLE_TYPE] ~= classArgument[TYPETABLE_TYPE] or argument[TYPETABLE_CLASS] ~= classArgument[TYPETABLE_CLASS] or argument[TYPETABLE_ALLOWS_NIL] ~= classArgument[TYPETABLE_ALLOWS_NIL] or argument[TYPETABLE_IS_LINK] ~= classArgument[TYPETABLE_IS_LINK] or argument[TYPETABLE_HAS_DEFAULT_VALUE] ~= classArgument[TYPETABLE_HAS_DEFAULT_VALUE] or argument[TYPETABLE_DEFAULT_VALUE] ~= classArgument[TYPETABLE_DEFAULT_VALUE] then
                                 error( "argument does use declare same type as interface '" .. interfaceName .. "'", 2 )
                             end
                         end
@@ -1378,6 +1447,23 @@ local function addSetter( setters, properties, prebuiltSetters, superPrebuiltSet
     addMissingSuper( superPrebuiltSetters, prebuiltSetters, outSetters )
 end
 
+local function addAction( actions, properties, prebuiltActions, superPrebuiltActions )
+    for propertyName, actionFunction in pairs( actions ) do
+        local propertyTypeTable = properties[propertyName]
+        local function prebuiltAction( super )
+            return function( self, value )
+                local oldSuper = rawget( self, "super" )
+                rawset( self, "super", super )
+                actionFunction( self, checkValue( value, propertyTypeTable ) ) -- we know that this is defintely self as it's only called by the class system
+                rawset( self, "super", oldSuper )
+                return value
+            end
+        end
+        addPrebuilt( propertyName, prebuiltAction, prebuiltActions, superPrebuiltActions )
+    end
+    addMissingSuper( superPrebuiltActions, prebuiltActions, outActions )
+end
+
 function compileInstanceClass( name, compiledClass, static )
     local initialValues, requireDefaultGeneration, definedIndexes, definedProperties = { static = static, class = compiledClass, }, {}, { static = "static", class = "class", typeOf = "typeOf", isDefined = "isDefined", isDefinedProperty = "isDefinedProperty", isDefinedFunction = "isDefinedFunction" }, { static = "static", class = "class" }
     local classDetails = compiledClassDetails[name]
@@ -1386,13 +1472,22 @@ function compileInstanceClass( name, compiledClass, static )
     local instanceProperties = classDetails.instanceProperties
     local selfTypeTable = classDetails.typeTable
 
+    local interfaceLinksProperty = instanceProperties.interfaceLinks
+    local interfaceLinks = ( interfaceLinksProperty and interfaceLinksProperty[TYPETABLE_TYPE] == "table" and not interfaceLinksProperty[TYPETABLE_HAS_DEFAULT_VALUE] and not interfaceLinksProperty[TYPETABLE_IS_ENUM] and not interfaceLinksProperty[TYPETABLE_CLASS] ) and {} -- only classes that define interfaceLinks = Table; will have interface links connected
 
-    -- add default property values if they have them
     for propertyName, typeTable in pairs( instanceProperties ) do
         definedIndexes[propertyName] = propertyName
         definedProperties[propertyName] = propertyName
 
-        if typeTable[TYPETABLE_HAS_DEFAULT_VALUE] then
+        if typeTable[TYPETABLE_IS_LINK] then
+            if not interfaceLinks then
+                error( "InterfaceLinks can only be made on classes which define a table an interfaceLinks table (i.e. any Container subclass)." )
+            end
+            -- link interface links
+            local identifier = typeTable[TYPETABLE_DEFAULT_VALUE] or propertyName
+            interfaceLinks[propertyName] = identifier
+        elseif typeTable[TYPETABLE_HAS_DEFAULT_VALUE] then
+            -- add default property values if they have them
             local defaultValue = typeTable[TYPETABLE_DEFAULT_VALUE]
             if ( typeTable[TYPETABLE_TYPE] or type( defaultValue ) ) ~= "table" then
                 if typeTable[TYPETABLE_ALLOWS_NIL] and defaultValue ~= nil then -- there isn't a value here yet. don't assign the value yet, but if after initialisation there isn't a value an error will be thrown if it doesn't allow nil
@@ -1403,6 +1498,8 @@ function compileInstanceClass( name, compiledClass, static )
             end
         end
     end
+
+    initialValues.interfaceLinks = interfaceLinks;
 
     local aliases = classDetails.aliases.instance
     for k, v in pairs( aliases ) do -- copy the aliases to definedIndexes
@@ -1416,9 +1513,10 @@ function compileInstanceClass( name, compiledClass, static )
     local prebuiltFunctions = currentlyConstructing.prebuiltInstanceFunctions
     addFunctions( classDetails.instanceFunctions, definedIndexes, prebuiltFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceFunctions, initialValues, selfTypeTable, name )
 
-    local prebuiltGetters, prebuiltSetters = currentlyConstructing.prebuiltInstanceGetters, currentlyConstructing.prebuiltInstanceSetters
+    local prebuiltGetters, prebuiltSetters, prebuiltActions = currentlyConstructing.prebuiltInstanceGetters, currentlyConstructing.prebuiltInstanceSetters, currentlyConstructing.prebuiltInstanceActions
     addGetter( classDetails.instanceGetters, instanceProperties, prebuiltGetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceGetters )
     addSetter( classDetails.instanceSetters, instanceProperties, prebuiltSetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceSetters )
+    addAction( classDetails.instanceActions, instanceProperties, prebuiltActions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceActions )
 
     local typeOfCache = classDetails.typeOfCache
     function initialValues:typeOf( object )
@@ -1452,9 +1550,11 @@ function compileInstanceClass( name, compiledClass, static )
         prebuiltFunctions = prebuiltFunctions;
         prebuiltGetters = prebuiltGetters;
         prebuiltSetters = prebuiltSetters;
+        prebuiltActions = prebuiltActions;
         requireDefaultGeneration = requireDefaultGeneration;
         definedIndexes = definedIndexes;
         definedProperties = definedProperties;
+        interfaceLinks = interfaceLinks;
     }
 end
 
@@ -1538,6 +1638,9 @@ function compileAndSpawnStatic( static, name, compiledClass )
 
     local metatable = {}
     function metatable:__newindex( key, value )
+        if key == nil then
+            error( "Classes do not support nil property names." )
+        end
         if RESERVED_NAMES[key] then error( "reserved name" , 2 ) end
 
         local locatedKey = definedProperties[key]
@@ -1555,6 +1658,9 @@ function compileAndSpawnStatic( static, name, compiledClass )
     end
 
     function metatable:__index( key )
+        if key == nil then
+            error( "Classes do not support nil property names." )
+        end
         local locatedKey = definedIndexes[key]
         if locatedKey then
             local getter = getters[locatedKey]
@@ -1602,18 +1708,27 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     local instanceProperties = classDetails.instanceProperties
 
     local instance = {}
-    local values, getters, setters = {}, {}, {}
+    local values, getters, setters, interfaceLinkActions = {}, {}, {}, {}
 
     for key, value in pairs( compiledInstance.initialValues ) do
         values[key] = value
     end
+
+    -- insert the actions to the interfaceLinkActions table
+    local interfaceLinkActionsProperty = instanceProperties.interfaceLinkActions
+    for propertyName, funcs in pairs( compiledInstance.prebuiltActions ) do
+        if not interfaceLinkActionsProperty then
+            error( "InterfaceLink actions can only be made on classes which define a table an interfaceLinkActions table (i.e. any Container subclass)." )
+        end
+        interfaceLinkActions[propertyName] = funcs[#funcs]( constructSuper( funcs, instance ) )
+    end
+    values.interfaceLinkActions = interfaceLinkActions
 
     -- for default values that are tables make them unique or create class instances
     local context = setmetatable( { self = instance }, { __index = environments[name] } )
     for propertyName, typeTable in pairs( compiledInstance.requireDefaultGeneration ) do
         values[propertyName] = generateDefaultValue( typeTable, context )
     end
-
 
     local prebuiltFunctions = compiledInstance.prebuiltFunctions
     for functionName, funcs in pairs( prebuiltFunctions ) do
@@ -1637,6 +1752,9 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     local definedIndexes, definedProperties = compiledInstance.definedIndexes, compiledInstance.definedProperties
     local metatable = {}
     function metatable:__newindex( key, value )
+        if key == nil then
+            error( "Classes do not support nil property names." )
+        end
         if RESERVED_NAMES[key] then error( "reserved name" , 2 ) end
 
         local locatedKey = definedProperties[key]
@@ -1654,6 +1772,9 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     end
 
     function metatable:__index( key )
+        if key == nil then
+            error( "Classes do not support nil property names." )
+        end
         local locatedKey = definedIndexes[key]
         if locatedKey then
             local getter = getters[locatedKey]
@@ -1683,7 +1804,7 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     -- insert default values
     local generatedDefault = {}
     for k, v in pairs( definedProperties ) do
-        if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
+        if not RESERVED_NAMES[v] and k == v and not instanceProperties[k][TYPETABLE_IS_LINK] then -- i.e. it's not an alias and not an interface link
             local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
             if value == nil then
                 local defaultValue = generateDefaultValue( instanceProperties[k], context, k )
@@ -1714,7 +1835,7 @@ function spawnInstance( ignoreAllowsNil, name, ... )
     if not ignoreAllowsNil then
         -- check for any nil values that aren't allowed to be nil
         for k, v in pairs( definedProperties ) do
-            if not RESERVED_NAMES[v] and k == v then -- i.e. it's not an alias
+            if not RESERVED_NAMES[v] and k == v and not instanceProperties[k][TYPETABLE_IS_LINK] then -- i.e. it's not an alias and not an interface link
                 local value = values[k] -- TODO: maybe this should use instance[k] so getters are called
                 if value == nil and not instanceProperties[k][TYPETABLE_ALLOWS_NIL] then
                     error( name .. "." .. k .. " was nil after initialisation but type does not specify .allowsNil" )

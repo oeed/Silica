@@ -15,7 +15,6 @@ function SegmentButton:initialise( ... )
     self:super( ... )
     self:event( ParentChangedInterfaceEvent, self.onSiblingOrParentChanged )
     self:event( SiblingAddedInterfaceEvent, self.onSiblingOrParentChanged )
-    self:event( SiblingAddedInterfaceEvent, self.onSiblingOrParentChanged )
 end
 
 function SegmentButton:onDraw()
@@ -60,6 +59,6 @@ end
     @desc Fired when it's siblings changed or it is added/removed from it's parent
     @param [Event] event -- the event
 ]]
-function SegmentButton:onSiblingOrParentChanged( ParentChangedInterfaceEvent event, Event.phases phase )
+function SegmentButton:onSiblingOrParentChanged( InterfaceEvent event, Event.phases phase )
     self.needsDraw = true
 end

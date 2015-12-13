@@ -13,6 +13,21 @@ function ContainerEventManager:handleEvent( event )
 		return true
 	end
 
+	if event.isSentToParents then
+		local owner = self.owner
+		local parent = owner.parent
+		if parent then
+			local parentEvent = parent.event
+			if parent:hitTestEvent( event, owner ) then
+				event:makeRelative( parent )
+				if parentEvent:handleEvent( event ) then
+					return true
+				end
+				event:makeRelative( owner )
+			end
+		end
+	end
+
 	if event.isSentToChildren then
 		local owner = self.owner
 		local children = owner.children
@@ -33,6 +48,7 @@ function ContainerEventManager:handleEvent( event )
 			end
 		end
 	end
+
 	if isSentToSender and self:handleEventPhase( event, Event.phases.AFTER ) then
 		return true
 	end

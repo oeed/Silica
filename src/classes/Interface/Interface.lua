@@ -69,6 +69,11 @@ function Interface:loadContainer( containerView )
 			return nil, "Failed to initialise " .. childNode.type .. ". Identifier: " .. tostring( childNode.attributes.identifier )
 		end
 
+		local identifier = childNode.attributes.identifier
+		if identifier then
+			childView.identifier = identifier
+		end
+		
 		if parentContainer then
 			parentContainer:insert( childView )
 		end
