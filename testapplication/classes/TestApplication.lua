@@ -1,8 +1,8 @@
 
 class "TestApplication" extends "Application" {
 
-	name = "Test";
-	interfaceName = "test";
+	name = String( "Test" );
+	interfaceName = String( "test" ).allowsNil;
 
 }
 
