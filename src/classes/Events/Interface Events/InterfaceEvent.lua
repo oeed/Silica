@@ -1,7 +1,7 @@
 
 class "InterfaceEvent" extends "Event" {
 
-	owner = false;
+	owner = false; -- TODO: is this ever used?
 
 }
 
