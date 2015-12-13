@@ -17,11 +17,10 @@ class "Container" extends "View" {
 ]]
 function Container:initialise( ... )
 	self:super( ... )
-	self:loadInterface()
-	self:event( InterfaceOutletChangedInterfaceEvent, self.onInterfaceOutletChanged )
 
     self:event( ChildAddedInterfaceEvent, self.onChildOfChildAdded )
     self:event( ChildRemovedInterfaceEvent, self.onChildOfChildRemoved )
+    self:event( ReadyInterfaceEvent, self.onReady )
 end
 
 --[[
@@ -38,51 +37,19 @@ function Container.static:fromInterface( interfaceName, _class )
 	end
 end
 
+function Container:onReady( ReadyInterfaceEvent event, Event.phases phase )
+	self:loadInterface()
+end
+
 --[[
     @desc Loads the children and properties of the interface specified by the self.interfaceName interface name. Called automatically during Container:init, do not call this yourself.
 ]]
 function Container:loadInterface()
     local interfaceName = self.interfaceName
     if interfaceName then
-        local interface = Interface( interfaceName, self.class, self )
-
-        local containerInterfaceProperties = self.interfaceProperties
-        for k, v in pairs( interface.containerProperties ) do
-        	if not containerInterfaceProperties or not containerInterfaceProperties[k] then -- if the interface defining THIS container specified this property then don't set it
-        		self[k] = v
-        	end
-        end
-
-        for i, childView in ipairs( interface.children ) do
-        	self:insert( childView )
-        end
-
-        interface:ready()
+    	-- this does all the work for us
+        Interface( interfaceName, self.class, self ):ready()
     end
-end
-
-function Container:onInterfaceOutletChanged( InterfaceOutletChangedInterfaceEvent event, Event.phases phase )
-	local interfaceLink = event.interfaceLink
-	local oldView = false
-	local newView = false
-	local interfaceLinkActions = self.interfaceLinkActions
-	local BEFORE = Event.phases.BEFORE
-	local ACTION = ActionInterfaceEvent
-
-	for k, outlet in pairs( self.interfaceLinks ) do
-		if interfaceLink == outlet then
-			oldView = oldView == false and event.oldView or oldView
-			newView = newView == false and event.newView or newView
-			if oldView ~= newView then
-				local func = interfaceLinkActions[k]
-				if func then
-					if oldView and #oldView == 0 then oldView.event:disconnect( ACTION, func, BEFORE, nil, self ) end
-					if newView and #newView == 0 then newView:event( ACTION, func, BEFORE, nil, self ) end
-				end
-			end
-		end
-	end
-
 end
 
 --[[

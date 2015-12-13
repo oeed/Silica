@@ -50,6 +50,7 @@ class "View" {
 	needsDraw = Boolean( true );
 	isVisible = Boolean( true );
 	theme = ThemeOutlet;
+	interfaceProperties = Table.allowsNil;
 
 	isCanvasHitTested = Boolean( true );
 	isFocused = Boolean( false );

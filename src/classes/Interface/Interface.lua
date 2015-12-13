@@ -69,17 +69,29 @@ function Interface:loadContainer( containerView )
 			return nil, "Failed to initialise " .. childNode.type .. ". Identifier: " .. tostring( childNode.attributes.identifier )
 		end
 
-		local identifier = childNode.attributes.identifier
+		local attributes = childNode.attributes
+		local identifier = attributes.identifier
+		local existingIntefaceProperties = childView.interfaceProperties
 		if identifier then
-			childView.identifier = identifier
+			childView.identifier = existingIntefaceProperties and ( childView.identifier or identifier ) or identifier
 		end
-		
+			
 		if parentContainer then
 			parentContainer:insert( childView )
 		end
 		
-		for k, v in pairs( childNode.attributes ) do
-			childView[k] = v
+		if existingIntefaceProperties then
+			for k, v in pairs( attributes ) do
+	        	if not containerInterfaceProperties or not containerInterfaceProperties[k] then -- if the interface defining THIS container specified this property then don't set it
+					childView[k] = v
+					existingIntefaceProperties[k] = v
+	        	end
+			end
+		else
+			for k, v in pairs( attributes ) do
+				childView[k] = v
+			end
+			childView.interfaceProperties = attributes
 		end
 
 		local children = {}
