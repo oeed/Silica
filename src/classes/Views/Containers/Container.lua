@@ -33,6 +33,7 @@ end
 function Container.static:fromInterface( interfaceName, _class )
 	local interface = Interface( interfaceName, _class or Container )
 	if interface then
+		interface:ready()
 		return interface.container
 	end
 end
@@ -55,6 +56,8 @@ function Container:loadInterface()
         for i, childView in ipairs( interface.children ) do
         	self:insert( childView )
         end
+
+        interface:ready()
     end
 end
 

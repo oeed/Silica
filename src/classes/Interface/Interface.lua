@@ -109,6 +109,14 @@ function Interface:loadContainer( containerView )
 	end
 
 	local container = loadChild( self.containerNode, nil, containerView )
-	container.event:handleEvent( LoadedInterfaceEvent( container ) )
 	self.container = container
+end
+
+--[[
+	@desc Must be called when the container has been assigned to, for example, Application.container
+	@return Any returnedValue
+]]
+function Interface:ready()
+	local container = self.container
+	container.event:handleEvent( ReadyInterfaceEvent( container ) )
 end

@@ -126,7 +126,9 @@ function Application:reloadInterface()
 	end
 
 	if interfaceName then
-		self.container = Interface( interfaceName ).container
+		local interface = Interface( interfaceName )
+		self.container = interface.container
+		interface:ready()
 	else
 		local container = ApplicationContainer()
 		self.container = container

@@ -66,12 +66,14 @@ end
 function Window:loadInterface()
     local interfaceName = self.interfaceName
     if interfaceName then
-        local container = Interface( interfaceName, WindowContainer ).container
+        local interface = Interface( interfaceName, WindowContainer )
+        local container = interface.container
         container.x = 1
         container.y = 11
         container.width = self.width - RESIZE_MARGIN_X
         container.height = self.height - RESIZE_MARGIN_Y
         self.container = self:insert( container )
+        interface:ready()
     end
 end
 
