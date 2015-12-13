@@ -470,7 +470,9 @@ function View.isFocused:set( isFocused )
     local wasFocused = self.isFocused
     if wasFocused ~= isFocused then
         self.isFocused = isFocused
-        self:updateThemeStyle()
+        if self:isDefinedFunction( "updateThemeStyle" ) then
+        	self:updateThemeStyle()
+        end
     end
 end
 
