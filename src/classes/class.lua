@@ -224,8 +224,8 @@ local function createEnumType()
 
         local metatable = {}
         function metatable:__index( k )
-            if k == ALLOWS_NIL_KEY then
-                EnumValueTypeClassException( "Enum ValueTypes do not support .allowsNil" )
+            if k == ALLOWS_NIL_KEY or k == INTERFACE_LINK_KEY then
+                EnumValueTypeClassException( "Enum ValueTypes do not support ." .. k )
             else
                 ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. Enum ValueTypes only support accessing any key." , 2 )
             end
@@ -243,8 +243,8 @@ local function createEnumType()
     end
 
     function metatable:__index( k )
-        if k == ALLOWS_NIL_KEY then
-            EnumValueTypeClassException( "Enum ValueTypes do not support .allowsNil" )
+        if k == ALLOWS_NIL_KEY or k == INTERFACE_LINK_KEY then
+            EnumValueTypeClassException( "Enum ValueTypes do not support ." .. k )
         else
             ValueTypeClassException( "Tried to access unknown index '" .. name .. "." .. k .. "'. Enum ValueTypes only support accessing any key." , 2 )
         end
