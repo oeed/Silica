@@ -7,11 +7,7 @@ class "SearchBox" extends "TextBox" {
 
 function SearchBox:initialiseCanvas()
     self:super()
-
-    local symbolObject = SymbolObject( 8, 4, SearchSymbol )
-    self.canvas:insert( symbolObject )
-
-    self.theme:connect( symbolObject, "outlineColour", "searchSymbolColour" )
-    
-    self.symbolObject = symbolObject
+    local theme = self.theme
+    local symbol = theme:value( "symbol" )
+    self.canvas:fill( theme:value( "symbolColour" ), SymbolMask( 1 + theme:value( "symbolMargin" ), 1 + math.floor( ( self.height - symbol.height ) / 2 ), symbol ) )
 end

@@ -209,8 +209,10 @@
 	</TextBox>
 
 	<SearchBox>
+		<symbolMargin type="Number" default="7" />
 		<leftMargin type="Number" default="18" />
-		<searchSymbolColour type="Graphics.colours" default="LIGHT_GREY" />
+		<symbolColour type="Graphics.colours" default="LIGHT_GREY" />
+		<symbol type="Symbol" default="search" />
 	</SearchBox>
 
 	<ApplicationContainer>
