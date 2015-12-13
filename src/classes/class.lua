@@ -891,7 +891,7 @@ function loadProperties( propertiesTable )
     constructingEnvironment[currentlyConstructing.name] = constructorProxy
 end
 
-function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, gettersTable, settersTable, enumsTable, ignoreKey, compiledClass )
+function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, gettersTable, settersTable, actionsTable, enumsTable, ignoreKey, compiledClass )
     for propertyName, value in pairs( fromTable ) do
         if propertyName ~= ignoreKey then
             local isEnum = false
@@ -962,8 +962,20 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                             else
                                 settersTable[propertyName] = func
                             end
+                        elseif key == "action" then
+                            if not actionsTable then
+                                error( "Static classes do not allow :action functions." )
+                            elseif not toTable[propertyName][TYPETABLE_IS_LINK] then
+                                error( ":action functions can only be linked to InterfaceLinked (." .. INTERFACE_LINK_KEY ") properties." )
+                            else
+                                if actionsTable[propertyName] then
+                                    error( "attempt to redefine action for " .. propertyName )
+                                else
+                                    actionsTable[propertyName] = func
+                                end
+                            end
                         else
-                            error(":get and :set only", 2 )
+                            error(":get, :action and :set only", 2 )
                         end
                     end
                 } )
