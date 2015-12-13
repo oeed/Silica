@@ -21,7 +21,7 @@
         <!-- <ToolbarSymbolButton symbol="settings"/> -->
     </ToolbarContainer>
     
-    <Button x=10 y=50 identifier="button" text="Silica :D" />
+    <Button x=10 y=50 text="Silica :D" />
 
     <Label x=70 y=54 text="Another" />
 
