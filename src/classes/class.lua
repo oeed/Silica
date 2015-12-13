@@ -551,22 +551,22 @@ function stripFunctionArguments( name, contents )
                         end
                     elseif functionName == "set" then
                         if #argumentsTable ~= 1 then
-                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". Setters should can only have ONE argument. Read the 'Class System' wiki page if you're still stuck.", 0 )
+                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". Setters should only have ONE argument. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         local tableItem = argumentsTable[1]
                         if tableItem[TYPETABLE_NAME] ~= (secondLevel and secondLevel or firstLevel) then
                             ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". The name of the setter's argument must be identical to the property name. (e.g. function View.isFocused:set( isFocused ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         if tableItem[TYPETABLE_TYPE] then
-                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". The setter's argument cannot declare a ValueType, it is automatically inferred. (e.g. function View.isFocused:set( isFocused ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
+                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". An setter's argument cannot declare a ValueType, it is automatically inferred. (e.g. function View.isFocused:set( isFocused ) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                     elseif functionName == "action" then
                         if #argumentsTable ~= 1 then
-                            ArgumentValueTypeParsingClassException( "Invalid action arguments in class '" ..name .. "' on line " .. n .. ". Actions should can only have ONE argument. Read the 'Class System' wiki page if you're still stuck.", 0 )
+                            ArgumentValueTypeParsingClassException( "Invalid action arguments in class '" ..name .. "' on line " .. n .. ". Actions should only have ONE argument. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         local tableItem = argumentsTable[1]
                         if tableItem[TYPETABLE_CLASS] ~= classes['ActionInterfaceEvent'] or tableItem[TYPETABLE_HAS_DEFAULT_VALUE] then
-                            ArgumentValueTypeParsingClassException( "Invalid action arguments in class '" ..name .. "' on line " .. n .. ". The action's argument must be an ActionInterfaceEvent without a default value (e.g. propertyName:action( ActionInterfaceEvent event) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
+                            ArgumentValueTypeParsingClassException( "Invalid action arguments in class '" ..name .. "' on line " .. n .. ". An action's argument must be an ActionInterfaceEvent without a default value (e.g. propertyName:action( ActionInterfaceEvent event) ). Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                     end
                 end
