@@ -20,7 +20,7 @@ function Container:initialise( ... )
 
     self:event( ChildAddedInterfaceEvent, self.onChildOfChildAdded )
     self:event( ChildRemovedInterfaceEvent, self.onChildOfChildRemoved )
-    self:event( ReadyInterfaceEvent, self.onReady )
+    self:event( ReadyInterfaceEvent, self.onReadyLoadInterface )
 end
 
 --[[
@@ -37,7 +37,7 @@ function Container.static:fromInterface( interfaceName, _class )
 	end
 end
 
-function Container:onReady( ReadyInterfaceEvent event, Event.phases phase )
+function Container:onReadyLoadInterface( ReadyInterfaceEvent event, Event.phases phase )
 	self:loadInterface()
 end
 
