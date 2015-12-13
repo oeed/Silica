@@ -15,11 +15,12 @@ function _G.try( func )
                         return handle.handler( exception )
                     end
                 end
+                return error( err, 0 )
             end
         end
+        return error( err, 0 )
     end
-
-    return error( err, 0 )
+    return function()end
 end
 
 function _G.catch( exceptionClass, handler )
