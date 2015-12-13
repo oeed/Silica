@@ -551,7 +551,7 @@ function stripFunctionArguments( name, contents )
                         end
                     elseif functionName == "set" then
                         if #argumentsTable ~= 1 then
-                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". Getters should can only have ONE argument. Read the 'Class System' wiki page if you're still stuck.", 0 )
+                            ArgumentValueTypeParsingClassException( "Invalid setter arguments in class '" ..name .. "' on line " .. n .. ". Setters should can only have ONE argument. Read the 'Class System' wiki page if you're still stuck.", 0 )
                         end
                         local tableItem = argumentsTable[1]
                         if tableItem[TYPETABLE_NAME] ~= (secondLevel and secondLevel or firstLevel) then
