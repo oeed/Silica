@@ -1721,9 +1721,6 @@ function spawnInstance( ignoreAllowsNil, name, ... )
             error( "InterfaceLink actions can only be made on classes which define a table an interfaceLinkActions table (i.e. any Container subclass)." )
         end
         interfaceLinkActions[propertyName] = funcs[#funcs]( constructSuper( funcs, instance ) )
-        for i, v in ipairs(instanceProperties[propertyName]) do
-            log(v)
-        end
     end
     values.interfaceLinkActions = interfaceLinkActions
 
@@ -1766,14 +1763,6 @@ function spawnInstance( ignoreAllowsNil, name, ... )
             if setter and not lockedSetters[locatedKey] then
                 setter( self, value )
             else
-                if key == "theButton" then
-                log("Set "..key)
-                log(value)
-                for i, v in ipairs(instanceProperties[locatedKey]) do
-                    log(v)
-                end
-                logtraceback()
-            end
                 local context = setmetatable( { self = self }, { __index = environments[name] } )
                 values[locatedKey] = checkValue( value, instanceProperties[locatedKey], nil, context, key )
             end
