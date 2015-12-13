@@ -8,7 +8,7 @@ class "Application" {
 	path = String.allowsNil;
 	updateTimer = Number.allowsNil;
 	lastUpdate = Number( 0 );
-	arguments = Table;
+	arguments = Table.allowsNil;
 	isRunning = Boolean( false );
 	container = Container;
 	document = Document.allowsNil;
