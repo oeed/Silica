@@ -617,6 +617,7 @@ local function constructClass( _, name )
         instanceSetters = {};
         prebuiltInstanceSetters = {};
         instanceActions = {};
+        prebuiltInstanceActions = {};
         staticProperties = {};
         staticFunctions = {};
         prebuiltStaticFunctions = {};
@@ -663,6 +664,7 @@ function interface( name )
         instanceSetters = {};
         prebuiltInstanceSetters = {};
         instanceActions = {};
+        prebuiltInstanceActions = {};
         staticProperties = {};
         staticFunctions = {};
         prebuiltStaticFunctions = {};
@@ -1163,7 +1165,7 @@ function compileClass( compiledClass, name )
 
         -- all the properties and functions have been added now, check that the class complies with its interfaces
         for interfaceName, interface in pairs( currentlyConstructing.interfaces ) do
-            local functionTables, propertyTables, getterSetterTables = { "instanceFunctions", "staticFunctions" }, { "instanceProperties", "staticProperties", "enums" }, { "instanceGetters", "staticGetters", "staticSetters", "instanceSetters" }
+            local functionTables, propertyTables, getterSetterTables = { "instanceFunctions", "staticFunctions" }, { "instanceProperties", "staticProperties", "enums" }, { "instanceGetters", "staticGetters", "staticSetters", "instanceSetters" } -- make sure we check actions too!
             for i, tableName in ipairs( functionTables ) do
                 local classDefined = currentlyConstructing[tableName]
                 for functionName, functionTable in pairs( interface[tableName] ) do
@@ -1443,6 +1445,23 @@ local function addSetter( setters, properties, prebuiltSetters, superPrebuiltSet
     addMissingSuper( superPrebuiltSetters, prebuiltSetters, outSetters )
 end
 
+local function addAction( actions, properties, prebuiltActions, superPrebuiltActions )
+    for propertyName, actionFunction in pairs( actions ) do
+        local propertyTypeTable = properties[propertyName]
+        local function prebuiltAction( super )
+            return function( self, value )
+                local oldSuper = rawget( self, "super" )
+                rawset( self, "super", super )
+                actionFunction( self, checkValue( value, propertyTypeTable ) ) -- we know that this is defintely self as it's only called by the class system
+                rawset( self, "super", oldSuper )
+                return value
+            end
+        end
+        addPrebuilt( propertyName, prebuiltAction, prebuiltActions, superPrebuiltActions )
+    end
+    addMissingSuper( superPrebuiltActions, prebuiltActions, outActions )
+end
+
 function compileInstanceClass( name, compiledClass, static )
     local initialValues, requireDefaultGeneration, definedIndexes, definedProperties = { static = static, class = compiledClass, }, {}, { static = "static", class = "class", typeOf = "typeOf", isDefined = "isDefined", isDefinedProperty = "isDefinedProperty", isDefinedFunction = "isDefinedFunction" }, { static = "static", class = "class" }
     local classDetails = compiledClassDetails[name]
@@ -1492,9 +1511,10 @@ function compileInstanceClass( name, compiledClass, static )
     local prebuiltFunctions = currentlyConstructing.prebuiltInstanceFunctions
     addFunctions( classDetails.instanceFunctions, definedIndexes, prebuiltFunctions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceFunctions, initialValues, selfTypeTable, name )
 
-    local prebuiltGetters, prebuiltSetters = currentlyConstructing.prebuiltInstanceGetters, currentlyConstructing.prebuiltInstanceSetters
+    local prebuiltGetters, prebuiltSetters, prebuiltActions = currentlyConstructing.prebuiltInstanceGetters, currentlyConstructing.prebuiltInstanceSetters, currentlyConstructing.prebuiltInstanceActions
     addGetter( classDetails.instanceGetters, instanceProperties, prebuiltGetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceGetters )
     addSetter( classDetails.instanceSetters, instanceProperties, prebuiltSetters, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceSetters )
+    addAction( classDetails.instanceActions, instanceProperties, prebuiltActions, compiledSuperDetails and compiledSuperDetails.prebuiltInstanceActions )
 
     local typeOfCache = classDetails.typeOfCache
     function initialValues:typeOf( object )
