@@ -68,7 +68,7 @@ end
 ]]
 function ScaleableCanvas:drawTo( Canvas destinationCanvas, Number x, Number y, Mask.allowsNil mask )
     local scaleX, scaleY = self.scaleX, self.scaleY
-    local width, height = self.width, self.height
+    local pixels, width, height = self.pixels, self.width, self.height
     local scaledWidth, scaledHeight = math.floor( width * scaleX + 0.5 ), math.floor( height * scaleY + 0.5 )
     local widthRatio = width / scaledWidth
     local heightRatio = height / scaledHeight
