@@ -3,7 +3,7 @@ class "Container" extends "View" {
 
 	children = {};
 	interfaceLinks = Table; -- TODO: .isReadOnly
-	-- interfaceLinkActions = Table; -- TODO: .isReadOnly
+	interfaceLinkActions = Table; -- TODO: .isReadOnly
 	interfaceName = false;
 	offsetX = 0;
 	offsetY = 0;
@@ -278,10 +278,15 @@ function Container:insert( View childView, Number.allowsNil position )
 
 	local identifier = childView.identifier
 	if identifier then
+		local interfaceLinkActions = self.interfaceLinkActions
 		for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
 			if linkIdentifier == identifier then
 				-- if there's an existing view at the propertyName we'll overwrite the property
 				self[propertyName] = childView
+				local action = interfaceLinkActions[propertyName]
+				if action then
+    				childView:event( ActionInterfaceEvent, action, Event.phases.BEFORE, nil, self )
+				end
 			end
 		end
 	end
