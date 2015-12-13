@@ -1,6 +1,10 @@
 
 class "TestApplicationContainer" extends "ApplicationContainer" {
     
-    label = Label( "label" ).link;
+    theButton = Label( "button" ).link;
     
 }
+
+function TestApplicationContainer.theButton:action( ActionInterfaceEvent event )
+
+end
