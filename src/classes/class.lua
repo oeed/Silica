@@ -968,7 +968,7 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
                             if not actionsTable then
                                 error( "Static classes do not allow :action functions." )
                             elseif not toTable[propertyName][TYPETABLE_IS_LINK] then
-                                error( ":action functions can only be linked to InterfaceLinked (." .. INTERFACE_LINK_KEY ") properties." )
+                                error( ":action functions can only be linked to InterfaceLinked (." .. INTERFACE_LINK_KEY .. ") properties." )
                             else
                                 if actionsTable[propertyName] then
                                     error( "attempt to redefine action for " .. propertyName )
@@ -985,17 +985,38 @@ function loadPropertiesTableSection( fromTable, fromSuper, toTable, proxyTable, 
         end
     end
 
+    -- add proxies for super functions
     if fromSuper then
-        for propertyName, v in pairs( fromSuper ) do
+        for propertyName, toTable in pairs( fromSuper ) do
             if not RESERVED_NAMES[propertyName] and not proxyTable[propertyName] then
                 proxyTable[propertyName] = setmetatable( {}, {
                     __newindex = function(_, key, func)
                         if key == "get" then
-                            gettersTable[propertyName] = func
+                            if gettersTable[propertyName] then
+                                error( "attempt to redefine getter for " .. propertyName )
+                            else
+                                gettersTable[propertyName] = func
+                            end
                         elseif key == "set" then
-                            settersTable[propertyName] = func
+                            if settersTable[propertyName] then
+                                error( "attempt to redefine setter for " .. propertyName )
+                            else
+                                settersTable[propertyName] = func
+                            end
+                        elseif key == "action" then
+                            if not actionsTable then
+                                error( "Static classes do not allow :action functions." )
+                            elseif not toTable[propertyName][TYPETABLE_IS_LINK] then
+                                error( ":action functions can only be linked to InterfaceLinked (." .. INTERFACE_LINK_KEY .. ") properties." )
+                            else
+                                if actionsTable[propertyName] then
+                                    error( "attempt to redefine action for " .. propertyName )
+                                else
+                                    actionsTable[propertyName] = func
+                                end
+                            end
                         else
-                            error(":get and :set only, not "..key)
+                            error(":get, :action and :set only", 2 )
                         end
                     end
                 } )
