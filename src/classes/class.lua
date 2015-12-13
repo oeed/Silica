@@ -12,7 +12,7 @@ local compiledClassDetails, compiledInstances, compiledStatics = {}, {}, {}
 local currentlyConstructing, expectedName -- the class that is currently being constructed
 local constructingEnvironment, constructorProxy, constructingFunctionArguments, currentCompiledClass
 local environments = {}
-local stripFunctionArguments, loadProperties, compileClass, loadPropertiesTableSection, checkValue, constructSuper, isInterface, pseudoReference, checkValue, compileClass, compileInstanceClass, compileAndSpawnStatic, spawnInstance, createValueType
+local stripFunctionArguments, loadProperties, compileClass, loadPropertiesTableSection, checkValue, constructSuper, isInterface, pseudoReference, compileClass, compileInstanceClass, compileAndSpawnStatic, spawnInstance, createValueType
 local implements, extends, interface
 local isLoadingProperties
 local interface
@@ -1099,8 +1099,10 @@ function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: e
         if type( value ) == expectedType then
             local expectedClass = typeTable[TYPETABLE_CLASS]
             if expectedClass then
-                if true or value.typeOf and value:typeOf( expectedClass ) then -- TODO: typeOf
+                if value.typeOf and value:typeOf( expectedClass ) then -- TODO: typeOf
                     return value
+                else
+                    InvalidValueTypeClassException( "'" .. tostring( value ) .. "' given to property/argument '" .. tostring(typeTable[TYPETABLE_NAME]) .. "', but it is not type of required class " .. tostring( expectedClass ) )
                 end
             else
                 return value
@@ -1116,7 +1118,7 @@ function checkValue( value, typeTable, isSelf, context, circularKey ) -- TODO: e
             else
                 expectedString = expectedType
             end
-            error(typeTable[TYPETABLE_NAME] .. " was wrong type, expected "..expectedString .. " got " .. type( value ) .. ": "..tostring(value), 4)
+            InvalidValueTypeClassException(typeTable[TYPETABLE_NAME] .. " was wrong type, expected "..expectedString .. " got " .. type( value ) .. ": "..tostring(value), 4)
         end
     end
     return value
@@ -1152,7 +1154,7 @@ function compileClass( compiledClass, name )
             return __tostring
         end } )
     else
-        currentlyConstructing.typeTable = { "self", "table", type, false, false, false }
+        currentlyConstructing.typeTable = { "self", "table", compiledClass, false, false, false }
 
         local superName = currentlyConstructing.superName
         local compiledSuperDetails = superName and compiledClassDetails[superName] 
@@ -1719,6 +1721,9 @@ function spawnInstance( ignoreAllowsNil, name, ... )
             error( "InterfaceLink actions can only be made on classes which define a table an interfaceLinkActions table (i.e. any Container subclass)." )
         end
         interfaceLinkActions[propertyName] = funcs[#funcs]( constructSuper( funcs, instance ) )
+        for i, v in ipairs(instanceProperties[propertyName]) do
+            log(v)
+        end
     end
     values.interfaceLinkActions = interfaceLinkActions
 
@@ -1761,6 +1766,14 @@ function spawnInstance( ignoreAllowsNil, name, ... )
             if setter and not lockedSetters[locatedKey] then
                 setter( self, value )
             else
+                if key == "theButton" then
+                log("Set "..key)
+                log(value)
+                for i, v in ipairs(instanceProperties[locatedKey]) do
+                    log(v)
+                end
+                logtraceback()
+            end
                 local context = setmetatable( { self = self }, { __index = environments[name] } )
                 values[locatedKey] = checkValue( value, instanceProperties[locatedKey], nil, context, key )
             end
