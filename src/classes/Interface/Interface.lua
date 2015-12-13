@@ -55,7 +55,7 @@ end
 	@return [Container] container -- the container
 ]]
 function Interface:loadContainer( containerView )
-	local readyEvent = ReadyInterfaceEvent()
+	local loadedEvent = LoadedInterfaceEvent()
 	local function loadChild( childNode, parentContainer, childView )
 		local childClass = class.get( childNode.type )
 		if not childClass then
@@ -93,7 +93,7 @@ function Interface:loadContainer( containerView )
 			end
 		end
 
-		childView.event:handleEvent( readyEvent )
+		childView.event:handleEvent( loadedEvent )
 
 	    -- check for any nil values that aren't allowed to be nil
 	    local instanceProperties = childClass.instanceProperties
