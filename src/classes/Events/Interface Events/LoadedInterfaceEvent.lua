@@ -5,4 +5,6 @@ class "LoadedInterfaceEvent" extends "InterfaceEvent" {
         eventType = "interface_loaded";
     };
 
+    isSentToChildren = Boolean( false );
+
 }

@@ -5,8 +5,6 @@ class "ReadyInterfaceEvent" extends "InterfaceEvent" {
         eventType = "interface_ready";
     };
 
-    isSentToChildren = Boolean( false );
-
 }
 
 --[[
