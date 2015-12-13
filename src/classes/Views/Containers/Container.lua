@@ -225,8 +225,7 @@ function Container:onChildOfChildAdded( ChildAddedInterfaceEvent event, Event.ph
 		if identifier then
 			for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
 				if linkIdentifier == identifier then
-					-- if there's an existing view at the propertyName we'll overwrite the property
-					self[propertyName] = childView
+					self:connectInterfaceLink( propertyName, childView )
 				end
 			end
 		end
@@ -239,9 +238,8 @@ function Container:onChildOfChildRemoved( ChildRemovedInterfaceEvent event, Even
 		local identifier = childView.identifier
 		for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
 			if linkIdentifier == identifier then
-				-- if there's an existing view at the propertyName we'll overwrite the property
 				if self[propertyName] == childView then
-					self[propertyName] = self:findChild( identifier )
+					self:connectInterfaceLink( propertyName, self:findChild( identifier ) )
 				end
 			end
 		end
@@ -278,23 +276,9 @@ function Container:insert( View childView, Number.allowsNil position )
 
 	local identifier = childView.identifier
 	if identifier then
-		local interfaceLinkActions = self.interfaceLinkActions
 		for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
 			if linkIdentifier == identifier then
-				-- if there's an existing view at the propertyName we'll overwrite the property
-				try( function() 
-					self[propertyName] = childView
-				end ) {
-
-					catch( InvalidValueTypeClassException, function( exception )
-						error( "Attempted to attach " .. tostring( childView ) .. " with identifier '" .. identifier .. "' to property '" .. propertyName .. "' with an invalid ValueType of " .. tostring( self ) .. ". The ValueType you specified in the properties table is not the same as the one being linked to, either change the property' ValueType or change the identifier of the invalid View." )
-					end )
-
-				}
-				local action = interfaceLinkActions[propertyName]
-				if action then
-    				childView:event( ActionInterfaceEvent, action, Event.phases.BEFORE, nil, self )
-				end
+				self:connectInterfaceLink( propertyName, childView )
 			end
 		end
 	end
@@ -304,6 +288,37 @@ function Container:insert( View childView, Number.allowsNil position )
 	self.needsDraw = true
 
 	return childView
+end
+
+--[[
+	@desc Connects an interface link to the Container
+]]
+function Container:connectInterfaceLink( String propertyName, View childView )
+	local oldChildView = self[propertyName]
+	if oldChildView ~= childView then -- don't touch anything if it's the same view
+		local action = self.interfaceLinkActions[propertyName]
+		if action then
+			if oldChildView then
+				-- if there's an old view disconnect the old action handler
+				oldView.event:disconnect( ActionInterfaceEvent, action, Event.phases.BEFORE, nil, self )
+			end
+			-- connect the new event view to the handler
+			if childView then
+				childView:event( ActionInterfaceEvent, action, Event.phases.BEFORE, nil, self )
+			end
+		end
+
+		try( function() 
+			self[propertyName] = childView
+		end ) {
+
+			catch( InvalidValueTypeClassException, function( exception )
+				error( "Attempted to attach " .. tostring( childView ) .. " with identifier '" .. identifier .. "' to property '" .. propertyName .. "' with an invalid ValueType of " .. tostring( self ) .. ". The ValueType you specified in the properties table is not the same as the one being linked to, either change the property' ValueType or change the identifier of the invalid View." )
+			end )
+
+		}
+		
+	end
 end
 
 --[[
@@ -330,9 +345,8 @@ function Container:remove( removingView )
 		local identifier = removingView.identifier
 		for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
 			if linkIdentifier == identifier then
-				-- if there's an existing view at the propertyName we'll overwrite the property
-				if self[propertyName] == removingView then
-					self[propertyName] = self:findChild( identifier )
+				if self[propertyName] == childView then
+					self:connectInterfaceLink( propertyName, self:findChild( identifier ) )
 				end
 			end
 		end
