@@ -88,7 +88,7 @@ function Image.static:fromPixels( pixels, width, height )
 end
 
 function Image.static:fromPaintFormat( contents )
-    local lines = split( self.contents, "\n" )
+    local lines = split( contents, "\n" )
     local pixels = {}
     local width = 0
     for y, line in ipairs( lines ) do
@@ -101,7 +101,7 @@ function Image.static:fromPaintFormat( contents )
         end
     end
 
-    return Image( pixels, width, height )
+    return Image( pixels, width, #lines )
 end
 
 function Image:toPaintFormat()
