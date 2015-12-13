@@ -340,12 +340,10 @@ function Path:getFill( Number( 1 ) scaleX, Number( 1 ) scaleY )
 
             if abs( xDiff ) > abs( yDiff ) then
                 local y = minY
-                local dy = ( yDiff / xDiff ) * inverseScaleY
                 for x = min( x1, x2 ), max( x1, x2 ), inverseScaleX do
                     outline[floor( y1 + (x - x1) / xDiff * yDiff + 0.5 )][x * inverseScaleX] = true
                 end
             else
-                local dx = ( yDiff / xDiff ) * inverseScaleX
                 for y = minY, maxY, inverseScaleY do
                     outline[floor( y * scaleY + 0.5 )][x1 + ( y - y1 ) / yDiff * xDiff] = true
                 end
