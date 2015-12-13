@@ -4,21 +4,21 @@
 
 class "Application" {
 
-	name = false;
-	path = false;
-	updateTimer = false;
-	lastUpdate = 0;
-	arguments = {};
+	name = String;
+	path = String.allowsNil;
+	updateTimer = Number.allowsNil;
+	lastUpdate = Number( 0 );
+	arguments = Table;
 	isRunning = Boolean( false );
-	container = false;
-	document = false;
-	event = false;
-	schedules = {};
-	keyboardShortcutManager = false;
-	dragDropManager = false;
-	focuses = {};
+	container = Container;
+	document = Document.allowsNil;
+	event = ApplicationEventManager;
+	schedules = Table( {} );
+	keyboardShortcutManager = KeyboardShortcutManager;
+	dragDropManager = DragDropManager;
+	focuses = Table( {} );
 
-	interfaceName = false;
+	interfaceName = String.allowsNil;
 
 	-- TODO: exit codes
 	-- exitCode = {
