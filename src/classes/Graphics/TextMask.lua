@@ -33,7 +33,6 @@ function TextMask:initialise( Number x, Number y, Number.allowsNil width, Number
     end
 
     if hasEllipsis then
-        log(text .. " has ...")
         text = text .. "..."
     end
 
