@@ -52,12 +52,12 @@ function ScaleableCanvas:hitTest( Number x, Number y )
     local scaleX, scaleY = self.scaleX, self.scaleY
     local pixelX, pixelY = x, y
     local width = self.width
-    if scaleX ~= 1 or scaleY ~= y then
+    if scaleX ~= 1 or scaleY ~= 1 then
         local height = self.height
         local scaledWidth, scaledHeight = math.floor( width * scaleX + 0.5 ), math.floor( height * scaleY + 0.5 )
         local widthRatio = width / scaledWidth
         local heightRatio = height / scaledHeight
-        pixelX, pixelY = math.ceil( _x * widthRatio ), math.ceil( _y * heightRatio )
+        pixelX, pixelY = math.ceil( x * widthRatio ), math.ceil( y * heightRatio )
     end
     local colour = self.pixels[ ( pixelY - 1 ) * width + pixelX ]
     return colour and colour ~= Graphics.colours.TRANSPARENT
