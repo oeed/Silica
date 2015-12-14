@@ -7,7 +7,7 @@ class "Application" {
 	name = String;
 	path = String.allowsNil;
 	updateTimer = Number.allowsNil;
-	lastUpdate = Number( 0 );
+	lastUpdate = Number.allowsNil;
 	arguments = Table.allowsNil;
 	isRunning = Boolean( false );
 	container = Container;
@@ -145,7 +145,7 @@ end
 ]]
 function Application:update()
 	-- TODO: not exactally sure how to handle deltaTime for the first one. for now it's one 60th
-	local lastUpdate = self.lastUpdate or 1/60
+	local lastUpdate = self.lastUpdate or ( os.clock() - 1/60 )
 	local deltaTime = os.clock() - lastUpdate
 	self.updateTimer = os.startTimer( 1/20 )
 	self.lastUpdate = os.clock()
