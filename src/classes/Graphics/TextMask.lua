@@ -15,8 +15,6 @@ local NO_CHAR_MAP = {
 
 class "TextMask" extends "Mask" {
 
-    
-
 }
 
 function TextMask:initialise( Number x, Number y, Number.allowsNil width, Number.allowsNil height, String text, Font( Font.static.systemFont ) font, Font.alignments( Font.alignments.LEFT ) alignment )
@@ -25,6 +23,7 @@ function TextMask:initialise( Number x, Number y, Number.allowsNil width, Number
     local fontHeight = font.height
     local height = height or fontHeight
     local pixels = {}
+    local hasEllipsis = false
     local scale, characters, desiredHeight, spacing = font.scale, font.characters, font.desiredHeight, font.spacing
 
     while fontWidth > width and #text > 1 do
@@ -34,6 +33,7 @@ function TextMask:initialise( Number x, Number y, Number.allowsNil width, Number
     end
 
     if hasEllipsis then
+        log(text .. " has ...")
         text = text .. "..."
     end
 
