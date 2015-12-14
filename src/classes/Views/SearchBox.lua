@@ -5,7 +5,7 @@ class "SearchBox" extends "TextBox" {
 
 }
 
-function SearchBox:initialiseCanvas()
+function SearchBox:onDraw()
     self:super()
     local theme = self.theme
     local symbol = theme:value( "symbol" )
