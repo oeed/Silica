@@ -1,4 +1,6 @@
 
+local ceil, floor = math.ceil, math.floor
+
 class "ScaleableCanvas" extends "Canvas" {
     
     scaleX = Number( 1 );
@@ -18,16 +20,16 @@ end
 function ScaleableCanvas.contentMask:get()
     local scaleX, scaleY = self.scaleX, self.scaleY
     local width, height = self.width, self.height
-    local scaledWidth, scaledHeight = math.floor( width * scaleX + 0.5 ), math.floor( height * scaleY + 0.5 )
+    local scaledWidth, scaledHeight = floor( width * scaleX + 0.5 ), floor( height * scaleY + 0.5 )
     local widthRatio = width / scaledWidth
     local heightRatio = height / scaledHeight
-    local xMin, yMin = math.floor( ( width - scaledWidth ) / 2 ) + 1, math.floor( ( height - scaledHeight ) / 2 )
+    local xMin, yMin = floor( ( width - scaledWidth ) / 2 ) + 1, floor( ( height - scaledHeight ) / 2 )
 
     local pixels, maskPixels = self.pixels, {}
     local TRANSPARENT = Graphics.colours.TRANSPARENT
     for _x = 1, scaledWidth do
         for _y = 0, scaledHeight - 1 do
-            local pixelX, pixelY = math.ceil( _x * widthRatio ), math.ceil( _y * heightRatio )
+            local pixelX, pixelY = ceil( _x * widthRatio ), ceil( _y * heightRatio )
             local colour = pixels[pixelY * width + pixelX]
             if colour ~= TRANSPARENT then
                 maskPixels[( y + yMin + _y ) * width + x + xMin + _x] = true
@@ -54,10 +56,10 @@ function ScaleableCanvas:hitTest( Number x, Number y )
     local width = self.width
     if scaleX ~= 1 or scaleY ~= 1 then
         local height = self.height
-        local scaledWidth, scaledHeight = math.floor( width * scaleX + 0.5 ), math.floor( height * scaleY + 0.5 )
+        local scaledWidth, scaledHeight = floor( width * scaleX + 0.5 ), floor( height * scaleY + 0.5 )
         local widthRatio = width / scaledWidth
         local heightRatio = height / scaledHeight
-        pixelX, pixelY = math.ceil( x * widthRatio ), math.ceil( y * heightRatio )
+        pixelX, pixelY = ceil( x * widthRatio ), ceil( y * heightRatio )
     end
     local colour = self.pixels[ ( pixelY - 1 ) * width + pixelX ]
     return colour and colour ~= Graphics.colours.TRANSPARENT
@@ -68,32 +70,39 @@ end
 ]]
 function ScaleableCanvas:drawTo( Canvas destinationCanvas, Number x, Number y, Mask.allowsNil mask )
     local scaleX, scaleY = self.scaleX, self.scaleY
+    if scaleX == 1 and scaleY == 1 then
+        return self:super( destinationCanvas, x, y, mask )
+    end
     local pixels, width, height = self.pixels, self.width, self.height
-    local scaledWidth, scaledHeight = math.floor( width * scaleX + 0.5 ), math.floor( height * scaleY + 0.5 )
+    local scaledWidth, scaledHeight = floor( width * scaleX + 0.5 ), floor( height * scaleY + 0.5 )
     local widthRatio = width / scaledWidth
     local heightRatio = height / scaledHeight
-    local xMin, yMin = math.floor( ( width - scaledWidth ) / 2 ) + 1, math.floor( ( height - scaledHeight ) / 2 )
+    local xMin, yMin = floor( ( width - scaledWidth ) / 2 + 0.5 ), floor( ( height - scaledHeight ) / 2 + 0.5 )
     local destinationWidth, destinationHeight, destinationPixels = destinationCanvas.width, destinationCanvas.height, destinationCanvas.pixels
     local TRANSPARENT = Graphics.colours.TRANSPARENT
     local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
-
-    for _x = 1, scaledWidth do
+    local minX, minY = math.max( 1, x ), math.max( 1, y )
+    local maxX, maxY = math.min( destinationWidth, x + width - 1 ), math.min( destinationHeight, y + height - 1 )
+    for _x = 0, scaledWidth - 1 do
         for _y = 0, scaledHeight - 1 do
-            local pixelX, pixelY = math.ceil( _x * widthRatio ), math.ceil( _y * heightRatio )
-            local colour = pixels[pixelY * width + pixelX]
-            if colour and colour ~= TRANSPARENT then
-                local isOkay = true
-                if mask then
-                    local mx = pixelX - maskX + 1
-                    local my = pixelY - maskY + 1
-                    if mx >= 1 and mx <= maskWidth and my >= 1 and my <= maskHeight then
-                        isOkay = maskPixels[ (my - 1) * maskWidth + mx ]
-                    else
-                        isOkay = false
+            local pixelX, pixelY = ceil( ( _x + 1 ) * widthRatio ), ceil( _y * heightRatio )
+            local destX, destY = x + xMin + _x, y + yMin + _y
+            if destX >= minX and destX <= maxX and destY >= minY and destY <= maxY then
+                local colour = pixels[pixelY * width + pixelX]
+                if colour and colour ~= TRANSPARENT then
+                    local isOkay = true
+                    if mask then
+                        local mx = pixelX - maskX + 1
+                        local my = pixelY - maskY + 1
+                        if mx >= 1 and mx <= maskWidth and my >= 1 and my <= maskHeight then
+                            isOkay = maskPixels[ (my - 1) * maskWidth + mx ]
+                        else
+                            isOkay = false
+                        end
                     end
-                end
-                if isOkay then
-                    destinationPixels[( y + yMin + _y ) * destinationWidth + x + xMin + _x] = colour
+                    if isOkay then
+                        destinationPixels[( destY - 1 ) * destinationWidth + destX] = colour
+                    end
                 end
             end
         end
