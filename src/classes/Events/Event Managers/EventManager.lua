@@ -115,8 +115,12 @@ end
 	@param Event.class eventType -- the name of the even type
 	@return [boolean] hasConnections
 ]]
-function EventManager:hasConnections( eventClass )
-	return self.handles[eventClass] and #self.handles[eventClass] >= 1
+function EventManager:hasConnections( class )
+	for handleClass, handles in pairs( self.handles ) do
+		if #handles >= 1 and class:typeOf( handleClass ) then
+			return true
+		end
+	end
 end
 
 --[[
@@ -124,8 +128,12 @@ end
 	@param [Event.eventType] eventType -- the name of the even type
 	@return [boolean] hasConnections
 ]]
-function EventManager:hasConnectionsGlobal( eventType )
-	return self.handlesGlobal[eventType] and #self.handlesGlobal[eventType] >= 1
+function EventManager:hasConnectionsGlobal( class )
+	for handleClass, handles in pairs( self.handlesGlobal ) do
+		if #handles >= 1 and class:typeOf( handleClass ) then
+			return true
+		end
+	end
 end
 
 --[[
@@ -150,22 +158,24 @@ end
 	@return [boolean] stopPropagation -- whether no further handles should recieve this event
 ]]
 function EventManager:handleEventPhase( event, phase )
-	local handles = self.handles[event.class]
-	if handles then
-		for i, handle in pairs( handles ) do
-			if handle and phase == handle[2] then
-				-- handle[1] is the handle function
-				-- handle[2] is the phase
-				-- handle[3] is the event manager
-				-- handle[4] is the sender
-				local response = handle[1]( handle[4], event, handle[2] ) -- if response is true stop propagation, if false continue
-				-- TODO: maybe enforce returning boolean for event handler functions
-				-- if response ~= true and response ~= false then
-				-- 	error( "Error handler for event '" .. eventType .. "' of instance '" .. tostring( handle[4] ) .. "' did not return boolean. If the event should not be sent to anything else (i.e. stop propagation) return true, otherwise, if it can continue being passed around, return false.", 0 )
-				-- end
+	local class = event.class
+	for handleClass, handles in pairs( self.handles ) do
+		if class:typeOf( handleClass ) then
+			for i, handle in pairs( handles ) do
+				if handle and phase == handle[2] then
+					-- handle[1] is the handle function
+					-- handle[2] is the phase
+					-- handle[3] is the event manager
+					-- handle[4] is the sender
+					local response = handle[1]( handle[4], event, handle[2] ) -- if response is true stop propagation, if false continue
+					-- TODO: maybe enforce returning boolean for event handler functions
+					-- if response ~= true and response ~= false then
+					-- 	error( "Error handler for event '" .. eventType .. "' of instance '" .. tostring( handle[4] ) .. "' did not return boolean. If the event should not be sent to anything else (i.e. stop propagation) return true, otherwise, if it can continue being passed around, return false.", 0 )
+					-- end
 
-				if response then
-					return true
+					if response then
+						return true
+					end
 				end
 			end
 		end
