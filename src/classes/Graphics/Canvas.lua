@@ -141,8 +141,9 @@ function Canvas:drawTo( Canvas destinationCanvas, Number x, Number y, Mask.allow
     local destinationWidth, destinationHeight, destinationPixels = destinationCanvas.width, destinationCanvas.height, destinationCanvas.pixels
     local TRANSPARENT = Graphics.colours.TRANSPARENT
     local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
+    local maxIndex = width * height
     for index, colour in pairs( self.pixels ) do
-        if colour and colour ~= TRANSPARENT then
+        if index >= 1 and index <= maxIndex and colour and colour ~= TRANSPARENT then
             local _x = (index - 1) % width + x
             local _y = math.floor( ( index - 1) / width ) + y
             if _x >= 1 and _x <= destinationWidth and _y >= 1 and _y <= destinationHeight then
