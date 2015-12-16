@@ -14,7 +14,6 @@ function File.metatable:__call( path, ... )
             return self.spawn( false, path, ... )
         end
     end
-    return false
 end
 
 function File.static:make( path, mime, overwrite, contents )

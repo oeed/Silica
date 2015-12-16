@@ -31,7 +31,6 @@ function Folder.metatable:__call( path, ... )
             return self.spawn( false, path, ... )
         end
     end
-    return false
 end
 
 function Folder.static:make( path, overwrite )
