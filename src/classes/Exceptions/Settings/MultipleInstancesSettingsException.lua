@@ -1,0 +1,4 @@
+
+class "MultipleInstancesSettingsException" extends "SettingsException" {
+    
+}

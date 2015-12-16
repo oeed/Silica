@@ -1,0 +1,5 @@
+
+class "SettingsException" extends "FatalException" {
+    
+}
+

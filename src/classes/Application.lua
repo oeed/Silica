@@ -17,6 +17,7 @@ class "Application" {
 	keyboardShortcutManager = KeyboardShortcutManager;
 	dragDropManager = DragDropManager;
 	focuses = Table( {} );
+	settings = Settings.allowsNil;
 
 	interfaceName = String.allowsNil;
 
