@@ -88,6 +88,9 @@ function Application:initialise( ... )
 	self.event:connect( TimerEvent, self.onTimer )
 end
 
+function Application:initialiseSettings()
+end
+
 --[[
 	@desc Runs the application runtime with the supplied arguments
 	@param ... -- the arguments feed to the program (simply use ... for the arguments)
