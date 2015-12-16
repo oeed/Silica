@@ -26,7 +26,7 @@ local REFERENCE_UID = {} -- just a unique identifier to indicate that this is a 
 
 local ALLOWS_NIL_KEY, INTERFACE_LINK_KEY = "allowsNil", "link"
 
-local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true }
+local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true, instanceProperties = true }
 local DISALLOWED_CLASS_NAMES = { Number = true, String = true, Boolean = true, Any = true, Table = true, Function = true, Thread = true, Enum = true }
 
 -- Create the value types --
@@ -1041,6 +1041,7 @@ local function generateDefaultValue( typeTable, context, circularKey )
             local value = context
             for i, key in ipairs( typeTable[TYPETABLE_DEFAULT_VALUE] ) do
                 value = value[key]
+                -- TODO: error when value can't be indexed
                 -- TODO: circular references
                 -- if circularKey and circularKey[i] == key then
                     -- error( "attempted to make circular reference " )
@@ -1805,6 +1806,7 @@ function spawnInstance( ignoreAllowsNil, name, ... )
 
     instance.metatable = metatable
     instance.raw = values
+    instance.instanceProperties = instanceProperties
     setmetatable( instance, metatable )
 
     -- insert default values
