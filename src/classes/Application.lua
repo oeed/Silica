@@ -6,6 +6,8 @@ class "Application" {
 
 	name = String;
 	path = String.allowsNil;
+	userDataPath = String( "/" );
+	userDataFolder = Folder;
 	updateTimer = Number.allowsNil;
 	lastUpdate = Number.allowsNil;
 	arguments = Table.allowsNil;
@@ -68,6 +70,13 @@ end
 
 function Application:initialise( ... )
 	class.setApplication( self )
+	local userDataPath = self.userDataPath
+	local userDataParentFolder = Folder( userDataPath )
+	if not userDataParentFolder then
+		userDataParentFolder = Folder.static:make( userDataPath, true )
+	end
+	self.userDataFolder = userDataParentFolder:folderFromPath( "userdata" ) or userDataParentFolder:makeSubfolder( "userdata", true )
+	self:initialiseSettings()
 	self.event = ApplicationEventManager( self )
 	self.keyboardShortcutManager = KeyboardShortcutManager( self )
 	self.dragDropManager = DragDropManager( self )
