@@ -50,10 +50,7 @@ end
     @desc Clears all pixels from the canvas
 ]]
 function Canvas:clear()
-    local pixels = self.pixels
-    for i, _ in pairs( pixels ) do
-        pixels[i] = nil
-    end
+    self.pixels = {}
 end
 
 --[[
