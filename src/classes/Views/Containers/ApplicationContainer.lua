@@ -1,9 +1,11 @@
 
+local w, h = term.getSize()
+
 class "ApplicationContainer" extends "Container" {
 
 	-- TODO: make this use a Constraint
-	width = Number( 320 );
-	height = Number( 200 );
+	width = Number( w );
+	height = Number( h );
 	themeName = String( "default" );
 
 }
