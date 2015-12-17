@@ -13,11 +13,6 @@ end
 
 function ScreenCanvas:drawToScreen( screen )
     if Quartz then
-        log("to screen at "..os.clock())
-        -- log("using quartzBuffer")
-        -- for i, v in pairs( pixels ) do
-        --     quartzBuffer[i] = v
-        -- end
         Quartz:redraw( self.pixels )
     else
         local pixels, width, height, screenBuffer = self.pixels, self.width, self.height, self.screenBuffer
