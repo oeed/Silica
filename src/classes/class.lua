@@ -1456,12 +1456,14 @@ end
 
 local function addAction( actions, properties, prebuiltActions, superPrebuiltActions )
     for propertyName, actionFunction in pairs( actions ) do
-        local propertyTypeTable = properties[propertyName]
         local function prebuiltAction( super )
             return function( self, value )
+                if not value:typeOf( classes.ActionInterfaceEvent ) then
+                    error( "ActionInterfaceEvent wasn't passed to an action function, you shouldn't be messing around with the Container.interfaceLinkActions table, you're clearly doing something wrong." )
+                end
                 local oldSuper = rawget( self, "super" )
                 rawset( self, "super", super )
-                actionFunction( self, checkValue( value, propertyTypeTable ) ) -- we know that this is defintely self as it's only called by the class system
+                actionFunction( self, value ) -- we know that this is defintely self as it's only called by the class system
                 rawset( self, "super", oldSuper )
                 return value
             end
