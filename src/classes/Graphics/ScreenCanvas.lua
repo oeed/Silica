@@ -1,10 +1,4 @@
 
-local quartzBuffer
-
-if Quartz then
-    quartzBuffer = Quartz.screenBuffer
-end
-
 class "ScreenCanvas" extends "Canvas" {
     
     drawsCorners = Boolean( true );
@@ -18,15 +12,15 @@ function ScreenCanvas:initialise( ... )
 end
 
 function ScreenCanvas:drawToScreen( screen )
-    local pixels, width, height, screenBuffer = self.pixels, self.width, self.height, self.screenBuffer
-
-    if quartzBuffer then
-        log("using quartzBuffer")
-        for i, v in pairs( pixels ) do
-            quartzBuffer[i] = v
-        end
-        Quartz:redraw()
+    if Quartz then
+        log("to screen at "..os.clock())
+        -- log("using quartzBuffer")
+        -- for i, v in pairs( pixels ) do
+        --     quartzBuffer[i] = v
+        -- end
+        Quartz:redraw( self.pixels )
     else
+        local pixels, width, height, screenBuffer = self.pixels, self.width, self.height, self.screenBuffer
         -- draw the blacked out corners. this could be done using a Mask if the performance isn't too bad (considering it will be called every single draw)
         local corner = { 
             [1] = { [1] = true, [2] = true, [3] = true, [4] = true, [height - 3] = true, [height - 2] = true, [height - 1] = true, [height] = true },
