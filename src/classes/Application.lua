@@ -70,6 +70,9 @@ end
 
 function Application:initialise( ... )
 	class.setApplication( self )
+	if Quartz then
+		Quartz.silicaApplication = self
+	end
 	local userDataPath = self.userDataPath
 	local userDataParentFolder = Folder( userDataPath )
 	if not userDataParentFolder then
