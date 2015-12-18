@@ -87,20 +87,20 @@ local EXTENSION_MIMES = {
 
 class "Metadata" {
     
-    file = false;
-    metadataPath = false;
+    file = FileSystemItem;
+    metadataPath = String;
 
-    mime = false; -- MIME mime of the file (e.g. image/nft)
-    createdTimestamp = DEFAULT_TIMESTAMP;
-    openedTimestamp = DEFAULT_TIMESTAMP;
-    modifiedTimestamp = DEFAULT_TIMESTAMP;
+    mime = String; -- MIME mime of the file (e.g. image/nft)
+    createdTimestamp = Number( DEFAULT_TIMESTAMP );
+    openedTimestamp = Number( DEFAULT_TIMESTAMP );
+    modifiedTimestamp = Number( DEFAULT_TIMESTAMP );
     icon = false; -- by default, if this is empty it will get the default system icon for it. it allows for custom icons
 
     mimes = Enum( String, EXTENSION_MIMES );
 
 }
 
-function Metadata:initialise( file )
+function Metadata:initialise( FileSystemItem file )
     self.file = file
     self.metadataPath = file.metadataPath
     self:load()
