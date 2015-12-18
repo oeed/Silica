@@ -41,6 +41,13 @@ function FileSystemItem.metatable:__call( path, ... )
     end
 end
 
+--[[
+    @desc Tidys a path (removes double slashes etc.)
+]]
+function FileSystemItem.static:tidy( String path )
+    return tidy( path )
+end
+
 function FileSystemItem:initialise( path, parent )
     self.path = path
     if parent then
