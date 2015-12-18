@@ -48,7 +48,7 @@ function Exception:initialise( String message, Number( 1 ) level )
     nextID = nextID + 1
 
     local traceback = self.traceback
-    for i = 1, 5 do
+    for i = 1, 15 do
         local src = select( 2, pcall( error, "", i + level ) )
         if src == "pcall: " then
             break
