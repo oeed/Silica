@@ -120,6 +120,10 @@ function Metadata:load()
                     raw[propertyName] = value
                 end
             end
+            if not self.mime then
+                self:guessMIME()
+                self:save()
+            end
         end
     else
         local metadataFolderPath = self.file.parentPath .. "/.metadata"
@@ -132,6 +136,9 @@ function Metadata:load()
             fs.makeDir( metadataFolderPath )
         end
         self:create()
+    end
+    if not self.mime then
+        error(metadataPath)
     end
 end
 
@@ -169,6 +176,15 @@ function Metadata:create()
     self:updateCreatedTimestamp()
     self:updateOpenedTimestamp()
     self:updateModifiedTimestamp()
+    self:guessMIME()
+    self:save()
+end
+
+--[[
+    @desc Guess the mime based on the file
+    @return Any returnedValue
+]]
+function Metadata:guessMIME()
     local file = self.file
     local path = file.path
     local extension = file.extension
@@ -177,11 +193,18 @@ function Metadata:create()
         if not EXTENSION_MIMES[ extension:upper() ] then
             error(extension:upper())
         end
-        self.mime = EXTENSION_MIMES[ extension:upper() ] or "unknown"
-    elseif fs.isDir( path ) then
-        self.mime = "folder"
+        self.mime = EXTENSION_MIMES[ extension:upper() ]
+        return
     end
-    self:save()
+    if fs.isDir( path ) then
+        if fs.exists( path .. "/bundle.sconfig" ) then
+            self.mime = EXTENSION_MIMES.SBUNDLE
+        else
+            self.mime = "folder"
+        end
+        return
+    end
+    self.mime = "unknown"
 end
 
 function Metadata:delete()
