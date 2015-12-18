@@ -30,7 +30,12 @@ class "FileSystemItem" {
 
 function FileSystemItem.metatable:__call( path, ... )
     if fs.isDir( path ) then
-        return Folder( path, ... )
+        -- for speed we asume here that if has a bundle.scfg file then it's a bundle, we'll check in greater depth once we create the bundle
+        if fs.exists( tidy( path .. "/bundle.sconfig" ) ) then
+            return Bundle( path, ... )
+        else
+            return Folder( path, ... )
+        end
     else
         return File( path, ... )
     end
