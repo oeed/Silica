@@ -6,11 +6,3 @@ class "ReadyInterfaceEvent" extends "InterfaceEvent" {
     };
 
 }
-
---[[
-	@constructor
-	@desc Creates a ready event from the arguments
-]]
-function ReadyInterfaceEvent:initialise()
-end
-
