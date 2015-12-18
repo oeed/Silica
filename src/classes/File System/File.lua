@@ -48,7 +48,7 @@ function File.serialisedContents:set( serialisedContents )
 end
 
 function File.binaryContents:set( binaryContents )
-    if type( binaryContents ) ~= "binaryContents" then error( "File.binaryContents must be set with a table of bytes.", 2 ) end
+    if type( binaryContents ) ~= "table" then error( "File.binaryContents must be set with a table of bytes.", 2 ) end
     local handle = fs.open( self.path, "wb" )
     if handle then
         for i, byte in ipairs( binaryContents ) do
