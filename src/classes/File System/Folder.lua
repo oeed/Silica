@@ -1,8 +1,6 @@
 
 local function tidy( path )
-    if type(path)~="string" then logtraceback() end
-    path = "/" .. path
-    return path
+    path = ("/" .. path)
         :gsub( "/.-/%.%./", "/" )
         :gsub( "^.-/%.%./", "" )
         :gsub( "/%./", "/" )
@@ -11,6 +9,7 @@ local function tidy( path )
         :gsub( "//+", "/" )
         -- :gsub( "^[^/]", "/" )
         :gsub( "/$", "" )
+    return path
 end
 
 class "Folder" extends "FileSystemItem" {
