@@ -3,8 +3,10 @@
 
 class "Resource" {
 
-	file = false;
-	contents = false;
+	file = File.allowsNil;
+	contents = String.allowsNil;
+	binaryContents = Table.allowsNil;
+	mime = Metadata.mimes;
 
 }
 
@@ -34,7 +36,13 @@ function Resource:initialise( name, mimes, category, allowDirectories )
 					for i, mime in ipairs( mimes ) do
 						local contents = nameCategoryFiles[mime]
 						if contents and ( allowDirectories or type( contents ) ~= "table" ) then
+							self.mime = mime
 							self.contents = contents
+							local binaryContents = {}
+							for i = 1, #contents do
+								table.insert( binaryContents, string.byte( contents ) )
+							end
+							self.binaryContents = binaryContents
 							return
 						end
 					end
@@ -51,11 +59,26 @@ function Resource:initialise( name, mimes, category, allowDirectories )
 		break
 	end
 	
-	self.file = file or false
-	if file then
-		self.contents = file.contents
-	else
+	self.file = file
+	if not file then
 		error('File not found: '..name.." of mime "..serialise(mimes))
 		-- TODO: error, file not found
 	end
+	log("file "..file.path)
+	self.mime = file.metadata.mime
+	log("mime "..self.mime)
+end
+
+function Resource.contents:get()
+	local contents = self.contents
+	if contents then return contents end
+	contents = self.file.contents
+	return contents
+end
+
+function Resource.binaryContents:get()
+	local binaryContents = self.binaryContents
+	if binaryContents then return binaryContents end
+	binaryContents = self.file.binaryContents
+	return binaryContents
 end
