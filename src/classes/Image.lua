@@ -1,5 +1,5 @@
 
-local TRANSPARENT = TRANSPARENT
+local TRANSPARENT = Graphics.colours.TRANSPARENT
 
 local hexnums = { [10] = "a", [11] = "b", [12] = "c", [13] = "d", [14] = "e" , [15] = "f" }
 local function getHexOf(colour)
@@ -32,7 +32,7 @@ end
 
 local mimes = Metadata.mimes
 local UCG_SIGNATURE = 0xFF2137
-local UCG_VERSION
+local UCG_VERSION = 1
 
 local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG }
 
@@ -73,10 +73,10 @@ end
 
 function Image.static:fromPath( path )
     local file = File( path )
-    if file.metadata.mime == mimes.IMAGE then
-        return Image.static:fromPaintFormat( file.contents )
-    elseif file.metadata.mime == mimes.UCG then
+    if file.metadata.mime == mimes.UCG then
         return Image.static:fromUniversalCompressedGraphics( file.binaryContents )
+    elseif file.metadata.mime == mimes.IMAGE then
+        return Image.static:fromPaintFormat( file.contents )
     end
 end
 
@@ -88,7 +88,12 @@ function Image.static:fromName( name )
 end
 
 function Image.static:fromResource( resource )
-    return Image.static:fromPaintFormat( resource.contents )
+    local mime = resource.mime
+    if mime == mimes.IMAGE then
+        return Image.static:fromPaintFormat( resource.contents )
+    elseif mime == mimes.UCG then
+        return Image.static:fromUniversalCompressedGraphics( resource.binaryContents )
+    end
 end
 
 function Image.static:fromPixels( pixels, width, height )
@@ -129,7 +134,7 @@ end
 
             -- Thanks to ardera for this format! --
 -- Format specification: http://puu.sh/lZNtW/270899ae19.pdf --
-function Image.static:fromUniversalCompressedGraphics( bytes )
+function Image.static:fromUniversalCompressedGraphics( Table bytes )
     local pointer = 1 -- the index of the byte to read next
     local bitpointer = 1 -- the index of the bit to read next
     
@@ -138,7 +143,7 @@ function Image.static:fromUniversalCompressedGraphics( bytes )
         local b = bytes[pointer]
         pointer = pointer +1
         if b == nil then
-            error("unexpected end-of-stream ", 2)
+            error("unexpected end-of-stream "..pointer, 2)
         end
         return b
     end
