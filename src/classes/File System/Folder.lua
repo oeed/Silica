@@ -150,7 +150,7 @@ end
 --[[
     @desc Find an IEditableFileSystemItem that matches the name (without the extension) and the mime type.
     @param [string] name -- the exact name of the file without extension to match
-    @param [Metatable.mimes/table{Metatable.mimes}] mimes -- a mime or table of mimes
+    @param [Metadata.mimes/table{Metadata.mimes}] mimes -- a mime or table of mimes
     @param [boolean] noSubfolders -- whether to not look in subfolders, by default subfolders will be searched
     @return [IEditableFileSystemItem] returnedValue -- description
 ]]
@@ -181,7 +181,6 @@ function Folder:find( name, mimes, noSubfolders )
             return found
         end
     end
-    return false
 end
 
 function Folder.fs:get()

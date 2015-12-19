@@ -12,7 +12,7 @@ class "Resource" {
 	@constructor
 	@desc Creates a resource class, allowing ease resolving and loading of files
 	@param [string] match -- the name of the file without the extension
-    @param [Metatable.mimes/table{Metatable.mimes}] mimes -- a mime or table of mimes
+    @param [Metadata.mimes/table{Metadata.mimes}] mimes -- a mime or table of mimes
 	@param [string] category -- the category (folder, such as classes, interfaces) to look in
 	@param [boolean] allowDirectories -- default false, whether directories are able to be matched
 ]]
