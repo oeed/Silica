@@ -75,6 +75,8 @@ function Image.static:fromPath( path )
     local file = File( path )
     if file.metadata.mime == mimes.UCG then
         return Image.static:fromUniversalCompressedGraphics( file.binaryContents )
+    elseif file.metadata.mime == mimes.SICON then
+        return Icon.static:fromIcon( resource.binaryContents )
     elseif file.metadata.mime == mimes.IMAGE then
         return Image.static:fromPaintFormat( file.contents )
     end
@@ -89,10 +91,12 @@ end
 
 function Image.static:fromResource( resource )
     local mime = resource.mime
-    if mime == mimes.IMAGE then
-        return Image.static:fromPaintFormat( resource.contents )
-    elseif mime == mimes.UCG then
+    if mime == mimes.UCG then
         return Image.static:fromUniversalCompressedGraphics( resource.binaryContents )
+    elseif mime == mimes.SICON then
+        return Icon.static:fromIcon( resource.binaryContents )
+    elseif mime == mimes.IMAGE then
+        return Image.static:fromPaintFormat( resource.contents )
     end
 end
 
