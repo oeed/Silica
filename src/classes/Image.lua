@@ -31,8 +31,10 @@ local function split(a,e)
 end
 
 local mimes = Metadata.mimes
-local UCG_SIGNATURE = 0xFF2137
-local UCG_VERSION = 1
+local ucgValues = {
+    SIGNATURE = 0xFF2137,
+    VERSION = 1
+}
 
 local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG, mimes.SICON }
 
@@ -45,6 +47,7 @@ class "Image" {
     -- file = false;
     contents = false;
     scaledCache = {};
+    ucgValues = Enum( Number, ucgValues );
 
 }
 
@@ -213,7 +216,7 @@ function Image.static:fromUniversalCompressedGraphics( Table bytes )
         return readByte() * 2^24 + readByte() * 2^16 + readByte() * 256 + readByte()
     end
 
-    if readNumber( 24 ) ~= UCG_SIGNATURE then
+    if readNumber( 24 ) ~= ucgValues.SIGNATURE then
         error( "invalid signature!", 2 )
     end
 
@@ -397,7 +400,7 @@ function Image:toUniversalCompressedGraphics()
     writeByte(0xFF)
     writeByte(0x21)
     writeByte(0x37)
-    writeByte(UCG_VERSION)
+    writeByte(ucgValues.VERSION)
     
     writeWord(w)
     writeWord(h)
