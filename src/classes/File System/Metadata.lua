@@ -82,6 +82,7 @@ local EXTENSION_MIMES = {
     SUSERDATA = "silica/suserdata";
     SBUNDLE = "silica/sbundle";
     SFONT = "silica/font";
+    SICON = "silica/icon";
     RESOURCEPKG = "package/resource";
     PACKAGE = "package/plain";
     APPLICATION = "silica/application";

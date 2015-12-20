@@ -34,7 +34,7 @@ local mimes = Metadata.mimes
 local UCG_SIGNATURE = 0xFF2137
 local UCG_VERSION = 1
 
-local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG }
+local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG, mimes.SICON }
 
 class "Image" {
     
