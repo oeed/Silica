@@ -122,3 +122,25 @@ function Icon.static:fromIcon( Table bytes )
     end
     return Icon( images )
 end
+
+function Icon:getScaledPixels( scaledWidth, scaledHeight )
+    scaledWidth = math.floor( scaledWidth + 0.5 )
+    scaledHeight = math.floor( scaledHeight + 0.5 )
+
+    local scaledCache = self.scaledCache
+
+    if scaledCache[scaledWidth .. ":" .. scaledHeight] then
+        return scaledCache[scaledWidth .. ":" .. scaledHeight]
+    end
+
+    local width, height, pixels = self.width, self.height, self.pixels
+
+    local bestImage
+    for i, image in ipairs( self.images ) do
+        if not bestImage or ( image.width >= scaledWidth or image.height >= scaledHeight ) then
+            bestImage = image
+        end
+    end
+
+    return bestImage:getScaledPixels( scaledWidth, scaledHeight )
+end
