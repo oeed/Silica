@@ -64,9 +64,7 @@ function Resource:initialise( name, mimes, category, allowDirectories )
 		error('File not found: '..name.." of mime "..serialise(mimes))
 		-- TODO: error, file not found
 	end
-	log("file "..file.path)
 	self.mime = file.metadata.mime
-	log("mime "..self.mime)
 end
 
 function Resource.contents:get()
