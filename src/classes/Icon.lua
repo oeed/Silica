@@ -16,7 +16,7 @@ function Icon:initialise( Table images )
     local maxWidth, maxWidth
     local pixels
     for i, image in ipairs( images ) do
-        local width, height = image.width * image.height
+        local width, height = image.width, image.height
         local size = width * height
         if size > maxSize then
             maxSize = size
@@ -30,7 +30,6 @@ function Icon:initialise( Table images )
 end
 
 function Icon.static:fromIcon( Table bytes )
-    log(textutils.serialise(bytes))
     local pointer = 1 -- the index of the byte to read next
     local bitpointer = 1 -- the index of the bit to read next
     
@@ -106,20 +105,19 @@ function Icon.static:fromIcon( Table bytes )
     end
 
     local images = {}
-    log(readNumber( 24 ))
     if readNumber( 24 ) ~= iconValues.SIGNATURE then
         error( "invalid signature!", 2 )
     end
-    local sizeCount = readWord()
+    local sizeCount = readByte()
     local startIndex = 6 + 4 * sizeCount
     for i = 1, sizeCount do
         local length = readInteger()
         local sizeBytes = {}
-        for n = startIndex, startIndex + length do
-            table.insert( sizeBytes, bytes )
+        for n = 1, length do
+            table.insert( sizeBytes, readByte() )
         end
         local image = Image.static:fromUniversalCompressedGraphics( sizeBytes )
-        table.insert( images )
+        table.insert( images, image )
         startIndex = startIndex + length + 1 
     end
     return Icon( images )
