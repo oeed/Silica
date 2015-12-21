@@ -74,22 +74,33 @@ function Image.static:blank( width, height )
     return Image( pixels, width, height )
 end
 
-function Image.static:fromPath( path )
-    local file = File( path )
+function Image.static:fromPath( String path )
+    return Image.static:fromFile( File( path ) )
+end
+
+function Image.static:fromFile( File file )
     if file.metadata.mime == mimes.UCG then
         return Image.static:fromUniversalCompressedGraphics( file.binaryContents )
     elseif file.metadata.mime == mimes.SICON then
-        return Icon.static:fromIcon( resource.binaryContents )
+        return Icon.static:fromIcon( file.binaryContents )
     elseif file.metadata.mime == mimes.IMAGE then
         return Image.static:fromPaintFormat( file.contents )
     end
 end
 
-function Image.static:fromName( name )
+function Image.static:fromName( String name )
     local resource = Resource( name, IMAGE_MIMES )
     if resource then
         return Image.static:fromResource( resource )
     end
+end
+
+function Image.static:fromPathInBundle( String path, Bundle bundle )
+    return Image.static:fromFile( bundle:fileFromPath( path ) )
+end
+
+function Image.static:fromNameInBundle( String name, Bundle bundle )
+    return Image.static:fromFile( bundle:file( name, IMAGE_MIMES ) )
 end
 
 function Image.static:fromResource( resource )
