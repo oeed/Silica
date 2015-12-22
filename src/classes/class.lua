@@ -1,4 +1,3 @@
-
 -- Class Construction --
 
 class = {
@@ -299,7 +298,7 @@ function class.load( name, contents )
 
     expectedName = name
     constructingFunctionArguments = {}
-    constructingEnvironment = { class = class, extends = extends, interface = interface, implements = implements }
+    constructingEnvironment = { shell = shell, class = class, extends = extends, interface = interface, implements = implements }
     environments[name] = constructingEnvironment
 
     local compiledClass = {}
