@@ -2,17 +2,17 @@
 local fs = Quartz and Quartz.fs or fs
 
 local function tidy( path )
+    if type( path ) == "function" then logtraceback() end
     path = path:gsub( "/.-/%.%./", "/" )
                :gsub( "^.-/%.%./", "" )
                :gsub( "/%./", "/" )
                :gsub( "^%.%./", "" )
                :gsub( "^%.%.$", "" )
                :gsub( "//+", "/" )
-               :gsub( "[^/]$", "%1/" )
     return path
 end
 
-local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) )
+local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) ):gsub( "[^/]$", "%1/" )
 local function resolve( path )
     return tidy( path ):gsub( "^[^/]", relativePath .. "%1" )
 end

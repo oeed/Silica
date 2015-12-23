@@ -2,17 +2,17 @@
 local fs = Quartz and Quartz.fs or fs
 
 local function tidy( path )
+    if type( path ) == "function" then logtraceback() end
     path = path:gsub( "/.-/%.%./", "/" )
                :gsub( "^.-/%.%./", "" )
                :gsub( "/%./", "/" )
                :gsub( "^%.%./", "" )
                :gsub( "^%.%.$", "" )
                :gsub( "//+", "/" )
-               :gsub( "[^/]$", "%1/" )
     return path
 end
 
-local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) )
+local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) ):gsub( "[^/]$", "%1/" )
 local function resolve( path )
     return tidy( path ):gsub( "^[^/]", relativePath .. "%1" )
 end
@@ -34,7 +34,7 @@ class "FileSystemItem" {
 }
 
 function FileSystemItem.metatable:__call( path, ... )
-    path = resolve( resolve )
+    path = resolve( path )
     if fs.isDir( path ) then
         -- for speed we asume here that if has a bundle.scfg file then it's a bundle, we'll check in greater depth once we create the bundle
         if fs.exists( tidy( path .. "/bundle.sconfig" ) ) then
