@@ -14,14 +14,12 @@ local loaded = {}
 local classes = files["classes"]
 local loadClass
 
+_G.shell = shell
 local f, err = loadstring( classes["class"]["text/lua"], "class.lua" )
 if err then error( err, 0 ) end
-local env = setmetatable( { shell = shell }, { __index = _G } )
-setfenv( f, env )
 local ok, err = pcall( f )
 if err then error( err, 0 ) end
 
-local class = env.class
 table.insert( class.tables, classes )
 
 -- we need to load any Exception subclasses first

@@ -143,15 +143,15 @@ function Folder.folders:set( folders )
 end
 
 function Folder:itemFromPath( path )
-    return FileSystemItem( self.path .. tidy( path ) )
+    return FileSystemItem( self.path .. tidy( "/" .. path ) )
 end
 
 function Folder:fileFromPath( path )
-    return File( self.path .. tidy( path ) )
+    return File( self.path .. tidy( "/" .. path ) )
 end
 
 function Folder:folderFromPath( path )
-    return Folder( self.path .. tidy( path ) )
+    return Folder( self.path .. tidy( "/" .. path ) )
 end
 
 --[[
@@ -202,7 +202,7 @@ function Folder.fs:get()
 
     local relativePath = self.path
     local function resolve( path )
-        return relativePath .. tidy( path )
+        return relativePath .. tidy( "/" .. path )
     end
 
     local resolveFunctions = { "list"; "exists"; "isDir"; "isReadOnly"; "getSize"; "getFreeSpace"; "makeDir"; "delete"; "open"; "find"; } -- TODO: will find will work
