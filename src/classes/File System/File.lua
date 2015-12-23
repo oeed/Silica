@@ -1,4 +1,22 @@
 
+local fs = Quartz and Quartz.fs or fs
+
+local function tidy( path )
+    path = path:gsub( "/.-/%.%./", "/" )
+               :gsub( "^.-/%.%./", "" )
+               :gsub( "/%./", "/" )
+               :gsub( "^%.%./", "" )
+               :gsub( "^%.%.$", "" )
+               :gsub( "//+", "/" )
+               :gsub( "[^/]$", "%1/" )
+    return path
+end
+
+local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) )
+local function resolve( path )
+    return tidy( path ):gsub( "^[^/]", relativePath .. "%1" )
+end
+
 class "File" extends "FileSystemItem" implements "IEditableFileSystemItem" {
 
     contents = false; -- the string contents of the file
@@ -8,6 +26,7 @@ class "File" extends "FileSystemItem" implements "IEditableFileSystemItem" {
 }
 
 function File.metatable:__call( path, ... )
+    path = resolve( path )
     if fs.exists( path ) and not fs.isDir( path ) and not fs.isReadOnly( path ) then
         local name = fs.getName( path )
         if name ~= ".DS_Store" and name ~= ".metadata" then

@@ -1,15 +1,20 @@
 
+local fs = Quartz and Quartz.fs or fs
+
 local function tidy( path )
-    path = ("/" .. path)
-        :gsub( "/.-/%.%./", "/" )
-        :gsub( "^.-/%.%./", "" )
-        :gsub( "/%./", "/" )
-        :gsub( "^%.%./", "" )
-        :gsub( "^%.%.$", "" )
-        :gsub( "//+", "/" )
-        -- :gsub( "^[^/]", "/" )
-        :gsub( "/$", "" )
+    path = path:gsub( "/.-/%.%./", "/" )
+               :gsub( "^.-/%.%./", "" )
+               :gsub( "/%./", "/" )
+               :gsub( "^%.%./", "" )
+               :gsub( "^%.%.$", "" )
+               :gsub( "//+", "/" )
+               :gsub( "[^/]$", "%1/" )
     return path
+end
+
+local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) )
+local function resolve( path )
+    return tidy( path ):gsub( "^[^/]", relativePath .. "%1" )
 end
 
 class "Bundle" extends "Folder" {
@@ -19,6 +24,7 @@ class "Bundle" extends "Folder" {
 }
 
 function Bundle.metatable:__call( path, ... )
+    path = resolve( path )
     if fs.exists( path ) and fs.isDir( path ) and not fs.isReadOnly( path ) and fs.exists( tidy( path .. "/bundle.sconfig" ) ) then
         local name = fs.getName( path )
         if name ~= ".DS_Store" and name ~= ".metadata" then
@@ -28,7 +34,7 @@ function Bundle.metatable:__call( path, ... )
 end
 
 function Bundle.path:set( path )
-    path = tidy( path )
+    path = resolve( path )
     self:super( path )
 
     local configFile = self:find( "bundle", Metadata.mimes.SCONFIG, true )

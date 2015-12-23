@@ -1,15 +1,20 @@
 
+local fs = Quartz and Quartz.fs or fs
+
 local function tidy( path )
-    path = ("/" .. path)
-        :gsub( "/.-/%.%./", "/" )
-        :gsub( "^.-/%.%./", "" )
-        :gsub( "/%./", "/" )
-        :gsub( "^%.%./", "" )
-        :gsub( "^%.%.$", "" )
-        :gsub( "//+", "/" )
-        -- :gsub( "^[^/]", "/" )
-        :gsub( "/$", "" )
+    path = path:gsub( "/.-/%.%./", "/" )
+               :gsub( "^.-/%.%./", "" )
+               :gsub( "/%./", "/" )
+               :gsub( "^%.%./", "" )
+               :gsub( "^%.%.$", "" )
+               :gsub( "//+", "/" )
+               :gsub( "[^/]$", "%1/" )
     return path
+end
+
+local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) )
+local function resolve( path )
+    return tidy( path ):gsub( "^[^/]", relativePath .. "%1" )
 end
 
 class "FileSystemItem" {
@@ -29,6 +34,7 @@ class "FileSystemItem" {
 }
 
 function FileSystemItem.metatable:__call( path, ... )
+    path = resolve( resolve )
     if fs.isDir( path ) then
         -- for speed we asume here that if has a bundle.scfg file then it's a bundle, we'll check in greater depth once we create the bundle
         if fs.exists( tidy( path .. "/bundle.sconfig" ) ) then
@@ -48,15 +54,22 @@ function FileSystemItem.static:tidy( String path )
     return tidy( path )
 end
 
+--[[
+    @desc Resolves a path (makes absolute)
+]]
+function FileSystemItem.static:tidy( String path )
+    return resolve( path )
+end
+
 function FileSystemItem:initialise( path, parent )
-    self.path = path
+    self.path = resolve( path )
     if parent then
         self.raw.parent = parent
     end
 end
 
 function FileSystemItem.path:set( path )
-    path = tidy( path )
+    path = resolve( path )
     if not fs.exists( path ) then error( "Attempted to set FileSystemItem.path to non-existant path '" .. path .. "'.", 2 ) end
     self.path = path
 
