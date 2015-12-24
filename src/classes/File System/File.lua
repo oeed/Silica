@@ -2,7 +2,6 @@
 local fs = Quartz and Quartz.fs or fs
 
 local function tidy( path )
-    if type( path ) == "function" then logtraceback() end
     path = path:gsub( "/.-/%.%./", "/" )
                :gsub( "^.-/%.%./", "" )
                :gsub( "/%./", "/" )
@@ -14,7 +13,7 @@ end
 
 local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) ):gsub( "[^/]$", "%1/" )
 local function resolve( path )
-    return tidy( path ):gsub( "^[^/]", relativePath .. "%1" )
+    if not path or #path == 0 then return relativePath else return tidy( path ):gsub( "^[^/]", relativePath .. "%1" ) end
 end
 
 class "File" extends "FileSystemItem" implements "IEditableFileSystemItem" {
