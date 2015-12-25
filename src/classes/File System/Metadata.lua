@@ -135,7 +135,6 @@ function Metadata:load()
                 fs.delete( metadataFolderPath )
             end
         else
-            log("make "..metadataFolderPath)
             fs.makeDir( metadataFolderPath )
         end
         self:create()
@@ -193,11 +192,10 @@ function Metadata:guessMIME()
     local extension = file.extension
     if extension then
         -- try to guess the MIME based on the extension
-        if not EXTENSION_MIMES[ extension:upper() ] then
-            error(extension:upper())
+        local mime = EXTENSION_MIMES[ extension:upper() ]
+        if mime then
+            self.mime = mime
         end
-        self.mime = EXTENSION_MIMES[ extension:upper() ]
-        return
     end
     if fs.isDir( path ) then
         if fs.exists( path .. "/bundle.sconfig" ) then
