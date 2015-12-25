@@ -73,12 +73,19 @@ function Application:initialise( ... )
 	if Quartz then
 		Quartz.silicaApplication = self
 	end
-	local userDataPath = self.userDataPath
-	local userDataParentFolder = Folder( userDataPath )
-	if not userDataParentFolder then
-		userDataParentFolder = Folder.static:make( userDataPath, true )
+	local userDataParentFolder
+	if Quartz then
+		local userDataPath = Quartz.userDataPath
+		self.userDataPath = userDataPath
+		self.userDataFolder = Folder( userDataPath )
+	else
+		local userDataPath = self.userDataPath
+		local userDataParentFolder = Folder( userDataPath )
+		if not userDataParentFolder then
+			userDataParentFolder = Folder.static:make( userDataPath, true )
+		end
+		self.userDataFolder = userDataParentFolder:folderFromPath( "userdata" ) or userDataParentFolder:makeSubfolder( "userdata", true )
 	end
-	self.userDataFolder = userDataParentFolder:folderFromPath( "userdata" ) or userDataParentFolder:makeSubfolder( "userdata", true )
 	self:initialiseSettings()
 	self.event = ApplicationEventManager( self )
 	self.keyboardShortcutManager = KeyboardShortcutManager( self )
