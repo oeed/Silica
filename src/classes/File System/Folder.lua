@@ -92,15 +92,15 @@ end
     @return Folder
 ]]
 function Folder:makeSubfolder( String path, Boolean( false ) overwrite )
-    return Folder.static:make( self.path .. tidy( path ), overwrite )
+    return Folder.static:make( self.path .. tidy( "/" .. path ), overwrite )
 end
 
 --[[
     @desc Creates a file within this folder
-    @return Folder
+    @return File
 ]]
 function Folder:makeSubfile( String path, Metadata.mimes mime, Boolean( false ) overwrite, String.allowsNil contents )
-    return File.static:make( self.path .. tidy( path ), mime, overwrite, contents )
+    return File.static:make( self.path .. tidy( "/" .. path ), mime, overwrite, contents )
 end
 
 function Folder:getItems( noFiles, noFolders )
