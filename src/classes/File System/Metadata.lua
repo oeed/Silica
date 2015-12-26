@@ -1,4 +1,6 @@
 
+local fs = Quartz and Quartz.fs or fs
+
 local DEFAULT_TIMESTAMP = 1417305600; -- default date 1/1/2015
 
 local SAVED_PROPERTIES = { t = "mime"; c = "createdTimestamp"; o = "openedTimestamp"; m = "modifiedTimestamp"; i = "icon"; }
@@ -195,6 +197,7 @@ function Metadata:guessMIME()
         local mime = EXTENSION_MIMES[ extension:upper() ]
         if mime then
             self.mime = mime
+            return
         end
     end
     if fs.isDir( path ) then
