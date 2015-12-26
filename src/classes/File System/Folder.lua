@@ -13,7 +13,7 @@ end
 
 local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) ):gsub( "[^/]$", "%1/" ):gsub( "^[^/]", "/%1" )
 local function resolve( path )
-    if not path or #path == 0 then return "/" .. relativePath else return tidy( path ):gsub( "^[^/]", relativePath .. "%1" ) end
+    if not path or #path == 0 then return "/" .. relativePath:sub( 1, #relativePath - 1) else return tidy( path ):gsub( "^[^/]", relativePath .. "%1" ) end
 end
 
 class "Folder" extends "FileSystemItem" {
