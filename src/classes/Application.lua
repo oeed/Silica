@@ -63,7 +63,7 @@ function Application.static:load( path )
                     end
                 end
             end
-            loadFolder( folder )
+            loadFolder( classesFolder )
         end
     end
 end
