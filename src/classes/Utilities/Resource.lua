@@ -61,7 +61,7 @@ function Resource:initialise( name, mimes, category, allowDirectories )
 	
 	self.file = file
 	if not file then
-		error('File not found: '..name.." of mime "..serialise(mimes))
+		error('File not found: '..name.." of mime "..textutils.serialise(mimes))
 		-- TODO: error, file not found
 	end
 	self.mime = file.metadata.mime
