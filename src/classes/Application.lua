@@ -53,10 +53,10 @@ function Application.static:load( path )
         local classesFolder = folder:folderFromPath( "classes" )
         if classesFolder then
             table.insert( class.folders, classesFolder )
-            local luaMime = Metadata.mimes.LUA
+            local LUA = Metadata.mimes.LUA
             local function loadFolder( folder )
                 for i, fileSystemItem in ipairs( folder.items ) do
-                    if fileSystemItem.metadata.mime == luaMime then
+                    if fileSystemItem.metadata.mime == LUA then
                         class.get( fileSystemItem.name, fileSystemItem.contents )
                     elseif fileSystemItem:typeOf( Folder ) then
                         loadFolder( fileSystemItem )
