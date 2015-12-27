@@ -26,14 +26,18 @@ function ToolbarContainer:update( deltaTime )
 end
 
 function ToolbarContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
-    if not event.childView:typeOf( IToolbarItem ) then
-        error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not implement IToolbarItem to '" .. tostring( self ) .. "'", 0 )
+    if event.container == self then
+        if not event.childView:typeOf( IToolbarItem ) then
+            error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not implement IToolbarItem to '" .. tostring( self ) .. "'", 0 )
+        end
+        self.needsLayoutUpdate = true
     end
-    self.needsLayoutUpdate = true
 end
 
 function ToolbarContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
-    self.needsLayoutUpdate = true
+    if event.container == self then
+        self.needsLayoutUpdate = true
+    end
 end
 
 function ToolbarContainer:updateLayout()
