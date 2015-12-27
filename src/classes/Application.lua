@@ -6,7 +6,7 @@ class "Application" {
 
 	name = String;
 	path = String.allowsNil;
-	userDataPath = String( "/" );
+	userDataPath = String( "userdata" );
 	userDataFolder = Folder;
 	updateTimer = Number.allowsNil;
 	lastUpdate = Number.allowsNil;
@@ -74,18 +74,14 @@ function Application:initialise( ... )
 		Quartz.silicaApplication = self
 	end
 	local userDataParentFolder
+	local userDataPath
 	if Quartz then
-		local userDataPath = Quartz.userDataPath
+		userDataPath = Quartz.userDataPath
 		self.userDataPath = userDataPath
-		self.userDataFolder = Folder( userDataPath )
 	else
-		local userDataPath = self.userDataPath
-		local userDataParentFolder = Folder( userDataPath )
-		if not userDataParentFolder then
-			userDataParentFolder = Folder.static:make( userDataPath, true )
-		end
-		self.userDataFolder = userDataParentFolder:folderFromPath( "userdata" ) or userDataParentFolder:makeSubfolder( "userdata", true )
+		userDataPath = self.userDataPath
 	end
+	self.userDataFolder = Folder( userDataPath ) or Folder.static:make( userDataPath )
 	self:initialiseSettings()
 	self.event = ApplicationEventManager( self )
 	self.keyboardShortcutManager = KeyboardShortcutManager( self )
