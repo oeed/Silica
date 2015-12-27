@@ -2,7 +2,7 @@
 local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class "SymbolButton" extends "Button" {
-    
+
     symbol = Symbol;
     symbolName = String.allowsNil;
 
@@ -20,7 +20,7 @@ function SymbolButton:onDraw()
     local shadowPressedOffset = defaultShadowSize - shadowPressedSize
     local shadowX = math.floor( shadowOffset * SHADOW_RATIO + 0.5 )
     local symbol = self.symbol
-    self.canvas:fill( theme:value( "symbolColour" ), SymbolMask( theme:value( "leftMargin" ) + shadowX + 1, 1 + math.floor( ( self.height - shadowPressedOffset - symbol.height ) / 2 ), symbol ) )
+    self.canvas:fill( theme:value( "symbolColour" ), SymbolMask( theme:value( "leftMargin" ) + shadowX + 1, 1 + theme:value( "topMargin" ), symbol ) )
 end
 
 function SymbolButton.symbol:set( symbol )

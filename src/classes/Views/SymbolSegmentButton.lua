@@ -1,57 +1,48 @@
 
+local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
+
 class "SymbolSegmentButton" extends "SegmentButton" {
-    
-    symbol = false;
-    symbolObject = false;
+
+    symbol = Symbol;
+    symbolName = String.allowsNil;
 
 }
 
-function SymbolSegmentButton:initialiseCanvas()
+function SymbolSegmentButton:onDraw()
     self:super()
-    local canvas = self.canvas
-    canvas:remove( self.textObject )
-    self.textObject = false
-    local symbolObject = canvas:insert( SymbolObject( 1 + self.leftMargin, 5, self.symbol ) )
-    self.theme:connect( symbolObject, "fillColour", "symbolColour" )
-    self.symbolObject = symbolObject
+    local width, height, theme, sPressed = self.width, self.height, self.theme, self.isPressed
+
+    -- get all the shadow size details so we can adjust the compression as needed
+    local defaultShadowSize = theme:value( "shadowSize", "default" )
+    local shadowPressedSize = theme:value( "shadowSize", "pressed" )
+    local shadowSize = theme:value( "shadowSize" )
+    local shadowOffset = defaultShadowSize - shadowSize
+    local shadowPressedOffset = defaultShadowSize - shadowPressedSize
+    local shadowX = math.floor( shadowOffset * SHADOW_RATIO + 0.5 )
+    local symbol = self.symbol
+    self.canvas:fill( theme:value( "symbolColour" ), SymbolMask( theme:value( "leftMargin" ) + shadowX + 1, 1 + theme:value( "topMargin" ), symbol ) )
 end
 
 function SymbolSegmentButton.symbol:set( symbol )
-    if type( symbol ) == "string" then
-        symbol = Symbol.fromName( symbol )
-    end
     self.symbol = symbol
-    self.symbolObject.symbol = symbol
     self.needsAutosize = true
+    self.raw.symbolName = symbol.symbolName
 end
 
-function SymbolSegmentButton:updateWidth( width )
-    self:super( width )
-    local leftMargin, rightMargin = self.leftMargin, self.rightMargin
-    self.symbolObject.x = self.isPressed and leftMargin + 2 or leftMargin + 1
-end
-
-function SymbolSegmentButton:onSiblingOrParentChanged( Event event, Event.phases phase )
-    self:super( event )
-    local isFirst = self.isFirst
-    local isLast = self.isLast 
-    local symbolObject = self.symbolObject
-
-    -- symbolObject.x = 
+function SymbolSegmentButton.symbolName:set( symbolName )
+    self.symbol = Symbol.static:fromName( symbolName )
 end
 
 function SymbolSegmentButton:autosize()
-    local symbol = self.symbol
-    if symbol then
-        self.width = symbol.width + self.leftMargin + self.rightMargin + 1
-        self.height = symbol.height + 9
+    if self.isAutosized then
+        local theme = self.theme
+        local symbol = self.symbol
+        local defaultShadowSize = theme:value( "shadowSize", "default" )
+        local shadowSize = theme:value( "shadowSize", "pressed" )
+        local shadowOffset = defaultShadowSize - shadowSize
+        local shadowX = math.floor( shadowOffset * SHADOW_RATIO + 0.5 )
+        self.width = symbol.width + theme:value( "leftMargin" ) + theme:value( "rightMargin" ) + shadowX
+        self.height = symbol.height + theme:value( "topMargin" ) + theme:value( "bottomMargin" ) + shadowOffset
     end
     self.needsAutosize = false
-end
-
-function SymbolSegmentButton.isPressed:set( isPressed )
-    self:super( isPressed )
-    local symbolObject = self.symbolObject
-    symbolObject.x = isPressed and self.leftMargin + 2 or self.leftMargin + 1
-    symbolObject.y = isPressed and 6 or 5
 end
