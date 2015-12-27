@@ -1385,6 +1385,7 @@ local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, 
                     for i, v in ipairs(arguments) do
                         print(i .. ": "..tostring(v))
                     end
+                    logtraceback()
                     error( functionName .. ": wrong number of arguments, got "..argumentsLength.." expected between ".. minArgs .. " and " .. maxArgs, 2 )
                 end
 
