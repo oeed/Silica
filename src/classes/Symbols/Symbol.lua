@@ -30,7 +30,7 @@ function Symbol.static:initialise( Path.allowsNil path )
     end
 end
 
-function Symbol.static:fromName( name )
+function Symbol.static:fromName( String name )
     local symbol = symbolClasses[name]
     if not symbol then
         error( "Unable to find symbol with name '" .. name .. "'", 3 )
