@@ -3,12 +3,6 @@ local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class "SegmentButton" extends "Button" {
 	
-	separatorObject = false;
-    separatorBackgroundObject = false;
-    centerMargin = false;
-    leftRadius = false;
-    rightRadius = false;
-
 }
 
 function SegmentButton:initialise( ... )
