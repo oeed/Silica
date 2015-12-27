@@ -28,10 +28,10 @@
 
 	<SymbolButton>
 		<symbolColour type="Graphics.colours" default="GREY" pressed="WHITE" focused="WHITE" disabled="LIGHT_GREY"/>
+		<bottomMargin type="Number" default="4" />
 	</SymbolButton>
 
 	<SegmentButton>
-		<centerMargin type="Number" default="4" />
 		<separatorColour type="Graphics.colours" default="LIGHT_GREY"/>
 		<separatorTopMargin type="Number" default="2" />
 		<separatorBottomMargin type="Number" default="2" />
@@ -39,8 +39,8 @@
 	</SegmentButton>
 
 	<SymbolSegmentButton>
-		<centerMargin type="Number" default="5" />
 		<symbolColour type="Graphics.colours" default="GREY" pressed="WHITE" focused="WHITE" disabled="LIGHT_GREY"/>
+		<bottomMargin type="Number" default="4" />
 	</SymbolSegmentButton>
 
 	<Menu>
