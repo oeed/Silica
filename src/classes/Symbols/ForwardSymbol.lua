@@ -9,11 +9,11 @@ class "ForwardSymbol" extends "Symbol" {
 }
 
 function ForwardSymbol.static:initialise()
-    local path = Path( self.width, self.height, 4, 1 )
-    path:lineTo( 1, 4 )
-    path:lineTo( 4, 7 )
+    local path = Path( self.width, self.height, 1, 1 )
+    path:lineTo( 4, 4 )
+    path:lineTo( 1, 7 )
     path:close()
-
+    
     self:super( path )
 end
 
