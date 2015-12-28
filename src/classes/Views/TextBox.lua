@@ -83,7 +83,10 @@ function TextBox:onDraw()
     local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
 
 	if #text == 0 then
-	    canvas:fill( theme:value( "placeholderColour" ),  roundedRectangle:intersect( TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.placeholder, font ) ) )
+		local placeholder = self.placeholder
+	    if placeholder then
+	    	canvas:fill( theme:value( "placeholderColour" ),  roundedRectangle:intersect( TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.placeholder, font ) ) )
+		end
 	end
 
     local scroll = self.scroll
