@@ -56,7 +56,7 @@ end
 --[[
     @desc Resolves a path (makes absolute)
 ]]
-function FileSystemItem.static:tidy( String path )
+function FileSystemItem.static:resolve( String path )
     return resolve( path )
 end
 
