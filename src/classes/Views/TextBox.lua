@@ -82,40 +82,40 @@ function TextBox:onDraw()
 
     local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
 
+    local outlineThickness = theme:value( "outlineThickness" )
 	if #text == 0 then
 		local placeholder = self.placeholder
 	    if placeholder then
 	    	canvas:fill( theme:value( "placeholderColour" ),  roundedRectangle:intersect( TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.placeholder, font ) ) )
 		end
+	else
+	    local scroll = self.scroll
+	    if isFocused then
+	    	local fontHeight = font.height
+			local contentMask = RectangleMask( leftMargin - 1, 1 + outlineThickness, width - leftMargin - rightMargin + 4, height - 2 * outlineThickness )
+	    	if self.selectionVisible then
+	    		local selectionWidth = self.selectionWidth
+	    		if selectionWidth > 0 then
+		    		local selectionLeftMargin, selectionRightMargin, selectionTopMargin, selectionBottomMargin = theme:value( "selectionLeftMargin" ), theme:value( "selectionRightMargin" ), theme:value( "selectionTopMargin" ), theme:value( "selectionBottomMargin" )
+		    		local selectionMask = RoundedRectangleMask( leftMargin + 1 + self.selectionX - scroll - selectionLeftMargin, math.floor( fontHeight / 2 ) - selectionTopMargin, selectionWidth + selectionLeftMargin + selectionRightMargin, fontHeight + selectionTopMargin + selectionBottomMargin, theme:value( "selectionRadius" ) )
+		    		canvas:fill( theme:value( "selectionColour" ), selectionMask:intersect( contentMask ) )
+		    	end
+		    else
+		    	local cursorPosition = self.cursorPosition
+		    	local cursorColour = self.cursorColour
+		    	if cursorColour ~= fillColour then
+			    	local cursorMask = RectangleMask( leftMargin + 1 + self.cursorX - scroll, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
+		    		canvas:fill( cursorColour, cursorMask:intersect( contentMask ) )
+		    	end
+	    	end
+	    end
+
+	    local textMask = roundedRectangle:intersect( TextMask( leftMargin + 1 - scroll, topMargin + 1, font:getWidth( text ), height - topMargin - bottomMargin, text, font ) )
+	    canvas:fill( theme:value( "textColour" ), textMask  )
+	    canvas:fill( theme:value( "fadeOneColour" ), OutlineMask( leftMargin, topMargin, width - leftMargin - rightMargin + 2, height - topMargin - bottomMargin + 2 * outlineThickness ):intersect( textMask )  )
+    	canvas:fill( theme:value( "fadeTwoColour" ), OutlineMask( leftMargin - 1, topMargin - 1, width - leftMargin - rightMargin + 4, height - topMargin - bottomMargin + 4 * outlineThickness ):intersect( textMask )  )
+		canvas:fill( theme:value( "fillColour" ), OutlineMask( 1 + outlineThickness, 1 + outlineThickness, width - 2 * outlineThickness, height - 2 * outlineThickness, leftMargin - 2 - outlineThickness, topMargin - 2 - outlineThickness, rightMargin - 2 - outlineThickness, bottomMargin - 2 - outlineThickness ):intersect( textMask ) )
 	end
-
-    local scroll = self.scroll
-    local outlineThickness = theme:value( "outlineThickness" )
-    if isFocused then
-    	local fontHeight = font.height
-		local contentMask = RectangleMask( leftMargin - 1, 1 + outlineThickness, width - leftMargin - rightMargin + 4, height - 2 * outlineThickness )
-    	if self.selectionVisible then
-    		local selectionWidth = self.selectionWidth
-    		if selectionWidth > 0 then
-	    		local selectionLeftMargin, selectionRightMargin, selectionTopMargin, selectionBottomMargin = theme:value( "selectionLeftMargin" ), theme:value( "selectionRightMargin" ), theme:value( "selectionTopMargin" ), theme:value( "selectionBottomMargin" )
-	    		local selectionMask = RoundedRectangleMask( leftMargin + 1 + self.selectionX - scroll - selectionLeftMargin, math.floor( fontHeight / 2 ) - selectionTopMargin, selectionWidth + selectionLeftMargin + selectionRightMargin, fontHeight + selectionTopMargin + selectionBottomMargin, theme:value( "selectionRadius" ) )
-	    		canvas:fill( theme:value( "selectionColour" ), selectionMask:intersect( contentMask ) )
-	    	end
-	    else
-	    	local cursorPosition = self.cursorPosition
-	    	local cursorColour = self.cursorColour
-	    	if cursorColour ~= fillColour then
-		    	local cursorMask = RectangleMask( leftMargin + 1 + self.cursorX - scroll, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
-	    		canvas:fill( cursorColour, cursorMask:intersect( contentMask ) )
-	    	end
-    	end
-    end
-
-    local textMask = roundedRectangle:intersect( TextMask( leftMargin + 1 - scroll, topMargin + 1, font:getWidth( text ), height - topMargin - bottomMargin, text, font ) )
-    canvas:fill( theme:value( "textColour" ), textMask  )
-    canvas:fill( theme:value( "fadeOneColour" ), OutlineMask( leftMargin, topMargin, width - leftMargin - rightMargin + 2, height - topMargin - bottomMargin + 2 * outlineThickness ):intersect( textMask )  )
-    canvas:fill( theme:value( "fadeTwoColour" ), OutlineMask( leftMargin - 1, topMargin - 1, width - leftMargin - rightMargin + 4, height - topMargin - bottomMargin + 4 * outlineThickness ):intersect( textMask )  )
-    canvas:fill( theme:value( "fillColour" ), OutlineMask( 1 + outlineThickness, 1 + outlineThickness, width - 2 * outlineThickness, height - 2 * outlineThickness, leftMargin - 2 - outlineThickness, topMargin - 2 - outlineThickness, rightMargin - 2 - outlineThickness, bottomMargin - 2 - outlineThickness ):intersect( textMask ) )
     canvas:outline( theme:value( "outlineColour" ), roundedRectangle, outlineThickness )
 end
 
