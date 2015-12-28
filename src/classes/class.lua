@@ -1367,7 +1367,7 @@ local function addMissingSuper( superPrebuilt, prebuiltFunctions, outValues, def
     end
 end
 
-local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, superPrebuiltFunctions, outValues, selfTypeTable, name, name )
+local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, superPrebuiltFunctions, outValues, selfTypeTable, name )
     for functionName, functionTable in pairs( classFunctions ) do
         definedIndexes[functionName] = functionName
         local func = functionTable[FUNCTIONTABLE_FUNCTION]
@@ -1382,11 +1382,11 @@ local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, 
                 local arguments = { ... }
                 local argumentsLength = #arguments
                 if argumentsLength < minArgs or argumentsLength > maxArgs then
-                    for i, v in ipairs(arguments) do
+                    for i, v in pairs(arguments) do
                         print(i .. ": "..tostring(v))
                     end
                     logtraceback()
-                    error( functionName .. ": wrong number of arguments, got "..argumentsLength.." expected between ".. minArgs .. " and " .. maxArgs, 2 )
+                    error( name .. "." .. functionName .. ": wrong number of arguments, got "..argumentsLength.." expected between ".. minArgs .. " and " .. maxArgs, 2 )
                 end
 
                 local context = { self = self }
