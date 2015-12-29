@@ -8,6 +8,7 @@ local function tidy( path )
                :gsub( "^%.%./", "" )
                :gsub( "^%.%.$", "" )
                :gsub( "//+", "/" )
+               :gsub( "/$", "" )
     return path
 end
 
