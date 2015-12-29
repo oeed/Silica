@@ -442,6 +442,9 @@ function TextBox:onKeyDown( KeyDownEvent event, Event.phases phase )
 				self.text = text:sub( 1, cursorPosition - 2 ) .. text:sub( cursorPosition )
 				self.cursorPosition = cursorPosition - 1
 			end
+		elseif keyCode == keys.enter then
+            self.event:handleEvent( ActionInterfaceEvent( self, event ) )
+			self:unfocus()
 		elseif keyCode == keys.left then
 			if selectionPosition then
 				self.selectionPosition = nil
