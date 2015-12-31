@@ -61,6 +61,13 @@ function FileSystemItem.static:resolve( String path )
     return resolve( path )
 end
 
+--[[
+    @desc Returns true if the file exists
+]]
+function FileSystemItem.static:exists( String path )
+    return fs.exists( resolve( path ) )
+end
+
 function FileSystemItem:initialise( path, parent )
     self.path = resolve( path )
     if parent then
