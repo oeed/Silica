@@ -155,10 +155,6 @@ function Application:reloadInterface()
 	end
 end
 
-function Application.container:set( container )
-	self.container = container
-end
-
 --[[
 	@desc Update all application's views
 ]]
