@@ -57,7 +57,7 @@ function ToolbarContainer:updateLayout()
 
         if childView:typeOf( ToolbarStaticSpace ) then
             local childWidth = childView.width
-            remainingWidth = remainingWidth - childWidth
+            remainingWidth = remainingWidth - childWidth + itemMargin
             items[i] = { nil, childWidth }
         elseif childView:typeOf( IToolbarDynamicItem ) then
             dynamicItems = dynamicItems + 1
