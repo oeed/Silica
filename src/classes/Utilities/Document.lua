@@ -1,5 +1,5 @@
 
-class "Document" {
+class Document {
 
 	contents = false;
 	file = false;

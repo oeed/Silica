@@ -1,5 +1,5 @@
 
-class "Graphics" {
+class Graphics {
     
     colours = Enum( Number, {
         TRANSPARENT = 0;

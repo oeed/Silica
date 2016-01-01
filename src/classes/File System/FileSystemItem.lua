@@ -17,7 +17,7 @@ local function resolve( path )
     if not path or #path == 0 then return "/" .. relativePath else local _ = tidy( path ):gsub( "^[^/]", relativePath .. "%1" ) return _ end
 end
 
-class "FileSystemItem" {
+class FileSystemItem {
     
     path = false;
     name = false;

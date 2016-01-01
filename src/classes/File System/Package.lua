@@ -102,7 +102,7 @@ local function serialise( t, tTracking )
     end
 end
 
-class "Package" extends "File" {}
+class Package extends File {}
 
 function Package.static:make( path, overwrite, Folder folder, isResourcePackage )
     local contents = ""

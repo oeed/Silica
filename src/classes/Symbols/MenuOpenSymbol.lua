@@ -1,5 +1,5 @@
 
-class "MenuOpenSymbol" extends "Symbol" {
+class MenuOpenSymbol extends Symbol {
 
     static = {
         symbolName = String( "menuOpen" );

@@ -1,5 +1,5 @@
 
-class "SearchSymbol" extends "Symbol" {
+class SearchSymbol extends Symbol {
 
     static = {
         symbolName = String( "search" );

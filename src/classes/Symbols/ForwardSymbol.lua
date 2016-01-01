@@ -1,5 +1,5 @@
 
-class "ForwardSymbol" extends "Symbol" {
+class ForwardSymbol extends Symbol {
 
     static = {
         symbolName = String( "forward" );

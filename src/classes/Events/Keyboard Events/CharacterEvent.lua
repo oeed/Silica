@@ -1,5 +1,5 @@
 
-class "CharacterEvent" extends "Event" {
+class CharacterEvent extends Event {
 
     static = {
         eventType = "char";

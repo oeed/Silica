@@ -1,6 +1,6 @@
 
 
-class "MenuItem" extends "View" {
+class MenuItem extends View {
 
 	height = Number( 12 );
 	width = Number( 40 );

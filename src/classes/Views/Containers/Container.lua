@@ -1,5 +1,5 @@
 
-class "Container" extends "View" {
+class Container extends View {
 
 	children = {};
 	interfaceLinks = Table; -- TODO: .isReadOnly

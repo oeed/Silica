@@ -2,7 +2,7 @@
 -- need to fix scheduling ... cancelling them won't work right now
 -- each one needs to have its own ID and return that ID
 
-class "Application" {
+class Application {
 
 	name = String;
 	path = String.allowsNil;

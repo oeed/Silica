@@ -1,5 +1,5 @@
 
-class "LoadingClassException" extends "ClassException" {
+class LoadingClassException extends ClassException {
 
 }
 

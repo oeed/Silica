@@ -1,5 +1,5 @@
 
-class "SeparatorMenuItem" extends "MenuItem" {
+class SeparatorMenuItem extends MenuItem {
 
 	height = Number( 3 );
 	width = Number( 51 );

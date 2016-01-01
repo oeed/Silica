@@ -1,7 +1,7 @@
 
 local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
-class "SegmentContainer" extends "Container" {
+class SegmentContainer extends Container {
 
 	needsLayoutUpdate = false;	
 

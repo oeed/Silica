@@ -1,5 +1,5 @@
 
-class "MenuBar" extends "Container" {
+class MenuBar extends Container {
 
 	needsLayoutUpdate = false;	
 

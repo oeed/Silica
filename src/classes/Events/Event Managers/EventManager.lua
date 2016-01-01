@@ -1,5 +1,5 @@
 
-class "EventManager" {
+class EventManager {
 	owner = false;
 	handles = {};
 	handlesGlobal = {};

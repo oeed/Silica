@@ -1,5 +1,5 @@
 
-class "KeyEvent" extends "Event" {
+class KeyEvent extends Event {
 
 	keyCode = Number;
 	keyString = String.allowsNil;

@@ -1,5 +1,5 @@
 
-class "KeyDownEvent" extends "KeyEvent" {
+class KeyDownEvent extends KeyEvent {
     
     isRepeat = Boolean;
     

@@ -1,5 +1,5 @@
 
-class "MaskedTextBox" extends "TextBox" {
+class MaskedTextBox extends TextBox {
     
     isMasked = Boolean( true );
 

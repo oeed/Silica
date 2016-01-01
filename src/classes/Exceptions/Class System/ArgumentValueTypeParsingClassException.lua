@@ -1,5 +1,5 @@
 
-class "ArgumentValueTypeParsingClassException" extends "ClassException" {
+class ArgumentValueTypeParsingClassException extends ClassException {
 
 }
 

@@ -2,7 +2,7 @@
 local SHADOW_RATIO = 2/3
 local MAX_SHADOW_SIZE = 3
 
-class "DragDropManager" {
+class DragDropManager {
     
     owner = false;
     dragView = false;

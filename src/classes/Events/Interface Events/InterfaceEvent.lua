@@ -1,5 +1,5 @@
 
-class "InterfaceEvent" extends "Event" {
+class InterfaceEvent extends Event {
 
 	owner = false; -- TODO: is this ever used?
 

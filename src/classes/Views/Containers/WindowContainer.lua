@@ -1,4 +1,4 @@
 
-class "WindowContainer" extends "Container" {
+class WindowContainer extends Container {
 
 }

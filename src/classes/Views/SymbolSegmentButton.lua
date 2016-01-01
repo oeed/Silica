@@ -1,7 +1,7 @@
 
 local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
-class "SymbolSegmentButton" extends "SegmentButton" {
+class SymbolSegmentButton extends SegmentButton {
 
     symbol = Symbol;
     symbolName = String.allowsNil;

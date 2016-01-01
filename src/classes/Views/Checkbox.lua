@@ -1,5 +1,5 @@
 
-class "Checkbox" extends "View" {
+class Checkbox extends View {
 
     width = Number( 8 );
     height = Number( 8 );

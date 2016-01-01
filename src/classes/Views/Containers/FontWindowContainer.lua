@@ -1,5 +1,5 @@
 
-class "FontWindowContainer" extends "WindowContainer" {
+class FontWindowContainer extends WindowContainer {
 
 	backgroundObject = false;
 

@@ -1,5 +1,5 @@
 
-class "InterfaceOutletChangedInterfaceEvent" extends "InterfaceEvent" {
+class InterfaceOutletChangedInterfaceEvent extends InterfaceEvent {
 
     static = {
         eventType = "interface_outlet_changed";

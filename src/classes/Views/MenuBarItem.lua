@@ -1,7 +1,7 @@
 
 local TEXT_MARGIN = 12
 
-class "MenuBarItem" extends "View" {
+class MenuBarItem extends View {
 
     isPressed = Boolean( false );
     isEnabled = Boolean( true );

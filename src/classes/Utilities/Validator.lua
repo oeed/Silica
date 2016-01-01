@@ -1,6 +1,6 @@
 
 -- validates and parses values (so BLUE becomes Graphics.colours.BLUE)
-class "Validator" {}
+class Validator {}
 
 --[[
 	@desc Gets a validation table from the given type name

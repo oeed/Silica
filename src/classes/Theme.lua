@@ -1,5 +1,5 @@
 
-class "Theme" {
+class Theme {
 	name = String;
 	extends = String.allowsNil; -- the name of the theme this one extends
 	classes = Table( {} );

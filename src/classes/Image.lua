@@ -38,7 +38,7 @@ local ucgValues = {
 
 local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG, mimes.SICON }
 
-class "Image" {
+class Image {
     
     width = Number;
     height = Number;

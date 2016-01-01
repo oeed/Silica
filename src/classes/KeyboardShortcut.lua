@@ -6,7 +6,7 @@ local function split(a,e)
     return e
 end
 
-class "KeyboardShortcut" {
+class KeyboardShortcut {
 	keys = {};
 }
 

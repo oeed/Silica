@@ -1,5 +1,5 @@
 
-class "PseudoReferenceClassException" extends "ClassException" {
+class PseudoReferenceClassException extends ClassException {
 
 }
 

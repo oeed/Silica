@@ -438,7 +438,7 @@ function eval.knownValue( token )
 	end
 end
 
-class "MathParser" {} -- I think it's best just to make it a class so it's loaded properly (when we make the loader). Happy to change it though.
+class MathParser {} -- I think it's best just to make it a class so it's loaded properly (when we make the loader). Happy to change it though.
 
 function MathParser.static:parseString( str )
 	local tokens = lex( str )

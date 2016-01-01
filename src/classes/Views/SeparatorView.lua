@@ -1,5 +1,5 @@
 
-class "SeparatorView" extends "View" {
+class SeparatorView extends View {
 
     width = Number( 1 );
     height = Number( 1 );

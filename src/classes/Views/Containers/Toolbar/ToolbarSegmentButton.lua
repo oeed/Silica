@@ -1,2 +1,2 @@
 
-class "ToolbarSegmentButton" extends "SegmentButton" implements "IToolbarItem" {}
+class ToolbarSegmentButton extends SegmentButton implements "IToolbarItem" {}

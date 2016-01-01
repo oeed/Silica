@@ -1,5 +1,5 @@
 
-class "DragView" extends "View" {
+class DragView extends View {
 
     image = Image;
 

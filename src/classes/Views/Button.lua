@@ -1,7 +1,7 @@
 
 local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
-class "Button" extends "View" {
+class Button extends View {
 
     height = Number( 16 );
     width = Number( 36 );

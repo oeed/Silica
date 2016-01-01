@@ -391,7 +391,7 @@ function pseudoReference( name )
     end
     setmetatable( referenceTable, metatable )
 
-    return referenceTable
+return referenceTable
 end
 
 function stripFunctionArguments( name, contents )
@@ -399,10 +399,11 @@ function stripFunctionArguments( name, contents )
     local foundTypeDeclaration = false
     for n, line in ipairs( loadClassLines( name, contents ) ) do
         if not foundTypeDeclaration then
-            if line:match( "^%s*class%s*\"%w*\"" ) then
+            if line:match( "^%s*class%s*%w*" ) then
                 isInterface = false
                 foundTypeDeclaration = true
-            elseif line:match( "^%s*interface%s*\"%w*\"" ) then
+                line = line:gsub( "^%s*class%s*(%w*)", "class \"%1\"" ):gsub( "%s*extends%s*(%w*)", " extends \"%1\"" )
+            elseif line:match( "^%s*interface%s*%w*" ) then
                 isInterface = true
                 foundTypeDeclaration = true
             end

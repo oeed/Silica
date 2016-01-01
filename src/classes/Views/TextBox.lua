@@ -25,7 +25,7 @@ local SELECTION_DIRECTIONS = {
 		RIGHT = 0;
 	}
 
-class "TextBox" extends "View" {
+class TextBox extends View {
 
 	height = Number( 15 );
 	width = Number( 120 );

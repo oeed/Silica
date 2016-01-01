@@ -1,5 +1,5 @@
 
-class "PathMask" extends "Mask" {
+class PathMask extends Mask {
     
 }
 

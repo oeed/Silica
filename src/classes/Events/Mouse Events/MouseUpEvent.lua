@@ -1,5 +1,5 @@
 
-class "MouseUpEvent" extends "MouseEvent" {
+class MouseUpEvent extends MouseEvent {
 
     static = {
         eventType = "mouse_up";

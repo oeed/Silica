@@ -1,5 +1,5 @@
 
-class "ConstructionClassException" extends "ClassException" {
+class ConstructionClassException extends ClassException {
 
 }
 

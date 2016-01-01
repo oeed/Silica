@@ -3,7 +3,7 @@ local MENU_OWNER_LEFT_OFFSET = 5
 local MENU_OWNER_TOP_OFFSET = 9
 local MENU_CONTEXT_OFFSET = 5
 
-class "Menu" extends "Container" {
+class Menu extends Container {
 
 -- TODO: prevent menu going out of the screen
 	targetX = 1; -- the desired location of the menu. this is the originally set x value, the actual x value can change to prevent overflowing with the screen

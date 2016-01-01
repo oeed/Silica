@@ -243,7 +243,7 @@ function parser:parseXMLBody()
 	return blocks
 end
 
-class "XML" {}
+class XML {}
 
 --[[
 	@desc Loads XML from source text

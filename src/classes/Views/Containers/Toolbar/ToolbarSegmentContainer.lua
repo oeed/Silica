@@ -1,2 +1,2 @@
 
-class "ToolbarSegmentContainer" extends "SegmentContainer" implements "IToolbarItem" implements "IToolbarPressableItem" {}
+class ToolbarSegmentContainer extends SegmentContainer implements "IToolbarItem" implements "IToolbarPressableItem" {}

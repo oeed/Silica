@@ -1,5 +1,5 @@
 
-class "ArgumentTypeClassException" extends "ClassException" {
+class ArgumentTypeClassException extends ClassException {
 
 }
 

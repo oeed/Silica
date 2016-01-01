@@ -27,7 +27,7 @@ local NO_CHAR_MAP = {
 	{ true,  true,  true,  true, true };
 }
 
-class "Font" {
+class Font {
 	height = 0;
 	desiredHeight = 0;
 	spacing = 1;

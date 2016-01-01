@@ -1,5 +1,5 @@
 
-class "UnknownTypeValidationException" extends "ValidationException" {
+class UnknownTypeValidationException extends ValidationException {
 
     
 

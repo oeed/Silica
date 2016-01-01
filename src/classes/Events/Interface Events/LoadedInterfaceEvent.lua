@@ -1,5 +1,5 @@
 
-class "LoadedInterfaceEvent" extends "InterfaceEvent" {
+class LoadedInterfaceEvent extends InterfaceEvent {
 
     static = {
         eventType = "interface_loaded";

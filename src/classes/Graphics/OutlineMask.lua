@@ -1,5 +1,5 @@
 
-class "OutlineMask" extends "Mask" {
+class OutlineMask extends Mask {
 
 }
 

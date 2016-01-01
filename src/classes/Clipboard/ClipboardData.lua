@@ -1,5 +1,5 @@
 
-class "ClipboardData" {}
+class ClipboardData {}
 
 function ClipboardData:initialise()
 end

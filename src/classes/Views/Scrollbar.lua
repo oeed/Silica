@@ -1,5 +1,5 @@
 
-class "Scrollbar" extends "View" {
+class Scrollbar extends View {
 
 	width = Number( 7 );
     isHorizontal = Boolean( false );

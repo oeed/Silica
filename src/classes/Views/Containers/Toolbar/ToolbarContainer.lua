@@ -1,5 +1,5 @@
 
-class "ToolbarContainer" extends "Container" {
+class ToolbarContainer extends Container {
 
     needsLayoutUpdate = Boolean( false );
 

@@ -93,7 +93,7 @@ local function cubicRoots( P )
     return t;
 end
 
-class "Path" {
+class Path {
     
     lines = Table( {} );
     isClosed = Boolean( false );

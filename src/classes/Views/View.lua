@@ -27,7 +27,7 @@ local function newAnimation( self, label, time, values, easing, onFinish, round 
 	animations[#animations + 1] = { label = label, animation = animation, onFinish = onFinish }
 end
 
-class "View" {
+class View {
 
 	x = Number( 1 );
 	y = Number( 1 );

@@ -1,7 +1,7 @@
 
 -- TODO: thrown an error when there is an identically named file in a resource folder
 
-class "Resource" {
+class Resource {
 
 	file = File.allowsNil;
 	contents = String.allowsNil;

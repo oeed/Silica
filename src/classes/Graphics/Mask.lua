@@ -23,7 +23,7 @@ local function shapeMode( self, mask, func )
     return Mask( x, y, width, height, pixels )
 end
 
-class "Mask" {
+class Mask {
     
     x = Number;
     y = Number;

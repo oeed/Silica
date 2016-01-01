@@ -1,2 +1,2 @@
 
-class "ToolbarSymbolSegmentButton" extends "SymbolSegmentButton" {}
+class ToolbarSymbolSegmentButton extends SymbolSegmentButton {}

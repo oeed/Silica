@@ -1,5 +1,5 @@
 
-class "AlertWindow" extends "Window" {
+class AlertWindow extends Window {
 
 	interfaceName = "alert";
 	okayButton = View( "okayButton" );

@@ -1,5 +1,5 @@
 
-class "SettingsSymbol" extends "Symbol" {
+class SettingsSymbol extends Symbol {
 
     static = {
         symbolName = String( "settings" );

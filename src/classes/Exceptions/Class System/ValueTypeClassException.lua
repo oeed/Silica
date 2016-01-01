@@ -1,5 +1,5 @@
 
-class "ValueTypeClassException" extends "ClassException" {
+class ValueTypeClassException extends ClassException {
 
 }
 

@@ -1,7 +1,7 @@
 
 -- written in love2d so I'll port it over at some point
 
-class "TextFormatter" {
+class TextFormatter {
 	width = 0;
 	height = 0;
 

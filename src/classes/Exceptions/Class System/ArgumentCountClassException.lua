@@ -1,5 +1,5 @@
 
-class "ArgumentCountClassException" extends "ClassException" {
+class ArgumentCountClassException extends ClassException {
 
 }
 

@@ -1,5 +1,5 @@
 
-class "ContainerReadyInterfaceEvent" extends "InterfaceEvent" {
+class ContainerReadyInterfaceEvent extends InterfaceEvent {
 
     static = {
         eventType = "interface_ready_container";

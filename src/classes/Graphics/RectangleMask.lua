@@ -1,5 +1,5 @@
 
-class "RectangleMask" extends "Mask" {
+class RectangleMask extends Mask {
 
     
 

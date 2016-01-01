@@ -4,7 +4,7 @@ local iconValues = {
     SIGNATURE = 0xFF2138
 }
 
-class "Icon" extends "Image" {
+class Icon extends Image {
 
     images = Table;
     iconValues = Enum( Number, iconValues );

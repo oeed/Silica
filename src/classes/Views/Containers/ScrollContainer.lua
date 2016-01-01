@@ -1,5 +1,5 @@
 
-class "ScrollContainer" extends "Container" {
+class ScrollContainer extends Container {
 	
 }
 

@@ -1,5 +1,5 @@
 
-class "FlowContainer" extends "Container" {
+class FlowContainer extends Container {
     
     needsLayoutUpdate = false;
     expandVertically = true;

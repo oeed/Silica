@@ -1,4 +1,4 @@
-class "StyleClassException" extends "ClassException" {
+class StyleClassException extends ClassException {
 
 }
 

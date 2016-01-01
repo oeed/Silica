@@ -1,7 +1,7 @@
 
 local ceil, floor = math.ceil, math.floor
 
-class "ScaleableCanvas" extends "Canvas" {
+class ScaleableCanvas extends Canvas {
     
     scaleX = Number( 1 );
     scaleY = Number( 1 );

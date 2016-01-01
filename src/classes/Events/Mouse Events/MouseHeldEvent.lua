@@ -1,5 +1,5 @@
 
-class "MouseHeldEvent" extends "MouseEvent" {
+class MouseHeldEvent extends MouseEvent {
 
     eventType = "mouse_held";
     mouseButton = false;

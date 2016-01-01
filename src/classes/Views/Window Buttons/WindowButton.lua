@@ -1,7 +1,7 @@
 
 local BUTTON_DIAMETER = 5
 
-class "WindowButton" extends "View" {
+class WindowButton extends View {
 
 	width = Number( 9 );
 	height = Number( 9 );

@@ -1,5 +1,5 @@
 
-class "ProgressBar" extends "View" {
+class ProgressBar extends View {
     
     height = Number( 7 );
     width = Number( 100 );

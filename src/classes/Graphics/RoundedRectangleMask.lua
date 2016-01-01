@@ -26,7 +26,7 @@ local function corner( pixels, width, height, radius, position ) -- position is 
     end
 end
 
-class "RoundedRectangleMask" extends "Mask" {
+class RoundedRectangleMask extends Mask {
 
     
 

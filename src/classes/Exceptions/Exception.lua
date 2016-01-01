@@ -31,7 +31,7 @@ function _G.default( handler )
     return { default = true, handler = handler }
 end
 
-class "Exception" {
+class Exception {
     
     message = String;
     level = Number( 1 );

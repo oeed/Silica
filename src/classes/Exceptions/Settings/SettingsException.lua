@@ -1,5 +1,5 @@
 
-class "SettingsException" extends "FatalException" {
+class SettingsException extends FatalException {
     
 }
 

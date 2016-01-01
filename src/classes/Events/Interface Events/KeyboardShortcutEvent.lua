@@ -1,5 +1,5 @@
 
-class "KeyboardShortcutEvent" extends "Event" {
+class KeyboardShortcutEvent extends Event {
 
     static = {
         eventType = "interface_keyboard_shortcut";

@@ -1,5 +1,5 @@
 
-class "TerminateEvent" extends "Event" {
+class TerminateEvent extends Event {
 
     static = {
         eventType = "terminate";

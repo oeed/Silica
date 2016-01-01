@@ -1,7 +1,7 @@
 
 local RESIZE_MARGIN_X, RESIZE_MARGIN_Y = 3, 4
 
-class "Window" extends "Container" {
+class Window extends Container {
 
 	container = false;
     closeButton = false;

@@ -1,5 +1,5 @@
 
-class "HomeSymbol" extends "Symbol" {
+class HomeSymbol extends Symbol {
 
     static = {
         symbolName = String( "home" );

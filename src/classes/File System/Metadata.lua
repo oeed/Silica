@@ -90,7 +90,7 @@ local EXTENSION_MIMES = {
     APPLICATION = "silica/application";
 }
 
-class "Metadata" {
+class Metadata {
     
     file = FileSystemItem;
     metadataPath = String;

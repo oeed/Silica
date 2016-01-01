@@ -1,5 +1,5 @@
 
-class "ParentResizedInterfaceEvent" extends "InterfaceEvent" {
+class ParentResizedInterfaceEvent extends InterfaceEvent {
 
     static = {
         eventType = "interface_parent_resized";

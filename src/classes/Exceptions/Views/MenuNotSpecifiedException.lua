@@ -1,4 +1,4 @@
 
-class "MenuNotSpecifiedException" extends "Exception" {
+class MenuNotSpecifiedException extends Exception {
 
 }

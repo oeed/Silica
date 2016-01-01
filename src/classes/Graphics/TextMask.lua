@@ -13,7 +13,7 @@ local NO_CHAR_MAP = {
     { true,  true,  true,  true, true };
 }
 
-class "TextMask" extends "Mask" {
+class TextMask extends Mask {
 
 }
 

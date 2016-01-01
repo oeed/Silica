@@ -1,7 +1,7 @@
 
 local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
-class "MenuButton" extends "Button" {
+class MenuButton extends Button {
 
     width = Number( 45 );
 

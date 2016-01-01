@@ -1,5 +1,5 @@
 
-class "ApplicationEventManager" extends "EventManager" {
+class ApplicationEventManager extends EventManager {
 
 	handlesGlobal = false;
 

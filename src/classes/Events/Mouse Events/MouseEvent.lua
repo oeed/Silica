@@ -1,5 +1,5 @@
 
-class "MouseEvent" extends "Event" {
+class MouseEvent extends Event {
 
 	x = 0;
 	y = 0;

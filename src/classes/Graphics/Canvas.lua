@@ -2,7 +2,7 @@
 local SHADOW_RATIO = 2 / 3
 local SHADOW_COLOUR = Graphics.colours.GREY
 
-class "Canvas" {
+class Canvas {
     
     width = Number;
     height = Number;

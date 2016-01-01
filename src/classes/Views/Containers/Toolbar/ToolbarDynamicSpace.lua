@@ -1,2 +1,2 @@
 
-class "ToolbarDynamicSpace" extends "View" implements "IToolbarItem" implements "IToolbarDynamicItem" {}
+class ToolbarDynamicSpace extends View implements "IToolbarItem" implements "IToolbarDynamicItem" {}

@@ -1,4 +1,4 @@
 
-class "VectorFont" extends "Font" {
+class VectorFont extends Font {
 	
 }

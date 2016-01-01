@@ -1,5 +1,5 @@
 
-class "SeparatorMask" extends "Mask" {
+class SeparatorMask extends Mask {
 
     
 

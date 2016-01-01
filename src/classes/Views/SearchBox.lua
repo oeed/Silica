@@ -1,5 +1,5 @@
 
-class "SearchBox" extends "TextBox" {
+class SearchBox extends TextBox {
     
     placeholder = String( "Search..." ).allowsNil;
 

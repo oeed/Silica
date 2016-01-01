@@ -1,5 +1,5 @@
 
-class "ScreenCanvas" extends "Canvas" {
+class ScreenCanvas extends Canvas {
     
     drawsCorners = Boolean( true );
     screenBuffer = Table( {} );

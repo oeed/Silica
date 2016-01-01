@@ -1,5 +1,5 @@
 
-class "ThemeChangedInterfaceEvent" extends "InterfaceEvent" {
+class ThemeChangedInterfaceEvent extends InterfaceEvent {
 
     static = {
         eventType = "interface_theme_changed";

@@ -1,4 +1,4 @@
 
-class "MultipleInstancesSettingsException" extends "SettingsException" {
+class MultipleInstancesSettingsException extends SettingsException {
     
 }

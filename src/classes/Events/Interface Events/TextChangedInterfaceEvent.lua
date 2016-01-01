@@ -1,5 +1,5 @@
 
-class "TextChangedInterfaceEvent" extends "InterfaceEvent" {
+class TextChangedInterfaceEvent extends InterfaceEvent {
 
     static = {
         eventType = "interface_text";

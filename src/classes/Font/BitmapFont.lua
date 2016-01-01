@@ -21,7 +21,7 @@ local function bhasbit( n, i )
 	return floor( n / 2 ^ ( 8 - i ) ) % 2 == 1
 end
 
-class "BitmapFont" extends "Font" {
+class BitmapFont extends Font {
 	
 }
 

@@ -1,5 +1,5 @@
 
-class "LineMask" extends "Mask" {
+class LineMask extends Mask {
 
 }
 

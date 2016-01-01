@@ -1,5 +1,5 @@
 
-class "ContainerEventManager" extends "EventManager" {}
+class ContainerEventManager extends EventManager {}
 
 --[[
 	@desc Perfoms the appropriate handles for the given event and then trickles them down through the owner's children

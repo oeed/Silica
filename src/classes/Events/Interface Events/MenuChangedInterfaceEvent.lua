@@ -1,5 +1,5 @@
 
-class "MenuChangedInterfaceEvent" extends "InterfaceEvent" {
+class MenuChangedInterfaceEvent extends InterfaceEvent {
 
     static = {
         eventType = "interface_menu_changed";

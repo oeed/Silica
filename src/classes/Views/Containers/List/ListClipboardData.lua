@@ -1,5 +1,5 @@
 
-class "ListClipboardData" extends "ClipboardData" {
+class ListClipboardData extends ClipboardData {
     
     type = "Silica:ListItem";
     listItem = false;

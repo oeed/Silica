@@ -1,5 +1,5 @@
 
-class "TimerEvent" extends "Event" {
+class TimerEvent extends Event {
 
     static = {
         eventType = "timer";

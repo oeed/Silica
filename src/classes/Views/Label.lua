@@ -1,5 +1,5 @@
 
-class "Label" extends "View" {
+class Label extends View {
 
     text = String( "" );
     font = Font( Font.static.systemFont );

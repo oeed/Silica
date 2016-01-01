@@ -2,7 +2,7 @@
 local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true }
 local TYPETABLE_ALLOWS_NIL = 4
 
-class "Interface" {
+class Interface {
 
 	name = String; -- the name of the interface (the file name without the extension)
 	container = Container; -- if you want to generate a container based on the interface (i.e. not use the properties and children for an already made interface) you can use the value

@@ -1,7 +1,7 @@
 
 local eventClasses = {}
 
-class "Event" {
+class Event {
 	
 	eventType = false;
 

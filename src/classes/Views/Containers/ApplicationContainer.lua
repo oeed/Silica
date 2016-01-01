@@ -1,7 +1,7 @@
 
 local w, h = term.getSize()
 
-class "ApplicationContainer" extends "Container" {
+class ApplicationContainer extends Container {
 
 	-- TODO: make this use a Constraint
 	width = Number( w );

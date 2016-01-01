@@ -1,7 +1,7 @@
 
 local symbolClasses = {}
 
-class "Symbol" {
+class Symbol {
     
     static = {
 

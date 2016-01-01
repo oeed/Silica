@@ -1,7 +1,7 @@
 
 local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
-class "SegmentButton" extends "Button" {
+class SegmentButton extends Button {
 	
 }
 

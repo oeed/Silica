@@ -1,5 +1,5 @@
 
-class "FocusesChangedInterfaceEvent" extends "InterfaceEvent" {
+class FocusesChangedInterfaceEvent extends InterfaceEvent {
 
     static = {
         eventType = "interface_focuses_changed";

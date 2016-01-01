@@ -31,7 +31,7 @@ local keySymbols = {
 	alt = string.char( 143 );
 }
 
-class "KeyboardShortcutManager" {
+class KeyboardShortcutManager {
 	keysDown = {};
 	keysUpdates = {};
 	owner = false;

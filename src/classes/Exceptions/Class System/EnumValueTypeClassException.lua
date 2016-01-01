@@ -1,4 +1,4 @@
-class "EnumValueTypeClassException" extends "ClassException" {
+class EnumValueTypeClassException extends ClassException {
 
 }
 

@@ -1,5 +1,5 @@
 
-class "MouseDownEvent" extends "MouseEvent" {
+class MouseDownEvent extends MouseEvent {
 
     static = {
         eventType = "mouse_click";

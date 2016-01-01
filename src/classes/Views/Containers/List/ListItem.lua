@@ -1,5 +1,5 @@
 
-class "ListItem" extends "View" implements "IDraggableView" {
+class ListItem extends View implements "IDraggableView" {
     
     height = Number( 12 );
     isSelected = Boolean( false );

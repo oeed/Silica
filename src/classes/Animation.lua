@@ -64,7 +64,7 @@ local function performEasingOnSubject(subject, targetValues, initialValues, time
     end
 end
 
-class "Animation" {
+class Animation {
 	easings = Enum( Function, {} );
 	duration = Number;
 	subject = false;

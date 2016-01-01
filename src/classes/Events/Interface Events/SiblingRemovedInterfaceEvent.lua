@@ -1,5 +1,5 @@
 
-class "SiblingRemovedInterfaceEvent" extends "InterfaceEvent" {
+class SiblingRemovedInterfaceEvent extends InterfaceEvent {
 
     static = {
         eventType = "interface_sibling_removed";

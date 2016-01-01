@@ -16,7 +16,7 @@ local function resolve( path )
     if not path or #path == 0 then return relativePath else return tidy( path ):gsub( "^[^/]", relativePath .. "%1" ) end
 end
 
-class "Bundle" extends "Folder" {
+class Bundle extends Folder {
     
     config = Table;
 

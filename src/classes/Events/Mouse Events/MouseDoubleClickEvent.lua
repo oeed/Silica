@@ -1,5 +1,5 @@
 
-class "MouseDoubleClickEvent" extends "MouseEvent" {
+class MouseDoubleClickEvent extends MouseEvent {
 
     eventType = "mouse_double_click";
     mouseButton = false;

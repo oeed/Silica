@@ -1,5 +1,5 @@
 
-class "ThemeOutlet" {
+class ThemeOutlet {
 	style = "default";
 	owner = false;
 	ownerClass = false;

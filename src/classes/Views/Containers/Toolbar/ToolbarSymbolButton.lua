@@ -1,2 +1,2 @@
 
-class "ToolbarSymbolButton" extends "SymbolButton" implements "IToolbarItem" implements "IToolbarPressableItem" {}
+class ToolbarSymbolButton extends SymbolButton implements "IToolbarItem" implements "IToolbarPressableItem" {}

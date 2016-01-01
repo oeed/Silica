@@ -1,5 +1,5 @@
 
-class "Radio" extends "View" {
+class Radio extends View {
 
     width = Number( 8 );
     height = Number( 8 );
