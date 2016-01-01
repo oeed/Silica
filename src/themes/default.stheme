@@ -226,7 +226,7 @@
 
 	<ToolbarContainer>
 		<fillColour type="Graphics.colours" default="BLUE" />
-		<separatorColour type="Graphics.colours" default="LIGHT_BLUE" />
+		<separatorColour type="Graphics.colours" default="GREY" />
 		<separatorIsDashed type="Boolean" default="false" />
 		<leftMargin type="Number" default="6" />
 		<rightMargin type="Number" default="6" />
