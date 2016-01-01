@@ -81,6 +81,7 @@ function Application:initialise( ... )
 	else
 		userDataPath = self.userDataPath
 	end
+	self.arguments = { ... }
 	self.userDataFolder = Folder( userDataPath ) or Folder.static:make( userDataPath )
 	self:initialiseSettings()
 	self.event = ApplicationEventManager( self )
@@ -103,7 +104,6 @@ end
 	@return [number] exitCode -- returns the exit code of the application
 ]]
 function Application:run( ... )
-	self.arguments = { ... }
 	self.isRunning = true
 	try( function()
 		self:update()
