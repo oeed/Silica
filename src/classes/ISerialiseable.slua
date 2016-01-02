@@ -1,5 +1,5 @@
 
-interface "ISerialiseable" {
+interface ISerialiseable {
     
 }
 
@@ -13,4 +13,4 @@ function ISerialiseable:serialise()
     @desc Unserialises a string previously serialised into an instance
     @return Instance unserialisedInstance
 ]]
-function ISerialiseable.static.unserialise( String serialisedContent )
+function ISerialiseable.static:unserialise( String serialisedContent )

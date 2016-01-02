@@ -1,5 +1,5 @@
 
-interface "IFlowItem" {
+interface IFlowItem {
 
     idealWidth = false;
     minWidth = false;

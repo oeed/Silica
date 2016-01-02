@@ -1,5 +1,5 @@
 
-class ListContainer extends ScrollContainer implements "IDragDropDestination" {
+class ListContainer extends ScrollContainer implements IDragDropDestination {
     
     needsLayoutUpdate = Boolean( false );
     isCanvasHitTested = Boolean( false );

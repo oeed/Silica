@@ -46,7 +46,6 @@ function createValueType( name, typeStr, classType, destinationKey, destination 
         [TYPETABLE_HAS_DEFAULT_VALUE] = false;
         [TYPETABLE_IS_DEFAULT_VALUE_REFERENCE] = false;
     }
-
     local function instance__index( self, k )
         if k == ALLOWS_NIL_KEY then
             if self[TYPETABLE_ALLOWS_NIL] then
@@ -263,21 +262,21 @@ createEnumType()
 
 -- Create the class loading methods --
 
-function class.get( name )
-    return classes[name] or interfaces[name] or class.load( name )
+function class.get( name, contents )
+    return classes[name] or interfaces[name] or class.load( name, contents )
 end
 
 function class.exists( name )
     for i, tbl in ipairs( class.tables ) do
         local f = tbl[name]
         if f then
-            local g = f["text/lua"]
+            local g = f["silica/lua"]
             if g then return g end
         end
     end
 
     for i, folder in ipairs( class.folders ) do
-        local f = folder:find( name, Metadata.mimes.LUA )
+        local f = folder:find( name, Metadata.mimes.SLUA )
         if f then
             return f.contents
         end
@@ -368,7 +367,7 @@ end
 local function loadClassLines( name, contents )
     local file = contents or class.exists( name )
     if not file then
-        LoadingClassException( "The class/interface '" .. name .. "' was could not be found. Check the spelling and that the class file exists. This should not occur when using the automatic loading system, check you are not manually loading any classes.", 0 )
+        LoadingClassException( "The class/interface '" .. name .. "' could not be found. Check the spelling and that the class file exists. This should not occur when using the automatic loading system, check you are not manually loading any classes.", 0 )
     end
     local lines = lines( file, "\n" )
     return lines
@@ -399,13 +398,14 @@ function stripFunctionArguments( name, contents )
     local foundTypeDeclaration = false
     for n, line in ipairs( loadClassLines( name, contents ) ) do
         if not foundTypeDeclaration then
-            if line:match( "^%s*class%s*%w*" ) then
+            if line:match( "^%s*class%s*%w*.*{" ) then
                 isInterface = false
                 foundTypeDeclaration = true
-                line = line:gsub( "^%s*class%s*(%w*)", "class \"%1\"" ):gsub( "%s*extends%s*(%w*)", " extends \"%1\"" )
+                line = line:gsub( "^%s*class%s*(%w*)", "class \"%1\"" ):gsub( "%s*extends%s*(%w*)", " extends \"%1\"" ):gsub( "%s*implements%s*(%w*)", " implements \"%1\"" )
             elseif line:match( "^%s*interface%s*%w*" ) then
                 isInterface = true
                 foundTypeDeclaration = true
+                line = line:gsub( "^%s*interface%s*(%w*)", "interface \"%1\"" )
             end
         elseif line:sub( 1, 9 ) == "function " then
             -- get the components from the function declaration

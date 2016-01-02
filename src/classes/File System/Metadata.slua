@@ -78,6 +78,7 @@ local EXTENSION_MIMES = {
     NFT = "image/nft";
     SKCH = "image/sketch";
     UCG = "image/ucg";
+    SLUA = "silica/lua";
     SINTERFACE = "silica/interface";
     STHEME = "silica/theme";
     SCONFIG = "silica/config";

@@ -102,7 +102,9 @@ local function serialise( t, tTracking )
     end
 end
 
-class Package extends File {}
+class Package extends File {
+    
+}
 
 function Package.static:make( path, overwrite, Folder folder, isResourcePackage )
     local contents = ""
@@ -112,8 +114,6 @@ function Package.static:make( path, overwrite, Folder folder, isResourcePackage 
             local itemName = item.fullName
             if RESOURCE_PACKAGE_FOLDERS[itemName] and item:typeOf( Folder ) then
                 folders[itemName] = item:serialise( true )
-            elseif itemName == "loadfirst.scfg" and item.metadata.mime == Metadata.mimes.SCFG then
-                folders["loadfirst"] = { [Metadata.mimes.SCFG] = item.contents }
             end
         end
         contents = "local files = " .. serialise(folders, {}) .. RESOURCE_PACKAGE_TEMPLATE
