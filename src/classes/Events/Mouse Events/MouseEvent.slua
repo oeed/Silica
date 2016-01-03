@@ -44,7 +44,7 @@ function MouseEvent:makeRelative( view )
 		y = y + oldRelativeView.y - 1
 	else
 		-- we don't known exactly where the previous view was
-		x, y = view:coordinates( self.globalX, self.globalY, self.application.container )
+		x, y = view:getCoordinates( self.globalX, self.globalY, self.application.container )
 	end
 	self.x = x
 	self.y = y

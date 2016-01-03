@@ -290,7 +290,7 @@ end
 	@return Number y -- the x coordinate in the parent's coordinate system
 ]]
 --									TODO: Any should be Container. If it is it loads another View class, so there are two different ones
-function View:coordinatesTo( Number x, Number y, Any( self.application.container ) parent )
+function View:getCoordinatesTo( Number x, Number y, Any( self.application.container ) parent )
 	local currentParrent = { parent = self }
 	while currentParrent.parent and currentParrent.parent ~= parent do
 		currentParrent = currentParrent.parent
@@ -307,12 +307,12 @@ end
 	@return [number] y -- the x coordinate in the parent's coordinate system
 ]]
 --					TODO: Any should be Container. If it is it loads another View class, so there are two different ones
-function View:position( Any( self.application.container ) parent )
+function View:getPosition( Any( self.application.container ) parent )
 	local selfParent = self.parent
 	if not selfParent or parent == selfParent then
 		return self.x, self.y
 	else
-		local x, y = self:coordinatesTo( 1, 1, parent )
+		local x, y = self:getCoordinatesTo( 1, 1, parent )
 		return x, y
 	end
 end
@@ -323,7 +323,7 @@ end
 	@return [number] y -- the local x coordinate
 ]]
 --							TODO: Any should be Container. If it is it loads another View class, so there are two different ones
-function View:coordinates( Number x, Number y, Any( self.application.container ) parent )
+function View:getCoordinates( Number x, Number y, Any( self.application.container ) parent )
 	local currentParrent = self
 	while currentParrent and currentParrent ~= parent do
 		x = x - currentParrent.x + 1
