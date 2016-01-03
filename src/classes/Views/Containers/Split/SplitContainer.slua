@@ -1,0 +1,120 @@
+
+class SplitContainer extends Container {
+    
+    needsLayoutUpdate = Boolean( false );
+    segmentSize = Number.allowsNil;
+    isVertical = Boolean( false );
+
+}
+
+function SplitContainer:initialise( ... )
+    self:super( ... )
+    self:event( ReadyInterfaceEvent, self.onReady )
+    self:event( ChildAddedInterfaceEvent, self.onChildAdded )
+    self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
+end
+
+function SplitContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
+    self:updateLayout()
+end
+
+function SplitContainer:updateLayout()
+    local children = self.children
+    local childrenCount = #children
+    if childrenCount > 0 and childrenCount % 2 == 1 then -- we MUST have an odd number of children, there should be a separator view between each main view
+        local width, height, isVertical = self.width, self.height, self.isVertical
+        local size, otherSize = isVertical and height or width, isVertical and width or height
+        local handleThickness, handleLeftMargin, handleRightMargin, handleSize
+        if childrenCount > 1 then
+            local theme = children[2].theme
+            handleThickness, handleLeftMargin, handleRightMargin = theme:value( "thickness" ), theme:value( "leftMargin" ), theme:value( "rightMargin" )
+            handleSize = handleThickness + handleLeftMargin + handleRightMargin
+        end
+
+        local handlePositions = {}
+        -- scan over all the handles and note their positions
+        for i = 2, childrenCount, 2 do
+            local childView = children[i]
+            handlePositions[i / 2] = childView.position
+        end
+
+        local segmentSize = size / ( #handlePositions + 1 )
+        local position, remainingSize = 1, size - ( handleThickness and ( #handlePositions * handleThickness ) or 0 )
+        local positionKey, otherPositionKey, sizeKey, otherSizeKey = isVertical and "y" or "x", isVertical and "x" or "y", isVertical and "height" or "width", isVertical and "width" or "height"
+        for i = 1, childrenCount, 2 do
+            local childView = children[i]
+            local index = i / 2 + 0.5
+            local handlePosition = handlePositions[index]
+            local childSize
+            if handlePosition then
+                childSize = math.floor( segmentSize * handlePosition + 0.5 )
+                local handleView = children[i + 1]
+                handleView.contentPosition = position
+                handleView[positionKey] = position + childSize - handleLeftMargin
+                handleView[otherPositionKey] = 1
+                handleView[sizeKey] = handleSize
+                handleView[otherSizeKey] = otherSize
+            else
+                childSize = remainingSize
+            end
+            remainingSize = remainingSize - childSize
+            childView[positionKey] = position
+            childView[otherPositionKey] = 1
+            childView[sizeKey] = childSize
+            childView[otherSizeKey] = otherSize
+            position = position + childSize + handleThickness
+        end
+        self.segmentSize = segmentSize
+    end
+
+    self.needsLayoutUpdate = false
+end
+
+function SplitContainer.isVertical:set( isVertical )
+    self.isVertical = isVertical
+    local children = self.children
+    for i = 1, #children, 2 do
+        children[i].isVertical = isVertical
+    end
+end
+
+function SplitContainer:update( deltaTime )
+    if self.needsLayoutUpdate then
+        self:updateLayout()
+    end
+    self:super( deltaTime )
+end
+
+function SplitContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
+    local childView = event.childView
+    if not childView:typeOf( SplitHandleView ) then
+        local index = childView.index
+        if index ~= 1 then
+            self:insert( SplitHandleView( { isVertical = self.isVertical } ), index )
+        end
+    else
+        self.needsLayoutUpdate = true
+    end
+end
+
+function SplitContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
+    self.needsLayoutUpdate = true
+end
+
+function SplitContainer:onFocusesChanged( FocusesChangedInterfaceEvent event, Event.phases phase )
+    local oldFocusedSwitchableViews = self.application:focusesOfType( ISwitchableView, event.oldFocuses )
+    local focusedSwitchableViews = self.application:focusesOfType( ISwitchableView, event.newFocuses )
+
+    if #focusedSwitchableViews > 0 then
+        local oldSwitchableView = oldFocusedSwitchableViews[1]
+        local switchableView = focusedSwitchableViews[1]
+        if switchableView ~= oldSwitchableView then
+            if oldSwitchableView then
+                self.switchableItems[oldSwitchableView]:updateThemeStyle()
+            end
+            self.activeView = self.switchableItems[switchableView]
+        end
+    else
+        self.activeView = nil
+    end
+end
