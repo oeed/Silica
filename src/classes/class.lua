@@ -1,5 +1,8 @@
 -- Class Construction --
 
+-- TODO: using a property name that is already used in a super class as a function does not raise an error
+
+
 class = {
     folders = {};
     tables = {};
