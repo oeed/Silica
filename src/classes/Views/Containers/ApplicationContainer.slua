@@ -7,6 +7,11 @@ class ApplicationContainer extends Container {
 	height = Number( h );
 	themeName = String( "default" );
 
+	cursorX = Number( 6 );
+	cursorY = Number( 6 );
+
+	cursorImage = Image.allowsNil;
+
 }
 
 --[[
@@ -17,6 +22,10 @@ class ApplicationContainer extends Container {
 function ApplicationContainer:initialise( ... )
 	self:super( ... )
     self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
+    self:event( MouseMoveEvent, self.onMouseMoveCursor, Event.phases.BEFORE )
+    if not Quartz then
+    	self.cursorImage = Image.static:fromName( "point-click" )
+    end
 end
 
 function ApplicationContainer:initialiseCanvas()
@@ -48,7 +57,12 @@ end
 function ApplicationContainer:draw()
 	if self.isVisible and self.needsDraw then
 		self:super()
-		self.canvas:drawToScreen( term )
+		local canvas = self.canvas
+		if not Quartz then
+			canvas:image( self.cursorImage, self.cursorX, self.cursorY )
+			-- canvas:fill( colours.red, RectangleMask( self.cursorX, self.cursorY, 10, 10 ) )
+		end
+		canvas:drawToScreen( term )
 	end
 end
 
@@ -75,6 +89,12 @@ function ApplicationContainer:onMouseDownAfter( MouseDownEvent event, Event.phas
 			 end
 		end
 	end
+end
+
+function ApplicationContainer:onMouseMoveCursor( MouseMoveEvent event, Event.phases phase )
+	self.cursorX = event.x
+	self.cursorY = event.y
+	self.needsDraw = true
 end
 
 function ApplicationContainer:dispose()
