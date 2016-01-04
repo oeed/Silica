@@ -21,6 +21,8 @@ function Validator.static:validatorType( typeName )
 		return function( k ) return Font.static:fromName( k ) end
 	elseif typeName == "Symbol" then
 		return function( k ) return Symbol.static:fromName( k ) end
+	elseif typeName == "Image" then
+		return function( k ) return Image.static:fromName( k ) end
 	else
 		UnknownTypeValidationException( "Unknown validation type: '" .. typeName .. "'" )
 	end
