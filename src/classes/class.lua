@@ -28,7 +28,7 @@ local REFERENCE_UID = {} -- just a unique identifier to indicate that this is a 
 
 local ALLOWS_NIL_KEY, INTERFACE_LINK_KEY = "allowsNil", "link"
 
-local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true, instanceProperties = true }
+local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedFunction = true, instanceProperties = true, subclasses = true }
 local DISALLOWED_CLASS_NAMES = { Number = true, String = true, Boolean = true, Any = true, Table = true, Function = true, Thread = true, Enum = true }
 
 -- Create the value types --
@@ -604,7 +604,7 @@ local function constructClass( _, name )
         ConstructionClassException( "'class' argument must be a string with the name of the class being defined, got type " .. type( name ), 2 )
     end
     if name ~= expectedName then
-        ConstructionClassException( "Attempted to construct the class/interface '" .. name .. "' but was expecting to load class/interface '" .. expectedName .. "'. This should never happen... soooooo... no idea what you're doing." )
+        ConstructionClassException( "Attempted to construct the class/interface '" .. name .. "' but was expecting to load class/interface '" .. expectedName .. "'. The name of the defined class must be the same as the file name." )
     end
     if name:sub( 1, 1) ~= name:sub( 1, 1):upper() then
         StyleClassException( "Class names must start with a capital letter. (e.g. TextBox)", 2 )
@@ -648,7 +648,7 @@ function interface( name )
         ConstructionClassException( "'interface' argument must be a string with the name of the interface being defined, got type " .. type( name ), 2 )
     end
     if name ~= expectedName then
-        ConstructionClassException( "Attempted to construct the interface '" .. name .. "' but was expecting to load interface '" .. expectedName .. "'. This should never happen... soooooo... no idea what you're doing.", 2 )
+        ConstructionClassException( "Attempted to construct the interface '" .. name .. "' but was expecting to load interface '" .. expectedName .. "'. The name of the defined class must be the same as the file name.", 2 )
     end
     if #name < 2 or name:sub( 1, 1) ~= "I" then
         StyleClassException( "Interface names must start with a capital 'I' and must be longer than 1 character. (e.g. IVehicle)", 2 )
@@ -1208,6 +1208,7 @@ function compileClass( compiledClass, name )
         compiledClass.metatable = metatable
         compiledClass.className = name
         compiledClass.super = classes[superName]
+        compiledClass.subclasses = {}
 
         local enumTypes = currentlyConstructing.enumTypes 
         local enums = currentlyConstructing.enums
@@ -1298,6 +1299,10 @@ function compileClass( compiledClass, name )
         rawset( compiledClass, "instanceDefinedProperties", compiledInstances[name].definedProperties )
         rawset( compiledClass, "instanceProperties", currentlyConstructing.instanceProperties )
         classes[name] = compiledClass
+        local superName = currentlyConstructing.superName
+        if superName then
+            table.insert( class.get( superName ).subclasses, compiledClass )
+        end
         static = compileAndSpawnStatic( static, name, compiledClass )
     end
     currentlyConstructing = nil
