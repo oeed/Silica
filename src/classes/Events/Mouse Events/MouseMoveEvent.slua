@@ -1,0 +1,16 @@
+
+class MouseMoveEvent extends MouseEvent {
+
+    static = {
+        eventType = "mouse_move";
+    };
+
+}
+
+function MouseMoveEvent:initialise( x, y )
+	self.x = x
+	self.y = y
+	self.globalX = x
+	self.globalY = y
+end
+
