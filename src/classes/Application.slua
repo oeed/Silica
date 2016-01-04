@@ -163,7 +163,7 @@ function Application:update()
 	local deltaTime = os.clock() - lastUpdate
 	self.lastUpdate = os.clock()
 	if not Quartz then
-		self.updateTimer = os.startTimer( 1/20 )
+		self.updateTimer = os.startTimer( 1/60 )
 	end
 
 	self:checkScheduled( lastUpdate )
