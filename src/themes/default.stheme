@@ -300,4 +300,15 @@
 		<rightMargin type="Number" default="1" />
 	</SplitHandleView>
 
+	<Cursor>
+		<image type="Image" default="cursor-default" />
+		<hotSpotX type="Number" default="2" />
+		<hotSpotY type="Number" default="2" />
+	</Cursor>
+
+	<PointCursor>
+		<image type="Image" default="point" />
+		<hotSpotX type="Number" default="5" />
+	</PointCursor>
+
 </Theme>

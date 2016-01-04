@@ -1,0 +1,43 @@
+
+class Cursor {
+    
+    static = {
+
+        theme = ThemeOutlet;
+        event = EventManager;
+        image = Image;
+        hotSpotX = Number;
+        hotSpotY = Number;
+
+    }
+    
+}
+
+function Cursor.static:setupAll()
+    self:setup()
+    for i, subclass in ipairs( Cursor.subclasses ) do
+        subclass.static:setup()
+    end
+end
+
+-- we can't use initialise here because static intialise occurs before the Application is initialised
+function Cursor.static:setup()
+    local theme = ThemeOutlet( self )
+    self.theme = theme
+    local event = EventManager( self )
+    self.event = event
+    event:connectGlobal( ThemeChangedInterfaceEvent, self.onThemeChanged )
+    self.image = theme:value( "image" )
+    self.hotSpotX = theme:value( "hotSpotX" )
+    self.hotSpotY = theme:value( "hotSpotY" )
+end
+
+function Cursor.static:onThemeChanged( ThemeChangedInterfaceEvent event, Event.phases phase )
+    self.image = self.theme:value( "image" )
+    self.hotSpotX = theme:value( "hotSpotX" )
+    self.hotSpotY = theme:value( "hotSpotY" )
+end
+
+function Cursor.static:drawTo( Canvas canvas, Number x, Number y )
+    canvas:image( self.image, x - self.hotSpotX + 1, y - self.hotSpotY + 1 )
+end

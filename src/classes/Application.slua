@@ -90,6 +90,7 @@ function Application:initialise( ... )
 	Font.static:initialisePresets()
 	
 	self:reloadInterface()
+	Cursor.static:setupAll()
 
 	self.event:connect( TimerEvent, self.onTimer )
 end

@@ -10,7 +10,7 @@ class ApplicationContainer extends Container {
 	cursorX = Number( 6 );
 	cursorY = Number( 6 );
 
-	cursorImage = Image.allowsNil;
+	-- cursorImage = Image.allowsNil;
 
 }
 
@@ -23,9 +23,6 @@ function ApplicationContainer:initialise( ... )
 	self:super( ... )
     self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
     self:event( MouseMoveEvent, self.onMouseMoveCursor, Event.phases.BEFORE )
-    if not Quartz then
-    	self.cursorImage = Image.static:fromName( "point-click" )
-    end
 end
 
 function ApplicationContainer:initialiseCanvas()
@@ -59,7 +56,8 @@ function ApplicationContainer:draw()
 		self:super()
 		local canvas = self.canvas
 		if not Quartz then
-			canvas:image( self.cursorImage, self.cursorX, self.cursorY )
+			PointCursor.static:drawTo( canvas, self.cursorX, self.cursorY )
+			-- canvas:image( self.cursorImage, self.cursorX, self.cursorY )
 			-- canvas:fill( colours.red, RectangleMask( self.cursorX, self.cursorY, 10, 10 ) )
 		end
 		canvas:drawToScreen( term )
