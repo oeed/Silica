@@ -14,7 +14,7 @@ class ThemeOutlet {
 function ThemeOutlet:initialise( owner )
 	self.owner = owner
 	self.ownerClass = owner.class
-	owner.event:connectGlobal( ThemeChangedInterfaceEvent, self.onThemeChanged, nil, self )
+	-- owner.event:connectGlobal( ThemeChangedInterfaceEvent, self.onThemeChanged, nil, self )
 end
 
 --[[
@@ -33,44 +33,44 @@ end
 	@param [string] classKey -- the key of the class' value
 	@param [string] key -- the key of the value
 ]]
-function ThemeOutlet:connect( _class, classKey, key )
-	self:disconnect( _class, classKey, key )
-	key = key or classKey
-	if not _class:isDefinedProperty( classKey ) then
-		error( "Attempted to connect theme to undefined property '" .. classKey .. "' for object '" .. tostring( _class ) .. "'", 4 )
-	end
-	table.insert( self.connections, { _class, classKey, key, _class[classKey] } )
-	_class[classKey] = self:value( key, style )
-end
+-- function ThemeOutlet:connect( _class, classKey, key )
+-- 	self:disconnect( _class, classKey, key )
+-- 	key = key or classKey
+-- 	if not _class:isDefinedProperty( classKey ) then
+-- 		error( "Attempted to connect theme to undefined property '" .. classKey .. "' for object '" .. tostring( _class ) .. "'", 4 )
+-- 	end
+-- 	table.insert( self.connections, { _class, classKey, key, _class[classKey] } )
+-- 	_class[classKey] = self:value( key, style )
+-- end
 
---[[
-	@desc Disconnect a class value from a theme value
-	@param [class] _class -- the class that was connected
-	@param [string] classKey -- the key of the class' value
-	@param [string] key -- the key of the value
-]]
-function ThemeOutlet:disconnect( _class, classKey, key )
-	key = key or classKey
-	for i, connection in pairs( self.connections ) do
-		if _class == connection[1] and classKey == connection[2] and key == connection[3] then
-			self.connections[i] = nil
-			_class[classKey] = connection[4]
-			return
-		end
-	end
-end
+-- --[[
+-- 	@desc Disconnect a class value from a theme value
+-- 	@param [class] _class -- the class that was connected
+-- 	@param [string] classKey -- the key of the class' value
+-- 	@param [string] key -- the key of the value
+-- ]]
+-- function ThemeOutlet:disconnect( _class, classKey, key )
+-- 	key = key or classKey
+-- 	for i, connection in pairs( self.connections ) do
+-- 		if _class == connection[1] and classKey == connection[2] and key == connection[3] then
+-- 			self.connections[i] = nil
+-- 			_class[classKey] = connection[4]
+-- 			return
+-- 		end
+-- 	end
+-- end
 
---[[
-	@desc Fired when the theme changes, updates the value
-	@param [string] style -- the style name
-]]
-function ThemeOutlet:onThemeChanged( Event event, Event.phases phase )
-	local style = self.style
-	for i, connection in pairs( self.connections ) do
-		connection[1][connection[2]] = self:value( connection[3], style )
-	end
+-- --[[
+-- 	@desc Fired when the theme changes, updates the value
+-- 	@param [string] style -- the style name
+-- ]]
+-- function ThemeOutlet:onThemeChanged( Event event, Event.phases phase )
+-- 	local style = self.style
+-- 	for i, connection in pairs( self.connections ) do
+-- 		connection[1][connection[2]] = self:value( connection[3], style )
+-- 	end
 
-end
+-- end
 
 --[[
 	@desc Sets the current style (pressed, checked, disabled, etc) for the owner. If the style changed the owner.needsDraw will be set to true if it's a View
