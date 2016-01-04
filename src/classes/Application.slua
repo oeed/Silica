@@ -88,9 +88,9 @@ function Application:initialise( ... )
 	self.dragDropManager = DragDropManager( self )
 
 	Font.static:initialisePresets()
+	Cursor.static:setupAll()
 	
 	self:reloadInterface()
-	Cursor.static:setupAll()
 
 	self.event:connect( TimerEvent, self.onTimer )
 end

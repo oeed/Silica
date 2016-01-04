@@ -306,9 +306,15 @@
 		<hotSpotY type="Number" default="2" />
 	</Cursor>
 
-	<PointCursor>
-		<image type="Image" default="point" />
+	<ClickableCursor>
+		<image type="Image" default="cursor-clickable" down="cursor-clickable-down" />
 		<hotSpotX type="Number" default="5" />
-	</PointCursor>
+	</ClickableCursor>
+
+	<TextCursor>
+		<image type="Image" default="cursor-text" />
+		<hotSpotX type="Number" default="3" />
+		<hotSpotY type="Number" default="5" />
+	</TextCursor>
 
 </Theme>

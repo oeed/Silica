@@ -9,8 +9,8 @@ class ApplicationContainer extends Container {
 
 	cursorX = Number( 6 );
 	cursorY = Number( 6 );
-
-	-- cursorImage = Image.allowsNil;
+	cursor = Cursor( Cursor.static ).allowsNil;
+	needsCursorUpdate = Boolean( true );
 
 }
 
@@ -22,7 +22,7 @@ class ApplicationContainer extends Container {
 function ApplicationContainer:initialise( ... )
 	self:super( ... )
     self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
-    self:event( MouseMoveEvent, self.onMouseMoveCursor, Event.phases.BEFORE )
+    self:event( MouseMoveEvent, self.onMouseMoveCursorBefore )
 end
 
 function ApplicationContainer:initialiseCanvas()
@@ -56,9 +56,7 @@ function ApplicationContainer:draw()
 		self:super()
 		local canvas = self.canvas
 		if not Quartz then
-			PointCursor.static:drawTo( canvas, self.cursorX, self.cursorY )
-			-- canvas:image( self.cursorImage, self.cursorX, self.cursorY )
-			-- canvas:fill( colours.red, RectangleMask( self.cursorX, self.cursorY, 10, 10 ) )
+			self.cursor:drawTo( canvas, self.cursorX, self.cursorY )
 		end
 		canvas:drawToScreen( term )
 	end
@@ -69,6 +67,9 @@ end
 ]]
 function ApplicationContainer:update( ... )
 	self:super( ... )
+	if self.needsCursorUpdate then
+		self:updateCursor()
+	end
 	self:draw()
 end
 
@@ -89,10 +90,60 @@ function ApplicationContainer:onMouseDownAfter( MouseDownEvent event, Event.phas
 	end
 end
 
-function ApplicationContainer:onMouseMoveCursor( MouseMoveEvent event, Event.phases phase )
+--     self:event( MouseMoveEvent, self.onMouseMoveCursor, Event.phases.AFTER )
+-- function ApplicationContainer:onMouseMoveCursor( MouseMoveEvent event, Event.phases phase )
+-- 	if self.isEnabled then
+-- 		local cursorStatic = Cursor.static
+-- 		if self.cursor ~= cursorStatic then
+-- 			self.cursor = cursorStatic
+-- 			return true
+-- 		end
+-- 	end
+-- end
+
+function ApplicationContainer.cursor:set( cursor )
+	local oldCursor = self.cursor
+	if cursor ~= oldCursor then
+		self.cursor = cursor
+	    self.needsDraw = true
+	end
+end
+
+--[[
+	Reach in to the child Views and find the lowest level view under the cursor that specifies a cursor
+]]
+function ApplicationContainer:updateCursor()
+	local function search( container, x, y, cursor )
+		local children = container.children
+		for i = #children, 1, -1 do
+			local childView = children[i]
+			if childView:hitTest( x, y ) then
+				local cursor
+				if childView:typeOf( Container ) then
+					cursor = search( childView, x - childView.x + 1, y - childView.y + 1 )
+				else
+					cursor = childView.cursor
+				end
+				if cursor then
+					return cursor
+				end
+			end
+		end
+		cursor = cursor or container.cursor
+		if cursor then
+			return cursor
+		end
+	end
+
+	self.cursor = search( self, self.cursorX, self.cursorY, Cursor.static )
+	self.needsCursorUpdate = false
+end
+
+function ApplicationContainer:onMouseMoveCursorBefore( MouseMoveEvent event, Event.phases phase )
 	self.cursorX = event.x
 	self.cursorY = event.y
 	self.needsDraw = true
+	self.needsCursorUpdate = true
 end
 
 function ApplicationContainer:dispose()

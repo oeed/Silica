@@ -22,20 +22,21 @@ end
 
 -- we can't use initialise here because static intialise occurs before the Application is initialised
 function Cursor.static:setup()
-    local theme = ThemeOutlet( self )
-    self.theme = theme
+    self.theme = ThemeOutlet( self )
     local event = EventManager( self )
     self.event = event
     event:connectGlobal( ThemeChangedInterfaceEvent, self.onThemeChanged )
+end
+
+function Cursor.static:updateAppearance()
+    local theme = self.theme
     self.image = theme:value( "image" )
     self.hotSpotX = theme:value( "hotSpotX" )
     self.hotSpotY = theme:value( "hotSpotY" )
 end
 
 function Cursor.static:onThemeChanged( ThemeChangedInterfaceEvent event, Event.phases phase )
-    self.image = self.theme:value( "image" )
-    self.hotSpotX = theme:value( "hotSpotX" )
-    self.hotSpotY = theme:value( "hotSpotY" )
+    self:updateAppearance()
 end
 
 function Cursor.static:drawTo( Canvas canvas, Number x, Number y )

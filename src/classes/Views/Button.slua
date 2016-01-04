@@ -11,8 +11,9 @@ class Button extends View {
     isFocused = Boolean( false );
     isAutosized = Boolean( true );
     isFocusDismissable = Boolean( true );
-
     needsAutosize = Boolean( true );
+
+    cursor = Cursor( ClickableCursor.static ).allowsNil;
 
 }
 

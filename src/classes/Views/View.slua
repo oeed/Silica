@@ -57,6 +57,7 @@ class View {
 	isSingleFocusOnly = Boolean( false ); -- whether only this view can be in-focus when focused (i.e. so 3 textboxes aren't focused at the same time)
 	isFocusDismissable = Boolean( true ); -- whether clicking away from the view when focused will unfocus it
 	isEnabled = Boolean( true );
+	cursor = Cursor.allowsNil;
 
 	lastMouseDown = Table( {} );
 	lastMouseUp = Table( {} );

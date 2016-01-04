@@ -50,6 +50,8 @@ class TextBox extends View {
 	maximumLength = false;
 	selectionPosition = Number.allowsNil;
 
+    cursor = Cursor( TextCursor.static ).allowsNil;
+
 	selectionDirections = Enum( Number, SELECTION_DIRECTIONS );
 
 }

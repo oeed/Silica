@@ -88,6 +88,8 @@ function ThemeOutlet.style:set( style )
 
 		if ownerClass:typeOf( View ) then
 			self.owner.needsDraw = true
+		elseif ownerClass:typeOf( Cursor ) then
+			self.owner:updateAppearance()
 		end
 	end
 end
