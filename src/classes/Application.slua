@@ -160,9 +160,10 @@ end
 ]]
 function Application:update()
 	-- TODO: not exactally sure how to handle deltaTime for the first one. for now it's one 60th
-	local lastUpdate = self.lastUpdate or ( os.clock() - 1/60 )
-	local deltaTime = os.clock() - lastUpdate
-	self.lastUpdate = os.clock()
+	local clock = os.clock()
+	local lastUpdate = self.lastUpdate or ( clock - 1/60 )
+	local deltaTime = clock - lastUpdate
+	self.lastUpdate = clock
 	if not Quartz then
 		self.updateTimer = os.startTimer( 1/60 )
 	end
