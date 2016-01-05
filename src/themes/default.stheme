@@ -301,7 +301,7 @@
 	</SplitHandleView>
 
 	<Cursor>
-		<image type="Image" default="cursor-default" />
+		<image type="Image" default="cursor-default-tail" />
 		<hotSpotX type="Number" default="2" />
 		<hotSpotY type="Number" default="2" />
 	</Cursor>
