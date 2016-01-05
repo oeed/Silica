@@ -5,7 +5,6 @@ class MenuBarItem extends View {
 
     isPressed = Boolean( false );
     isEnabled = Boolean( true );
-	isCanvasHitTested = Boolean( false );
     isFlashing = Boolean( false );
     isActive = Boolean; -- TODO: readonly
 

@@ -19,8 +19,6 @@ class Window extends Container {
     maxWidth = 100;
     maxHeight = 150;
 
-    isCanvasHitTested = Boolean( false );
-
 }
 
 --[[

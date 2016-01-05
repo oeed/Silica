@@ -7,7 +7,6 @@ class MenuItem extends View {
 
     isPressed = Boolean( false );
     isEnabled = Boolean( true );
-	isCanvasHitTested = Boolean( false );
 
     shortcut = Any.allowsNil;
     text = String;

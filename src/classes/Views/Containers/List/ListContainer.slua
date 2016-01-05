@@ -2,7 +2,6 @@
 class ListContainer extends ScrollContainer implements IDragDropDestination {
     
     needsLayoutUpdate = Boolean( false );
-    isCanvasHitTested = Boolean( false );
     canRearrange = Boolean( true );
     dropStyle = DragDropManager.dropStyles.RETURN;
     canTransferItems = Boolean( false );

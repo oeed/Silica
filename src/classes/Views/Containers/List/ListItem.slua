@@ -3,7 +3,6 @@ class ListItem extends View implements IDraggableView {
     
     height = Number( 12 );
     isSelected = Boolean( false );
-    isCanvasHitTested = Boolean( false );
 
     text = String;
 

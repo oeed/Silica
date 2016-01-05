@@ -4,7 +4,6 @@ class SplitHandleView extends View {
     position = Number( 1 );
     contentPosition = Number.allowsNil;
     isVertical = Boolean;
-    isCanvasHitTested = Boolean( false );
 
     isDragging = Boolean( false );
     dragX = Number.allowsNil;
