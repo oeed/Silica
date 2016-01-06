@@ -21,6 +21,9 @@ function Container:initialise( ... )
     self:event( ChildAddedInterfaceEvent, self.onChildOfChildAdded )
     self:event( ChildRemovedInterfaceEvent, self.onChildOfChildRemoved )
     self:event( ReadyInterfaceEvent, self.onReadyLoadInterface )
+    self:event( MouseMoveEvent, self.onUpdateChildMouseEnterExit )
+    self:event( MouseExitedInterfaceEvent, self.onUpdateChildMouseEnterExit )
+    self:event( MouseEnteredInterfaceEvent, self.onUpdateChildMouseEnterExit )
 end
 
 --[[
@@ -374,6 +377,33 @@ function Container:findChildren( identifier, descendTree )
 		end
 	end
 	return children
+end
+
+--[[
+	@desc Checks if the mouse has entered or exited one of its children and sends an event if so
+]]
+function Container:onUpdateChildMouseEnterExit( Event event, Event.phases phase )
+	local x, y = event.x, event.y
+	local children = self.children
+	for i = #children, 1, -1 do
+		local childView = children[i]
+		local isMouseInView = childView.isMouseInView
+		if childView:hitTest( x, y ) then
+			if not isMouseInView then
+				-- mouse entered
+				local _x, _y = x - childView.x + 1, y - childView.y + 1
+				childView.event:handleEvent( MouseEnteredInterfaceEvent( _x, _y ) )
+				childView.isMouseInView = true
+			end
+		else
+			if isMouseInView then
+				-- mouse exited
+				local _x, _y = x - childView.x + 1, y - childView.y + 1
+				childView.event:handleEvent( MouseExitedInterfaceEvent( _x, _y ) )
+				childView.isMouseInView = false
+			end
+		end
+	end
 end
 
 function Container:dispose()
