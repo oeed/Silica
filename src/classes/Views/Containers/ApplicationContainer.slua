@@ -64,7 +64,7 @@ function ApplicationContainer:draw()
 		if needsDraw then
 			self:super()
 		end
-		canvas:drawTo( screenCanvas, 1, 1 )
+		canvas:transfer( screenCanvas )
 		self.cursor:drawTo( screenCanvas, self.cursorX, self.cursorY )
 		screenCanvas:drawToScreen( term )
 	end
@@ -76,7 +76,7 @@ end
 function ApplicationContainer:drawCursor()
 	if not Quartz then
 		local canvas, screenCanvas = self.canvas, self.screenCanvas
-		canvas:drawTo( screenCanvas, 1, 1 )
+		canvas:transfer( screenCanvas )
 		self.cursor:drawTo( screenCanvas, self.cursorX, self.cursorY )
 		screenCanvas:drawToScreen( term )
 	end
