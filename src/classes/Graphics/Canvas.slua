@@ -166,6 +166,16 @@ function Canvas:drawTo( Canvas destinationCanvas, Number x, Number y, Mask.allow
 end
 
 --[[
+    @desc Copies the pixels of one canvas to another. No checks are performed for performance (i.e. only use when you know they are the same size and at 1, 1).
+]]
+function Canvas:transfer( Canvas destinationCanvas )
+    local pixels, destinationPixels = self.pixels, destinationCanvas.pixels
+    for i = 1, #pixels do
+        destinationPixels[i] = pixels[i]
+    end
+end
+
+--[[
     @desc Creates an image from the Canvas' pixels
 ]]
 function Canvas:toImage()
