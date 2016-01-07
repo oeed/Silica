@@ -11,6 +11,7 @@ class ApplicationContainer extends Container {
 	cursorY = Number( 6 );
 	cursor = Cursor( Cursor.static ).allowsNil;
 	needsCursorUpdate = Boolean( true );
+	screenCanvas = ScreenCanvas;
 
 }
 
@@ -26,7 +27,8 @@ function ApplicationContainer:initialise( ... )
 end
 
 function ApplicationContainer:initialiseCanvas()
-	self.canvas = ScreenCanvas( self.width, self.height, self )
+	self:super()
+	self.screenCanvas = ScreenCanvas( self.width, self.height, self )
 end
 
 function ApplicationContainer.theme:set( theme )
@@ -52,13 +54,31 @@ end
 	@desc Redraws the container and draws it to the screen if neccesary
 ]]
 function ApplicationContainer:draw()
-	if self.isVisible and self.needsDraw then
-		self:super()
-		local canvas = self.canvas
-		if not Quartz then
-			self.cursor:drawTo( canvas, self.cursorX, self.cursorY )
+	local needsDraw, needsCursorUpdate = self.needsDraw, (self.needsCursorUpdate and not Quartz)
+	if needsDraw or needsCursorUpdate then
+		if needsCursorUpdate and not self:updateCursor() and not needsDraw then
+			-- the cursor didn't change and we don't need to redraw children
+			return
 		end
-		canvas:drawToScreen( term )
+		local canvas, screenCanvas = self.canvas, self.screenCanvas
+		if needsDraw then
+			self:super()
+		end
+		canvas:drawTo( screenCanvas, 1, 1 )
+		self.cursor:drawTo( screenCanvas, self.cursorX, self.cursorY )
+		screenCanvas:drawToScreen( term )
+	end
+end
+
+--[[
+	@desc Redraws the cursor and draws it to the screen
+]]
+function ApplicationContainer:drawCursor()
+	if not Quartz then
+		local canvas, screenCanvas = self.canvas, self.screenCanvas
+		canvas:drawTo( screenCanvas, 1, 1 )
+		self.cursor:drawTo( screenCanvas, self.cursorX, self.cursorY )
+		screenCanvas:drawToScreen( term )
 	end
 end
 
@@ -67,9 +87,6 @@ end
 ]]
 function ApplicationContainer:update( ... )
 	self:super( ... )
-	if self.needsCursorUpdate then
-		self:updateCursor()
-	end
 	self:draw()
 end
 
@@ -101,14 +118,6 @@ end
 -- 	end
 -- end
 
-function ApplicationContainer.cursor:set( cursor )
-	local oldCursor = self.cursor
-	if cursor ~= oldCursor then
-		self.cursor = cursor
-	    self.needsDraw = true
-	end
-end
-
 --[[
 	Reach in to the child Views and find the lowest level view under the cursor that specifies a cursor
 ]]
@@ -135,15 +144,20 @@ function ApplicationContainer:updateCursor()
 		end
 	end
 
-	self.cursor = search( self, self.cursorX, self.cursorY, Cursor.static )
+	local oldCursor = self.cursor
+	local newCursor = search( self, self.cursorX, self.cursorY, Cursor.static )
+	if newCursor ~= oldCursor then
+		self.cursor = newCursor
+	end
 	self.needsCursorUpdate = false
+	return newCursor ~= oldCursor
 end
 
 function ApplicationContainer:onMouseMoveCursorBefore( MouseMoveEvent event, Event.phases phase )
 	self.cursorX = event.x
 	self.cursorY = event.y
-	self.needsDraw = true
 	self.needsCursorUpdate = true
+	self:drawCursor()
 end
 
 function ApplicationContainer:dispose()
