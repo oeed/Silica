@@ -247,30 +247,48 @@ function View:siblingsOfType( _class )
 end
 
 function View.height:set( height )
-	self.height = height
-    self.canvas.height = height
-    self.needsDraw = true
+	if self.height ~= height then
+		self.height = height
+	    self.canvas.height = height
+	    self.needsDraw = true
+	    local parent = self.parent
+	    if parent then
+	    	parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
+	    end
+    end
 end
 
 function View.width:set( width )
-	self.width = width
-    self.canvas.width = width
-    self.needsDraw = true
+	if self.width ~= width then
+		self.width = width
+	    self.canvas.width = width
+	    self.needsDraw = true
+	    local parent = self.parent
+	    if parent then
+	    	parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
+    	end
+    end
 end
 
 function View.x:set( x )
-	self.x = x
-	local parent = self.parent
-	if parent then
-	    parent.needsDraw = true
+	if self.x ~= x then
+		self.x = x
+		local parent = self.parent
+		if parent then
+		    parent.needsDraw = true
+	    	parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
+		end
 	end
 end
 
 function View.y:set( y )
-	self.y = y
-	local parent = self.parent
-	if parent then
-	    parent.needsDraw = true
+	if self.y ~= y then
+		self.y = y
+		local parent = self.parent
+		if parent then
+		    parent.needsDraw = true
+	    	parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
+		end
 	end
 end
 
