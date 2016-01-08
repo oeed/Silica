@@ -37,6 +37,10 @@ local ucgValues = {
 }
 
 local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG, mimes.SICON }
+local mimesEnum = {}
+for i, v in ipairs( IMAGE_MIMES ) do
+    mimesEnum[v] = true
+end
 
 class Image {
     
@@ -48,6 +52,7 @@ class Image {
     contents = false;
     scaledCache = {};
     ucgValues = Enum( Number, ucgValues );
+    imageMimes = Enum( Boolean, mimesEnum );
 
 }
 

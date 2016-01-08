@@ -3,7 +3,7 @@ local fs = Quartz and Quartz.fs or fs
 
 local DEFAULT_TIMESTAMP = 1417305600; -- default date 1/1/2015
 
-local SAVED_PROPERTIES = { t = "mime"; c = "createdTimestamp"; o = "openedTimestamp"; m = "modifiedTimestamp"; i = "icon"; }
+local SAVED_PROPERTIES = { t = "mime"; c = "createdTimestamp"; o = "openedTimestamp"; m = "modifiedTimestamp"; }
 
 local g_tLuaKeywords = {
     [ "and" ] = true,
@@ -91,6 +91,11 @@ local EXTENSION_MIMES = {
     APPLICATION = "silica/application";
 }
 
+local SPECIAL_MIMES = {
+    FOLDER = "folder";
+    UNKNOWN = "unknown";
+}
+
 class Metadata {
     
     file = FileSystemItem;
@@ -100,9 +105,9 @@ class Metadata {
     createdTimestamp = Number( DEFAULT_TIMESTAMP );
     openedTimestamp = Number( DEFAULT_TIMESTAMP );
     modifiedTimestamp = Number( DEFAULT_TIMESTAMP );
-    icon = false; -- by default, if this is empty it will get the default system icon for it. it allows for custom icons
 
     mimes = Enum( String, EXTENSION_MIMES );
+    specialMimes = Enum( String, SPECIAL_MIMES );
 
 }
 
@@ -205,11 +210,11 @@ function Metadata:guessMIME()
         if fs.exists( path .. "/bundle.sconfig" ) then
             self.mime = EXTENSION_MIMES.SBUNDLE
         else
-            self.mime = "folder"
+            self.mime = SPECIAL_MIMES.FOLDER
         end
         return
     end
-    self.mime = "unknown"
+    self.mime = SPECIAL_MIMES.UNKNOWN
 end
 
 function Metadata:delete()
