@@ -1,0 +1,14 @@
+
+class FolderIcon extends Icon {
+    
+    folder = Folder;
+
+}
+
+function FolderIcon.static:fromFolder( Folder folder )
+    -- if the folder has any *files* (i.e. not folders) directly within it then we'll use a thumbnail icon
+    local files = fileSystemItem.files
+    if #files > 0 then
+
+    end
+end
