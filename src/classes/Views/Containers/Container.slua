@@ -383,9 +383,7 @@ function Container:findChildren( identifier, descendTree )
 end
 
 function Container:onChildRepositionedMouseEnterExit( ChildRepositionedInterfaceEvent event, Event.phases phase )
-	log(event.childView)
 	if self.isMouseInView and event.childView.parent == self then
-		log("yeep")
 		self:onUpdateChildMouseEnterExit( nil, nil, self.cursorLastX, self.cursorLastY )
 	end
 end
