@@ -119,7 +119,7 @@ function FileSystemItem.icon:get()
     local isFolder = self:typeOf( Folder )
     if ( isFolder and mime == Metdata.specialMimes.FOLDER ) then
         icon = FolderIcon.static:fromFolder( self )
-    elseif Image.imageMimes[mime] then
+    elseif Image.static:isImageMIME( mime ) then
         -- this file is an image or a folder. we'll make a thumbnail icon for it instead if it's a valid image or the folder isn't empty
         icon = ThumbnailIcon.static:fromFile( self )
     end

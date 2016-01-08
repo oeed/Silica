@@ -37,9 +37,9 @@ local ucgValues = {
 }
 
 local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG, mimes.SICON }
-local mimesEnum = {}
+local availableMimes = {}
 for i, v in ipairs( IMAGE_MIMES ) do
-    mimesEnum[v] = true
+    availableMimes[v] = true
 end
 
 class Image {
@@ -52,7 +52,6 @@ class Image {
     contents = false;
     scaledCache = {};
     ucgValues = Enum( Number, ucgValues );
-    imageMimes = Enum( Boolean, mimesEnum );
 
 }
 
@@ -68,6 +67,13 @@ function Image:initialise( Table pixels, Number width, Number height )
     self.width = width
     self.height = height
     self.pixels = newPixels
+end
+
+--[[
+    @desc Returns true if the given mime is a supported image
+]]
+function Image.static:isImageMIME( String mime )
+    return availableMimes[mime] or false
 end
 
 function Image.static:blank( width, height )
@@ -100,11 +106,11 @@ function Image.static:fromName( String name )
     end
 end
 
-function Image.static:fromPathInBundle( String path, Bundle bundle )
+function Image.static:fromPathInBundle( String path, Any bundle )
     return Image.static:fromFile( bundle:fileFromPath( path ) )
 end
 
-function Image.static:fromNameInBundle( String name, Bundle bundle )
+function Image.static:fromNameInBundle( String name, Any bundle )
     return Image.static:fromFile( bundle:file( name, IMAGE_MIMES ) )
 end
 
