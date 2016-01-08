@@ -19,17 +19,17 @@ end
 
 class FileSystemItem {
     
-    path = false;
-    name = false;
-    fullName = false;
-    extension = false;
-    icon = false;
-    size = false;
-    sizeString = false;
-    parent = false;
-    parentPath = false;
-    metadata = false;
-    metadataPath = false;
+    path = String;
+    name = String;
+    fullName = String;
+    extension = String.allowsNil;
+    icon = Icon.allowsNil;
+    size = Number.allowsNil;
+    sizeString = String.allowsNil;
+    parent = FileSystemItem.allowsNil;
+    parentPath = String;
+    metadata = Metadata.allowsNil;
+    metadataPath = Metadata.allowsNil;
 
 }
 
@@ -86,7 +86,7 @@ function FileSystemItem.path:set( path )
     self.raw.parentPath = parentPath
     local name, extension = fullName:match( "^(.+)%.(%w-)$" )
     self.name = name or fullName
-    self.extension = extension or false
+    self.extension = extension
 end
 
 function FileSystemItem.size:get()
