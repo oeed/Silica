@@ -1,0 +1,12 @@
+
+class ThumbnailIcon extends Icon {
+    
+    fileSystemItem = FileSystemItem;
+
+}
+
+function ThumbnailIcon.static:fromFileSystemItem( FileSystemItem fileSystemItem )
+    if fileSystemItem.metadata.mime == Metadata.specialMimes.FOLDER then
+        -- if the folder has any *files* (i.e. not folders) directly within it then we'll use a thumbnail icon
+    end
+end
