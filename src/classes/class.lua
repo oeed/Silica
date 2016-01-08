@@ -389,7 +389,8 @@ function pseudoReference( name )
     end
 
     function metatable:__newindex( key )
-        PseudoReferenceClassException( "Tried to set value of a '" .. name .. " PseudoReference."  .. k .. "'. PseudoReferences (the references to variables as default values in ValueType declarations) do not support assignment of values." , 2 )
+        -- TODO: this is called if the class doesn't exist
+        PseudoReferenceClassException( "Tried to set value of a '" .. name .. " PseudoReference."  .. key .. "'. PseudoReferences (the references to variables as default values in ValueType declarations) do not support assignment of values." , 2 )
     end
     setmetatable( referenceTable, metatable )
 
