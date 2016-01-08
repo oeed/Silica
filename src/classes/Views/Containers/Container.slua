@@ -7,6 +7,8 @@ class Container extends View {
 	interfaceName = false;
 	offsetX = 0;
 	offsetY = 0;
+	cursorLastX = Number.allowsNil;
+	cursorLastY = Number.allowsNil;
 
 }
 
@@ -20,6 +22,7 @@ function Container:initialise( ... )
 
     self:event( ChildAddedInterfaceEvent, self.onChildOfChildAdded )
     self:event( ChildRemovedInterfaceEvent, self.onChildOfChildRemoved )
+    self:event( ChildRepositionedInterfaceEvent, self.onChildRepositionedMouseEnterExit )
     self:event( ReadyInterfaceEvent, self.onReadyLoadInterface )
     self:event( MouseMoveEvent, self.onUpdateChildMouseEnterExit )
     self:event( MouseExitedInterfaceEvent, self.onUpdateChildMouseEnterExit )
@@ -379,12 +382,21 @@ function Container:findChildren( identifier, descendTree )
 	return children
 end
 
+function Container:onChildRepositionedMouseEnterExit( ChildRepositionedInterfaceEvent event, Event.phases phase )
+	log(event.childView)
+	if self.isMouseInView and event.childView.parent == self then
+		log("yeep")
+		self:onUpdateChildMouseEnterExit( nil, nil, self.cursorLastX, self.cursorLastY )
+	end
+end
+
 --[[
 	@desc Checks if the mouse has entered or exited one of its children and sends an event if so
 ]]
-function Container:onUpdateChildMouseEnterExit( Event event, Event.phases phase )
-	local x, y = event.x, event.y
+function Container:onUpdateChildMouseEnterExit( Event.allowsNil event, Event.phases.allowsNil phase, Number( event.x ) x, Number( event.y ) y )
 	local children = self.children
+	self.cursorLastX = x
+	self.cursorLastY = y
 	for i = #children, 1, -1 do
 		local childView = children[i]
 		local isMouseInView = childView.isMouseInView
