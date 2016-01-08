@@ -11,7 +11,7 @@ class ApplicationContainer extends Container {
 	cursorY = Number( 6 );
 	cursor = Cursor( Cursor.static ).allowsNil;
 	needsCursorUpdate = Boolean( true );
-	screenCanvas = ScreenCanvas;
+	screenCanvas = ScreenCanvas.allowsNil;
 
 }
 
@@ -27,8 +27,12 @@ function ApplicationContainer:initialise( ... )
 end
 
 function ApplicationContainer:initialiseCanvas()
-	self:super()
-	self.screenCanvas = ScreenCanvas( self.width, self.height, self )
+	if Quartz then
+		self.canvas = ScreenCanvas( self.width, self.height, self )
+	else
+		self:super()
+		self.screenCanvas = ScreenCanvas( self.width, self.height, self )
+	end
 end
 
 function ApplicationContainer.theme:set( theme )
@@ -54,19 +58,29 @@ end
 	@desc Redraws the container and draws it to the screen if neccesary
 ]]
 function ApplicationContainer:draw()
-	local needsDraw, needsCursorUpdate = self.needsDraw, (self.needsCursorUpdate and not Quartz)
-	if needsDraw or needsCursorUpdate then
-		if needsCursorUpdate and not self:updateCursor() and not needsDraw then
-			-- the cursor didn't change and we don't need to redraw children
-			return
-		end
-		local canvas, screenCanvas = self.canvas, self.screenCanvas
-		if needsDraw then
+	if Quartz then
+		if self.needsDraw then
 			self:super()
+			self.canvas:drawToScreen( term )
 		end
-		canvas:transfer( screenCanvas )
-		self.cursor:drawTo( screenCanvas, self.cursorX, self.cursorY )
-		screenCanvas:drawToScreen( term )
+		if self.needsCursorUpdate then
+			self:updateCursor()
+		end
+	else
+		local needsDraw, needsCursorUpdate = self.needsDraw, self.needsCursorUpdate
+		if needsDraw or needsCursorUpdate then
+			if needsCursorUpdate and not self:updateCursor() and not needsDraw then
+				-- the cursor didn't change and we don't need to redraw children
+				return
+			end
+			local canvas, screenCanvas = self.canvas, self.screenCanvas
+			if needsDraw then
+				self:super()
+			end
+			canvas:transfer( screenCanvas )
+			self.cursor:drawTo( screenCanvas, self.cursorX, self.cursorY )
+			screenCanvas:drawToScreen( term )
+		end
 	end
 end
 
@@ -74,12 +88,10 @@ end
 	@desc Redraws the cursor and draws it to the screen
 ]]
 function ApplicationContainer:drawCursor()
-	if not Quartz then
-		local canvas, screenCanvas = self.canvas, self.screenCanvas
-		canvas:transfer( screenCanvas )
-		self.cursor:drawTo( screenCanvas, self.cursorX, self.cursorY )
-		screenCanvas:drawToScreen( term )
-	end
+	local canvas, screenCanvas = self.canvas, self.screenCanvas
+	canvas:transfer( screenCanvas )
+	self.cursor:drawTo( screenCanvas, self.cursorX, self.cursorY )
+	screenCanvas:drawToScreen( term )
 end
 
 --[[
@@ -148,6 +160,16 @@ function ApplicationContainer:updateCursor()
 	local newCursor = search( self, self.cursorX, self.cursorY, Cursor.static )
 	if newCursor ~= oldCursor then
 		self.cursor = newCursor
+		if Quartz then
+			local image = newCursor.image
+			Quartz.cursor = {
+				newCursor.hotSpotX,
+				newCursor.hotSpotY,
+				image.width,
+				image.height,
+				image.pixels
+			}
+		end
 	end
 	self.needsCursorUpdate = false
 	return newCursor ~= oldCursor
@@ -157,7 +179,9 @@ function ApplicationContainer:onMouseMoveCursorBefore( MouseMoveEvent event, Eve
 	self.cursorX = event.x
 	self.cursorY = event.y
 	self.needsCursorUpdate = true
-	self:drawCursor()
+	if not Quartz then
+		self:drawCursor()
+	end
 end
 
 function ApplicationContainer:dispose()
