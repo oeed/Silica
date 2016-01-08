@@ -100,11 +100,11 @@ function Image.static:fromName( String name )
     end
 end
 
-function Image.static:fromPathInBundle( String path, Bundle bundle )
+function Image.static:fromPathInBundle( String path, Any bundle )
     return Image.static:fromFile( bundle:fileFromPath( path ) )
 end
 
-function Image.static:fromNameInBundle( String name, Bundle bundle )
+function Image.static:fromNameInBundle( String name, Any bundle )
     return Image.static:fromFile( bundle:file( name, IMAGE_MIMES ) )
 end
 
