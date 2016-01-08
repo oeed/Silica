@@ -110,8 +110,18 @@ function FileSystemItem.sizeString:set( sizeString )
     error( "FileSystemItem.sizeString is a read-only property.", 2 )
 end
 
--- function FileSystemItem:{ Number, String }:doSomething( x, label )
--- end
+function FileSystemItem.icon:get()
+    local cache = self.icon
+    if cache then return cache end
+
+    local icon
+    local mime = self.metadata.mime
+    if mime == Metdata.specialMimes.FOLDER or Image.imageMimes[mime] then
+        -- this file is an image or a folder. we'll make a thumbnail icon for it instead if it's a valid image or the folder isn't empty
+        icon = ThumbnailIcon( self )
+    end
+
+end
 
 function FileSystemItem.parent:get()
     local parent = self.parent
