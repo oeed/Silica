@@ -1,10 +1,51 @@
 
+local iconValues = Icon.iconValues
+local DEFAULT_WIDTH, DEFAULT_HEIGHT = iconValues.DEFAULT_WIDTH, iconValues.DEFAULT_HEIGHT
+
 class ThumbnailIcon extends Icon {
     
     file = File;
+    image = Image;
 
 }
 
-function ThumbnailIcon.static:fromFile( File file )
+function ThumbnailIcon:initialise( File file, Image image )
+    self.file = file
+    self.image = image
 
+    -- we need to generate the default icon's pixels, i.e. how the icon looks in the default size
+    local defaultPixels = self:getScaledPixels( DEFAULT_WIDTH, DEFAULT_HEIGHT )
+
+    self.super:super(  ) -- go over Icon's head
+    self.images = {} -- Icon requires an images table, but we don't need one
+end
+
+function ThumbnailIcon.static:fromFile( File file )
+    local image = Image.static:fromFile( file )
+    if image then
+        -- the image is valid, we're good to go
+
+    end
+end
+
+function ThumbnailIcon:getScaledPixels( scaledWidth, scaledHeight )
+    scaledWidth = math.floor( scaledWidth + 0.5 )
+    scaledHeight = math.floor( scaledHeight + 0.5 )
+
+    local scaledCache = self.scaledCache
+
+    if scaledCache[scaledWidth .. ":" .. scaledHeight] then
+        return scaledCache[scaledWidth .. ":" .. scaledHeight]
+    end
+
+    local width, height, pixels = self.width, self.height, self.pixels
+
+    local bestImage
+    for i, image in ipairs( self.images ) do
+        if not bestImage or ( image.width >= scaledWidth or image.height >= scaledHeight ) then
+            bestImage = image
+        end
+    end
+
+    return bestImage:getScaledPixels( scaledWidth, scaledHeight )
 end
