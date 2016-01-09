@@ -1,6 +1,9 @@
 
 local iconValues = Icon.iconValues
 local DEFAULT_WIDTH, DEFAULT_HEIGHT = iconValues.DEFAULT_WIDTH, iconValues.DEFAULT_HEIGHT
+local FLAP_SIZE, OUTLINE_SIZE = 7, 3
+local GREY, WHITE, LIGHT_GREY = Graphics.colours.GREY, Graphics.colours.WHITE, Graphics.colours.LIGHT_GREY
+local minimumThumbnailSize
 
 class ThumbnailIcon extends Icon {
     
@@ -16,7 +19,7 @@ function ThumbnailIcon:initialise( File file, Image image )
     -- we need to generate the default icon's pixels, i.e. how the icon looks in the default size
     local defaultPixels = self:getScaledPixels( DEFAULT_WIDTH, DEFAULT_HEIGHT )
 
-    self.super:super(  ) -- go over Icon's head
+    self.super:super( defaultPixels, DEFAULT_WIDTH, DEFAULT_HEIGHT ) -- go over Icon's head
     self.images = {} -- Icon requires an images table, but we don't need one
 end
 
@@ -24,28 +27,81 @@ function ThumbnailIcon.static:fromFile( File file )
     local image = Image.static:fromFile( file )
     if image then
         -- the image is valid, we're good to go
-
+        return ThumbnailIcon( file, image )
     end
 end
 
 function ThumbnailIcon:getScaledPixels( scaledWidth, scaledHeight )
-    scaledWidth = math.floor( scaledWidth + 0.5 )
+    local size = math.min( scaledWidth, scaledHeight )
+    size = math.floor( size + 0.5 )
     scaledHeight = math.floor( scaledHeight + 0.5 )
 
     local scaledCache = self.scaledCache
-
-    if scaledCache[scaledWidth .. ":" .. scaledHeight] then
-        return scaledCache[scaledWidth .. ":" .. scaledHeight]
+    if scaledCache[size] then
+        return scaledCache[scaledWidth]
     end
 
-    local width, height, pixels = self.width, self.height, self.pixels
+    -- local canvas = Canvas( scaledWidth, scaledHeight, self )
 
-    local bestImage
-    for i, image in ipairs( self.images ) do
-        if not bestImage or ( image.width >= scaledWidth or image.height >= scaledHeight ) then
-            bestImage = image
+    local image = self.image
+    local imageWidth, imageHeight = image.width, image.height
+    local imageRatio = imageWidth / imageHeight
+    local thumbnailWidth, thumbnailHeight
+    if imageWidth > imageHeight then
+        thumbnailWidth = size - 2 * OUTLINE_SIZE
+        thumbnailHeight = math.floor( thumbnailWidth * ( imageHeight / imageWidth ) + 0.5 )
+    else
+        thumbnailHeight = size - 2 * OUTLINE_SIZE
+        thumbnailWidth = math.floor( thumbnailHeight * ( imageWidth / imageHeight ) + 0.5 )
+    end
+
+    local width, height = thumbnailWidth + 2 * OUTLINE_SIZE, thumbnailHeight + 2 * OUTLINE_SIZE
+    local pixels = {}
+
+    local i = 1
+    local flapX, flapY = width - FLAP_SIZE + 1, height - FLAP_SIZE + 1
+    for y = 1, height do
+        for x = 1, width do
+            local colour
+            local isVerticalEdge, isHorizontalEdge = y == 1 or y == height, x == 1 or x == width
+            if isVerticalEdge and isHorizontalEdge then -- corner
+            elseif x >= flapX and y >= flapY and not ( x == flapX and y == flapY ) then -- flap
+            elseif isVerticalEdge or isHorizontalEdge then -- outline
+                colour = GREY
+            else
+                colour = WHITE
+            end
+            pixels[i] = colour
+            i = i + 1
         end
     end
 
-    return bestImage:getScaledPixels( scaledWidth, scaledHeight )
+    local thumbnailPixels = image:getScaledPixels( thumbnailWidth, thumbnailHeight )
+    i = 1
+    for y = OUTLINE_SIZE + 1, height - OUTLINE_SIZE do
+        for x = OUTLINE_SIZE + 1, width - OUTLINE_SIZE do
+            if x < flapX or y < flapY or ( x == flapX and y == flapY ) then
+                pixels[(y - 1) * width + x] = thumbnailPixels[i]
+            end
+            i = i + 1
+        end
+    end
+
+    i = width
+    for y = flapY, height do
+        for x = flapX, width do
+            if x ~= flapX or y ~= flapY then -- the corner
+                local colour = LIGHT_GREY
+                if x > i then -- past the flap
+                    break
+                elseif x == i or x == flapX or y == flapY then -- diagonal line/outline
+                    colour = GREY
+                end
+                pixels[(y - 1) * width + x] = colour
+            end
+        end
+        i = i - 1
+    end
+
+    return pixels
 end

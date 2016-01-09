@@ -123,7 +123,7 @@ function FileSystemItem.icon:get()
         -- this file is an image or a folder. we'll make a thumbnail icon for it instead if it's a valid image or the folder isn't empty
         icon = ThumbnailIcon.static:fromFile( self )
     end
-
+    return icon
 end
 
 function FileSystemItem.parent:get()
