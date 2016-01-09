@@ -285,8 +285,113 @@ function Image.static:fromUniversalCompressedGraphics( Table bytes )
                 pixels[(y - 1) * width + x] = hcach
             end
         end
+    elseif version == 3 then
+        local flags = readBits(8)
+        width, height = readWord(), readWord()
+        
+        local function serCode(c, c2)
+            local s = ""
+            local c3 = c
+            if c2 then
+                c3 = {unpack(c)}
+                c3[#c3 +1] = c2
+            end
+            for a = 1, #c3 do
+                s = s..c3[a]
+            end
+            return s
+        end
+        
+        local function readHuffmanTree(readValue)
+            local tricodes = {}
+            local toread = {0}
+            local toread2
+            local depth = 0
+            
+            local ternary, digitValue, c0, c1
+            while #toread > 0 do
+                toread2 = {}
+                digitValue = 3^depth
+                
+                for a = 1, #toread do
+                    ternary = toread[a]
+                    c0, c1 = ternary + digitValue, ternary + 2*digitValue
+                    
+                    if readBit() == 1 then
+                        local v = readValue()
+                        tricodes[c0] = v
+                    else
+                        toread2[#toread2 +1] = c0
+                    end
+                    
+                    if readBit() == 1 then
+                        local v = readValue()
+                        tricodes[c1] = v
+                    else
+                        toread2[#toread2 +1] = c1
+                    end
+                end
+                depth = depth +1
+                toread = toread2
+            end
+            
+            return tricodes
+        end
+        
+        local colorcodes = readHuffmanTree(function()
+            local b = readNumber(5)
+            if b == 16 then
+                return 0
+            else
+                return 2^b
+            end
+        end)
+        
+        local lengthcodes = readHuffmanTree(function()
+            local b = readNumber(4)
+            if b <= 12 then
+                return b
+            elseif b == 13 then
+                return readNumber(5)
+            elseif b == 14 then
+                return readNumber(8)
+            elseif b == 15 then
+                return readNumber(16)
+            end
+        end)
+        
+        local debX, debY, debColor
+        
+        local function lexHuffcode(dictionary, nodedictionary)
+            local ternary = 0
+            local depth = 0
+            local v
+            while not v do
+                local bi = readBit()
+                ternary = ternary + (bi+1)*(3^depth)
+                depth = depth +1
+                v = dictionary[ternary]
+            end
+            return v
+        end
+        
+        for y = 1, height do
+            local x = 0
+            while x < width do
+                debX, debY = x, y
+                local color = lexHuffcode(colorcodes, colornodecodes)
+                debColor = color
+                local len = lexHuffcode(lengthcodes, lengthnodecodes)
+                debX, debY, debColor = nil, nil, nil
+                for a = 1, len do
+                    -- pixels[y][#pixels[y]+1] = color
+                    pixels[(y - 1) * width + x + a] = color
+                end
+                x = x + len
+            end
+        end
     else
-        error("unsupported version: "..(tostring(version) or "unknown"), 2)
+        error("unsupported ucg version: "..(tostring(version) or "unknown"), 2)
     end
 
     return Image( pixels, width, height )
