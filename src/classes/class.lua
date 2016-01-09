@@ -320,7 +320,7 @@ function class.load( name, contents )
         -- if the value is nil see if we can find a class with that name and load it
         if class.exists( key ) then
             -- there should be a class with that name, load it
-            local _class = class.load( key )
+            local _class = class.get( key )
             -- if we're loading properties we want to return its valueType
             if isLoadingProperties then
                 return valueTypes[key]
