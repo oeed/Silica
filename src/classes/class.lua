@@ -440,7 +440,7 @@ function stripFunctionArguments( name, contents )
                 -- if we're loading properties and the value is nil, see if we can find a class with that name and load it
                 if class.exists( key ) then
                     -- there should be a class with that name, load it
-                    class.load( key )
+                    class.get( key )
                     -- now we want to return its valueType
                     return valueTypes[key]
                 else
