@@ -23,13 +23,13 @@ class FileSystemItem {
     name = String;
     fullName = String;
     extension = String.allowsNil;
-    icon = Icon.allowsNil;
+    icon = Any.allowsNil;
     size = Number.allowsNil;
     sizeString = String.allowsNil;
-    parent = FileSystemItem.allowsNil;
+    parent = Any.allowsNil; -- TODO: should be Folder
     parentPath = String;
     metadata = Metadata.allowsNil;
-    metadataPath = Metadata.allowsNil;
+    metadataPath = String.allowsNil;
 
 }
 
