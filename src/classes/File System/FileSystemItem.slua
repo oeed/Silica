@@ -23,7 +23,7 @@ class FileSystemItem {
     name = String;
     fullName = String;
     extension = String.allowsNil;
-    icon = Icon.allowsNil;
+    icon = Any.allowsNil;
     size = Number.allowsNil;
     sizeString = String.allowsNil;
     parent = Any.allowsNil; -- TODO: should be Folder
