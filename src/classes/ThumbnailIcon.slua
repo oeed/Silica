@@ -80,8 +80,10 @@ function ThumbnailIcon:getScaledPixels( scaledWidth, scaledHeight )
     for y = OUTLINE_SIZE + 1, height - OUTLINE_SIZE do
         for x = OUTLINE_SIZE + 1, width - OUTLINE_SIZE do
             if x < flapX or y < flapY or ( x == flapX and y == flapY ) then
-                pixels[(y - 1) * width + x] = thumbnailPixels[i]
+                local colour = thumbnailPixels[i]
+                if colour and colour ~= TRANSPARENT then
                     pixels[(y  + _y) * scaledWidth + x + _x] = colour
+                end
             end
             i = i + 1
         end
