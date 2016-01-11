@@ -1,12 +1,12 @@
 
 class ActionInterfaceEvent extends InterfaceEvent {
 
-    static = {
-        eventType = "interface_action";
-    };
+	static = {
+		eventType = "interface_action";
+	};
 
 	view = View; -- the View whose action it is
-    originalEvent = Event.allowsNil; -- the event the invoked this event (such as a mouse up, key click, etc.)
+	originalEvent = Event.allowsNil; -- the event the invoked this event (such as a mouse up, key click, etc.)
 
 }
 
@@ -17,6 +17,6 @@ class ActionInterfaceEvent extends InterfaceEvent {
 ]]
 function ActionInterfaceEvent:initialise( View view, Event.allowsNil originalEvent )
 	self.view = view
-    self.originalEvent = originalEvent
+	self.originalEvent = originalEvent
 end
 

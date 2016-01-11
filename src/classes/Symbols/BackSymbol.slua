@@ -1,18 +1,18 @@
 
 class BackSymbol extends Symbol {
 
-    static = {
-        symbolName = String( "back" );
-        width = Number( 4 );
-    };
+	static = {
+		symbolName = String( "back" );
+		width = Number( 4 );
+	};
 
 }
 
 function BackSymbol.static:initialise()
-    local path = Path( self.width, self.height, 4, 1 )
-    path:lineTo( 1, 4 )
-    path:lineTo( 4, 7 )
-    path:close()
+	local path = Path( self.width, self.height, 4, 1 )
+	path:lineTo( 1, 4 )
+	path:lineTo( 4, 7 )
+	path:close()
 
-    self:super( path )
+	self:super( path )
 end

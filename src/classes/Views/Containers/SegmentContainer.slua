@@ -32,10 +32,10 @@ function SegmentContainer:updateLayout()
 end
 
 function SegmentContainer:update( deltaTime )
-    self:super( deltaTime )
-    if self.needsLayoutUpdate then
-        self:updateLayout()
-    end
+	self:super( deltaTime )
+	if self.needsLayoutUpdate then
+		self:updateLayout()
+	end
 end
 
 function SegmentContainer:insert( ... )

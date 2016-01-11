@@ -82,10 +82,10 @@ function Interface:loadContainer( containerView )
 		
 		if existingIntefaceProperties then
 			for k, v in pairs( attributes ) do
-	        	if not containerInterfaceProperties or not containerInterfaceProperties[k] then -- if the interface defining THIS container specified this property then don't set it
+				if not containerInterfaceProperties or not containerInterfaceProperties[k] then -- if the interface defining THIS container specified this property then don't set it
 					childView[k] = v
 					existingIntefaceProperties[k] = v
-	        	end
+				end
 			end
 		else
 			for k, v in pairs( attributes ) do
@@ -107,15 +107,15 @@ function Interface:loadContainer( containerView )
 
 		childView.event:handleEvent( loadedEvent )
 
-	    -- check for any nil values that aren't allowed to be nil
-	    local instanceProperties = childClass.instanceProperties
-	    for k, v in pairs( childClass.instanceDefinedProperties ) do
-	        if not RESERVED_NAMES[v] and k == v and not instanceProperties[k][TYPETABLE_ALLOWS_NIL] then -- i.e. it's not an alias
-	            if childView[k] == nil then -- TODO: maybe this should use instance[k] so getters are called
-	                error( childNode.type .. "." .. k .. " was nil after initialisation and ReadyInterfaceEvent, but type does not specify .allowsNil" )
-	            end
-	        end
-	    end
+		-- check for any nil values that aren't allowed to be nil
+		local instanceProperties = childClass.instanceProperties
+		for k, v in pairs( childClass.instanceDefinedProperties ) do
+			if not RESERVED_NAMES[v] and k == v and not instanceProperties[k][TYPETABLE_ALLOWS_NIL] then -- i.e. it's not an alias
+				if childView[k] == nil then -- TODO: maybe this should use instance[k] so getters are called
+					error( childNode.type .. "." .. k .. " was nil after initialisation and ReadyInterfaceEvent, but type does not specify .allowsNil" )
+				end
+			end
+		end
 
 		return childView
 	end

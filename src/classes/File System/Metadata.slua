@@ -6,176 +6,176 @@ local DEFAULT_TIMESTAMP = 1417305600; -- default date 1/1/2015
 local SAVED_PROPERTIES = { t = "mime"; c = "createdTimestamp"; o = "openedTimestamp"; m = "modifiedTimestamp"; }
 
 local g_tLuaKeywords = {
-    [ "and" ] = true,
-    [ "break" ] = true,
-    [ "do" ] = true,
-    [ "else" ] = true,
-    [ "elseif" ] = true,
-    [ "end" ] = true,
-    [ "false" ] = true,
-    [ "for" ] = true,
-    [ "function" ] = true,
-    [ "if" ] = true,
-    [ "in" ] = true,
-    [ "local" ] = true,
-    [ "nil" ] = true,
-    [ "not" ] = true,
-    [ "or" ] = true,
-    [ "repeat" ] = true,
-    [ "return" ] = true,
-    [ "then" ] = true,
-    [ "true" ] = true,
-    [ "until" ] = true,
-    [ "while" ] = true,
+	[ "and" ] = true,
+	[ "break" ] = true,
+	[ "do" ] = true,
+	[ "else" ] = true,
+	[ "elseif" ] = true,
+	[ "end" ] = true,
+	[ "false" ] = true,
+	[ "for" ] = true,
+	[ "function" ] = true,
+	[ "if" ] = true,
+	[ "in" ] = true,
+	[ "local" ] = true,
+	[ "nil" ] = true,
+	[ "not" ] = true,
+	[ "or" ] = true,
+	[ "repeat" ] = true,
+	[ "return" ] = true,
+	[ "then" ] = true,
+	[ "true" ] = true,
+	[ "until" ] = true,
+	[ "while" ] = true,
 }
 
 local function serialise( t, tTracking )
-    local sType = type(t)
-    if sType == "table" then
-        if tTracking[t] ~= nil then
-            error( "Cannot serialize table with recursive entries", 0 )
-        end
-        tTracking[t] = true
+	local sType = type(t)
+	if sType == "table" then
+		if tTracking[t] ~= nil then
+			error( "Cannot serialize table with recursive entries", 0 )
+		end
+		tTracking[t] = true
 
-        if next(t) == nil then
-            return "{}"
-        else
-            local sResult = "{"
-            local tSeen = {}
-            for k,v in ipairs(t) do
-                tSeen[k] = true
-                sResult = sResult .. serialise( v, tTracking ) .. ";"
-            end
-            for k,v in pairs(t) do
-                if not tSeen[k] then
-                    local sEntry
-                    if type(k) == "string" and not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
-                        sEntry = k .. "=" .. serialise( v, tTracking ) .. ";"
-                    else
-                        sEntry = "[" .. serialise( k, tTracking ) .. "]=" .. serialise( v, tTracking ) .. ";"
-                    end
-                    sResult = sResult .. sEntry
-                end
-            end
-            sResult = sResult:sub( 1, #sResult - 1 ) .. "}"
-            return sResult
-        end
-    elseif sType == "string" then
-        return string.format( "%q", t )
-    elseif sType == "number" or sType == "boolean" or sType == "nil" then
-        return tostring(t)
-    else
-        error( "Cannot serialize type "..sType, 0 )
-    end
+		if next(t) == nil then
+			return "{}"
+		else
+			local sResult = "{"
+			local tSeen = {}
+			for k,v in ipairs(t) do
+				tSeen[k] = true
+				sResult = sResult .. serialise( v, tTracking ) .. ";"
+			end
+			for k,v in pairs(t) do
+				if not tSeen[k] then
+					local sEntry
+					if type(k) == "string" and not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
+						sEntry = k .. "=" .. serialise( v, tTracking ) .. ";"
+					else
+						sEntry = "[" .. serialise( k, tTracking ) .. "]=" .. serialise( v, tTracking ) .. ";"
+					end
+					sResult = sResult .. sEntry
+				end
+			end
+			sResult = sResult:sub( 1, #sResult - 1 ) .. "}"
+			return sResult
+		end
+	elseif sType == "string" then
+		return string.format( "%q", t )
+	elseif sType == "number" or sType == "boolean" or sType == "nil" then
+		return tostring(t)
+	else
+		error( "Cannot serialize type "..sType, 0 )
+	end
 end
 
 local EXTENSION_MIMES = {
-    LUA = "text/lua";
-    TXT = "text/plain";
-    TEXT = "text/plain";
-    IMAGE = "image/paint";
-    NFP = "image/paint";
-    NFT = "image/nft";
-    SKCH = "image/sketch";
-    UCG = "image/ucg";
-    SLUA = "silica/lua";
-    SINTERFACE = "silica/interface";
-    STHEME = "silica/theme";
-    SCONFIG = "silica/config";
-    SUSERDATA = "silica/suserdata";
-    SBUNDLE = "silica/sbundle";
-    SFONT = "silica/font";
-    SICON = "silica/icon";
-    RESOURCEPKG = "package/resource";
-    PACKAGE = "package/plain";
-    APPLICATION = "silica/application";
+	LUA = "text/lua";
+	TXT = "text/plain";
+	TEXT = "text/plain";
+	IMAGE = "image/paint";
+	NFP = "image/paint";
+	NFT = "image/nft";
+	SKCH = "image/sketch";
+	UCG = "image/ucg";
+	SLUA = "silica/lua";
+	SINTERFACE = "silica/interface";
+	STHEME = "silica/theme";
+	SCONFIG = "silica/config";
+	SUSERDATA = "silica/suserdata";
+	SBUNDLE = "silica/sbundle";
+	SFONT = "silica/font";
+	SICON = "silica/icon";
+	RESOURCEPKG = "package/resource";
+	PACKAGE = "package/plain";
+	APPLICATION = "silica/application";
 }
 
 local SPECIAL_MIMES = {
-    FOLDER = "folder";
-    UNKNOWN = "unknown";
+	FOLDER = "folder";
+	UNKNOWN = "unknown";
 }
 
 class Metadata {
-    
-    file = FileSystemItem;
-    metadataPath = String;
+	
+	file = FileSystemItem;
+	metadataPath = String;
 
-    mime = String; -- MIME mime of the file (e.g. image/nft)
-    createdTimestamp = Number( DEFAULT_TIMESTAMP );
-    openedTimestamp = Number( DEFAULT_TIMESTAMP );
-    modifiedTimestamp = Number( DEFAULT_TIMESTAMP );
+	mime = String; -- MIME mime of the file (e.g. image/nft)
+	createdTimestamp = Number( DEFAULT_TIMESTAMP );
+	openedTimestamp = Number( DEFAULT_TIMESTAMP );
+	modifiedTimestamp = Number( DEFAULT_TIMESTAMP );
 
-    mimes = Enum( String, EXTENSION_MIMES );
-    specialMimes = Enum( String, SPECIAL_MIMES );
+	mimes = Enum( String, EXTENSION_MIMES );
+	specialMimes = Enum( String, SPECIAL_MIMES );
 
 }
 
 function Metadata:initialise( FileSystemItem file )
-    self.file = file
-    self.metadataPath = file.metadataPath
-    self:load()
+	self.file = file
+	self.metadataPath = file.metadataPath
+	self:load()
 end
 
 function Metadata:load()
-    local metadataPath = self.metadataPath
-    if fs.exists( metadataPath ) then
-        local h = fs.open( metadataPath, "r" )
-        if h then
-            local properties = textutils.unserialize( h.readAll() )
-            h.close()
-            local raw = self.raw
-            for key, value in pairs( properties ) do
-                local propertyName = SAVED_PROPERTIES[key]
-                if SAVED_PROPERTIES[key] then
-                    raw[propertyName] = value
-                end
-            end
-            if not self.mime then
-                self:guessMIME()
-                self:save()
-            end
-        end
-    else
-        local metadataFolderPath = self.file.parentPath .. "/.metadata"
-        if fs.exists( metadataFolderPath ) then
-            if not fs.isDir( metadataFolderPath ) then
-                fs.delete( metadataFolderPath )
-            end
-        else
-            fs.makeDir( metadataFolderPath )
-        end
-        self:create()
-    end
-    if not self.mime then
-        error(metadataPath)
-    end
+	local metadataPath = self.metadataPath
+	if fs.exists( metadataPath ) then
+		local h = fs.open( metadataPath, "r" )
+		if h then
+			local properties = textutils.unserialize( h.readAll() )
+			h.close()
+			local raw = self.raw
+			for key, value in pairs( properties ) do
+				local propertyName = SAVED_PROPERTIES[key]
+				if SAVED_PROPERTIES[key] then
+					raw[propertyName] = value
+				end
+			end
+			if not self.mime then
+				self:guessMIME()
+				self:save()
+			end
+		end
+	else
+		local metadataFolderPath = self.file.parentPath .. "/.metadata"
+		if fs.exists( metadataFolderPath ) then
+			if not fs.isDir( metadataFolderPath ) then
+				fs.delete( metadataFolderPath )
+			end
+		else
+			fs.makeDir( metadataFolderPath )
+		end
+		self:create()
+	end
+	if not self.mime then
+		error(metadataPath)
+	end
 end
 
 function Metadata:save()
-    local h = fs.open( self.metadataPath, "w" )
-    if h then
-        local properties = {}
-        for shortKey, key in pairs( SAVED_PROPERTIES ) do
-            local value = self[key]
-            if value then
-                properties[shortKey] = value
-            end
-        end
-        h.write( serialise( properties, {} ) )
-        h.close()
-    end
+	local h = fs.open( self.metadataPath, "w" )
+	if h then
+		local properties = {}
+		for shortKey, key in pairs( SAVED_PROPERTIES ) do
+			local value = self[key]
+			if value then
+				properties[shortKey] = value
+			end
+		end
+		h.write( serialise( properties, {} ) )
+		h.close()
+	end
 end
 
 function Metadata:serialise( allowedProperties )
-    local properties = {}
-    for shortKey, key in pairs( SAVED_PROPERTIES ) do
-        local value = self[key]
-        if value and ( not allowedProperties or allowedProperties[key] ) then
-            properties[shortKey] = value
-        end
-    end
-    return properties
+	local properties = {}
+	for shortKey, key in pairs( SAVED_PROPERTIES ) do
+		local value = self[key]
+		if value and ( not allowedProperties or allowedProperties[key] ) then
+			properties[shortKey] = value
+		end
+	end
+	return properties
 end
 
 -- TODO: do function aliases work?
@@ -183,101 +183,101 @@ Metadata:alias( Metadata.serialise, "serialize" )
 
 -- create metadata for the file based on it's content
 function Metadata:create()
-    self:updateCreatedTimestamp()
-    self:updateOpenedTimestamp()
-    self:updateModifiedTimestamp()
-    self:guessMIME()
-    self:save()
+	self:updateCreatedTimestamp()
+	self:updateOpenedTimestamp()
+	self:updateModifiedTimestamp()
+	self:guessMIME()
+	self:save()
 end
 
 --[[
-    @desc Guess the mime based on the file
-    @return Any returnedValue
+	@desc Guess the mime based on the file
+	@return Any returnedValue
 ]]
 function Metadata:guessMIME()
-    local file = self.file
-    local path = file.path
-    local extension = file.extension
-    if extension then
-        -- try to guess the MIME based on the extension
-        local mime = EXTENSION_MIMES[ extension:upper() ]
-        if mime then
-            self.mime = mime
-            return
-        end
-    end
-    if fs.isDir( path ) then
-        if fs.exists( path .. "/bundle.sconfig" ) then
-            self.mime = EXTENSION_MIMES.SBUNDLE
-        else
-            self.mime = SPECIAL_MIMES.FOLDER
-        end
-        return
-    end
-    self.mime = SPECIAL_MIMES.UNKNOWN
+	local file = self.file
+	local path = file.path
+	local extension = file.extension
+	if extension then
+		-- try to guess the MIME based on the extension
+		local mime = EXTENSION_MIMES[ extension:upper() ]
+		if mime then
+			self.mime = mime
+			return
+		end
+	end
+	if fs.isDir( path ) then
+		if fs.exists( path .. "/bundle.sconfig" ) then
+			self.mime = EXTENSION_MIMES.SBUNDLE
+		else
+			self.mime = SPECIAL_MIMES.FOLDER
+		end
+		return
+	end
+	self.mime = SPECIAL_MIMES.UNKNOWN
 end
 
 function Metadata:delete()
-    fs.delete( self.metadataPath )
-    local oldParentMetadataPath = self.file.parentPath .. "/.metadata"
-    if #fs.list( oldParentMetadataPath ) == 0 then
-        fs.delete( oldParentMetadataPath )
-    end
+	fs.delete( self.metadataPath )
+	local oldParentMetadataPath = self.file.parentPath .. "/.metadata"
+	if #fs.list( oldParentMetadataPath ) == 0 then
+		fs.delete( oldParentMetadataPath )
+	end
 end
 
 function Metadata:moveTo( folder )
-    local folderMetadataFolderPath = folder.path .. "/.metadata"
-    if not fs.exists( folderMetadataFolderPath ) then
-        fs.makeDir( folderMetadataFolderPath )
-    elseif fs.isDir( folderMetadataFolderPath ) then
-        fs.delete( folderMetadataFolderPath )
-        fs.makeDir( folderMetadataFolderPath )
-    end
-    local newMetadataPath = folderMetadataFolderPath .. "/" .. self.file.fullName
-    fs.move( self.metadataPath, newMetadataPath )
-    self.metadataPath = newMetadataPath
-    local oldParentMetadataPath = self.file.parentPath .. "/.metadata"
-    if #fs.list( oldParentMetadataPath ) == 0 then
-        fs.delete( oldParentMetadataPath )
-    end
+	local folderMetadataFolderPath = folder.path .. "/.metadata"
+	if not fs.exists( folderMetadataFolderPath ) then
+		fs.makeDir( folderMetadataFolderPath )
+	elseif fs.isDir( folderMetadataFolderPath ) then
+		fs.delete( folderMetadataFolderPath )
+		fs.makeDir( folderMetadataFolderPath )
+	end
+	local newMetadataPath = folderMetadataFolderPath .. "/" .. self.file.fullName
+	fs.move( self.metadataPath, newMetadataPath )
+	self.metadataPath = newMetadataPath
+	local oldParentMetadataPath = self.file.parentPath .. "/.metadata"
+	if #fs.list( oldParentMetadataPath ) == 0 then
+		fs.delete( oldParentMetadataPath )
+	end
 end
 
 function Metadata:copyTo( folder, newFile )
-    local copyMetadataPath = folder.path .. "/.metadata/" .. self.file.fullName
-    fs.copy( self.metadataPath, copyMetadataPath )
-    newFile.metadata:updateModifiedTimestamp()
+	local copyMetadataPath = folder.path .. "/.metadata/" .. self.file.fullName
+	fs.copy( self.metadataPath, copyMetadataPath )
+	newFile.metadata:updateModifiedTimestamp()
 end
 
 function Metadata:rename( fullName )
-    local newMetadataPath = self.file.parentPath .. "/.metadata/" .. fullName
-    fs.move( self.metadataPath, newMetadataPath )
-    self.metadataPath = newMetadataPath
-    self:updateModifiedTimestamp()
+	local newMetadataPath = self.file.parentPath .. "/.metadata/" .. fullName
+	fs.move( self.metadataPath, newMetadataPath )
+	self.metadataPath = newMetadataPath
+	self:updateModifiedTimestamp()
 end
 
 function Metadata:updateCreatedTimestamp()
-    self.createdTimestamp = os.time()
+	self.createdTimestamp = os.time()
 end
 
 function Metadata:updateOpenedTimestamp()
-    self.openedTimestamp = os.time()
+	self.openedTimestamp = os.time()
 end
 
 function Metadata:updateModifiedTimestamp()
-    self.modifiedTimestamp = os.time()
+	self.modifiedTimestamp = os.time()
 end
 
 function Metadata.createdTimestamp:set( createdTimestamp )
-    self.createdTimestamp = createdTimestamp
-    self:save()
+	self.createdTimestamp = createdTimestamp
+	self:save()
 end
 
 function Metadata.openedTimestamp:set( openedTimestamp )
-    self.openedTimestamp = openedTimestamp
-    self:save()
+	self.openedTimestamp = openedTimestamp
+	self:save()
 end
 
 function Metadata.modifiedTimestamp:set( modifiedTimestamp )
-    self.modifiedTimestamp = modifiedTimestamp
-    self:save()
+	self.modifiedTimestamp = modifiedTimestamp
+	self:save()
 end

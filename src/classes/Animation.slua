@@ -3,65 +3,65 @@ local math, assert, tostring, type = math, assert, tostring, type
 local pow, sin, cos, pi, sqrt, abs, asin = math.pow, math.sin, math.cos, math.pi, math.sqrt, math.abs, math.asin
 
 local function copyTables(destination, keysTable, valuesTable)
-    valuesTable = valuesTable or keysTable
-    local mt = getmetatable( keysTable )
-    if mt and getmetatable( destination ) == nil then
-        setmetatable(destination, mt)
-    end
-    for k,v in pairs( keysTable ) do
-        local value = valuesTable[k]
-        if type( value ) == "table" then
-            destination[k] = value[#value]
-        else
-            destination[k] = value
-        end
-    end
-    return destination
+	valuesTable = valuesTable or keysTable
+	local mt = getmetatable( keysTable )
+	if mt and getmetatable( destination ) == nil then
+		setmetatable(destination, mt)
+	end
+	for k,v in pairs( keysTable ) do
+		local value = valuesTable[k]
+		if type( value ) == "table" then
+			destination[k] = value[#value]
+		else
+			destination[k] = value
+		end
+	end
+	return destination
 end
 
 local function performEasingOnSubject(subject, targetValues, initialValues, time, duration, easingFunc, round)
-    local t,b,c,d
-    local progressPercentage, ceil, floor = false, math.ceil, math.floor
-    for k,v in pairs( targetValues ) do
-        if type( v ) == "table" then
-            log('keyframe')
-            -- Not sure what this for, I think keyframes would be more useful
-            -- performEasingOnSubject(subject[k], v, initialValues[k], time, duration, easingFunc)
+	local t,b,c,d
+	local progressPercentage, ceil, floor = false, math.ceil, math.floor
+	for k,v in pairs( targetValues ) do
+		if type( v ) == "table" then
+			log('keyframe')
+			-- Not sure what this for, I think keyframes would be more useful
+			-- performEasingOnSubject(subject[k], v, initialValues[k], time, duration, easingFunc)
 
-            -- Keyframe animation
-            progressPercentage = progressPercentage or easingFunc( time, 0, 1, duration )
-            local keyframe = progressPercentage * #v -- NOT an int, the progress through the keyframes. 0.5 is half way through the first keyframe
+			-- Keyframe animation
+			progressPercentage = progressPercentage or easingFunc( time, 0, 1, duration )
+			local keyframe = progressPercentage * #v -- NOT an int, the progress through the keyframes. 0.5 is half way through the first keyframe
 
-            -- if round is true the keyframes values are not tweened between, they are just set when over the threshhold. This is the best approach for colours
-            if round then
-                local value = v[ ceil( keyframe ) ]
-                if subject[k] ~= value then
-                    subject[k] = value
-                end
-            else
-                -- TODO: tweenning not tested
-                local isInteger = ( keyframe % 1 == 0 )
-                if isInteger then
-                    subject[k] = v[ floor( keyframe + 0.5) ]
-                else
-                    local lowerKeyframe = floor( keyframe )
-                    local upperKeyframe = ceil( keyframe )
-                    local percentageUpper = keyframe - lowerKeyframe
-                    local lowerValue = v[ lowerKeyframe ]
-                    subject[k] = lowerValue + ( v[ upperKeyframe ] - lowerValue) * percentageUpper
-                end
-            end
-        else
-            b = initialValues[k]
-            if not b then error( "No initial value for animation. Property name: " .. k ) end
-            c = v - initialValues[k]
-            if round then
-                subject[k] = floor( easingFunc( time, b, c, duration ) + 0.5 )
-            else
-                subject[k] = easingFunc( time, b, c, duration )
-            end
-        end
-    end
+			-- if round is true the keyframes values are not tweened between, they are just set when over the threshhold. This is the best approach for colours
+			if round then
+				local value = v[ ceil( keyframe ) ]
+				if subject[k] ~= value then
+					subject[k] = value
+				end
+			else
+				-- TODO: tweenning not tested
+				local isInteger = ( keyframe % 1 == 0 )
+				if isInteger then
+					subject[k] = v[ floor( keyframe + 0.5) ]
+				else
+					local lowerKeyframe = floor( keyframe )
+					local upperKeyframe = ceil( keyframe )
+					local percentageUpper = keyframe - lowerKeyframe
+					local lowerValue = v[ lowerKeyframe ]
+					subject[k] = lowerValue + ( v[ upperKeyframe ] - lowerValue) * percentageUpper
+				end
+			end
+		else
+			b = initialValues[k]
+			if not b then error( "No initial value for animation. Property name: " .. k ) end
+			c = v - initialValues[k]
+			if round then
+				subject[k] = floor( easingFunc( time, b, c, duration ) + 0.5 )
+			else
+				subject[k] = easingFunc( time, b, c, duration )
+			end
+		end
+	end
 end
 
 class Animation {
@@ -72,24 +72,24 @@ class Animation {
 	easingFunc = false;
 	initialValues = false;
 	time = Number;
-    round = Boolean( false );
+	round = Boolean( false );
 }
 
 --[[
-    @desc Creates an animation instance for internal use
-    @param [number] duration -- the duration of the animation
-    @param [class] subject -- the subject of the animation
-    @param [class] targetValues -- the targetValues of the animation
-    @param [Animation.easing] easingFunc -- the easing function of the animation
+	@desc Creates an animation instance for internal use
+	@param [number] duration -- the duration of the animation
+	@param [class] subject -- the subject of the animation
+	@param [class] targetValues -- the targetValues of the animation
+	@param [Animation.easing] easingFunc -- the easing function of the animation
 ]]
 function Animation:initialise( duration, subject, targetValues, easingFunc, round )
-    self.duration = duration
-    self.subject = subject
-    self.targetValues = targetValues
-    self.easingFunc = easingFunc
-    self.round = round
-    self.initialValues = copyTables( {}, targetValues, subject )
-    self.time = 0
+	self.duration = duration
+	self.subject = subject
+	self.targetValues = targetValues
+	self.easingFunc = easingFunc
+	self.round = round
+	self.initialValues = copyTables( {}, targetValues, subject )
+	self.time = 0
 end
 
 --[[
@@ -100,7 +100,7 @@ end
 function Animation:setTime( time )
 	assert( type(time ) == "number" and time >= 0, "time must be a positive number or 0")
 
-    local duration = self.duration
+	local duration = self.duration
 
 	if time <= 0 then
 		self.time = 0
@@ -109,7 +109,7 @@ function Animation:setTime( time )
 		self.time = duration
 		copyTables(self.subject, self.targetValues)
 	else
-        self.time = time
+		self.time = time
 		performEasingOnSubject(self.subject, self.targetValues, self.initialValues, self.time, duration, self.easingFunc, self.round)
 	end
 

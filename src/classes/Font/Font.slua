@@ -19,12 +19,12 @@ end
 
 local NO_CHAR_MAP = {
 	width = 5;
-	{ true,  true,  true,  true, true };
+	{ true,	 true,	true,  true, true };
 	{ true, false, false, false, true };
 	{ true, false, false, false, true };
 	{ true, false, false, false, true };
 	{ true, false, false, false, true };
-	{ true,  true,  true,  true, true };
+	{ true,	 true,	true,  true, true };
 }
 
 class Font {

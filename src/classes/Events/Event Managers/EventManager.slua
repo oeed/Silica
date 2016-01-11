@@ -170,7 +170,7 @@ function EventManager:handleEventPhase( event, phase )
 					local response = handle[1]( handle[4], event, handle[2] ) -- if response is true stop propagation, if false continue
 					-- TODO: maybe enforce returning boolean for event handler functions
 					-- if response ~= true and response ~= false then
-					-- 	error( "Error handler for event '" .. eventType .. "' of instance '" .. tostring( handle[4] ) .. "' did not return boolean. If the event should not be sent to anything else (i.e. stop propagation) return true, otherwise, if it can continue being passed around, return false.", 0 )
+					--	error( "Error handler for event '" .. eventType .. "' of instance '" .. tostring( handle[4] ) .. "' did not return boolean. If the event should not be sent to anything else (i.e. stop propagation) return true, otherwise, if it can continue being passed around, return false.", 0 )
 					-- end
 
 					if response then
