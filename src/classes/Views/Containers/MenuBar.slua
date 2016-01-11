@@ -6,20 +6,20 @@ class MenuBar extends Container {
 }
 
 function MenuBar:onDraw()
-    local width, height, theme, canvas, font = self.width, self.height, self.theme, self.canvas
-    canvas:fill( theme:value( "fillColour" ) )
-    canvas:fill( theme:value( "separatorColour" ), theme:value( "separatorIsDashed" ) and SeparatorMask( 1, height, width, 1 ) or RectangleMask( 1, height, width, 1 ) )
+	local width, height, theme, canvas, font = self.width, self.height, self.theme, self.canvas
+	canvas:fill( theme:value( "fillColour" ) )
+	canvas:fill( theme:value( "separatorColour" ), theme:value( "separatorIsDashed" ) and SeparatorMask( 1, height, width, 1 ) or RectangleMask( 1, height, width, 1 ) )
 end
 
 function MenuBar:updateThemeStyle()
-    self.theme.style = self.isEnabled and "default" or "disabled"
+	self.theme.style = self.isEnabled and "default" or "disabled"
 end
 
 --[[
 	@desc Updates the location of the menu bar items
 ]]
 function MenuBar:updateLayout()
-    local theme = self.theme
+	local theme = self.theme
 	local x = 1 + theme:value( "leftMargin" )
 	local height = 1
 	for i, childView in ipairs( self.children ) do
@@ -32,15 +32,15 @@ function MenuBar:updateLayout()
 end
 
 function MenuBar:update( deltaTime )
-    self:super( deltaTime )
-    if self.needsLayoutUpdate then
-        self:updateLayout()
-    end
+	self:super( deltaTime )
+	if self.needsLayoutUpdate then
+		self:updateLayout()
+	end
 end
 
 function MenuBar.isEnabled:set( isEnabled )
-    self.isEnabled = isEnabled
-    self:updateThemeStyle()
+	self.isEnabled = isEnabled
+	self:updateThemeStyle()
 end
 
 function MenuBar:insert( ... )

@@ -1,9 +1,9 @@
 
 class MouseMoveEvent extends MouseEvent {
 
-    static = {
-        eventType = "mouse_move";
-    };
+	static = {
+		eventType = "mouse_move";
+	};
 
 }
 

@@ -1,17 +1,17 @@
 
 class "PathView" extends "View" {
 
-    height = 100; -- the default height
-    width = 100;
+	height = 100; -- the default height
+	width = 100;
 
 }
 
 --[[
-    @desc Creates a button object and connects the event handlers
+	@desc Creates a button object and connects the event handlers
 ]]
 function PathView:initialise( ... )
-    self:super( ... )
-    self:event( MouseDownEvent, self.onMouseDown )
+	self:super( ... )
+	self:event( MouseDownEvent, self.onMouseDown )
 end
 
 function PathView:onMouseDown( MouseDownEvent event, Event.phases phase )
@@ -20,7 +20,7 @@ end
 
 
 --[[
-    @desc Sets up the canvas and it's graphics objects
+	@desc Sets up the canvas and it's graphics objects
 ]]
 function PathView:initialiseCanvas()
 	self:super()

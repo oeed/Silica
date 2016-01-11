@@ -3,46 +3,46 @@ local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class SymbolButton extends Button {
 
-    symbol = Symbol;
-    symbolName = String.allowsNil;
+	symbol = Symbol;
+	symbolName = String.allowsNil;
 
 }
 
 function SymbolButton:onDraw()
-    self:super()
-    local width, height, theme, sPressed = self.width, self.height, self.theme, self.isPressed
+	self:super()
+	local width, height, theme, sPressed = self.width, self.height, self.theme, self.isPressed
 
-    -- get all the shadow size details so we can adjust the compression as needed
-    local defaultShadowSize = theme:value( "shadowSize", "default" )
-    local shadowPressedSize = theme:value( "shadowSize", "pressed" )
-    local shadowSize = theme:value( "shadowSize" )
-    local shadowOffset = defaultShadowSize - shadowSize
-    local shadowPressedOffset = defaultShadowSize - shadowPressedSize
-    local shadowX = math.floor( shadowOffset * SHADOW_RATIO + 0.5 )
-    local symbol = self.symbol
-    self.canvas:fill( theme:value( "symbolColour" ), SymbolMask( theme:value( "leftMargin" ) + shadowX + 1, 1 + theme:value( "topMargin" ), symbol ) )
+	-- get all the shadow size details so we can adjust the compression as needed
+	local defaultShadowSize = theme:value( "shadowSize", "default" )
+	local shadowPressedSize = theme:value( "shadowSize", "pressed" )
+	local shadowSize = theme:value( "shadowSize" )
+	local shadowOffset = defaultShadowSize - shadowSize
+	local shadowPressedOffset = defaultShadowSize - shadowPressedSize
+	local shadowX = math.floor( shadowOffset * SHADOW_RATIO + 0.5 )
+	local symbol = self.symbol
+	self.canvas:fill( theme:value( "symbolColour" ), SymbolMask( theme:value( "leftMargin" ) + shadowX + 1, 1 + theme:value( "topMargin" ), symbol ) )
 end
 
 function SymbolButton.symbol:set( symbol )
-    self.symbol = symbol
-    self.needsAutosize = true
-    self.raw.symbolName = symbol.symbolName
+	self.symbol = symbol
+	self.needsAutosize = true
+	self.raw.symbolName = symbol.symbolName
 end
 
 function SymbolButton.symbolName:set( symbolName )
-    self.symbol = Symbol.static:fromName( symbolName )
+	self.symbol = Symbol.static:fromName( symbolName )
 end
 
 function SymbolButton:autosize()
-    if self.isAutosized then
-        local theme = self.theme
-        local symbol = self.symbol
-        local defaultShadowSize = theme:value( "shadowSize", "default" )
-        local shadowSize = theme:value( "shadowSize", "pressed" )
-        local shadowOffset = defaultShadowSize - shadowSize
-        local shadowX = math.floor( shadowOffset * SHADOW_RATIO + 0.5 )
-        self.width = symbol.width + theme:value( "leftMargin" ) + theme:value( "rightMargin" ) + shadowX
-        self.height = symbol.height + theme:value( "topMargin" ) + theme:value( "bottomMargin" ) + shadowOffset
-    end
-    self.needsAutosize = false
+	if self.isAutosized then
+		local theme = self.theme
+		local symbol = self.symbol
+		local defaultShadowSize = theme:value( "shadowSize", "default" )
+		local shadowSize = theme:value( "shadowSize", "pressed" )
+		local shadowOffset = defaultShadowSize - shadowSize
+		local shadowX = math.floor( shadowOffset * SHADOW_RATIO + 0.5 )
+		self.width = symbol.width + theme:value( "leftMargin" ) + theme:value( "rightMargin" ) + shadowX
+		self.height = symbol.height + theme:value( "topMargin" ) + theme:value( "bottomMargin" ) + shadowOffset
+	end
+	self.needsAutosize = false
 end

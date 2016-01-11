@@ -17,5 +17,5 @@ end
 
 function TestView.width:set( width )
 	self:super( width )
-    width = self.width
+	width = self.width
 end

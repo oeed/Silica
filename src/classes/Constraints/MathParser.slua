@@ -133,7 +133,7 @@ local function lex( str )
 				push( "constant", n )
 			end
 		elseif c:find "%s" then
-			pos = pos + #str:match( "^%s+", pos  )
+			pos = pos + #str:match( "^%s+", pos	 )
 		elseif c == "." then
 			push "dot"
 			pos = pos + 1
