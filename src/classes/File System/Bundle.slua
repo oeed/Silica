@@ -2,6 +2,7 @@
 local fs = Quartz and Quartz.fs or fs
 
 local function tidy( path )
+	if path == "/" then return path end
 	path = path:gsub( "/.-/%.%./", "/" )
 			   :gsub( "^.-/%.%./", "" )
 			   :gsub( "/%./", "/" )

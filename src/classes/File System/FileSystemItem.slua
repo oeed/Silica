@@ -2,6 +2,7 @@
 local fs = Quartz and Quartz.fs or fs
 
 local function tidy( path )
+	if path == "/" then return path end
 	path = path:gsub( "/.-/%.%./", "/" )
 			   :gsub( "^.-/%.%./", "" )
 			   :gsub( "/%./", "/" )
@@ -27,7 +28,7 @@ class FileSystemItem {
 	size = Number.allowsNil;
 	sizeString = String.allowsNil;
 	parent = Any.allowsNil; -- TODO: should be Folder
-	parentPath = String;
+	parentPath = String.allowsNil;
 	metadata = Metadata.allowsNil;
 	metadataPath = String.allowsNil;
 

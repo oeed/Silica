@@ -2,6 +2,7 @@
 local fs = Quartz and Quartz.fs or fs
 
 local function tidy( path )
+	if path == "/" then return path end
 	path = path:gsub( "/.-/%.%./", "/" )
 			   :gsub( "^.-/%.%./", "" )
 			   :gsub( "/%./", "/" )
@@ -32,7 +33,7 @@ function Folder.metatable:__call( path, ... )
 	path = resolve( path )
 	if fs.exists( path ) and fs.isDir( path ) and not fs.isReadOnly( path ) then
 		local name = fs.getName( path )
-		if name ~= ".DS_Store" and name ~= ".metadata" then
+		if name ~= ".DS_Store" and name ~= ".metadata" and name ~= ".git" then
 			return self.spawn( false, path, ... )
 		end
 	end
