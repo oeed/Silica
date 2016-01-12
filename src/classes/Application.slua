@@ -83,6 +83,7 @@ function Application:initialise( ... )
 	self.arguments = { ... }
 	self.userDataFolder = Folder( userDataPath ) or Folder.static:make( userDataPath )
 	self:initialiseSettings()
+	self:initialiseFileAssociations()
 	self.event = ApplicationEventManager( self )
 	self.keyboardShortcutManager = KeyboardShortcutManager( self )
 	self.dragDropManager = DragDropManager( self )
@@ -103,7 +104,7 @@ function Application:initialiseFileAssociations()
 		-- if we're running in Quartz we'll need to extract all the file associations from it
 	else
 		-- as we're not running in Quartz we can't actually open any of the default files, so we'll need to make 'fake' ones so most files have icons, and the OS isn't feeding us our own file formats, so we'll need to load those ourself
-		FakeFileAssociation( "folder", Icon.static:fromFile( "folder" ) )
+		FileAssociationManager.static:registerAssociation( FakeFileAssociation( "folder", Icon.static:fromFile( "folder" ) ) )
 		-- FakeFileAssociation( "text/plain", Icon.static:fromFile( "text" ), { "txt", "text" } )
 	end
 end
