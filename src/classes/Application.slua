@@ -98,6 +98,16 @@ end
 function Application:initialiseSettings()
 end
 
+function Application:initialiseFileAssociations()
+	if Quartz then
+		-- if we're running in Quartz we'll need to extract all the file associations from it
+	else
+		-- as we're not running in Quartz we can't actually open any of the default files, so we'll need to make 'fake' ones so most files have icons, and the OS isn't feeding us our own file formats, so we'll need to load those ourself
+		FakeFileAssociation( "folder", Icon.static:fromFile( "folder" ) )
+		-- FakeFileAssociation( "text/plain", Icon.static:fromFile( "text" ), { "txt", "text" } )
+	end
+end
+
 --[[
 	@desc Runs the application runtime with the supplied arguments
 	@param ... -- the arguments feed to the program (simply use ... for the arguments)

@@ -1,0 +1,35 @@
+
+class FileAssociationManager {
+	
+	static = {
+
+		associations = Table( {} );
+		extensionMimes = Table( {} );
+
+	}
+
+}
+
+function FileAssociationManager.static:registerAssociation( FileAssociation association, Number.allowsNil index )
+	local associations = self.associations
+	local mime = association.mime
+	local mimeAssociations = associations[mime]
+	if not mimeAssociations then
+		mimeAssociations = {}
+		associations[mime] = mimeAssociations
+	end
+
+	if index then
+		mimeAssociations[index] = association
+	else
+		table.insert( mimeAssociations, association )
+	end
+
+	-- add these assocation's extensions to the extensionMimes table
+	local extensionMimes = self.extensionMimes
+	for i, extension in ipairs( association.extension ) do
+		if not extensionMimes[extension] then -- we'll only set the mime if there isn't one already there. theortically they should be identical anyway
+			extensionMimes[extension] = mime
+		end
+	end
+end

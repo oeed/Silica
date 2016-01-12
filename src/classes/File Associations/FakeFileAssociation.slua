@@ -1,0 +1,8 @@
+
+class FakeFileAssociation extends FileAssociation {
+
+}
+
+function FakeFileAssociation:initialise( String mime, Icon icon, Table( {} ) extensions )
+	self:super( mime, icon, extensions, "", "" )
+end
