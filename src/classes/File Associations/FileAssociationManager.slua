@@ -20,16 +20,34 @@ function FileAssociationManager.static:registerAssociation( FileAssociation asso
 	end
 
 	if index then
-		mimeAssociations[index] = association
+		table.insert( mimeAssociations, index, association )
 	else
 		table.insert( mimeAssociations, association )
 	end
 
 	-- add these assocation's extensions to the extensionMimes table
 	local extensionMimes = self.extensionMimes
-	for i, extension in ipairs( association.extension ) do
+	for i, extension in ipairs( association.extensions ) do
 		if not extensionMimes[extension] then -- we'll only set the mime if there isn't one already there. theortically they should be identical anyway
 			extensionMimes[extension] = mime
 		end
 	end
+end
+
+--[[
+	@desc Returns the main association for the given MIME
+]]
+function FileAssociationManager.static:getAssociation( String mime )
+	local associations = self.associations
+	local mimeAssociations = associations[mime]
+	if mimeAssociations then
+		return mimeAssociations[1]
+	end
+end
+
+--[[
+	@desc Returns the all associations for the given MIME
+]]
+function FileAssociationManager.static:getAllAssociations( String mime )
+	return self.associations[mime] or {}
 end
