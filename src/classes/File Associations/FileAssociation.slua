@@ -4,15 +4,15 @@ class FileAssociation {
 	mime = String;
 	icon = Icon;
 	extensions = Table;
-	programPath = String;
+	programBundle = Bundle.allowsNil;
 	argumentFormat = String( "%1" );
 	
 }
 
-function FileAssociation:initialise( String mime, Icon icon, Table extensions, String programPath, String argumentFormat )
+function FileAssociation:initialise( String mime, Icon icon, Table extensions, String argumentFormat, Bundle programBundle )
 	self.mime = mime
 	self.icon = icon
 	self.extensions = extensions
-	self.programPath = programPath
+	self.programBundle = programBundle
 	self.argumentFormat = argumentFormat
 end
