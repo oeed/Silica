@@ -191,6 +191,27 @@ function Folder:find( name, mimes, noSubfolders )
 	end
 end
 
+--[[
+	@desc Returns a table of all the FileSystemItems of a certain MIME
+]]
+function Folder:findAll( String mime, Boolean( false ) noSubfolders )
+	local found = {}
+	local n = 1
+	for i, fileSystemItem in ipairs( self.items ) do
+		if not noSubfolders and fileSystemItem:typeOf( Folder ) then
+			for i, item in ipairs( fileSystemItem:findAll( mime ) ) do
+				found[n] = item
+				n = n + 1
+			end
+		end
+		if fileSystemItem.metadata.mime == mime then
+			found[n] = fileSystemItem
+			n = n + 1
+		end
+	end
+	return found
+end
+
 function Folder.fs:get()
 	local _fs = self.fs
 	if _fs then return _fs end
