@@ -50,7 +50,7 @@ function FlowContainer:updateLayout( dontAnimate )
 		end
 	end
 
-	local time, easing = 0.5, Animation.easings.SINE_IN_OUT
+	local time, easing = 0.5, Animation.easings.IN_OUT_SINE
 
 	local nChildren = #children
 	local totalWidth = 0
