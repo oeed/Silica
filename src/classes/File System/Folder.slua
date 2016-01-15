@@ -89,6 +89,23 @@ function Folder:serialise( flatten, metadataProperties )
 	return allItems
 end
 
+function Folder.size:get()
+	local list, getSize, isDir = fs.list, fs.getSize, fs.isDir
+	local function sizeDir( path )
+		local size = 0
+		for i, fileName in ipairs( list( path ) ) do
+			local p = path .. "/" .. fileName
+			if isDir( p ) then
+				size = size + sizeDir( p )
+			else
+				size = size + getSize( p )
+			end
+		end
+		return size
+	end
+	return sizeDir( self.path )
+end
+
 function Folder.icon:get()
 	local cache = self.icon
 	if cache then return cache end
