@@ -102,12 +102,12 @@ function FileSystemItem.size:set( size )
 end
 
 function FileSystemItem.sizeString:get()
-	local size = fs.getSize( self.path )
+	local size = self.size
 	if size == 0 then return "0B" end
 	local prefixes = { [0] = ""; "k"; "M"; "G"; "T"; "P"; }
 	local order = math.floor( math.log( size ) / math.log( 1024 ) )
-	local bytes = math.ceil( (size / ( 1024 ^ order) ) * 100 )
-	return bytes / 100 .. prefixes[order] .. "B"
+	local bytes = math.ceil( (size / ( 1024 ^ order) ) * 10 )
+	return bytes / 10 .. prefixes[order] .. "B"
 end
 
 function FileSystemItem.sizeString:set( sizeString )
