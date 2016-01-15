@@ -18,6 +18,9 @@ local function resolve( path )
 	if not path or #path == 0 then return "/" .. relativePath else local _ = tidy( path ):gsub( "^[^/]", relativePath .. "%1" ) return _ end
 end
 
+local iconCache = {}
+local unknownIcon
+
 class FileSystemItem {
 	
 	path = String;
@@ -100,7 +103,7 @@ end
 
 function FileSystemItem.sizeString:get()
 	local size = fs.getSize( self.path )
-	if size == 0 then return "0 B" end
+	if size == 0 then return "0B" end
 	local prefixes = { [0] = ""; "k"; "M"; "G"; "T"; "P"; }
 	local order = math.floor( math.log( size ) / math.log( 1024 ) )
 	local bytes = math.ceil( (size / ( 1024 ^ order) ) * 100 )
@@ -115,13 +118,12 @@ function FileSystemItem.icon:get()
 	local cache = self.icon
 	if cache then return cache end
 
-	local icon
 	local mime = self.metadata.mime
+
 	if Image.static:isImageMIME( mime ) then
 		-- this file is an image. we'll make a thumbnail icon for it instead if it's a valid image
 		icon = ThumbnailIcon.static:fromFile( self )
 	end
-	return icon
 end
 
 function FileSystemItem.parent:get()
