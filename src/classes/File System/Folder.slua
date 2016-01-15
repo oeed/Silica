@@ -89,6 +89,15 @@ function Folder:serialise( flatten, metadataProperties )
 	return allItems
 end
 
+function Folder.icon:get()
+	local cache = self.icon
+	if cache then return cache end
+
+	local icon
+	local mime = self.metadata.mime
+	return Image.static:fromPath( "/src/resources/Icons/folder.sicon" )
+end
+
 --[[
 	@desc Creates a folder within this folder
 	@return Folder
