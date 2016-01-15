@@ -1086,3 +1086,46 @@ function Image:appendImage( appendingImage, x, y )
 	end
 	self.pixels = selfPixels
 end
+
+--[[
+	@desc Adds transparent padding around an the images shorter side to prevent the image from being skewed when used in a square context
+]]
+function Image:squareCentred()
+	local width, height = self.width, self.height
+	if width ~= height then
+		local difference = math.abs( width - height )
+		local differenceOne, differenceTwo = math.ceil( difference / 2 ), math.floor( difference / 2 )
+		local pixels = self.pixels
+		if width > height then
+			-- we need to add rows to the bottom and top
+			local insert = table.insert
+			for i = 1, differenceOne * width do
+				insert( pixels, TRANSPARENT )
+			end
+
+			local length = #pixels
+			for i = 1, differenceTwo * width do
+				length = length + 1
+				pixels[length] = TRANSPARENT
+			end
+			self.height = width
+		else
+			-- we need to add columns to the left and right
+			local n = 1
+			local insert = table.insert
+			for i = 1, height do
+				for j = 1, differenceOne do
+					insert( pixels, n, TRANSPARENT )
+					n = n + 1
+				end
+				n = n + width
+				for j = 1, differenceTwo do
+					insert( pixels, n, TRANSPARENT )
+					n = n + 1
+				end
+			end
+			self.width = height
+		end
+		self.scaledCache = {}
+	end
+end

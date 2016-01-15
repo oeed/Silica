@@ -18,6 +18,7 @@ function Icon:initialise( Table images )
 	local maxWidth, maxWidth
 	local pixels
 	for i, image in ipairs( images ) do
+		image:squareCentred()
 		local width, height = image.width, image.height
 		local size = width * height
 		if size > maxSize then
