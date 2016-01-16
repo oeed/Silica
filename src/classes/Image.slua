@@ -72,8 +72,8 @@ end
 --[[
 	@desc Returns true if the given mime is a supported image
 ]]
-function Image.static:isImageMIME( String mime )
-	return availableMimes[mime] or false
+function Image.static:isMIME( String.allowsNil mime )
+	return mime and availableMimes[mime] or false
 end
 
 function Image.static:blank( width, height )

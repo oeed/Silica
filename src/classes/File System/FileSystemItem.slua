@@ -125,7 +125,7 @@ function FileSystemItem.icon:get()
 	end
 
 	local icon
-	if Image.static:isImageMIME( mime ) then
+	if Image.static:isMIME( mime ) then
 		-- this file is an image. we'll make a thumbnail icon for it instead if it's a valid image
 		icon = ThumbnailIcon.static:fromFile( self )
 	end
