@@ -92,8 +92,8 @@ local EXTENSION_MIMES = {
 }
 
 local SPECIAL_MIMES = {
-	FOLDER = "folder";
 	UNKNOWN = "unknown";
+	FOLDER = "application/directory";
 }
 
 class Metadata {
