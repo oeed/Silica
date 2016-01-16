@@ -34,6 +34,22 @@ function FileAssociationManager.static:registerAssociation( FileAssociation asso
 	end
 end
 
+function FileAssociationManager.static:open( FileSystemItem fileSystemItem )
+	local path, mime = fileSystemItem.path, fileSystemItem.metadata.mime
+	local association = self:getAssociation( mime )
+	if association then
+		local programBundle = association.programBundle
+		if programBundle then
+			local argumentFormat = association.argumentFormat
+			local arguments = {}
+			for i, argument in ipairs( argumentFormat ) do
+				table.insert( arguments, argument == true and path or argument )
+			end
+			self.application.programManager:run( Program.static:fromBundle( programBundle, arguments ) )
+		end
+	end
+end
+
 --[[
 	@desc Returns the main association for the given MIME
 ]]
