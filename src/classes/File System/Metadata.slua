@@ -92,8 +92,8 @@ local EXTENSION_MIMES = {
 }
 
 local SPECIAL_MIMES = {
-	UNKNOWN = "unknown";
 	FOLDER = "application/directory";
+	UNKNOWN = nil;
 }
 
 class Metadata {
@@ -101,7 +101,7 @@ class Metadata {
 	file = FileSystemItem;
 	metadataPath = String;
 
-	mime = String; -- MIME mime of the file (e.g. image/nft)
+	mime = String.allowsNil; -- MIME mime of the file (e.g. image/nft)
 	createdTimestamp = Number( DEFAULT_TIMESTAMP );
 	openedTimestamp = Number( DEFAULT_TIMESTAMP );
 	modifiedTimestamp = Number( DEFAULT_TIMESTAMP );
@@ -146,9 +146,6 @@ function Metadata:load()
 			fs.makeDir( metadataFolderPath )
 		end
 		self:create()
-	end
-	if not self.mime then
-		error(metadataPath)
 	end
 end
 
