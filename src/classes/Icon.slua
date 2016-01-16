@@ -6,7 +6,8 @@ local iconValues = {
 	DEFAULT_HEIGHT = 32;
 }
 
-local ICON_MIMES = { Metadata.mimes.SICON }
+local mimes = Metadata.mimes
+local ICON_MIMES = { mimes.SICON }
 local availableMimes = {}
 for i, v in ipairs( ICON_MIMES ) do
 	availableMimes[v] = true
