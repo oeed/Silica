@@ -1,7 +1,7 @@
 
 local fs = Quartz and Quartz.fs or fs
 
-local DEFAULT_TIMESTAMP = 1417305600; -- default date 1/1/2015
+local DEFAULT_TIMESTAMP = 1451606400; -- default date 00:00 1/1/2016
 
 local SAVED_PROPERTIES = { t = "mime"; c = "createdTimestamp"; o = "openedTimestamp"; m = "modifiedTimestamp"; }
 
