@@ -1391,10 +1391,10 @@ local function addFunctions( classFunctions, definedIndexes, prebuiltFunctions, 
 			return function( self, ... )
 				local arguments = { ... }
 				local argumentsLength = #arguments
+				for i, v in pairs(arguments) do
+					argumentsLength = i
+				end
 				if argumentsLength < minArgs or argumentsLength > maxArgs then
-					for i, v in pairs(arguments) do
-						print(i .. ": "..tostring(v))
-					end
 					logtraceback()
 					error( name .. "." .. functionName .. ": wrong number of arguments, got "..argumentsLength.." expected between ".. minArgs .. " and " .. maxArgs, 2 )
 				end
