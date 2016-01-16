@@ -6,6 +6,11 @@ local iconValues = {
 	DEFAULT_HEIGHT = 32;
 }
 
+local ICON_MIMES = { Metadata.mimes.SICON }
+local availableMimes = {}
+for i, v in ipairs( ICON_MIMES ) do
+	availableMimes[v] = true
+end
 class Icon extends Image {
 
 	images = Table;
@@ -124,6 +129,30 @@ function Icon.static:fromIcon( Table bytes )
 		startIndex = startIndex + length + 1 
 	end
 	return Icon( images )
+end
+
+--[[
+	@desc Returns true if the given mime is a supported image
+]]
+function Icon.static:isMIME( String.allowsNil mime )
+	return mime and availableMimes[mime] or false
+end
+
+function Icon.static:fromName( String name )
+	local resource = Resource( name, ICON_MIMES )
+	if resource then
+		return Icon.static:fromResource( resource )
+	end
+end
+
+function Icon.static:fromNameInBundle( String name, Any bundle )
+	return Icon.static:fromFile( bundle:file( name, ICON_MIMES ) )
+end
+
+function Icon.static:fromFile( File file )
+	if file.metadata.mime == mimes.SICON then
+		return Icon.static:fromIcon( file.binaryContents )
+	end
 end
 
 function Icon:getScaledPixels( scaledWidth, scaledHeight )
