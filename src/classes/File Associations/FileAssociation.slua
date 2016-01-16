@@ -1,5 +1,5 @@
 
-class FileAssociation {
+class FileAssociation implements ISerialiseable {
 
 	name = String;
 	mime = String;
@@ -17,4 +17,20 @@ function FileAssociation:initialise( String name, String mime, Icon.allowsNil ic
 	self.extensions = extensions
 	self.programBundle = programBundle
 	self.argumentFormat = argumentFormat
+end
+
+function FileAssociation:serialise()
+	local icon = self.icon
+	local programBundle = self.programBundle
+	return textutils.serialise( {
+		name = self.name;
+		mime = self.mime;
+		icon = icon and icon.contents;
+		extensions = self.extensions;
+	} )
+end
+
+function FileAssociation.static:unserialise( String serialisedContent )
+	local info = textutils.unserialise( serialisedContent )
+	return BridgedFileAssociation( info )
 end
