@@ -53,11 +53,13 @@ end
 --[[
 	@desc Returns the main association for the given MIME
 ]]
-function FileAssociationManager.static:getAssociation( String mime )
-	local associations = self.associations
-	local mimeAssociations = associations[mime]
-	if mimeAssociations then
-		return mimeAssociations[1]
+function FileAssociationManager.static:getAssociation( String.allowsNil mime )
+	if mime then
+		local associations = self.associations
+		local mimeAssociations = associations[mime]
+		if mimeAssociations then
+			return mimeAssociations[1]
+		end
 	end
 end
 
