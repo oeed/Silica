@@ -3,14 +3,14 @@ class FileAssociation {
 
 	name = String;
 	mime = String;
-	icon = Icon;
+	icon = Icon.allowsNil;
 	extensions = Table;
 	programBundle = Bundle.allowsNil;
-	argumentFormat = String( "%1" );
+	argumentFormat = Table( { true } );
 	
 }
 
-function FileAssociation:initialise( String name, String mime, Icon icon, Table extensions, String argumentFormat, Bundle programBundle )
+function FileAssociation:initialise( String name, String mime, Icon.allowsNil icon, Table extensions, Table.allowsNil argumentFormat, Bundle programBundle )
 	self.name = name
 	self.mime = mime
 	self.icon = icon
