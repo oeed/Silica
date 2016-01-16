@@ -49,7 +49,7 @@ class Image {
 	pixels = Table;
 	-- resource = false;
 	-- file = false;
-	contents = false;
+	contents = Table;
 	scaledCache = {};
 	ucgValues = Enum( Number, ucgValues );
 
@@ -130,6 +130,7 @@ function Image.static:fromPixels( pixels, width, height )
 end
 
 function Image.static:fromPaintFormat( contents )
+	self.contents = contents
 	local lines = split( contents, "\n" )
 	local pixels = {}
 	local width = 0
@@ -562,6 +563,7 @@ end
 			-- Thanks to ardera for this format! --
 -- Format specification: http://puu.sh/lZNtW/270899ae19.pdf --
 function Image.static:fromUniversalCompressedGraphics( Table bytes )
+	self.contents = contents
 	-- Henceforth is ardera's code from libimg v1.2.7 with minor modifications
 	local buffer = newBuffer("r", bytes)
 	local readNumber, readWord, readBits, readBit, readByte = buffer.readNumber, buffer.readWord, buffer.readBits, buffer.readBit, buffer.readByte

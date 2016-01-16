@@ -39,6 +39,7 @@ function Icon:initialise( Table images )
 end
 
 function Icon.static:fromIcon( Table bytes )
+	self.contents = bytes
 	local pointer = 1 -- the index of the byte to read next
 	local bitpointer = 1 -- the index of the bit to read next
 	
