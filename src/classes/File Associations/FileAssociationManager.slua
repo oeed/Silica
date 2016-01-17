@@ -69,6 +69,8 @@ function FileAssociationManager.static:open( FileSystemItem fileSystemItem, File
 				end
 			end
 		end
+	else
+		-- TODO: error dialouge
 	end
 end
 
@@ -88,6 +90,7 @@ function FileAssociationManager.static:getAssociation( String.allowsNil mime, Nu
 						return association
 					end
 				end
+				return mimeAssociations[1]
 			end
 		end
 	end
