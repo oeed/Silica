@@ -14,8 +14,9 @@ local function tidy( path )
 end
 
 local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) ):gsub( "[^/]$", "%1/" ):gsub( "^[^/]", "/%1" )
+log(relativePath)
 local function resolve( path, to )
-	to = to or relativePath
+	to = to and tidy( to ) .. "/" or relativePath
 	if not path or #path == 0 then return "/" .. to else local _ = tidy( path ):gsub( "^[^/]", to .. "%1" ) return _ end
 end
 
