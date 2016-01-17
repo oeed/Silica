@@ -32,6 +32,10 @@ function FileAssociationManager.static:registerAssociation( FileAssociation asso
 			extensionMimes[extension] = mime
 		end
 	end
+	local application = self.application
+	if application then
+		application.event:handleEvent( FileAssociationRegisteredInterfaceEvent( association ) )
+	end
 end
 
 function FileAssociationManager.static:open( FileSystemItem fileSystemItem )
