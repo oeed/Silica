@@ -1,4 +1,11 @@
 
+if Quartz then
+	Quartz.fileAssociationBridge = function( serialised )
+		FileAssociationManager.static:registerAssociation( FileAssociation.static:unserialise( serialised ) )
+	end
+end
+
+
 class FileAssociationManager {
 	
 	static = {
@@ -34,7 +41,10 @@ function FileAssociationManager.static:registerAssociation( FileAssociation asso
 	end
 	local application = self.application
 	if application then
-		application.event:handleEvent( FileAssociationRegisteredInterfaceEvent( association ) )
+		local event = application.event
+		if event then
+			event:handleEvent( FileAssociationRegisteredInterfaceEvent( association ) )
+		end
 	end
 end
 
