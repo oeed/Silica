@@ -48,9 +48,9 @@ function FileAssociationManager.static:registerAssociation( FileAssociation asso
 	end
 end
 
-function FileAssociationManager.static:open( FileSystemItem fileSystemItem )
+function FileAssociationManager.static:open( FileSystemItem fileSystemItem, FileAssociation.allowsNil association, Number.allowsNil id )
 	local path, mime = fileSystemItem.path, fileSystemItem.metadata.mime
-	local association = self:getAssociation( mime )
+	association = association or self:getAssociation( mime, id )
 	if association then
 		local programBundle = association.programBundle
 		if programBundle then
@@ -67,12 +67,20 @@ end
 --[[
 	@desc Returns the main association for the given MIME
 ]]
-function FileAssociationManager.static:getAssociation( String.allowsNil mime )
+function FileAssociationManager.static:getAssociation( String.allowsNil mime, Number.allowsNil id )
 	if mime then
 		local associations = self.associations
 		local mimeAssociations = associations[mime]
 		if mimeAssociations then
-			return mimeAssociations[1]
+			if not id then
+				return mimeAssociations[1]
+			else
+				for i, association in ipairs( mimeAssociations ) do
+					if association.id == id then
+						return association
+					end
+				end
+			end
 		end
 	end
 end
