@@ -105,6 +105,14 @@ function FileSystemItem.association:get()
 	return association
 end
 
+--[[
+	@desc Opens the file with the appropriate program (or the given association)
+]]
+						-- TODO: Any should be FileAssociation
+function FileSystemItem:open( Any.allowsNil association )
+	FileAssociationManager.static:open( self, association )
+end
+
 function FileSystemItem.size:get()
 	return fs.getSize( self.path )
 end
