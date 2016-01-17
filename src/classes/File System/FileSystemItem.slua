@@ -29,6 +29,7 @@ class FileSystemItem {
 	name = String;
 	fullName = String;
 	extension = String.allowsNil;
+	association = Any.allowsNil; -- TODO: should be a FileAssociation (recursion issue)
 	icon = Any.allowsNil;
 	size = Number.allowsNil;
 	sizeString = String.allowsNil;
@@ -95,6 +96,15 @@ function FileSystemItem.path:set( path )
 	self.extension = extension
 end
 
+function FileSystemItem.association:get()
+	local association = self.association
+	if association then return association end
+
+	association = FileAssociationManager.static:getAssociation( self.metadata.mime )
+	self.association = association
+	return association
+end
+
 function FileSystemItem.size:get()
 	return fs.getSize( self.path )
 end
@@ -130,6 +140,13 @@ function FileSystemItem.icon:get()
 	if Image.static:isMIME( mime ) then
 		-- this file is an image. we'll make a thumbnail icon for it instead if it's a valid image
 		icon = ThumbnailIcon.static:fromFile( self )
+	end
+
+	if not icon then
+		local association = self.association
+		if association then
+			icon = association.icon
+		end
 	end
 
 	if icon then return icon end
