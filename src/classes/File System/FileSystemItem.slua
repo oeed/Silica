@@ -14,8 +14,10 @@ local function tidy( path )
 end
 
 local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) ):gsub( "[^/]$", "%1/" ):gsub( "^[^/]", "/%1" )
-local function resolve( path )
-	if not path or #path == 0 then return "/" .. relativePath else local _ = tidy( path ):gsub( "^[^/]", relativePath .. "%1" ) return _ end
+log(relativePath)
+local function resolve( path, to )
+	to = to and tidy( to ) .. "/" or relativePath
+	if not path or #path == 0 then return "/" .. to else local _ = tidy( path ):gsub( "^[^/]", to .. "%1" ) return _ end
 end
 
 local iconCache = {}
@@ -61,8 +63,8 @@ end
 --[[
 	@desc Resolves a path (makes absolute)
 ]]
-function FileSystemItem.static:resolve( String path )
-	return resolve( path )
+function FileSystemItem.static:resolve( String path, String.allowsNil root )
+	return resolve( path, root )
 end
 
 --[[

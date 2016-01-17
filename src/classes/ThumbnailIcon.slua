@@ -19,7 +19,7 @@ function ThumbnailIcon:initialise( File file, Image image )
 	-- we need to generate the default icon's pixels, i.e. how the icon looks in the default size
 	local defaultPixels = self:getScaledPixels( DEFAULT_WIDTH, DEFAULT_HEIGHT )
 
-	self.super:super( defaultPixels, DEFAULT_WIDTH, DEFAULT_HEIGHT ) -- go over Icon's head
+	self.super:super( defaultPixels, DEFAULT_WIDTH, DEFAULT_HEIGHT, image.contents ) -- go over Icon's head
 	self.images = {} -- Icon requires an images table, but we don't need one
 end
 

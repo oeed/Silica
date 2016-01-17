@@ -49,13 +49,13 @@ class Image {
 	pixels = Table;
 	-- resource = false;
 	-- file = false;
-	contents = false;
+	contents = Any;
 	scaledCache = {};
 	ucgValues = Enum( Number, ucgValues );
 
 }
 
-function Image:initialise( Table pixels, Number width, Number height )
+function Image:initialise( Table pixels, Number width, Number height, Any contents )
 	local newPixels = {}
 	local maxLength = width * height
 	for i, pixel in pairs( pixels ) do
@@ -67,6 +67,7 @@ function Image:initialise( Table pixels, Number width, Number height )
 	self.width = width
 	self.height = height
 	self.pixels = newPixels
+	self.contents = contents
 end
 
 --[[
@@ -143,7 +144,7 @@ function Image.static:fromPaintFormat( contents )
 		end
 	end
 
-	return Image( pixels, width, #lines )
+	return Image( pixels, width, #lines, contents )
 end
 
 function Image:toPaintFormat()
@@ -696,7 +697,7 @@ function Image.static:fromUniversalCompressedGraphics( Table bytes )
 		error( "unsupported version: "..(tostring(version) or "unknown") )
 	end
 	log(w..", "..h)
-	return Image( pixels, w, h )
+	return Image( pixels, w, h, bytes )
 end
 
 function Image:toUniversalCompressedGraphics()

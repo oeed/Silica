@@ -19,7 +19,7 @@ class Icon extends Image {
 
 }
 
-function Icon:initialise( Table images )
+function Icon:initialise( Table images, Table contents )
 	local maxSize = 0
 	local maxWidth, maxWidth
 	local pixels
@@ -35,7 +35,7 @@ function Icon:initialise( Table images )
 		end
 	end
 	self.images = images
-	self:super( pixels, maxWidth, maxHeight )
+	self:super( pixels, maxWidth, maxHeight, contents )
 end
 
 function Icon.static:fromIcon( Table bytes )
@@ -129,7 +129,7 @@ function Icon.static:fromIcon( Table bytes )
 		table.insert( images, image )
 		startIndex = startIndex + length + 1 
 	end
-	return Icon( images )
+	return Icon( images, bytes )
 end
 
 --[[
