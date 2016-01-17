@@ -1561,7 +1561,7 @@ function compileInstanceClass( name, compiledClass, static )
 	end
 
 	function initialValues:isDefinedFunction( key )
-		return definedProperties[key] ~= nil and definedIndexes[key] ~= nil
+		return definedProperties[key] == nil and definedIndexes[key] ~= nil
 	end
 
 	compiledInstances[name] = {
@@ -1652,7 +1652,7 @@ function compileAndSpawnStatic( static, name, compiledClass )
 	end
 
 	function static:isDefinedFunction( key )
-		return definedProperties[key] ~= nil and definedIndexes[key] ~= nil
+		return definedProperties[key] == nil and definedIndexes[key] ~= nil
 	end
 
 	local metatable = {}
