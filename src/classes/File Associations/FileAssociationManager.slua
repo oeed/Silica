@@ -52,14 +52,22 @@ function FileAssociationManager.static:open( FileSystemItem fileSystemItem, File
 	local path, mime = fileSystemItem.path, fileSystemItem.metadata.mime
 	association = association or self:getAssociation( mime, id )
 	if association then
-		local programBundle = association.programBundle
-		if programBundle then
-			local argumentFormat = association.argumentFormat
-			local arguments = {}
-			for i, argument in ipairs( argumentFormat ) do
-				table.insert( arguments, argument == true and path or argument )
+		if Quartz then
+			-- if we're running under Quartz we need it to run the program instead
+			Quartz:open( path, association.id )
+		else
+			local application = self.application
+			if application:typeOf( QuartzApplication ) then
+				local programBundle = association.programBundle
+				if programBundle then
+					local argumentFormat = association.argumentFormat
+					local arguments = {}
+					for i, argument in ipairs( argumentFormat ) do
+						table.insert( arguments, argument == true and path or argument )
+					end
+					self.application.programManager:run( Program.static:fromBundle( programBundle, arguments ) )
+				end
 			end
-			self.application.programManager:run( Program.static:fromBundle( programBundle, arguments ) )
 		end
 	end
 end
