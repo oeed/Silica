@@ -20,7 +20,7 @@ function SymbolSegmentButton:onDraw()
 	local shadowPressedOffset = defaultShadowSize - shadowPressedSize
 	local shadowX = math.floor( shadowOffset * SHADOW_RATIO + 0.5 )
 	local symbol = self.symbol
-	self.canvas:fill( theme:value( "symbolColour" ), SymbolMask( theme:value( "leftMargin" ) + shadowX + 1, 1 + theme:value( "topMargin" ), symbol ) )
+	self.canvas:fill( theme:value( "symbolColour" ), SymbolMask( theme:value( "leftMargin" ) + shadowX + 1, 1 + theme:value( "topMargin" ) + shadowOffset, symbol ) )
 end
 
 function SymbolSegmentButton.symbol:set( symbol )
