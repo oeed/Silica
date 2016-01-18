@@ -1,4 +1,6 @@
 
+-- TODO: ensure that the path is valid when it's closed
+
 local sin, cos, floor, min, max, abs, acos, PI, remove, insert = math.sin, math.cos, math.floor, math.min, math.max, math.abs, math.acos, math.pi, table.remove, table.insert
 
 local function round( num )
@@ -101,6 +103,7 @@ class Path {
 	height = Number;
 	currentX = Number;
 	currentY = Number;
+	segmentStart = Number( 1 );
 	cache = Table( {} ); -- { [scaleX .. ":" .. scaleY] = {} } where scale is the scale multiplier (i.e. 1)
 	serialisedPath = Table.allowsNil;
 
@@ -220,8 +223,14 @@ end
 	@desc Moves the active cordinates (where the next path will go from)
 ]]
 function Path:moveTo( Number x, Number y )
+	local lines = self.lines
+	local segmentStart = self.segmentStart
+	if (lines[segmentStart].x1 ~= lines[#lines].x2 or lines[segmentStart].y1 ~= lines[#lines].y2) then
+		self:lineTo( lines[segmentStart].x1, lines[segmentStart].y1 )
+	end
 	self.currentX = x
-	self.currentY = x
+	self.currentY = y
+	self.segmentStart = #lines + 1
 end
 
 --[[
@@ -277,10 +286,10 @@ function Path:close( linkedToEnd )
 	if #lines == 0 then
 		error( "Path has no lines!", 2 )
 	end
-	if linkedToEnd and (lines[1].x1 ~= lines[#lines].x2 or lines[1].y1 ~= lines[#lines].y2) then
-		self:lineTo( lines[1].x1, lines[1].y1 )
+	local segmentStart = self.segmentStart
+	if linkedToEnd and (lines[segmentStart].x1 ~= lines[#lines].x2 or lines[segmentStart].y1 ~= lines[#lines].y2) then
+		self:lineTo( lines[segmentStart].x1, lines[segmentStart].y1 )
 	end
-
 	self.isClosed = true
 	return true
 end
