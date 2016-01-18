@@ -1044,6 +1044,14 @@ local function generateDefaultValue( typeTable, context, circularKey )
 			end
 			local value = context
 			for i, key in ipairs( typeTable[TYPETABLE_DEFAULT_VALUE] ) do
+				if not value then
+					local str = ""
+					for i2 = 1, i - 1 do
+						str = str .. typeTable[TYPETABLE_DEFAULT_VALUE][i2] .. "."
+					end
+					str = str:sub(1, #str - 1)
+					error("invalid default value (nil): "..str)
+				end
 				value = value[key]
 				-- TODO: error when value can't be indexed
 				-- TODO: circular references
