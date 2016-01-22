@@ -157,7 +157,10 @@ function FileSystemItem.icon:get()
 		end
 	end
 
-	if icon then return icon end
+	if icon then
+		self.icon = icon
+		return icon
+	end
 
 	if not unknownIcon then
 		unknownIcon = Icon.static:fromPath( "/src/resources/Icons/unknown.sicon" )
