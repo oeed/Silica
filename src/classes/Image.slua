@@ -91,11 +91,12 @@ function Image.static:fromPath( String path )
 end
 
 function Image.static:fromFile( File file )
-	if file.metadata.mime == mimes.UCG then
+	local mime = file.metadata.mime
+	if mime == mimes.UCG then
 		return Image.static:fromUniversalCompressedGraphics( file.binaryContents )
-	elseif file.metadata.mime == mimes.SICON then
+	elseif mime == mimes.SICON then
 		return Icon.static:fromIcon( file.binaryContents )
-	elseif file.metadata.mime == mimes.IMAGE then
+	elseif mime == mimes.IMAGE then
 		return Image.static:fromPaintFormat( file.contents )
 	end
 end
