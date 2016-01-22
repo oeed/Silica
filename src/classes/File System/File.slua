@@ -95,15 +95,18 @@ function File.serialisedContents:get()
 	return textutils.unserialize( self.contents )
 end
 
+-- TODO: this is slow af
 function File.binaryContents:get()
 	local handle = fs.open( self.path, "rb" )
 	if handle then
 		local contents = {}
-		local lastByte = handle.read()
-		local tinsert = table.insert
+		local read = handle.read
+		local lastByte = read()
+		local index = 1
 		repeat
-			tinsert( contents, lastByte )
-			lastByte = handle.read()
+			contents[index] = lastByte
+			lastByte = read()
+			index = index + 1
 		until not lastByte
 		handle.close()
 		return contents
