@@ -118,6 +118,7 @@ Replace @instance comments on :initialise functions with @constructor:
 ```
 Find: (?s)(\n\n--\[\[\n\t@)instance((.+):initialise\()
 Replace: $1constructor$2
+```
 
 Find event functions that don't return true or false
 
