@@ -5,7 +5,7 @@ class FileAssociation implements ISerialiseable {
 
 	id = Number;
 	name = String;
-	mime = String;
+	mime = String.allowsNil;
 	icon = Icon.allowsNil;
 	extensions = Table;
 	programBundle = Bundle.allowsNil;
