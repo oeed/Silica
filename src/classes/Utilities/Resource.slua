@@ -39,8 +39,9 @@ function Resource:initialise( name, mimes, category, allowDirectories )
 							self.mime = mime
 							self.contents = contents
 							local binaryContents = {}
+							local byte, sub = string.byte, string.sub
 							for i = 1, #contents do
-								table.insert( binaryContents, string.byte( contents ) )
+								binaryContents[i] = byte( sub( contents, i, i ) )
 							end
 							self.binaryContents = binaryContents
 							return
