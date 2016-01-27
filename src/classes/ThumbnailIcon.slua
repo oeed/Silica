@@ -1,14 +1,14 @@
 
 local iconValues = Icon.iconValues
 local DEFAULT_WIDTH, DEFAULT_HEIGHT = iconValues.DEFAULT_WIDTH, iconValues.DEFAULT_HEIGHT
-local FLAP_SIZE, OUTLINE_SIZE, MINIMUM_SIZE = 7, 3
+local FLAP_SIZE, OUTLINE_SIZE, MINIMUM_SIZE = 7, 3, 12
 local GREY, WHITE, LIGHT_GREY, TRANSPARENT = Graphics.colours.GREY, Graphics.colours.WHITE, Graphics.colours.LIGHT_GREY, Graphics.colours.TRANSPARENT
-local minimumThumbnailSize
 
 class ThumbnailIcon extends Icon {
 	
 	file = File;
 	image = Image;
+	alternateIcon = Icon;
 
 }
 
@@ -21,6 +21,11 @@ function ThumbnailIcon:initialise( File file, Image image )
 
 	self.super:super( defaultPixels, DEFAULT_WIDTH, DEFAULT_HEIGHT, image.contents ) -- go over Icon's head
 	self.images = {} -- Icon requires an images table, but we don't need one
+end
+
+function ThumbnailIcon.file:set( file )
+    self.file = file
+    self.alternateIcon = file.association.icon
 end
 
 function ThumbnailIcon.static:fromFile( File file )
@@ -41,70 +46,73 @@ function ThumbnailIcon:getScaledPixels( scaledWidth, scaledHeight )
 		return scaledCache[scaledWidth .. ":" .. scaledHeight]
 	end
 
-	local image = self.image
-	local imageWidth, imageHeight = image.width, image.height
-	local imageRatio = imageWidth / imageHeight
-	local thumbnailWidth, thumbnailHeight
-	if imageWidth > imageHeight then
-		thumbnailWidth = size - 2 * OUTLINE_SIZE
-		thumbnailHeight = math.floor( thumbnailWidth * ( imageHeight / imageWidth ) + 0.5 )
-	else
-		thumbnailHeight = size - 2 * OUTLINE_SIZE
-		thumbnailWidth = math.floor( thumbnailHeight * ( imageWidth / imageHeight ) + 0.5 )
-	end
-
-	local width, height = thumbnailWidth + 2 * OUTLINE_SIZE, thumbnailHeight + 2 * OUTLINE_SIZE
-	local _x, _y = math.floor( ( scaledWidth - width ) / 2 + 0.5 ), math.floor( ( scaledHeight - height ) / 2 + 0.5 ) - 1
 	local pixels = {}
-
-	local i = 1
-	local flapX, flapY = width - FLAP_SIZE + 1, height - FLAP_SIZE + 1
-	for y = 1, height do
-		for x = 1, width do
-			local colour
-			local isVerticalEdge, isHorizontalEdge = y == 1 or y == height, x == 1 or x == width
-			if isVerticalEdge and isHorizontalEdge then -- corner
-			elseif x >= flapX and y >= flapY and not ( x == flapX and y == flapY ) then -- flap
-			elseif isVerticalEdge or isHorizontalEdge then -- outline
-				colour = GREY
-			else
-				colour = WHITE
-			end
-			if colour then pixels[(y + _y) * scaledWidth + x + _x] = colour end
-			i = i + 1
+	if size < MINIMUM_SIZE then
+		return self.alternateIcon:getScaledPixels( scaledWidth, scaledHeight )
+	else
+		local image = self.image
+		local imageWidth, imageHeight = image.width, image.height
+		local imageRatio = imageWidth / imageHeight
+		local thumbnailWidth, thumbnailHeight
+		if imageWidth > imageHeight then
+			thumbnailWidth = size - 2 * OUTLINE_SIZE
+			thumbnailHeight = math.floor( thumbnailWidth * ( imageHeight / imageWidth ) + 0.5 )
+		else
+			thumbnailHeight = size - 2 * OUTLINE_SIZE
+			thumbnailWidth = math.floor( thumbnailHeight * ( imageWidth / imageHeight ) + 0.5 )
 		end
-	end
 
-	local thumbnailPixels = image:getScaledPixels( thumbnailWidth, thumbnailHeight )
-	i = 1
-	for y = OUTLINE_SIZE + 1, height - OUTLINE_SIZE do
-		for x = OUTLINE_SIZE + 1, width - OUTLINE_SIZE do
-			if x < flapX or y < flapY or ( x == flapX and y == flapY ) then
-				local colour = thumbnailPixels[i]
-				if colour and colour ~= TRANSPARENT then
-					pixels[(y  + _y) * scaledWidth + x + _x] = colour
-				end
-			end
-			i = i + 1
-		end
-	end
+		local width, height = thumbnailWidth + 2 * OUTLINE_SIZE, thumbnailHeight + 2 * OUTLINE_SIZE
+		local _x, _y = math.floor( ( scaledWidth - width ) / 2 + 0.5 ), math.floor( ( scaledHeight - height ) / 2 + 0.5 ) - 1
 
-	i = width
-	for y = flapY, height do
-		for x = flapX, width do
-			if x ~= flapX or y ~= flapY then -- the corner
-				local colour = LIGHT_GREY
-				if x > i then -- past the flap
-					break
-				elseif x == i or x == flapX or y == flapY then -- diagonal line/outline
+		local i = 1
+		local flapX, flapY = width - FLAP_SIZE + 1, height - FLAP_SIZE + 1
+		for y = 1, height do
+			for x = 1, width do
+				local colour
+				local isVerticalEdge, isHorizontalEdge = y == 1 or y == height, x == 1 or x == width
+				if isVerticalEdge and isHorizontalEdge then -- corner
+				elseif x >= flapX and y >= flapY and not ( x == flapX and y == flapY ) then -- flap
+				elseif isVerticalEdge or isHorizontalEdge then -- outline
 					colour = GREY
+				else
+					colour = WHITE
 				end
-				pixels[(y + _y) * scaledWidth + x + _x] = colour
+				if colour then pixels[(y + _y) * scaledWidth + x + _x] = colour end
+				i = i + 1
 			end
 		end
-		i = i - 1
-	end
 
+		local thumbnailPixels = image:getScaledPixels( thumbnailWidth, thumbnailHeight )
+		i = 1
+		for y = OUTLINE_SIZE + 1, height - OUTLINE_SIZE do
+			for x = OUTLINE_SIZE + 1, width - OUTLINE_SIZE do
+				if x < flapX or y < flapY or ( x == flapX and y == flapY ) then
+					local colour = thumbnailPixels[i]
+					if colour and colour ~= TRANSPARENT then
+						pixels[(y  + _y) * scaledWidth + x + _x] = colour
+					end
+				end
+				i = i + 1
+			end
+		end
+
+		i = width
+		for y = flapY, height do
+			for x = flapX, width do
+				if x ~= flapX or y ~= flapY then -- the corner
+					local colour = LIGHT_GREY
+					if x > i then -- past the flap
+						break
+					elseif x == i or x == flapX or y == flapY then -- diagonal line/outline
+						colour = GREY
+					end
+					pixels[(y + _y) * scaledWidth + x + _x] = colour
+				end
+			end
+			i = i - 1
+		end
+	end
 	scaledCache[scaledWidth .. ":" .. scaledHeight] = pixels
 	return pixels
 end
