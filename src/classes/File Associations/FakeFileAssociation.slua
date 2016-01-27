@@ -8,5 +8,5 @@ function FakeFileAssociation:initialise( String mime, Icon icon, Table( {} ) ext
 	self.icon = icon
 	self.extensions = extensions
 	self.programBundle = nil
-	self.argumentFormat = ""
+	self.argumentFormat = {}
 end
