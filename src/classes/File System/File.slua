@@ -103,11 +103,11 @@ function File.binaryContents:get()
 		local read = handle.read
 		local lastByte = read()
 		local index = 1
-		repeat
+		while lastByte do
 			contents[index] = lastByte
 			lastByte = read()
 			index = index + 1
-		until not lastByte
+		end 
 		handle.close()
 		return contents
 	else
