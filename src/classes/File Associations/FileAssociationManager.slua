@@ -5,6 +5,7 @@ if Quartz then
 	end
 end
 
+local unknownFileAssociation
 
 class FileAssociationManager {
 	
@@ -94,6 +95,11 @@ function FileAssociationManager.static:getAssociation( String.allowsNil mime, Nu
 			end
 		end
 	end
+
+	if not unknownFileAssociation then
+		unknownFileAssociation = UnknownFileAssociation()
+	end
+	return unknownFileAssociation
 end
 
 --[[
