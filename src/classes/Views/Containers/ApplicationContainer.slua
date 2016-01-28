@@ -9,7 +9,6 @@ class ApplicationContainer extends Container {
 
 	cursorX = Number( 6 );
 	cursorY = Number( 6 );
-	cursor = Cursor( Cursor.static ).allowsNil;
 	needsCursorUpdate = Boolean( true );
 	screenCanvas = ScreenCanvas.allowsNil;
 
