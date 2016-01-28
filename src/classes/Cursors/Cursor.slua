@@ -5,9 +5,10 @@ class Cursor {
 
 		theme = ThemeOutlet;
 		event = EventManager;
-		image = Image;
+		image = Image.allowsNil;
 		hotSpotX = Number;
 		hotSpotY = Number;
+		hasUpdatedApperance = Boolean( false );
 
 	}
 	
@@ -33,6 +34,11 @@ function Cursor.static:updateAppearance()
 	self.image = theme:value( "image" )
 	self.hotSpotX = theme:value( "hotSpotX" )
 	self.hotSpotY = theme:value( "hotSpotY" )
+	local applicationContainer = self.application.container
+	if applicationContainer then
+		self.hasUpdatedApperance = true
+		applicationContainer.needsCursorUpdate = true
+	end
 end
 
 function Cursor.static:onThemeChanged( ThemeChangedInterfaceEvent event, Event.phases phase )
@@ -40,5 +46,8 @@ function Cursor.static:onThemeChanged( ThemeChangedInterfaceEvent event, Event.p
 end
 
 function Cursor.static:drawTo( Canvas canvas, Number x, Number y )
-	canvas:image( self.image, x - self.hotSpotX + 1, y - self.hotSpotY + 1 )
+	local image = self.image
+	if image then
+		canvas:image( image, x - self.hotSpotX + 1, y - self.hotSpotY + 1 )
+	end
 end

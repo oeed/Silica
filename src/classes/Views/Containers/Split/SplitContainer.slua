@@ -62,7 +62,7 @@ function SplitContainer:updateLayout()
 			childView[otherPositionKey] = 1
 			childView[sizeKey] = childSize
 			childView[otherSizeKey] = otherSize
-			position = position + childSize + handleThickness
+			position = position + childSize + ( handleThickness or 0 )
 		end
 		self.segmentSize = segmentSize
 	end

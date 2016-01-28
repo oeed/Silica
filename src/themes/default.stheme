@@ -323,7 +323,7 @@
 		<image type="Image" default="cursor-resize-vertical" />
 		<hotSpotX type="Number" default="5" />
 		<hotSpotY type="Number" default="8" />
-	</ResizeHorizontalCursor>
+	</ResizeVerticalCursor>
 
 	<TextCursor>
 		<image type="Image" default="cursor-text" />
