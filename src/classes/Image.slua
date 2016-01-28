@@ -573,7 +573,6 @@ function Image.static:fromUniversalCompressedGraphics( Table bytes )
 	end
 	
 	local version = readByte()
-	log("v "..version)
 	local w, h
 	local pixels = {}
 	if version == 3 then
@@ -697,7 +696,6 @@ function Image.static:fromUniversalCompressedGraphics( Table bytes )
 	else
 		error( "unsupported version: "..(tostring(version) or "unknown") )
 	end
-	log(w..", "..h)
 	return Image( pixels, w, h, bytes )
 end
 

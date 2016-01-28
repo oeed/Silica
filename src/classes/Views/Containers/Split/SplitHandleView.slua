@@ -9,6 +9,8 @@ class SplitHandleView extends View {
 	dragX = Number.allowsNil;
 	dragY = Number.allowsNil;
 
+	cursor = Cursor( ResizeHorizontalCursor.static ).allowsNil;
+
 }
 
 function SplitHandleView:initialise( ... )
@@ -38,6 +40,15 @@ function SplitHandleView:onMouseDown( MouseDownEvent event, Event.phases phase )
 		self.isDragging = true
 	end
 	return true
+end
+
+function SplitHandleView.isVertical:set( isVertical )
+	self.isVertical = isVertical
+	if isVertical then
+		self.cursor = ResizeVerticalCursor.static
+	else
+		self.cursor = ResizeHorizontalCursor.static
+	end
 end
 
 function SplitHandleView.position:set( position )
