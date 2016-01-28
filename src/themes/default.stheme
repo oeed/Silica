@@ -313,6 +313,18 @@
 		<hotSpotX type="Number" default="5" />
 	</ClickableCursor>
 
+	<ResizeHorizontalCursor>
+		<image type="Image" default="cursor-resize-horizontal" />
+		<hotSpotX type="Number" default="8" />
+		<hotSpotY type="Number" default="5" />
+	</ResizeHorizontalCursor>
+
+	<ResizeVerticalCursor>
+		<image type="Image" default="cursor-resize-vertical" />
+		<hotSpotX type="Number" default="5" />
+		<hotSpotY type="Number" default="8" />
+	</ResizeHorizontalCursor>
+
 	<TextCursor>
 		<image type="Image" default="cursor-text" />
 		<hotSpotX type="Number" default="3" />
