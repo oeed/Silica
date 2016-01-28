@@ -162,12 +162,13 @@ function ApplicationContainer:updateCursor()
 		self.cursor = newCursor
 		if Quartz then
 			local image = newCursor.image
+			local bridgeKeys = BridgedCursor.bridgeKeys
 			Quartz.cursor = {
-				newCursor.hotSpotX,
-				newCursor.hotSpotY,
-				image.width,
-				image.height,
-				image.pixels
+				[bridgeKeys.HOT_SPOT_X] = newCursor.hotSpotX;
+				[bridgeKeys.HOT_SPOT_Y] = newCursor.hotSpotY;
+				[bridgeKeys.PIXELS] = image.pixels;
+				[bridgeKeys.WIDTH] = image.width;
+				[bridgeKeys.HEIGHT] = image.height;
 			}
 		end
 	end

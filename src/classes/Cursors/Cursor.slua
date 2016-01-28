@@ -5,7 +5,7 @@ class Cursor {
 
 		theme = ThemeOutlet;
 		event = EventManager;
-		image = Image;
+		image = Image.allowsNil;
 		hotSpotX = Number;
 		hotSpotY = Number;
 
@@ -40,5 +40,8 @@ function Cursor.static:onThemeChanged( ThemeChangedInterfaceEvent event, Event.p
 end
 
 function Cursor.static:drawTo( Canvas canvas, Number x, Number y )
-	canvas:image( self.image, x - self.hotSpotX + 1, y - self.hotSpotY + 1 )
+	local image = self.image
+	if image then
+		canvas:image( image, x - self.hotSpotX + 1, y - self.hotSpotY + 1 )
+	end
 end
