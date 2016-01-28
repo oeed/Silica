@@ -262,6 +262,8 @@
 		<rightMargin type="Number" default="6" />
 		<topMargin type="Number" default="5" />
 		<bottomMargin type="Number" default="5" />
+		<animationDuration type="Number" default="0.3" />
+		<animationEasing type="Animation.easings" default="IN_OUT_SINE" />
 	</FlowContainer>
 
 	<ListContainer>
@@ -310,6 +312,18 @@
 		<image type="Image" default="cursor-clickable" down="cursor-clickable-down" />
 		<hotSpotX type="Number" default="5" />
 	</ClickableCursor>
+
+	<ResizeHorizontalCursor>
+		<image type="Image" default="cursor-resize-horizontal" />
+		<hotSpotX type="Number" default="8" />
+		<hotSpotY type="Number" default="5" />
+	</ResizeHorizontalCursor>
+
+	<ResizeVerticalCursor>
+		<image type="Image" default="cursor-resize-vertical" />
+		<hotSpotX type="Number" default="5" />
+		<hotSpotY type="Number" default="8" />
+	</ResizeHorizontalCursor>
 
 	<TextCursor>
 		<image type="Image" default="cursor-text" />

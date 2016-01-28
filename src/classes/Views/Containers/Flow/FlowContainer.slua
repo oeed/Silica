@@ -50,7 +50,7 @@ function FlowContainer:updateLayout( dontAnimate )
 		end
 	end
 
-	local time, easing = 0.5, Animation.easings.IN_OUT_SINE
+	local time, easing = theme:value( "animationDuration" ), theme:value( "animationEasing" )
 
 	local nChildren = #children
 	local totalWidth = 0
@@ -103,18 +103,11 @@ function FlowContainer:updateLayout( dontAnimate )
 					childView.y = y
 					childView.width = width
 					childView.height = idealHeight
-					if childView:isDefinedProperty( "transition" ) then
-						childView.transition = 1
-					end
 				else
 					childView:animate( "x",	 x, time, nil, easing )
 					childView:animate( "y",	 y, time, nil, easing )
 					childView:animate( "width",	 width, time, nil, easing )
 					childView:animate( "height",  idealHeight, time, nil, easing )
-					if childView:isDefinedProperty( "transition" ) then
-						childView.transition = 0
-						childView:animate( "transition", 1, time, nil, easing, nil, false )
-					end
 				end
 				x = x + width
 				height = math.max( idealHeight, height )
