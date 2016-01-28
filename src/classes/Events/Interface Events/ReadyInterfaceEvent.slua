@@ -1,8 +1,8 @@
 
 class ReadyInterfaceEvent extends InterfaceEvent {
 
-    static = {
-        eventType = "interface_ready";
-    };
+	static = {
+		eventType = "interface_ready";
+	};
 
 }

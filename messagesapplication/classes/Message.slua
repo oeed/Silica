@@ -1,9 +1,9 @@
 
 class "Message" {
-    
-    text = false;
-    sender = false;
-    timeSent = false;
-    isRead
+	
+	text = false;
+	sender = false;
+	timeSent = false;
+	isRead
 
 }

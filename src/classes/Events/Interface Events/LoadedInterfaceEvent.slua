@@ -1,10 +1,10 @@
 
 class LoadedInterfaceEvent extends InterfaceEvent {
 
-    static = {
-        eventType = "interface_loaded";
-    };
+	static = {
+		eventType = "interface_loaded";
+	};
 
-    isSentToChildren = Boolean( false );
+	isSentToChildren = Boolean( false );
 
 }

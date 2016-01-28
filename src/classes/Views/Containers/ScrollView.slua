@@ -31,11 +31,11 @@ function ScrollView:initialise( ... )
 	local width, height = self.width, self.height
 	self.verticalScrollbar = self:insert( Scrollbar( { isHorizontal = false, x = width - Scrollbar.width + 1, height = height } ) )
 	self.container = self:insert( ScrollContainer( { x = 1, y = 1, width = width, height = height } ) )
-    -- self:sendToFront( self.horizontalScrollbar )
-    self:sendToFront( self.verticalScrollbar )
+	-- self:sendToFront( self.horizontalScrollbar )
+	self:sendToFront( self.verticalScrollbar )
 
-    self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
-    self:event( MouseScrollEvent, self.onMouseScroll )
+	self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
+	self:event( MouseScrollEvent, self.onMouseScroll )
 end
 
 function ScrollView:initialiseCanvas()
@@ -45,19 +45,19 @@ function ScrollView:initialiseCanvas()
 end
 
 function ScrollView:onInterfaceLoaded( LoadedInterfaceEvent event, Event.phases phase )
-    local currentContainer = self.container
-    for i, childView in ipairs( self.children ) do
-        if childView ~= currentContainer and childView:typeOf( ScrollContainer ) then
-            childView.x = 1
-            childView.y = 1
-            self:remove( currentContainer )
-            self.container = childView
-            -- self:sendToFront( self.horizontalScrollbar )
+	local currentContainer = self.container
+	for i, childView in ipairs( self.children ) do
+		if childView ~= currentContainer and childView:typeOf( ScrollContainer ) then
+			childView.x = 1
+			childView.y = 1
+			self:remove( currentContainer )
+			self.container = childView
+			-- self:sendToFront( self.horizontalScrollbar )
 			self.verticalScrollbar:getScroller()
-            self:sendToFront( self.verticalScrollbar )
-            break
-        end
-    end
+			self:sendToFront( self.verticalScrollbar )
+			break
+		end
+	end
 end
 
 function ScrollView:updateContainerSize()
@@ -76,13 +76,13 @@ function ScrollView:updateContainerSize()
 end
 
 function ScrollView:updateWidth( width )
-    width = self.width
+	width = self.width
 	local verticalScrollbar = self.verticalScrollbar
 	if verticalScrollbar then verticalScrollbar.x = width - verticalScrollbar.width + 1 end
 end
 
 function ScrollView:updateHeight( height )
-    height = self.height
+	height = self.height
 	local verticalScrollbar = self.verticalScrollbar
 	if verticalScrollbar then self.verticalScrollbar.height = height end
 end
@@ -151,7 +151,7 @@ end
 --[[
 	@desc Fired when the mouse is scrolled over the scroll view
 	@param [Event] event -- the mouse scroll event
-    @return [boolean] preventPropagation -- prevent anyone else using the event
+	@return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function ScrollView:onMouseScroll( MouseScrollEvent event, Event.phases phase )
 	if self.isEnabled then

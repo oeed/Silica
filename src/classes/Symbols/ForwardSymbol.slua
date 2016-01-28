@@ -1,19 +1,19 @@
 
 class ForwardSymbol extends Symbol {
 
-    static = {
-        symbolName = String( "forward" );
-        width = Number( 4 );
-    };
+	static = {
+		symbolName = String( "forward" );
+		width = Number( 4 );
+	};
 
 }
 
 function ForwardSymbol.static:initialise()
-    local path = Path( self.width, self.height, 1, 1 )
-    path:lineTo( 4, 4 )
-    path:lineTo( 1, 7 )
-    path:close()
-    
-    self:super( path )
+	local path = Path( self.width, self.height, 1, 1 )
+	path:lineTo( 4, 4 )
+	path:lineTo( 1, 7 )
+	path:close()
+	
+	self:super( path )
 end
 

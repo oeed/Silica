@@ -24,47 +24,47 @@ class Application {
 
 	-- TODO: exit codes
 	-- exitCode = {
-	-- 	OKAY = 1;
+	--	OKAY = 1;
 	-- ERROR = 2;
-	-- 	-- etc
+	--	-- etc
 	-- };
 
-    static = {
-        resourceFolders = {}; -- the folders in which the applications resources are
-        resourceTables = false; -- the tables of files where resources are
-    }
+	static = {
+		resourceFolders = {}; -- the folders in which the applications resources are
+		resourceTables = false; -- the tables of files where resources are
+	}
 
 }
 
 function Application.static:initialise( ... )
-    self.resourceTables = __resourceTables or {}
-    _G.__resourceTables = nil
+	self.resourceTables = __resourceTables or {}
+	_G.__resourceTables = nil
 end
 
 --[[
-    @desc Adds the given directory to the resource listing and loads any classes
-    @param [string] path -- the path to the directory of resources
+	@desc Adds the given directory to the resource listing and loads any classes
+	@param [string] path -- the path to the directory of resources
 ]]
 function Application.static:load( String path )
-    local folder = Folder( path )
-    if folder then
-        table.insert( self.resourceFolders, folder )
-        local classesFolder = folder:folderFromPath( "classes" )
-        if classesFolder then
-            table.insert( class.folders, classesFolder )
-            local SLUA = Metadata.mimes.SLUA
-            local function loadFolder( folder )
-                for i, fileSystemItem in ipairs( folder.items ) do
-                    if fileSystemItem.metadata.mime == SLUA then
-                        class.get( fileSystemItem.name, fileSystemItem.contents )
-                    elseif fileSystemItem:typeOf( Folder ) then
-                        loadFolder( fileSystemItem )
-                    end
-                end
-            end
-            loadFolder( classesFolder )
-        end
-    end
+	local folder = Folder( path )
+	if folder then
+		table.insert( self.resourceFolders, folder )
+		local classesFolder = folder:folderFromPath( "classes" )
+		if classesFolder then
+			table.insert( class.folders, classesFolder )
+			local SLUA = Metadata.mimes.SLUA
+			local function loadFolder( folder )
+				for i, fileSystemItem in ipairs( folder.items ) do
+					if fileSystemItem.metadata.mime == SLUA then
+						class.get( fileSystemItem.name, fileSystemItem.contents )
+					elseif fileSystemItem:typeOf( Folder ) then
+						loadFolder( fileSystemItem )
+					end
+				end
+			end
+			loadFolder( classesFolder )
+		end
+	end
 end
 
 function Application:initialise( ... )
@@ -83,6 +83,7 @@ function Application:initialise( ... )
 	self.arguments = { ... }
 	self.userDataFolder = Folder( userDataPath ) or Folder.static:make( userDataPath )
 	self:initialiseSettings()
+	self:initialiseFileAssociations()
 	self.event = ApplicationEventManager( self )
 	self.keyboardShortcutManager = KeyboardShortcutManager( self )
 	self.dragDropManager = DragDropManager( self )
@@ -96,6 +97,16 @@ function Application:initialise( ... )
 end
 
 function Application:initialiseSettings()
+end
+
+function Application:initialiseFileAssociations()
+	if Quartz then
+		-- if we're running in Quartz we'll need to extract all the file associations from it
+	else
+		-- as we're not running in Quartz we can't actually open any of the default files, so we'll need to make 'fake' ones so most files have icons, and the OS isn't feeding us our own file formats, so we'll need to load those ourself
+		FileAssociationManager.static:registerAssociation( FakeFileAssociation( "folder", Icon.static:fromFile( "folder" ) ) )
+		-- FakeFileAssociation( "text/plain", Icon.static:fromFile( "text" ), { "txt", "text" } )
+	end
 end
 
 --[[

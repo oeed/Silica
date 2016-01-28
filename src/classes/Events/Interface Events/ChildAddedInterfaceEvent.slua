@@ -1,13 +1,13 @@
 
 class ChildAddedInterfaceEvent extends InterfaceEvent {
 
-    static = {
-        eventType = "interface_child_added";
-    };
+	static = {
+		eventType = "interface_child_added";
+	};
 
-    container = Container;
+	container = Container;
 	childView = View; -- the added child
-    isSentToChildren = Boolean( false );
+	isSentToChildren = Boolean( false );
 	isSentToParents = Boolean( true );
 
 }
@@ -19,5 +19,5 @@ class ChildAddedInterfaceEvent extends InterfaceEvent {
 ]]
 function ChildAddedInterfaceEvent:initialise( View childView, Container container )
 	self.childView = childView
-    self.container = container
+	self.container = container
 end

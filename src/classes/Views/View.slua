@@ -80,8 +80,8 @@ function View:initialise( Table.allowsNil properties )
 		end
 	end
 
-    self:event( MouseDownEvent, self.onMouseDownMetaEvents )
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUpMetaEvents )
+	self:event( MouseDownEvent, self.onMouseDownMetaEvents )
+	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUpMetaEvents )
 end
 
 --[[
@@ -92,7 +92,7 @@ function View:initialiseEventManager()
 end
 
 --[[
-    @desc Sets up the canvas and it's graphics objects (used for overriding)
+	@desc Sets up the canvas and it's graphics objects (used for overriding)
 ]]
 function View:initialiseCanvas()
 	self.canvas = Canvas( self.width, self.height, self )
@@ -160,16 +160,16 @@ end
 	@return [boolean] isFirst -- whether  the view is the first child of it's parent
 ]]
 function View.isFirst:get()
-    return self.index == 1
+	return self.index == 1
 end
 
 --[[
 	@desc Returns true if the view is the last child of it's parent
-	@return [boolean] isLast -- whether  the view is the last child of it's parent
+	@return [boolean] isLast -- whether	 the view is the last child of it's parent
 ]]
 function View.isLast:get()
-    local parent = self.parent
-    return parent and (self.index == #parent.children) or false
+	local parent = self.parent
+	return parent and (self.index == #parent.children) or false
 end
 
 --[[
@@ -249,25 +249,25 @@ end
 function View.height:set( height )
 	if self.height ~= height then
 		self.height = height
-	    self.canvas.height = height
-	    self.needsDraw = true
-	    local parent = self.parent
-	    if parent then
-	    	parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
-	    end
-    end
+		self.canvas.height = height
+		self.needsDraw = true
+		local parent = self.parent
+		if parent then
+			parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
+		end
+	end
 end
 
 function View.width:set( width )
 	if self.width ~= width then
 		self.width = width
-	    self.canvas.width = width
-	    self.needsDraw = true
-	    local parent = self.parent
-	    if parent then
-	    	parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
-    	end
-    end
+		self.canvas.width = width
+		self.needsDraw = true
+		local parent = self.parent
+		if parent then
+			parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
+		end
+	end
 end
 
 function View.x:set( x )
@@ -275,8 +275,8 @@ function View.x:set( x )
 		self.x = x
 		local parent = self.parent
 		if parent then
-		    parent.needsDraw = true
-	    	parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
+			parent.needsDraw = true
+			parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
 		end
 	end
 end
@@ -286,8 +286,8 @@ function View.y:set( y )
 		self.y = y
 		local parent = self.parent
 		if parent then
-		    parent.needsDraw = true
-	    	parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
+			parent.needsDraw = true
+			parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
 		end
 	end
 end
@@ -422,7 +422,7 @@ end
 --[[
 	@desc Animate a change in the position
 ]]
-function View:animateMove(  Number x, Number y, Number( ANIMATION_DEFAULT_TIME ) time, Function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay )
+function View:animateMove(	Number x, Number y, Number( ANIMATION_DEFAULT_TIME ) time, Function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay )
 	self:animate( "x", x, time, onFinish, easing, delay )
 	self:animate( "y", y, time, nil, easing, delay )
 end
@@ -483,33 +483,33 @@ end
 	@desc Starts a drag and drop for the view
 ]]
 function View:startDragDrop( MouseDownEvent event, ClipboardData data, Boolean( true ) hideSource, Function.allowsNil completion, Table.allowsNil views )
-    self.application.dragDropManager:start( views or { self }, data, event.globalX, event.globalY, hideSource, completion )
+	self.application.dragDropManager:start( views or { self }, data, event.globalX, event.globalY, hideSource, completion )
 end
 
 function View.isFocused:set( isFocused )
-    local wasFocused = self.isFocused
-    if wasFocused ~= isFocused then
-        self.isFocused = isFocused
-        if self:isDefinedFunction( "updateThemeStyle" ) then
-        	self:updateThemeStyle()
-        end
-    end
+	local wasFocused = self.isFocused
+	if wasFocused ~= isFocused then
+		self.isFocused = isFocused
+		if self:isDefinedFunction( "updateThemeStyle" ) then
+			self:updateThemeStyle()
+		end
+	end
 end
 
 function View:focus( filter )
-    self.application:focus( self, filter )
+	self.application:focus( self, filter )
 end
 
 function View:addFocus()
-    self.application:addFocus( self )
+	self.application:addFocus( self )
 end
 
 function View:unfocus()
-    self.application:unfocus( self )
+	self.application:unfocus( self )
 end
 
 function View:clearFocus( filter )
-    self.application:clearFocus( filter )
+	self.application:clearFocus( filter )
 end
 
 function View:dispose()

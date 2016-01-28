@@ -1,122 +1,129 @@
 
 class FlowContainer extends Container {
-    
-    needsLayoutUpdate = false;
-    expandVertically = true;
+	
+	needsLayoutUpdate = false;
+	expandVertically = true;
 
 }
 
 function FlowContainer:initialise( ... )
-    self:super( ... )
-    self:event( ChildAddedInterfaceEvent, self.onChildAdded )
-    self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
-    self:event( ReadyInterfaceEvent, self.onReady )
+	self:super( ... )
+	self:event( ChildAddedInterfaceEvent, self.onChildAdded )
+	self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
+	self:event( ReadyInterfaceEvent, self.onReady )
 end
 
 function FlowContainer.width:set( width )
-    self:super( width )
-    self.needsLayoutUpdate = true
+	self:super( width )
+	self.needsLayoutUpdate = true
 end
 
 function FlowContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
-    self:updateLayout( true )
+	self:updateLayout( true )
 end
 
 function FlowContainer:update( deltaTime )
-    self:super( deltaTime )
-    if self.needsLayoutUpdate then
-        self:updateLayout()
-    end
+	self:super( deltaTime )
+	if self.needsLayoutUpdate then
+		self:updateLayout()
+	end
 end
 
 function FlowContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
-    if event.childView:typeOf( IFlowItem ) then
-        self.needsLayoutUpdate = true
-    end
+	if event.childView:typeOf( IFlowItem ) then
+		self.needsLayoutUpdate = true
+	end
 end
 
 function FlowContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
-    self.needsLayoutUpdate = true
+	self.needsLayoutUpdate = true
 end
 
 function FlowContainer:updateLayout( dontAnimate )
-    local width, height, theme = self.width, self.height, self.theme
-    local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
+	local width, height, theme = self.width, self.height, self.theme
+	local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
 
-    local children = {}
-    for i, childView in ipairs( self.children ) do
-        if childView:typeOf( IFlowItem ) then
-            table.insert( children, childView )
-        end
-    end
+	local children = {}
+	for i, childView in ipairs( self.children ) do
+		if childView:typeOf( IFlowItem ) then
+			table.insert( children, childView )
+		end
+	end
 
-    local time, easing = 0.5, Animation.easings.SINE_IN_OUT
+	local time, easing = 0.5, Animation.easings.IN_OUT_SINE
 
-    local nChildren = #children
-    local totalWidth = 0
-    local minWidths = {}
-    for i, childView in ipairs( children ) do
-        totalWidth = totalWidth + childView.idealWidth
-        minWidths[i] = childView.minWidth or 1
-    end
+	local nChildren = #children
+	local totalWidth = 0
+	local minWidths = {}
+	for i, childView in ipairs( children ) do
+		totalWidth = totalWidth + childView.idealWidth
+		minWidths[i] = childView.minWidth or 1
+	end
 
-    local averageWidth = math.min( math.floor( totalWidth / nChildren + 0.5 ), width - leftMargin - rightMargin )
-    local maxItemsPerRow = math.floor( totalWidth / averageWidth + 0.5 )
-    local idealWidth = math.floor( totalWidth / maxItemsPerRow )
+	local averageWidth = math.min( math.floor( totalWidth / nChildren + 0.5 ), width - leftMargin - rightMargin )
+	local maxItemsPerRow = math.floor( totalWidth / averageWidth + 0.5 )
+	local idealWidth = math.floor( totalWidth / maxItemsPerRow )
 
-    local y = topMargin + 1
+	local y = topMargin + 1
 
-    local _i = 0
-    for i = 1, nChildren do
-        if i > _i then
-            local rowWidth = leftMargin + rightMargin
-            local x = leftMargin + 1
-            local numberOfItems = 1
+	local _i = 0
+	for i = 1, nChildren do
+		if i > _i then
+			local rowWidth = leftMargin + rightMargin
+			local x = leftMargin + 1
+			local numberOfItems = 1
 
-            local totalMinWidths = 0
-            local spareWidth = width - rowWidth
-            for n = 1, math.min( maxItemsPerRow, nChildren - i + 1 ) do
-                local minWidth = minWidths[i + n - 1]
-                totalMinWidths = totalMinWidths + minWidth
-                if totalMinWidths + rowWidth > width then
-                    if n == 1 then
-                        spareWidth = spareWidth - minWidth
-                    end
-                    break
-                end
-                numberOfItems = n
-                spareWidth = spareWidth - minWidth
-            end
+			local totalMinWidths = 0
+			local spareWidth = width - rowWidth
+			for n = 1, math.min( maxItemsPerRow, nChildren - i + 1 ) do
+				local minWidth = minWidths[i + n - 1]
+				totalMinWidths = totalMinWidths + minWidth
+				if totalMinWidths + rowWidth > width then
+					if n == 1 then
+						spareWidth = spareWidth - minWidth
+					end
+					break
+				end
+				numberOfItems = n
+				spareWidth = spareWidth - minWidth
+			end
 
-            local itemWidth = spareWidth / numberOfItems
-            _i = _i + numberOfItems
+			local itemWidth = spareWidth / numberOfItems
+			_i = _i + numberOfItems
 
-            local height = 1
-            for n = i, _i do
-                local childView = children[n]
-                local width = minWidths[n] + ( n == i and math.ceil or math.floor)(itemWidth)
-                local idealHeight = childView.idealHeight
-                local maxWidth = childView.maxWidth
-                width = (maxWidth and math.min( width, maxWidth ) or width)
-                if dontAnimate then
-                    childView.x = x
-                    childView.y = y
-                    childView.width = width
-                    childView.height = idealHeight
-                else
-                    childView:animate( "x",  x, time, nil, easing )
-                    childView:animate( "y",  y, time, nil, easing )
-                    childView:animate( "width",  width, time, nil, easing )
-                    childView:animate( "height",  idealHeight, time, nil, easing )
-                end
-                x = x + width
-                height = math.max( idealHeight, height )
-            end
-            y = y + height
-        end
-    end
+			local height = 1
+			for n = i, _i do
+				local childView = children[n]
+				local width = minWidths[n] + ( n == i and math.ceil or math.floor)(itemWidth)
+				local idealHeight = childView.idealHeight
+				local maxWidth = childView.maxWidth
+				width = (maxWidth and math.min( width, maxWidth ) or width)
+				if dontAnimate then
+					childView.x = x
+					childView.y = y
+					childView.width = width
+					childView.height = idealHeight
+					if childView:isDefinedProperty( "transition" ) then
+						childView.transition = 1
+					end
+				else
+					childView:animate( "x",	 x, time, nil, easing )
+					childView:animate( "y",	 y, time, nil, easing )
+					childView:animate( "width",	 width, time, nil, easing )
+					childView:animate( "height",  idealHeight, time, nil, easing )
+					if childView:isDefinedProperty( "transition" ) then
+						childView.transition = 0
+						childView:animate( "transition", 1, time, nil, easing, nil, false )
+					end
+				end
+				x = x + width
+				height = math.max( idealHeight, height )
+			end
+			y = y + height
+		end
+	end
 
-    self:animate( "height",  y + bottomMargin, time, nil, easing )
+	self:animate( "height",	 y + bottomMargin, time, nil, easing )
 
-    self.needsLayoutUpdate = false
+	self.needsLayoutUpdate = false
 end
