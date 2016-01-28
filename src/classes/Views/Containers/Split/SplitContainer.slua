@@ -86,14 +86,19 @@ function SplitContainer:update( deltaTime )
 end
 
 function SplitContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
-	local childView = event.childView
-	if not childView:typeOf( SplitHandleView ) then
-		local index = childView.index
-		if index ~= 1 then
-			self:insert( SplitHandleView( { isVertical = self.isVertical } ), index )
+	if event.container == self then
+		local childView = event.childView
+		if not childView:typeOf( SplitHandleView ) then
+			local index = childView.index
+			if index ~= 1 then
+				local existingChild = self.children[index - 1]
+				if not existingChild or not existingChild:typeOf( SplitHandleView ) then
+					self:insert( SplitHandleView(), index )
+				end
+			end
+		else
+			self.needsLayoutUpdate = true
 		end
-	else
-		self.needsLayoutUpdate = true
 	end
 end
 
