@@ -262,6 +262,8 @@
 		<rightMargin type="Number" default="6" />
 		<topMargin type="Number" default="5" />
 		<bottomMargin type="Number" default="5" />
+		<animationDuration type="Number" default="0.3" />
+		<animationEasing type="Animation.easings" default="IN_OUT_SINE" />
 	</FlowContainer>
 
 	<ListContainer>
