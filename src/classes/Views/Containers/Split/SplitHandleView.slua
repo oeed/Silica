@@ -3,7 +3,7 @@ class SplitHandleView extends View {
 
 	position = Number( 1 );
 	contentPosition = Number.allowsNil;
-	isVertical = Boolean;
+	isVertical = Boolean( false );
 
 	isDragging = Boolean( false );
 	dragX = Number.allowsNil;
@@ -15,12 +15,20 @@ function SplitHandleView:initialise( ... )
 	self:super( ... )
 
 	self:event( MouseDownEvent, self.onMouseDown, Event.phases.AFTER )
+	self:event( ParentChangedInterfaceEvent, self.onParentChanged )
 	self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
 	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
 function SplitHandleView:onDraw()
 	self.canvas:fill( self.theme:value( "fillColour" ) )
+end
+
+function SplitHandleView:onParentChanged( ParentChangedInterfaceEvent event, Event.phases phase )
+	local parent = self.parent
+	if parent and parent:typeOf( SplitContainer ) then
+		self.isVertical = parent.isVertical
+	end
 end
 
 function SplitHandleView:onMouseDown( MouseDownEvent event, Event.phases phase )
