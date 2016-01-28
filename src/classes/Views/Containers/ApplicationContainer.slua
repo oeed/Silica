@@ -157,7 +157,8 @@ function ApplicationContainer:updateCursor()
 
 	local oldCursor = self.cursor
 	local newCursor = search( self, self.cursorX, self.cursorY, Cursor.static )
-	if newCursor ~= oldCursor then
+	if newCursor ~= oldCursor or newCursor.hasUpdatedApperance then
+		newCursor.hasUpdatedApperance = false
 		self.cursor = newCursor
 		if Quartz then
 			local image = newCursor.image
