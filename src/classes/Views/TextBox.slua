@@ -50,7 +50,7 @@ class TextBox extends View {
 	maximumLength = false;
 	selectionPosition = Number.allowsNil;
 
-    cursor = Cursor( TextCursor.static ).allowsNil;
+	cursor = Cursor( TextCursor.static ).allowsNil;
 
 	selectionDirections = Enum( Number, SELECTION_DIRECTIONS );
 
@@ -69,56 +69,56 @@ function TextBox:initialise( ... )
 	self:event( MouseUpEvent, self.onMouseUp )
 	self:event( MouseDragEvent, self.onMouseDrag )
 	self:event( MouseScrollEvent, self.onMouseScroll )
-    self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
-    self:event( MouseDoubleClickEvent, self.onMouseDoubleClick )
+	self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
+	self:event( MouseDoubleClickEvent, self.onMouseDoubleClick )
 	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
 function TextBox:onDraw()
-    local width, height, theme, canvas, isFocused = self.width, self.height, self.theme, self.canvas, self.isFocused
-    local font, text = theme:value( "font" ), ( self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text )
+	local width, height, theme, canvas, isFocused = self.width, self.height, self.theme, self.canvas, self.isFocused
+	local font, text = theme:value( "font" ), ( self.isMasked and string.rep( string.char( 149 ), #self.text ) or self.text )
 
-    local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
-    local fillColour = theme:value( "fillColour" )
-    canvas:fill( fillColour, roundedRectangle )
+	local roundedRectangle = RoundedRectangleMask( 1, 1, width, height, theme:value( "cornerRadius" ) )
+	local fillColour = theme:value( "fillColour" )
+	canvas:fill( fillColour, roundedRectangle )
 
-    local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
+	local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
 
-    local outlineThickness = theme:value( "outlineThickness" )
+	local outlineThickness = theme:value( "outlineThickness" )
 	if #text == 0 then
 		local placeholder = self.placeholder
-	    if placeholder then
-	    	canvas:fill( theme:value( "placeholderColour" ),  roundedRectangle:intersect( TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.placeholder, font ) ) )
+		if placeholder then
+			canvas:fill( theme:value( "placeholderColour" ),  roundedRectangle:intersect( TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.placeholder, font ) ) )
 		end
 	else
-	    local scroll = self.scroll
-	    if isFocused then
-	    	local fontHeight = font.height
+		local scroll = self.scroll
+		if isFocused then
+			local fontHeight = font.height
 			local contentMask = RectangleMask( leftMargin - 1, 1 + outlineThickness, width - leftMargin - rightMargin + 4, height - 2 * outlineThickness )
-	    	if self.selectionVisible then
-	    		local selectionWidth = self.selectionWidth
-	    		if selectionWidth > 0 then
-		    		local selectionLeftMargin, selectionRightMargin, selectionTopMargin, selectionBottomMargin = theme:value( "selectionLeftMargin" ), theme:value( "selectionRightMargin" ), theme:value( "selectionTopMargin" ), theme:value( "selectionBottomMargin" )
-		    		local selectionMask = RoundedRectangleMask( leftMargin + 1 + self.selectionX - scroll - selectionLeftMargin, math.floor( fontHeight / 2 ) - selectionTopMargin, selectionWidth + selectionLeftMargin + selectionRightMargin, fontHeight + selectionTopMargin + selectionBottomMargin, theme:value( "selectionRadius" ) )
-		    		canvas:fill( theme:value( "selectionColour" ), selectionMask:intersect( contentMask ) )
-		    	end
-		    else
-		    	local cursorPosition = self.cursorPosition
-		    	local cursorColour = self.cursorColour
-		    	if cursorColour ~= fillColour then
-			    	local cursorMask = RectangleMask( leftMargin + 1 + self.cursorX - scroll, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
-		    		canvas:fill( cursorColour, cursorMask:intersect( contentMask ) )
-		    	end
-	    	end
-	    end
+			if self.selectionVisible then
+				local selectionWidth = self.selectionWidth
+				if selectionWidth > 0 then
+					local selectionLeftMargin, selectionRightMargin, selectionTopMargin, selectionBottomMargin = theme:value( "selectionLeftMargin" ), theme:value( "selectionRightMargin" ), theme:value( "selectionTopMargin" ), theme:value( "selectionBottomMargin" )
+					local selectionMask = RoundedRectangleMask( leftMargin + 1 + self.selectionX - scroll - selectionLeftMargin, math.floor( fontHeight / 2 ) - selectionTopMargin, selectionWidth + selectionLeftMargin + selectionRightMargin, fontHeight + selectionTopMargin + selectionBottomMargin, theme:value( "selectionRadius" ) )
+					canvas:fill( theme:value( "selectionColour" ), selectionMask:intersect( contentMask ) )
+				end
+			else
+				local cursorPosition = self.cursorPosition
+				local cursorColour = self.cursorColour
+				if cursorColour ~= fillColour then
+					local cursorMask = RectangleMask( leftMargin + 1 + self.cursorX - scroll, math.floor( fontHeight / 2 ), 1, fontHeight + 1 )
+					canvas:fill( cursorColour, cursorMask:intersect( contentMask ) )
+				end
+			end
+		end
 
-	    local textMask = roundedRectangle:intersect( TextMask( leftMargin + 1 - scroll, topMargin + 1, font:getWidth( text ), height - topMargin - bottomMargin, text, font ) )
-	    canvas:fill( theme:value( "textColour" ), textMask  )
-	    canvas:fill( theme:value( "fadeOneColour" ), OutlineMask( leftMargin, topMargin, width - leftMargin - rightMargin + 2, height - topMargin - bottomMargin + 2 * outlineThickness ):intersect( textMask )  )
-    	canvas:fill( theme:value( "fadeTwoColour" ), OutlineMask( leftMargin - 1, topMargin - 1, width - leftMargin - rightMargin + 4, height - topMargin - bottomMargin + 4 * outlineThickness ):intersect( textMask )  )
+		local textMask = roundedRectangle:intersect( TextMask( leftMargin + 1 - scroll, topMargin + 1, font:getWidth( text ), height - topMargin - bottomMargin, text, font ) )
+		canvas:fill( theme:value( "textColour" ), textMask	)
+		canvas:fill( theme:value( "fadeOneColour" ), OutlineMask( leftMargin, topMargin, width - leftMargin - rightMargin + 2, height - topMargin - bottomMargin + 2 * outlineThickness ):intersect( textMask )	 )
+		canvas:fill( theme:value( "fadeTwoColour" ), OutlineMask( leftMargin - 1, topMargin - 1, width - leftMargin - rightMargin + 4, height - topMargin - bottomMargin + 4 * outlineThickness ):intersect( textMask )	 )
 		canvas:fill( theme:value( "fillColour" ), OutlineMask( 1 + outlineThickness, 1 + outlineThickness, width - 2 * outlineThickness, height - 2 * outlineThickness, leftMargin - 2 - outlineThickness, topMargin - 2 - outlineThickness, rightMargin - 2 - outlineThickness, bottomMargin - 2 - outlineThickness ):intersect( textMask ) )
 	end
-    canvas:outline( theme:value( "outlineColour" ), roundedRectangle, outlineThickness )
+	canvas:outline( theme:value( "outlineColour" ), roundedRectangle, outlineThickness )
 end
 
 function TextBox:update( deltaTime )
@@ -145,10 +145,10 @@ function TextBox:update( deltaTime )
 end
 
 function TextBox.cursorColour:set( cursorColour )
-    if self.cursorColour ~= cursorColour then
-    	self.cursorColour = cursorColour
-    	self.needsDraw = true
-    end
+	if self.cursorColour ~= cursorColour then
+		self.cursorColour = cursorColour
+		self.needsDraw = true
+	end
 end
 
 --[[
@@ -255,20 +255,20 @@ function TextBox.cursorX:set( cursorX )
 
 	-- if the cursor is extending past the visible bounds adjust scroll to keep it visible
 	local width, scroll = self.width, self.scroll
-    local relativeX = cursorX - scroll
-    if relativeX < 0 then
-    	-- the cursor is to the left of the screen
-    	self.scroll = scroll + relativeX
-    else
-    	local theme = self.theme
-    	local leftMargin, rightMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" )
-    	local rightOverflow = relativeX - width + leftMargin + rightMargin + 1
-    	if rightOverflow > 0 then
-	    	self.scroll = scroll + rightOverflow
-	    else
+	local relativeX = cursorX - scroll
+	if relativeX < 0 then
+		-- the cursor is to the left of the screen
+		self.scroll = scroll + relativeX
+	else
+		local theme = self.theme
+		local leftMargin, rightMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" )
+		local rightOverflow = relativeX - width + leftMargin + rightMargin + 1
+		if rightOverflow > 0 then
+			self.scroll = scroll + rightOverflow
+		else
 			self.needsDraw = true -- we can put this here because setting scroll does it, so it's not always needed
-	    end
-    end
+		end
+	end
 end
 
 function TextBox.selectionX:set( selectionX )
@@ -387,14 +387,14 @@ function TextBox:onMouseUp( MouseUpEvent event, Event.phases phase )
 end
 
 function TextBox:onMouseDoubleClick( Event event, Event.phases phase )
-    if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
-    	local left, right = self:wordPosition( self:viewToCharCoords( event.x ), SELECTION_DIRECTIONS.BOTH )
-    	if left ~= right then
-	    	self.selectionPosition = right
-	    	self.cursorPosition = left
-	    end
-    end
-    return true
+	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+		local left, right = self:wordPosition( self:viewToCharCoords( event.x ), SELECTION_DIRECTIONS.BOTH )
+		if left ~= right then
+			self.selectionPosition = right
+			self.cursorPosition = left
+		end
+	end
+	return true
 end
 
 --[[
@@ -445,7 +445,7 @@ function TextBox:onKeyDown( KeyDownEvent event, Event.phases phase )
 				self.cursorPosition = cursorPosition - 1
 			end
 		elseif keyCode == keys.enter then
-            self.event:handleEvent( ActionInterfaceEvent( self, event ) )
+			self.event:handleEvent( ActionInterfaceEvent( self, event ) )
 			self:unfocus()
 		elseif keyCode == keys.left then
 			if selectionPosition then
@@ -483,7 +483,7 @@ function TextBox:onCharacter( CharacterEvent event, Event.phases phase )
 	end
 end
 
--- 										TODO: Number should be TextBox.selectionDirections
+--										TODO: Number should be TextBox.selectionDirections
 function TextBox:wordPosition( Number fromPosition, Number direction, Boolean( true ) allowMiddlePunctuation )
 	local text = self.text
 	local left, right
@@ -515,57 +515,57 @@ function TextBox:wordPosition( Number fromPosition, Number direction, Boolean( t
 end
 
 --[[
-    @desc Fired when the a keyboard shortcut is fired
-    @param [Event] event -- the keyboard shortcut
-    @return [boolean] preventPropagation -- prevent anyone else using the event
+	@desc Fired when the a keyboard shortcut is fired
+	@param [Event] event -- the keyboard shortcut
+	@return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function TextBox:onKeyboardShortcut( Event event, Event.phases phase )
-    if self.isFocused then
-        if event:matchesKeys( { "ctrl", "left" } ) or event:matchesKeys( { "home" } ) then
-        	self.selectionPosition = nil
-        	self.cursorPosition = 1
-        elseif event:matchesKeys( { "ctrl", "right" } ) or event:matchesKeys( { "end" } ) then
-        	self.selectionPosition = nil
-        	self.cursorPosition = #self.text + 1
-        elseif event:matchesKeys( { "ctrl", "shift", "left" } ) then
-        	self.selectionPosition = 1
-        elseif event:matchesKeys( { "ctrl", "shift", "right" } ) then
-        	self.selectionPosition = #self.text + 1
-        elseif event:matchesKeys( { "alt", "left" } ) then
-        	self.cursorPosition = self:wordPosition( self.cursorPosition, SELECTION_DIRECTIONS.LEFT )
-        elseif event:matchesKeys( { "alt", "right" } ) then
-        	local _, right = self:wordPosition( self.cursorPosition, SELECTION_DIRECTIONS.RIGHT )
-        	self.cursorPosition = right
-        elseif event:matchesKeys( { "alt", "shift", "left" } ) then
-        	self.selectionPosition = self:wordPosition( math.min( self.cursorPosition, self.selectionPosition or math.huge ), SELECTION_DIRECTIONS.LEFT )
-        elseif event:matchesKeys( { "alt", "shift", "right" } ) then
-        	local _, right = self:wordPosition( math.max( self.cursorPosition, self.selectionPosition or 0), SELECTION_DIRECTIONS.RIGHT )
-        	self.selectionPosition = right
-        elseif event:matchesKeys( { "shift", "left" } ) then
-        	local selectionPosition = self.selectionPosition
-        	if selectionPosition then
-	        	self.selectionPosition = math.max( 1, selectionPosition - 1 )
-	    	else
-	    		self.selectionPosition = math.max( 1, self.cursorPosition - 1 )
-	    	end
-        elseif event:matchesKeys( { "shift", "right" } ) then
-        	local selectionPosition = self.selectionPosition
-        	if selectionPosition then
-	        	self.selectionPosition = math.min( #self.text + 1, selectionPosition + 1 )
-	    	else
-	    		self.selectionPosition = math.min( #self.text + 1, self.cursorPosition + 1 )
-	    	end
-        elseif event:matchesKeys( { "ctrl", "a" } ) then
-        	self.cursorPosition = 1
-        	self.selectionPosition = #self.text + 1
-        elseif event:matchesKeys( { "ctrl", "backspace" } ) then
-        	local cursorPosition = self.cursorPosition
-        	self.selectionPosition = nil
-        	self.cursorPosition = 1
-        	self.text = self.text:sub( cursorPosition )
-        else
-            return false
-        end
-        return true
-    end
+	if self.isFocused then
+		if event:matchesKeys( { "ctrl", "left" } ) or event:matchesKeys( { "home" } ) then
+			self.selectionPosition = nil
+			self.cursorPosition = 1
+		elseif event:matchesKeys( { "ctrl", "right" } ) or event:matchesKeys( { "end" } ) then
+			self.selectionPosition = nil
+			self.cursorPosition = #self.text + 1
+		elseif event:matchesKeys( { "ctrl", "shift", "left" } ) then
+			self.selectionPosition = 1
+		elseif event:matchesKeys( { "ctrl", "shift", "right" } ) then
+			self.selectionPosition = #self.text + 1
+		elseif event:matchesKeys( { "alt", "left" } ) then
+			self.cursorPosition = self:wordPosition( self.cursorPosition, SELECTION_DIRECTIONS.LEFT )
+		elseif event:matchesKeys( { "alt", "right" } ) then
+			local _, right = self:wordPosition( self.cursorPosition, SELECTION_DIRECTIONS.RIGHT )
+			self.cursorPosition = right
+		elseif event:matchesKeys( { "alt", "shift", "left" } ) then
+			self.selectionPosition = self:wordPosition( math.min( self.cursorPosition, self.selectionPosition or math.huge ), SELECTION_DIRECTIONS.LEFT )
+		elseif event:matchesKeys( { "alt", "shift", "right" } ) then
+			local _, right = self:wordPosition( math.max( self.cursorPosition, self.selectionPosition or 0), SELECTION_DIRECTIONS.RIGHT )
+			self.selectionPosition = right
+		elseif event:matchesKeys( { "shift", "left" } ) then
+			local selectionPosition = self.selectionPosition
+			if selectionPosition then
+				self.selectionPosition = math.max( 1, selectionPosition - 1 )
+			else
+				self.selectionPosition = math.max( 1, self.cursorPosition - 1 )
+			end
+		elseif event:matchesKeys( { "shift", "right" } ) then
+			local selectionPosition = self.selectionPosition
+			if selectionPosition then
+				self.selectionPosition = math.min( #self.text + 1, selectionPosition + 1 )
+			else
+				self.selectionPosition = math.min( #self.text + 1, self.cursorPosition + 1 )
+			end
+		elseif event:matchesKeys( { "ctrl", "a" } ) then
+			self.cursorPosition = 1
+			self.selectionPosition = #self.text + 1
+		elseif event:matchesKeys( { "ctrl", "backspace" } ) then
+			local cursorPosition = self.cursorPosition
+			self.selectionPosition = nil
+			self.cursorPosition = 1
+			self.text = self.text:sub( cursorPosition )
+		else
+			return false
+		end
+		return true
+	end
 end

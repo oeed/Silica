@@ -1,59 +1,78 @@
 
 class SplitHandleView extends View {
 
-    position = Number( 1 );
-    contentPosition = Number.allowsNil;
-    isVertical = Boolean;
+	position = Number( 1 );
+	contentPosition = Number.allowsNil;
+	isVertical = Boolean( false );
 
-    isDragging = Boolean( false );
-    dragX = Number.allowsNil;
-    dragY = Number.allowsNil;
+	isDragging = Boolean( false );
+	dragX = Number.allowsNil;
+	dragY = Number.allowsNil;
+
+	cursor = Cursor( ResizeHorizontalCursor.static ).allowsNil;
 
 }
 
 function SplitHandleView:initialise( ... )
-    self:super( ... )
+	self:super( ... )
 
-    self:event( MouseDownEvent, self.onMouseDown, Event.phases.AFTER )
-    self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
-    self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+	self:event( MouseDownEvent, self.onMouseDown, Event.phases.AFTER )
+	self:event( ParentChangedInterfaceEvent, self.onParentChanged )
+	self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
+	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 end
 
 function SplitHandleView:onDraw()
-    self.canvas:fill( self.theme:value( "fillColour" ) )
+	self.canvas:fill( self.theme:value( "fillColour" ) )
+end
+
+function SplitHandleView:onParentChanged( ParentChangedInterfaceEvent event, Event.phases phase )
+	local parent = self.parent
+	if parent and parent:typeOf( SplitContainer ) then
+		self.isVertical = parent.isVertical
+	end
 end
 
 function SplitHandleView:onMouseDown( MouseDownEvent event, Event.phases phase )
-    if event.mouseButton == MouseEvent.mouseButtons.LEFT then
-        self.dragX = event.x
-        self.dragY = event.y
-        self.isDragging = true
-    end
-    return true
+	if event.mouseButton == MouseEvent.mouseButtons.LEFT then
+		self.dragX = event.x
+		self.dragY = event.y
+		self.isDragging = true
+	end
+	return true
+end
+
+function SplitHandleView.isVertical:set( isVertical )
+	self.isVertical = isVertical
+	if isVertical then
+		self.cursor = ResizeVerticalCursor.static
+	else
+		self.cursor = ResizeHorizontalCursor.static
+	end
 end
 
 function SplitHandleView.position:set( position )
-    self.position = position
-    local parent = self.parent
-    if parent then
-        parent.needsLayoutUpdate = true
-    end
+	self.position = position
+	local parent = self.parent
+	if parent then
+		parent.needsLayoutUpdate = true
+	end
 end
 
 function SplitHandleView:onGlobalMouseDrag( MouseDragEvent event, Event.phases phase )
-    if self.isDragging and event.mouseButton == MouseEvent.mouseButtons.LEFT then
-        local segmentSize, contentPosition = self.parent.segmentSize, self.contentPosition
-        local width = event.x - self.dragX + 1 - contentPosition + self.theme:value( "leftMargin" )
-        self.position = width / segmentSize
-        return true
-    end
+	if self.isDragging and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+		local segmentSize, contentPosition = self.parent.segmentSize, self.contentPosition
+		local width = event.x - self.dragX + 1 - contentPosition + self.theme:value( "leftMargin" )
+		self.position = width / segmentSize
+		return true
+	end
 end
 
 function SplitHandleView:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
-    if self.isDragging and event.mouseButton == MouseEvent.mouseButtons.LEFT then
-        self.dragX = nil
-        self.dragY = nil
-        self.isDragging = false
-        return true
-    end
+	if self.isDragging and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+		self.dragX = nil
+		self.dragY = nil
+		self.isDragging = false
+		return true
+	end
 end

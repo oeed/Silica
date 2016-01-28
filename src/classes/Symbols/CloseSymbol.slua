@@ -1,23 +1,23 @@
 
 class CloseSymbol extends Symbol {
 
-    static = {
-        symbolName = String( "close" );
-        height = Number( 5 );
-        width = Number( 5 );
-    };
+	static = {
+		symbolName = String( "close" );
+		height = Number( 5 );
+		width = Number( 5 );
+	};
 
 }
 
 function CloseSymbol.static:initialise()
-    local path = Path( self.width, self.height, 1, 1 )
-    path:lineTo( 5, 5 )
-    path:lineTo( 3, 3 )
-    path:lineTo( 5, 1 )
-    path:lineTo( 5, 1 )
-    path:lineTo( 1, 5 )
-    path:lineTo( 3, 3 )
-    path:close()
+	local path = Path( self.width, self.height, 1, 1 )
+	path:lineTo( 5, 5 )
+	path:lineTo( 3, 3 )
+	path:lineTo( 5, 1 )
+	path:lineTo( 5, 1 )
+	path:lineTo( 1, 5 )
+	path:lineTo( 3, 3 )
+	path:close()
 
-    self:super( path )
+	self:super( path )
 end

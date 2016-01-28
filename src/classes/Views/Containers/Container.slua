@@ -20,13 +20,13 @@ class Container extends View {
 function Container:initialise( ... )
 	self:super( ... )
 
-    self:event( ChildAddedInterfaceEvent, self.onChildOfChildAdded )
-    self:event( ChildRemovedInterfaceEvent, self.onChildOfChildRemoved )
-    self:event( ChildRepositionedInterfaceEvent, self.onChildRepositionedMouseEnterExit )
-    self:event( ReadyInterfaceEvent, self.onReadyLoadInterface )
-    self:event( MouseMoveEvent, self.onUpdateChildMouseEnterExit )
-    self:event( MouseExitedInterfaceEvent, self.onUpdateChildMouseEnterExit )
-    self:event( MouseEnteredInterfaceEvent, self.onUpdateChildMouseEnterExit )
+	self:event( ChildAddedInterfaceEvent, self.onChildOfChildAdded )
+	self:event( ChildRemovedInterfaceEvent, self.onChildOfChildRemoved )
+	self:event( ChildRepositionedInterfaceEvent, self.onChildRepositionedMouseEnterExit )
+	self:event( ReadyInterfaceEvent, self.onReadyLoadInterface )
+	self:event( MouseMoveEvent, self.onUpdateChildMouseEnterExit )
+	self:event( MouseExitedInterfaceEvent, self.onUpdateChildMouseEnterExit )
+	self:event( MouseEnteredInterfaceEvent, self.onUpdateChildMouseEnterExit )
 end
 
 --[[
@@ -48,14 +48,14 @@ function Container:onReadyLoadInterface( ReadyInterfaceEvent event, Event.phases
 end
 
 --[[
-    @desc Loads the children and properties of the interface specified by the self.interfaceName interface name. Called automatically during Container:init, do not call this yourself.
+	@desc Loads the children and properties of the interface specified by the self.interfaceName interface name. Called automatically during Container:init, do not call this yourself.
 ]]
 function Container:loadInterface()
-    local interfaceName = self.interfaceName
-    if interfaceName then
-    	-- this does all the work for us
-        Interface( interfaceName, self.class, self ):ready( true )
-    end
+	local interfaceName = self.interfaceName
+	if interfaceName then
+		-- this does all the work for us
+		Interface( interfaceName, self.class, self ):ready( true )
+	end
 end
 
 --[[
@@ -77,12 +77,12 @@ function Container:update( deltaTime )
 end
 
 function Container:onDraw()
-    local canvas, theme = self.canvas, self.theme
-    local cornerRadius = theme:value( "cornerRadius" )
-    local mask
-    if cornerRadius > 0 then
-    	mask = RoundedRectangleMask( 1, 1, self.width, self.height, cornerRadius )
-    end
+	local canvas, theme = self.canvas, self.theme
+	local cornerRadius = theme:value( "cornerRadius" )
+	local mask
+	if cornerRadius > 0 then
+		mask = RoundedRectangleMask( 1, 1, self.width, self.height, cornerRadius )
+	end
 	canvas:fill( theme:value( "fillColour" ), mask )
 	canvas:outline( theme:value( "outlineColour" ), mask, theme:value( "outlineThickness" ) )
 end
@@ -139,7 +139,7 @@ end
 
 function Container.width:set( width )
 	self:super( width )
-    width = self.width
+	width = self.width
 	local event = self.event
 	if event then
 		event:handleEvent( ParentResizedInterfaceEvent( true, false, self ) )
@@ -148,7 +148,7 @@ end
 
 function Container.height:set( height )
 	self:super( height )
-    height = self.height
+	height = self.height
 	local event = self.event
 	if event then
 		event:handleEvent( ParentResizedInterfaceEvent( false, true, self ) )
@@ -156,11 +156,11 @@ function Container.height:set( height )
 end
 
 function Container.isEnabled:set( isEnabled )
-    self.isEnabled = isEnabled
-    for i, childView in ipairs( self.children ) do
-    	-- we need to update the isEnabled value for all children, the best way is just to send the current value
-    	childView.isEnabled = childView.raw.isEnabled
-    end
+	self.isEnabled = isEnabled
+	for i, childView in ipairs( self.children ) do
+		-- we need to update the isEnabled value for all children, the best way is just to send the current value
+		childView.isEnabled = childView.raw.isEnabled
+	end
 end
 
 --[[
@@ -179,8 +179,8 @@ function Container:sendToFront( frontView, position )
 	
 	-- TODO: screen order changed events?
 	-- for i, childView in ipairs( self.children ) do
-	-- 	local onSiblingsChanged = childView.onSiblingsChanged
-	-- 	if onSiblingsChanged then onSiblingsChanged( childView ) end
+	--	local onSiblingsChanged = childView.onSiblingsChanged
+	--	if onSiblingsChanged then onSiblingsChanged( childView ) end
 	-- end
 
 	self.needsDraw = true
@@ -205,7 +205,7 @@ function Container:onChildOfChildAdded( ChildAddedInterfaceEvent event, Event.ph
 				end
 			end
 		end
-    end
+	end
 end
 
 function Container:onChildOfChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
@@ -383,9 +383,7 @@ function Container:findChildren( identifier, descendTree )
 end
 
 function Container:onChildRepositionedMouseEnterExit( ChildRepositionedInterfaceEvent event, Event.phases phase )
-	log(event.childView)
 	if self.isMouseInView and event.childView.parent == self then
-		log("yeep")
 		self:onUpdateChildMouseEnterExit( nil, nil, self.cursorLastX, self.cursorLastY )
 	end
 end

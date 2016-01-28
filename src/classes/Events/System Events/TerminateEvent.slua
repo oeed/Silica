@@ -1,8 +1,8 @@
 
 class TerminateEvent extends Event {
 
-    static = {
-        eventType = "terminate";
-    };
+	static = {
+		eventType = "terminate";
+	};
 
 }

@@ -1,14 +1,14 @@
 
 class ChildRemovedInterfaceEvent extends InterfaceEvent {
 
-    static = {
-        eventType = "interface_child_removed";
-    };
+	static = {
+		eventType = "interface_child_removed";
+	};
 
-    container = Container;
-    childView = View; -- the added child
-    isSentToChildren = Boolean( false );
-    isSentToParents = Boolean( true );
+	container = Container;
+	childView = View; -- the added child
+	isSentToChildren = Boolean( false );
+	isSentToParents = Boolean( true );
 
 }
 
@@ -19,5 +19,5 @@ class ChildRemovedInterfaceEvent extends InterfaceEvent {
 ]]
 function ChildRemovedInterfaceEvent:initialise( View childView, Container container )
 	self.childView = childView
-    self.container = container
+	self.container = container
 end

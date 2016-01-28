@@ -5,7 +5,7 @@ class Theme {
 	classes = Table( {} );
 	
 	static = {
-		active = Theme; -- @static  the current theme
+		active = Theme; -- @static	the current theme
 		themes = Table( {} ); -- @static  a cache of already created themes
 	}
 }

@@ -1,6 +1,6 @@
 
 interface IEditableFileSystemItem {
-    
-    contents = false; -- the contents of the file
+	
+	contents = false; -- the contents of the file
 
 }

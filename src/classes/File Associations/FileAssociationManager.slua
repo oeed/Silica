@@ -1,0 +1,110 @@
+
+if Quartz then
+	Quartz.fileAssociationBridge = function( serialised )
+		FileAssociationManager.static:registerAssociation( FileAssociation.static:unserialise( serialised ) )
+	end
+end
+
+local unknownFileAssociation
+
+class FileAssociationManager {
+	
+	static = {
+
+		associations = Table( {} );
+		extensionMimes = Table( {} );
+
+	}
+
+}
+
+function FileAssociationManager.static:registerAssociation( FileAssociation association, Number.allowsNil index )
+	local associations = self.associations
+	local mime = association.mime
+	local mimeAssociations = associations[mime]
+	if not mimeAssociations then
+		mimeAssociations = {}
+		associations[mime] = mimeAssociations
+	end
+
+	if index then
+		table.insert( mimeAssociations, index, association )
+	else
+		table.insert( mimeAssociations, association )
+	end
+
+	-- add these assocation's extensions to the extensionMimes table
+	local extensionMimes = self.extensionMimes
+	for i, extension in ipairs( association.extensions ) do
+		if not extensionMimes[extension] then -- we'll only set the mime if there isn't one already there. theortically they should be identical anyway
+			extensionMimes[extension] = mime
+		end
+	end
+	local application = self.application
+	if application then
+		local event = application.event
+		if event then
+			event:handleEvent( FileAssociationRegisteredInterfaceEvent( association ) )
+		end
+	end
+end
+
+function FileAssociationManager.static:open( FileSystemItem fileSystemItem, FileAssociation.allowsNil association, Number.allowsNil id )
+	local path, mime = fileSystemItem.path, fileSystemItem.metadata.mime
+	association = association or self:getAssociation( mime, id )
+	if association then
+		if Quartz then
+			-- if we're running under Quartz we need it to run the program instead
+			Quartz:open( path, association.id )
+		else
+			local application = self.application
+			if application:typeOf( QuartzApplication ) then
+				local programBundle = association.programBundle
+				if programBundle then
+					local argumentFormat = association.argumentFormat
+					local arguments = {}
+					for i, argument in ipairs( argumentFormat ) do
+						table.insert( arguments, argument == true and path or argument )
+					end
+					self.application.programManager:run( Program.static:fromBundle( programBundle, arguments ) )
+				end
+			end
+		end
+	else
+		-- TODO: error dialouge
+	end
+end
+
+--[[
+	@desc Returns the main association for the given MIME
+]]
+function FileAssociationManager.static:getAssociation( String.allowsNil mime, Number.allowsNil id )
+	if mime then
+		local associations = self.associations
+		local mimeAssociations = associations[mime]
+		if mimeAssociations then
+			if not id then
+				return mimeAssociations[1]
+			else
+				for i, association in ipairs( mimeAssociations ) do
+					if association.id == id then
+						return association
+					end
+				end
+				return mimeAssociations[1]
+			end
+		end
+	end
+
+	if not unknownFileAssociation then
+		unknownFileAssociation = UnknownFileAssociation()
+	end
+	return unknownFileAssociation
+end
+
+--[[
+	@desc Returns the all associations for the given MIME
+]]
+function FileAssociationManager.static:getAllAssociations( String mime )
+	return self.associations[mime] or {}
+end

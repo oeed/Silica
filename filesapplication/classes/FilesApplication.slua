@@ -17,20 +17,20 @@ function FilesApplication:initialise()
 	self:event( CharacterEvent, self.onChar )
 
 	-- try( function() 
-	-- 	log("one")
-	-- 	Exception( "Blah" ):throw()
-	-- 	log("two")
+	--	log("one")
+	--	Exception( "Blah" ):throw()
+	--	log("two")
 	-- end ) {
 
-	-- 	catch( Exception, function()
-	-- 		log( "Exception" )
-	-- 		log( exception )
-	-- 	end );
+	--	catch( Exception, function()
+	--		log( "Exception" )
+	--		log( exception )
+	--	end );
 
-	-- 	default( function( exception )
-	-- 		log( "default" )
-	-- 		log( exception )
-	-- 	end );
+	--	default( function( exception )
+	--		log( "default" )
+	--		log( exception )
+	--	end );
 
 	-- }
 
@@ -48,8 +48,8 @@ function FilesApplication:initialise()
 	-- -- has the same properties as File, except for contents
 	-- local _fs = parent.fs -- a sandboxed fs api (same available for io)
 	-- for i, file in ipairs( parent.items ) do -- lists the files and folders in the folder. .files and .folders is also available for just one type
-	-- 	-- file is :typeOf FileSystemItem (File or Folder)
-	-- 	log( file.fullName )
+	--	-- file is :typeOf FileSystemItem (File or Folder)
+	--	log( file.fullName )
 	-- end
 
 	-- local file = FileSystemItem( "/testfolder/anotherfolder")

@@ -14,7 +14,7 @@ class Resource {
 	@constructor
 	@desc Creates a resource class, allowing ease resolving and loading of files
 	@param [string] match -- the name of the file without the extension
-    @param [Metadata.mimes/table{Metadata.mimes}] mimes -- a mime or table of mimes
+	@param [Metadata.mimes/table{Metadata.mimes}] mimes -- a mime or table of mimes
 	@param [string] category -- the category (folder, such as classes, interfaces) to look in
 	@param [boolean] allowDirectories -- default false, whether directories are able to be matched
 ]]
@@ -39,8 +39,9 @@ function Resource:initialise( name, mimes, category, allowDirectories )
 							self.mime = mime
 							self.contents = contents
 							local binaryContents = {}
+							local byte, sub = string.byte, string.sub
 							for i = 1, #contents do
-								table.insert( binaryContents, string.byte( contents ) )
+								binaryContents[i] = byte( sub( contents, i, i ) )
 							end
 							self.binaryContents = binaryContents
 							return

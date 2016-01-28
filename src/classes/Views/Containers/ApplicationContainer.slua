@@ -22,8 +22,8 @@ class ApplicationContainer extends Container {
 ]]
 function ApplicationContainer:initialise( ... )
 	self:super( ... )
-    self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
-    self:event( MouseMoveEvent, self.onMouseMoveCursorBefore )
+	self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
+	self:event( MouseMoveEvent, self.onMouseMoveCursorBefore )
 end
 
 function ApplicationContainer:initialiseCanvas()
@@ -103,9 +103,9 @@ function ApplicationContainer:update( ... )
 end
 
 --[[
-    @desc Fired when the mouse is released and doesn't hit anything else. Unfocuses the focused view, if any.
-    @param [MouseDownEvent] event -- the mouse up event
-    @return [boolean] preventPropagation -- prevent anyone else using the event
+	@desc Fired when the mouse is released and doesn't hit anything else. Unfocuses the focused view, if any.
+	@param [MouseDownEvent] event -- the mouse up event
+	@return [boolean] preventPropagation -- prevent anyone else using the event
 ]]
 function ApplicationContainer:onMouseDownAfter( MouseDownEvent event, Event.phases phase )
 	local application = self.application
@@ -113,21 +113,21 @@ function ApplicationContainer:onMouseDownAfter( MouseDownEvent event, Event.phas
 	if application:hasFocus() then
 		for focus, v in pairs( application.focuses ) do
 			 if focus.isFocusDismissable then
-			 	application:unfocus( focus )
+				application:unfocus( focus )
 			 end
 		end
 	end
 end
 
---     self:event( MouseMoveEvent, self.onMouseMoveCursor, Event.phases.AFTER )
+--	   self:event( MouseMoveEvent, self.onMouseMoveCursor, Event.phases.AFTER )
 -- function ApplicationContainer:onMouseMoveCursor( MouseMoveEvent event, Event.phases phase )
--- 	if self.isEnabled then
--- 		local cursorStatic = Cursor.static
--- 		if self.cursor ~= cursorStatic then
--- 			self.cursor = cursorStatic
--- 			return true
--- 		end
--- 	end
+--	if self.isEnabled then
+--		local cursorStatic = Cursor.static
+--		if self.cursor ~= cursorStatic then
+--			self.cursor = cursorStatic
+--			return true
+--		end
+--	end
 -- end
 
 --[[

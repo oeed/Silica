@@ -3,565 +3,1129 @@ local TRANSPARENT = Graphics.colours.TRANSPARENT
 
 local hexnums = { [10] = "a", [11] = "b", [12] = "c", [13] = "d", [14] = "e" , [15] = "f" }
 local function getHexOf(colour)
-    if colour == TRANSPARENT or not colour or not tonumber(colour) then
-        return " "
-    end
-    local value = math.log(colour)/math.log(2)
-    if value > 9 then
-            value = hexnums[value]
-    end
-    return value
+	if colour == TRANSPARENT or not colour or not tonumber(colour) then
+		return " "
+	end
+	local value = math.log(colour)/math.log(2)
+	if value > 9 then
+			value = hexnums[value]
+	end
+	return value
 end
 
 local function getColourOf(hex)
-    if hex == ' ' then
-        return TRANSPARENT
-    end
-    local value = tonumber(hex, 16)
-    if not value then return nil end
-    value = math.pow(2,value)
-    return value
+	if hex == ' ' then
+		return TRANSPARENT
+	end
+	local value = tonumber(hex, 16)
+	if not value then return nil end
+	value = math.pow(2,value)
+	return value
 end
 
 local function split(a,e)
-    local t,e=e or":",{}
-    local t=string.format("([^%s]+)",t)
-    a:gsub(t,function(t)e[#e+1]=t end)
-    return e
+	local t,e=e or":",{}
+	local t=string.format("([^%s]+)",t)
+	a:gsub(t,function(t)e[#e+1]=t end)
+	return e
 end
 
 local mimes = Metadata.mimes
 local ucgValues = {
-    SIGNATURE = 0xFF2137,
-    VERSION = 1
+	SIGNATURE = 0xFF2137,
+	VERSION = 3
 }
 
 local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG, mimes.SICON }
-local mimesEnum = {}
+local availableMimes = {}
 for i, v in ipairs( IMAGE_MIMES ) do
-    mimesEnum[v] = true
+	availableMimes[v] = true
 end
 
 class Image {
-    
-    width = Number;
-    height = Number;
-    pixels = Table;
-    -- resource = false;
-    -- file = false;
-    contents = false;
-    scaledCache = {};
-    ucgValues = Enum( Number, ucgValues );
-    imageMimes = Enum( Boolean, mimesEnum );
+	
+	width = Number;
+	height = Number;
+	pixels = Table;
+	-- resource = false;
+	-- file = false;
+	contents = Any;
+	scaledCache = {};
+	ucgValues = Enum( Number, ucgValues );
 
 }
 
-function Image:initialise( Table pixels, Number width, Number height )
-    local newPixels = {}
-    local maxLength = width * height
-    for i, pixel in pairs( pixels ) do
-        if i > maxLength then
-            error( "Image pixels must fit the given size" )
-        end
-        newPixels[i] = pixel
-    end
-    self.width = width
-    self.height = height
-    self.pixels = newPixels
+function Image:initialise( Table pixels, Number width, Number height, Any contents )
+	local newPixels = {}
+	local maxLength = width * height
+	for i, pixel in pairs( pixels ) do
+		if i > maxLength then
+			error( "Image pixels must fit the given size" )
+		end
+		newPixels[i] = pixel
+	end
+	self.width = width
+	self.height = height
+	self.pixels = newPixels
+	self.contents = contents
+end
+
+--[[
+	@desc Returns true if the given mime is a supported image
+]]
+function Image.static:isMIME( String.allowsNil mime )
+	return mime and availableMimes[mime] or false
 end
 
 function Image.static:blank( width, height )
-    local TRANSPARENT = TRANSPARENT
-    local pixels = {}
-    for i = 1, width * height do
-        pixels[i] = TRANSPARENT
-    end
-    return Image( pixels, width, height )
+	local TRANSPARENT = TRANSPARENT
+	local pixels = {}
+	for i = 1, width * height do
+		pixels[i] = TRANSPARENT
+	end
+	return Image( pixels, width, height )
 end
 
 function Image.static:fromPath( String path )
-    return Image.static:fromFile( File( path ) )
+	return Image.static:fromFile( File( path ) )
 end
 
 function Image.static:fromFile( File file )
-    if file.metadata.mime == mimes.UCG then
-        return Image.static:fromUniversalCompressedGraphics( file.binaryContents )
-    elseif file.metadata.mime == mimes.SICON then
-        return Icon.static:fromIcon( file.binaryContents )
-    elseif file.metadata.mime == mimes.IMAGE then
-        return Image.static:fromPaintFormat( file.contents )
-    end
+	local mime = file.metadata.mime
+	if mime == mimes.UCG then
+		return Image.static:fromUniversalCompressedGraphics( file.binaryContents )
+	elseif mime == mimes.SICON then
+		return Icon.static:fromIcon( file.binaryContents )
+	elseif mime == mimes.IMAGE then
+		return Image.static:fromPaintFormat( file.contents )
+	end
 end
 
 function Image.static:fromName( String name )
-    local resource = Resource( name, IMAGE_MIMES )
-    if resource then
-        return Image.static:fromResource( resource )
-    end
+	local resource = Resource( name, IMAGE_MIMES )
+	if resource then
+		return Image.static:fromResource( resource )
+	end
 end
 
-function Image.static:fromPathInBundle( String path, Bundle bundle )
-    return Image.static:fromFile( bundle:fileFromPath( path ) )
+function Image.static:fromPathInBundle( String path, Any bundle )
+	return Image.static:fromFile( bundle:fileFromPath( path ) )
 end
 
-function Image.static:fromNameInBundle( String name, Bundle bundle )
-    return Image.static:fromFile( bundle:file( name, IMAGE_MIMES ) )
+function Image.static:fromNameInBundle( String name, Any bundle )
+	return Image.static:fromFile( bundle:file( name, IMAGE_MIMES ) )
 end
 
 function Image.static:fromResource( resource )
-    local mime = resource.mime
-    if mime == mimes.UCG then
-        return Image.static:fromUniversalCompressedGraphics( resource.binaryContents )
-    elseif mime == mimes.SICON then
-        return Icon.static:fromIcon( resource.binaryContents )
-    elseif mime == mimes.IMAGE then
-        return Image.static:fromPaintFormat( resource.contents )
-    end
+	local mime = resource.mime
+	if mime == mimes.UCG then
+		return Image.static:fromUniversalCompressedGraphics( resource.binaryContents )
+	elseif mime == mimes.SICON then
+		return Icon.static:fromIcon( resource.binaryContents )
+	elseif mime == mimes.IMAGE then
+		return Image.static:fromPaintFormat( resource.contents )
+	end
 end
 
 function Image.static:fromPixels( pixels, width, height )
-    return Image( pixels, width, height )
+	return Image( pixels, width, height )
 end
 
 function Image.static:fromPaintFormat( contents )
-    local lines = split( contents, "\n" )
-    local pixels = {}
-    local width = 0
-    for y, line in ipairs( lines ) do
-        width = math.max( width, #line )
-    end
+	local lines = split( contents, "\n" )
+	local pixels = {}
+	local width = 0
+	for y, line in ipairs( lines ) do
+		width = math.max( width, #line )
+	end
 
-    for y, line in pairs( lines ) do
-        for x = 1, #line do
-            pixels[(y - 1) * width + x] = getColourOf( line:sub( x, x ) )
-        end
-    end
+	for y, line in pairs( lines ) do
+		for x = 1, #line do
+			pixels[(y - 1) * width + x] = getColourOf( line:sub( x, x ) )
+		end
+	end
 
-    return Image( pixels, width, #lines )
+	return Image( pixels, width, #lines, contents )
 end
 
 function Image:toPaintFormat()
-    local pixels = self.pixels
-    local paintFormat = ""
-    local width, height = self.width, self.height
+	local pixels = self.pixels
+	local paintFormat = ""
+	local width, height = self.width, self.height
 
-    for y = 1, height do
-        for x = 1, width do
-            paintFormat = paintFormat .. getHexOf( pixels[(y - 1) * width + x] )
-        end
-        paintFormat = paintFormat .. "\n"
-    end
+	for y = 1, height do
+		for x = 1, width do
+			paintFormat = paintFormat .. getHexOf( pixels[(y - 1) * width + x] )
+		end
+		paintFormat = paintFormat .. "\n"
+	end
 
-    return paintFormat
+	return paintFormat
 end
 
-            -- Thanks to ardera for this format! --
+local function newBuffer(mode, source)
+	local bytes = {}
+	local bits = {}
+	
+	if type(source) == "table" then
+		local b
+		for a = 1, #source do
+			b = source[a]
+			if type(b) == "number" and b >= 0 and b < 256 then
+				bytes[#bytes +1] = math.floor(b)
+			else
+				bytes[#bytes +1] = 0
+			end
+		end
+	elseif type(source) == "string" then
+		for a = 1, #source do
+			bytes[#bytes +1] = source:sub(a, a):byte()
+		end
+	end
+	
+	local bitcache = {}
+	local pointer = 1
+	local bitcounter = 0
+	
+	local buf = {}
+	if mode == "w" then
+		bitcache = 0
+		buf.vcfaces = {}
+		
+		local function writeByteRaw(b)
+			bytes[pointer] = b
+			pointer = pointer +1
+		end
+		
+		local function flushBitcacheReal()
+			local rest = bitcounter % 8
+			local low, x
+			for a = bitcounter, 8, -8 do
+				low = 2^(a-8)
+				bitcache = bitcache % 2^a
+				x = (bitcache - (bitcache % low)) / low
+				writeByteRaw(x)
+			end
+			bitcache = bitcache % 2^rest
+			bitcounter = rest
+		end
+	
+		local function flushBitcache()
+			if bitcounter >= 8 then
+				flushBitcacheReal()
+			end
+		end
+		
+		local function writeBit(b)
+			bitcache = bitcache *2
+			if b == 1 or b == true then
+				bitcache = bitcache +1 
+			end
+			bitcounter = bitcounter +1
+			
+			if bitcounter >= 8 then
+				flushBitcacheReal()
+			end
+		end
+		buf.writeBit = writeBit
+		
+		local function writeByte(b)
+			if bitcounter == 0 then
+				writeByteRaw(b)
+				return
+			end
+			
+			bitcache = (bitcache * 256) + b
+			bitcounter = bitcounter + 8
+			
+			if bitcounter >= 8 then
+				flushBitcacheReal()
+			end
+		end
+		buf.writeByte = writeByte
+		
+		local function writeNumber(nbits, n)
+			if nbits == 1 then
+				writeBit(n)
+			end
+			
+			bitcache = (bitcache * 2^nbits) + n
+			bitcounter = bitcounter + nbits
+			
+			if bitcounter >= 8 then
+				flushBitcacheReal()
+			end
+		end
+		buf.writeNumber = writeNumber
+		
+		function buf.writeBytes(bs)
+			for a = 1, #bs do
+				writeByte(bs[a])
+			end
+		end
+		
+		function buf.writeBits(bits)
+			for a = 1, #bits do
+				writeBit(bits[a])
+			end
+		end
+		
+		function buf.writeChar(c)
+			writeByte(c:byte())
+		end
+		
+		function buf.writeWord(b)
+			if bitcounter == 0 then
+				writeByteRaw((b-(b%256))/256)
+				writeByteRaw(b%256)
+				return
+			end
+			
+			bitcache = (bitcache * 2^16) + b
+			bitcounter = bitcounter + 16
+			
+			flushBitcacheReal()
+		end
+		
+		function buf.writeInteger(b)
+			if bitcounter == 0 then
+				local h1, h2, h3 = 2^24, 2^16, 2^8
+				writeByteRaw((b-(b%h1))/h1)
+				writeByteRaw(((b%h1)-(b%h2))/h2)
+				writeByteRaw(((b%h2)-(b%h3))/h3)
+				writeByteRaw(b%h3)
+				return
+			end
+			
+			bitcache = (bitcache * 2^32) + b
+			bitcounter = bitcounter + 32
+			
+			flushBitcacheReal()
+		end
+		
+		function buf.finishByte(b)
+			local rest = 8 - (bitcounter % 8)
+			if rest == 8 then
+				rest = 0
+			end
+			bitcache = bitcache * 2^rest
+			bitcounter = bitcounter + rest
+			flushBitcacheReal()
+		end
+		
+		function buf.getBytes()
+			return bytes
+		end
+		
+		function buf.writeToFile(path)
+			local w = fs.open(path, "wb")
+			for a = 1, #bytes do
+				w.write(bytes[a])
+			end
+			w.close()
+		end
+		
+		function buf.writeToBuffer(b)
+			if b.writeBytes and b.writeBits then
+				b.writeBytes(bytes)
+				b.writeBits(bitcache)
+			end
+		end
+		
+		function buf.readFromFile(path)
+			local r = fs.open(path, "rb")
+			local b = r.read()
+			while b do
+				buf.writeByte(b)
+				b = r.read()
+			end
+			r.close()
+		end
+		
+		function buf.readFromBuffer(r)
+			if r.readByte and r.readBit then
+				local b = r.readByte()
+				while b do
+					buf.writeByte(b)
+					b = r.readByte()
+				end
+				b = r.readBit()
+				while b do
+					buf.writeBit(b)
+					b = r.readBit()
+				end
+			end
+		end
+		
+		function buf.getSize()
+			return #bytes
+		end
+		
+		local ternaryCache = {} -- contains the decimal value for each ternary code
+		local ternaryToHuff = {}
+		local function writeTernary(t)
+			local v = ternaryCache[t]
+			bitcache = bitcache * 2^v.l + v.v
+			bitcounter = bitcounter + v.l
+			
+			if bitcounter >= 8 then
+				flushBitcacheReal()
+			end
+		end
+		buf.writeTernary = writeTernary
+		
+		function buf.newVariableCodeInterface()
+			local f = {}
+			
+			local vcodeToTernary = {}
+			local valueToTernary = {}
+			
+			function f.loadCodes(t)
+				local n, n2, len
+				for a, b in pairs(t) do
+					n, n2, len = 0, 0, #b
+					for c = 1, len do
+						if b[c] == 1 then
+							n = n + (3^(c-1))
+							n2 = n2 + (2^(len-c))
+						end
+					end
+					n = n + ((3^len)-1)/2
+					ternaryCache[n] = {l=len, v=n2}
+					
+					vcodeToTernary[b] = n
+					valueToTernary[a] = n
+				end
+				
+				return valueToTernary, vcodeToTernary
+			end
+			
+			function f.loadCode(value, code)
+				n, n2, len = 0, 0, #code
+				for a = 1, len do
+					if code[a] == 1 then
+						n = n + (3^(a-1))
+						n2 = n2 + (2^(len-c))
+					end
+				end
+				n = n + ((3^len)-1)/2
+				ternaryCache[n] = {l=len, v=n2}
+				
+				vcodeToTernary[code] = n
+				valueToTernary[value] = n
+				
+				return valueToTernary, vcodeToTernary
+			end
+			
+			function f.getConversion_valueToTernary()
+				return valueToTernary
+			end
+			
+			function f.getConversion_vcodeToTernary()
+				return vcodeToTernary
+			end
+			
+			f.writeTernary = writeTernary
+			
+			function f.writeValue(a)
+				local v = valueToTernary[a]
+				if v then
+					local x = ternaryCache[v]
+					local cacheBefore = bitcache
+					local counterBefore = bitcounter
+					bitcache = bitcache * 2^x.l + x.v
+					bitcounter = bitcounter + x.l
+					if bitcounter >= 8 then
+						flushBitcacheReal()
+					end
+				else
+					error("valueToTernary: Ternary value not found! Key: "..tostring(a), 2)
+				end
+			end
+			
+			function f.writeVCode(v)
+				local val = vcodeToTernary[v]
+				if val then
+					local v2 = ternaryCache[val]
+					bitcache = bitcache * 2^v2.l + v2.v
+					bitcounter = bitcounter + v2.l
+					
+					if bitcounter >= 8 then
+						flushBitcacheReal()
+					end
+				else
+					error("vcodeToTernary: Ternary value not found! Key: "..tostring(v), 2)
+				end
+			end
+			
+			local _ = setmetatable({}, {__index = f, __newindex = function() end, metatable = "protected"})
+			local id = #buf.vcfaces +1
+			f.id = id
+			buf.vcfaces[id] = _
+			return _, id
+		end
+	elseif mode == "r" then
+		local function readByteRaw()
+			local b = bytes[pointer]
+			pointer = pointer +1
+			return b
+		end
+		
+		local function readBit()
+			if bitcache[1] == nil or bitpointer > 8 then
+				local by = readByteRaw()
+				if by then
+					bitcache = {
+						by >= 128,
+						(by % 128) >= 64,
+						(by % 64) >= 32,
+						(by % 32) >= 16,
+						(by % 16) >= 8,
+						(by % 8) >= 4,
+						(by % 4) >= 2,
+						(by % 2) >= 1
+					}
+				else
+					bitcache = {}
+				end
+				bitpointer = 1
+			end
+			
+			local b = bitcache[bitpointer]
+			bitpointer = bitpointer +1
+			if b == false then
+				return 0
+			elseif b == true then
+				return 1
+			end
+			return b
+		end
+		buf.readBit = readBit
+		
+		local function readByte()
+			if bitpointer == 1 then
+				return readByteRaw()
+			else
+				return readBit()*128 + readBit()*64 + readBit()*32 + readBit()*16 + readBit()*8 + readBit()*4 + readBit()*2 + readBit()
+			end
+		end
+		buf.readByte = readByte
+		
+		function buf.readBits(nbits)
+			local t = {}
+			for a = 1, nbits do
+				t[a] = readBit()
+			end
+			return t
+		end
+		
+		function buf.readNumber(nbits)
+			if nbits <= 0 then
+				return
+			elseif nbits == 1 then
+				return readBit()
+			else
+				local n=0
+				for a=nbits-1, 0, -1 do
+					local bit = readBit()
+					if bit then
+						n=n+ bit*2^a
+					else
+						return nil
+					end
+				end
+				return n
+			end
+		end
+		function buf.readWord()
+			return readByte() * 256 + readByte()
+		end
+		function buf.readInteger()
+			return readByte()*2^24 + readByte()*2^16 + readByte()*256 + readByte()
+		end
+		
+	else
+		error("invalid buffer mode: "..tostring(mode), 2)
+	end
+	
+	function buf.getPointer()
+		return pointer
+	end
+	function buf.getBitPointer()
+		return bitcounter or bitpointer
+	end
+	function buf.getType()
+		return mode
+	end
+	
+	return setmetatable({}, {__index=buf, __newindex=function() end, metatable="protected"})
+end
+
+			-- Thanks to ardera for this format! --
 -- Format specification: http://puu.sh/lZNtW/270899ae19.pdf --
 function Image.static:fromUniversalCompressedGraphics( Table bytes )
-    local pointer = 1 -- the index of the byte to read next
-    local bitpointer = 1 -- the index of the bit to read next
-    
-    local bitcache = {}
-    local function readByteRaw()
-        local b = bytes[pointer]
-        pointer = pointer +1
-        if b == nil then
-            error("unexpected end-of-stream "..pointer, 2)
-        end
-        return b
-    end
-    local function readBit()
-        if bitcache[1] == nil then
-            bitcache = {}
-            local byte = readByteRaw()
-            bitcache[1] = byte >= 128
-            bitcache[2] = (byte % 128) >= 64
-            bitcache[3] = (byte % 64) >= 32
-            bitcache[4] = (byte % 32) >= 16
-            bitcache[5] = (byte % 16) >= 8
-            bitcache[6] = (byte % 8) >= 4
-            bitcache[7] = (byte % 4) >= 2
-            bitcache[8] = (byte % 2) >= 1
-            bitpointer = 1
-        end
-        local b = bitcache[bitpointer]
-        bitpointer = bitpointer +1
-        if bitpointer > 8 then
-            bitcache = {}
-            bitpointer = 1
-        end
-        if b == false then
-            return 0
-        elseif b == true then
-            return 1
-        end
-        return b
-    end
-    local function readBits( nbits )
-        local t = {}
-        for a = 1, nbits do
-            t[a] = readBit()
-        end
-        return t
-    end
-    local function readNumber( nbits )
-        nbits = math.floor( nbits )
-        if nbits <= 0 then
-            return
-        elseif nbits == 1 then
-            return readBit()
-        else
-            local n = 0
-            for a = nbits - 1, 0, -1 do
-                n = n + readBit() * 2^a
-            end
-            return n
-        end
-    end
-    local function readByte()
-        if bitpointer == 1 then
-            return readByteRaw()
-        else
-            return readBit() * 128 + readBit() * 64 + readBit() * 32 + readBit() * 16 + readBit() * 8 + readBit() * 4 + readBit() * 2 + readBit()
-        end
-    end
-    local function readWord()
-        return readByte()  *  256 + readByte()
-    end
-    local function readInteger()
-        return readByte() * 2^24 + readByte() * 2^16 + readByte() * 256 + readByte()
-    end
-
-    if readNumber( 24 ) ~= ucgValues.SIGNATURE then
-        error( "invalid signature!", 2 )
-    end
-
-    local version = readByte()
-    
-    local pixels = {}
-    local width, height
-    if version == 1 then
-        width, height = readWord(), readWord()
-        local numCodes = readNumber( 5 )
-        local codes = {}
-        for a = 1, numCodes do
-            local colorcode = readNumber( 5 )
-            if colorcode == 16 then
-                colorcode = 0
-            else
-                colorcode = 2^colorcode
-            end
-            local huffcode_len = readNumber( 4 ) +1
-            local huffcode = readBits( huffcode_len )
-            local nt = codes
-            for b = 1, #huffcode-1 do
-                nt[huffcode[b]] = nt[huffcode[b]] or {}
-                nt = nt[huffcode[b]]
-            end
-            nt[huffcode[#huffcode]] = colorcode
-        end
-        
-        local hcach, thcach
-        for y = 1, height do
-            for x = 1, width do
-                hcach = codes
-                while true do
-                    thcach = type(hcach)
-                    if thcach == "number" then
-                        break
-                    elseif thcach == "table" then
-                        local b = readBit()
-                        hcach = hcach[b]
-                    else
-                        error("huffman code reader errored: error in huffman tree; node type = "..thcach, 2)
-                    end
-                end
-                pixels[(y - 1) * width + x] = hcach
-            end
-        end
-    else
-        error("unsupported version: "..(tostring(version) or "unknown"), 2)
-    end
-
-    return Image( pixels, width, height )
+	-- Henceforth is ardera's code from libimg v1.2.7 with minor modifications
+	local buffer = newBuffer("r", bytes)
+	local readNumber, readWord, readBits, readBit, readByte = buffer.readNumber, buffer.readWord, buffer.readBits, buffer.readBit, buffer.readByte
+	
+	if readNumber(24) ~= ucgValues.SIGNATURE then
+		error( "invalid signature! "..tostring(n) )
+	end
+	
+	local version = readByte()
+	local w, h
+	local pixels = {}
+	if version == 3 then
+		local flags = readBits(8)
+		w, h = readWord(), readWord()
+		
+		local function serCode(c, c2)
+			local s = ""
+			local c3 = c
+			if c2 then
+				c3 = {unpack(c)}
+				c3[#c3 +1] = c2
+			end
+			for a = 1, #c3 do
+				s = s..c3[a]
+			end
+			return s
+		end
+		
+		local function readHuffmanTree(readValue)
+			local tricodes = {}
+			local toread = {0}
+			local toread2
+			local depth = 0
+			
+			if readBit() == 1 then
+				return readValue(), true
+			end
+			
+			local ternary, digitValue, c0, c1
+			while #toread > 0 do
+				toread2 = {}
+				digitValue = 3^depth
+				
+				for a = 1, #toread do
+					ternary = toread[a]
+					c0, c1 = ternary + digitValue, ternary + 2*digitValue
+					
+					if readBit() == 1 then
+						local v = readValue()
+						tricodes[c0] = v
+					else
+						toread2[#toread2 +1] = c0
+					end
+					
+					if readBit() == 1 then
+						local v = readValue()
+						tricodes[c1] = v
+					else
+						toread2[#toread2 +1] = c1
+					end
+				end
+				depth = depth +1
+				toread = toread2
+			end
+			
+			return tricodes
+		end
+		
+		local colorcodes, monocolor = readHuffmanTree(function()
+			local b = readNumber(5)
+			if b == 16 then
+				return 0
+			else
+				return 2^b
+			end
+		end)
+		
+		local lengthcodes, monolength = readHuffmanTree(function()
+			local b = readNumber(4)
+			if b <= 12 then
+				return b
+			elseif b == 13 then
+				return readNumber(5)
+			elseif b == 14 then
+				return readNumber(8)
+			elseif b == 15 then
+				return readNumber(16)
+			end
+		end)
+		
+		local debX, debY, debColor
+		
+		local function lexHuffcode(dictionary, nodedictionary)
+			local ternary = 0
+			local depth = 0
+			local v
+			while not v do
+				local bi = readBit()
+				ternary = ternary + (bi+1)*(3^depth)
+				depth = depth +1
+				v = dictionary[ternary]
+			end
+			return v
+		end
+		
+		for y = 1, h do
+			local x = 0
+			while x < w do
+				debX, debY = x, y
+				local color
+				if monocolor then
+					color = colorcodes
+				else
+					color = lexHuffcode(colorcodes, colornodecodes)
+					debColor = color
+				end
+				local len
+				if monolength then
+					len = lengthcodes
+				else
+					len = lexHuffcode(lengthcodes, lengthnodecodes)
+					debX, debY, debColor = nil, nil, nil
+				end
+				for a = 1, len do
+					pixels[(y - 1) * w + x + a] = color
+				end
+				x = x + len
+			end
+		end
+	else
+		error( "unsupported version: "..(tostring(version) or "unknown") )
+	end
+	return Image( pixels, w, h, bytes )
 end
 
 function Image:toUniversalCompressedGraphics()
-    -- first, count colors
-    local counter = {}            -- stores the amount of pixels per color (index = color code; value = pixels using it)
-    local counter2 = {}           -- same as counter, but keeps the data for efficiency calculation
-    local pixels = self.pixels
-    local w, h = self.width, self.height
-    local numPixels = w * h           -- number of colored pixels
-    local numColors = 0           -- number of used colors
-    local simpleTree = {}         -- the used huffman tree if numColors is less or equal 2
-    for i=1, numPixels do
-        local code = pixels[i] or TRANSPARENT
-        if not counter[code] then
-            if numColors < 2 then
-                simpleTree[code]=numColors  -- numColors is 0 or 1 during assignment, building the huffman code
-            end
-            numColors = numColors +1
-        end
-        counter[code] = (counter[code] or 0) +1 -- increases the number of pixels colored in this color
-        counter2[code] = (counter2[code] or 0) +1
-    end
-    
-    if w > 65535 or h > 65535 then
-        error("Image too large: width and height can not be greater than 65535")
-    end
-    
-    local bytes = {}
-    local bitcache = {}
-    local function writeByteRaw(b)
-        bytes[#bytes +1] = b
-    end
-    local function writeByte(b)
-        if #bitcache > 0 then
-            writeBit(b >= 128)
-            writeBit((b % 128) >= 64)
-            writeBit((b % 64) >= 32)
-            writeBit((b % 32) >= 16)
-            writeBit((b % 16) >= 8)
-            writeBit((b % 8) >= 4)
-            writeBit((b % 4) >= 2)
-            writeBit((b % 2) >= 1)
-        else
-            writeByteRaw(b)
-        end
-    end
-    local function writeCharRaw(c)
-        writeByteRaw(c:byte())
-    end
-    local function writeChar(c)
-        writeByte(c:byte())
-    end
-    local function writeBit(b)
-        if b == true then
-            b = 1
-        elseif b == false then
-            b = 0
-        elseif b == nil then
-            b = 0
-        end
-        bitcache[#bitcache +1] = b
-        while #bitcache >= 8 do
-            writeByteRaw(bitcache[1]*128 + bitcache[2]*64 + bitcache[3]*32 + bitcache[4]*16 + bitcache[5]*8 + bitcache[6]*4 + bitcache[7] * 2 + bitcache[8])
-            for a = 1, 8 do
-                table.remove(bitcache, 1)
-            end
-        end
-    end
-    local function writeBits(bits)
-        for a = 1, #bits do
-            writeBit(bits[a])
-        end
-    end
-    local function writeNumber(nbits, n)
-        nbits = math.floor(nbits)
-        if nbits <= 0 then
-            return
-        elseif nbits == 1 then
-            writeBit(n)
-            return
-        end
-        for a = nbits, 1, -1 do
-            writeBit((n % 2^a) >= 2^(a-1))
-        end
-    end
-    local function writePalette(hufftree)   -- hufftree is a table: {[color code] = {bit1, bit2, bit3, ...}}
-        writeNumber(5, numColors)
-        
-        for a, b in pairs(hufftree) do
-            local ncolor = math.floor(math.log(a)/math.log(2) +0.5)
-            if a == 0 then
-                writeNumber(5, 16)
-            else
-                writeNumber(5, ncolor)
-            end
-            
-            local nhuff = #b-1
-            writeNumber(4, nhuff)
-        
-            --write huffman code
-            writeBits(b)
-        end
-    end
-    local function finishByte(b)            -- fill up the current unfinished byte with b (0 or 1)
-        while #bitcache >= 8 do
-            writeByteRaw(bitcache[1]*128 + bitcache[2]*64 + bitcache[3]*32 + bitcache[4]*16 + bitcache[5]*8 + bitcache[6]*4 + bitcache[7] * 2 + bitcache[8])
-            for a = 1, 8 do
-                table.remove(bitcache, 1)
-            end
-        end
-        if #bitcache > 0 then
-            local c = bitcache
-            writeByteRaw((c[1] or b)*128 + (c[2] or b)*64 + (c[3] or b)*32 + (c[4] or b)*16 + (c[5] or b)*8 + (c[6] or b)*4 + (c[7] or b)*2 + (c[8] or b))
-            for a = 1, 8 do
-                table.remove(bitcache, 1)
-            end
-        end
-    end
-    local function writeWord(b)
-        writeNumber(16, b)
-    end
-    local function writeInteger(b)
-        writeNumber(32, b)
-    end
-    
-    -- Header: 0xFF2137
-    -- U is the 21st letter in the alphabet
-    -- C is the 3rd letter in the alphabet
-    -- G is the 7th letter in the alphabet
-    writeByte(0xFF)
-    writeByte(0x21)
-    writeByte(0x37)
-    writeByte(ucgValues.VERSION)
-    
-    writeWord(w)
-    writeWord(h)
-    
-    if numColors <= 2 then
-        -- less or equal 2 colors, huffman tree algorithm would fail
-        writePalette(simpleTree)
-    else
-        -- generate huffman tree
-        
-        local codes, low1p, low1v, low2p, low2v, lastkey = {}
-            -- the huffman codes,
-            -- the lowest probability of a color/node, the value of the color/node,
-            -- the 2nd lowest probability of a color/node, the value of the color/node
-        
-        local numentries
-        while true do
-            low1p = numPixels+1
-            low1v = -1
-            low2p = numPixels+2
-            low2v = -1
-            
-            numentries = 0
-            for a, b in pairs(counter) do
-                if b then
-                    if b < low1p then
-                        if low1p < low2p then
-                            low2p = low1p
-                            low2v = low1v
-                        end
-                        low1p = b
-                        low1v = a
-                    elseif b < low2p then
-                        low2p = b
-                        low2v = a
-                    end
-                    numentries = numentries +1
-                end
-            end
-            
-            counter[low1v] = nil
-            counter[low2v] = nil
-            lastkey = {[0]=low2v, [1]=low1v}
-            counter[lastkey] = low1p+low2p
-            
-            if numentries <= 2 then
-                break
-            end
-        end
-        
-        local touch;
-        function touch(t, huffcode)
-            if type(t) == "number" then
-                local huffcode2 = {}
-                for a = 1, #huffcode do
-                    huffcode2[a] = huffcode[a]
-                end
-                codes[t] = huffcode2
-            else
-                huffcode[#huffcode +1] = 0
-                touch(t[0], huffcode)
-                huffcode[#huffcode] = 1
-                touch(t[1], huffcode)
-                huffcode[#huffcode] = nil
-            end
-        end
-        touch(lastkey, {})
-        
-        writePalette(codes)
-        
-        -- replace color codes by huffman codes
-        local function writeColor(c)
-            writeBits(codes[c])
-        end
-        
-        for i = 1, numPixels do
-            local code = pixels[i] or TRANSPARENT
-            writeColor(code)
-        end
-        
-        finishByte(0)
-        
-        return bytes
-    end
+	local w, h = self.width, self.height
+	local pixels = self.pixels
+
+
+	-- load the pixels in to the table format ardera's code uses
+	local tImage = {}
+	local i = 1
+	for y = 1, h do
+		local row = {}
+		for x = 1, w do
+			row[x] = pixels[i]
+			i = i + 1
+		end
+		tImage[y] = row
+	end
+
+	-- Henceforth is ardera's code from libimg v1.2.7
+
+	-- first, count colors
+	local colorCounter={}				-- stores the amount of pixels per color (index = color code; value = pixels using it)
+	local lengthsCounter={}				-- counts the uses of different lengths
+	
+	local numPixels=0					-- number of colored pixels
+	local numColors=0					-- number of used colors
+	local numLengths=0					-- numbers of used lengths
+	
+	local simpleColorCodes={}			-- the used huffman tree if numColors is less or equal 1
+	local simpleLengthCodes={}
+	
+	local lengthImage={}
+	
+	if not w then
+		w = 0
+		for a = 1, #tImage do
+			w = math.max(w, #tImage[a])
+		end
+	end
+	if not h then
+		h = #tImage
+	end
+	
+	local color, colorBefore, length, imageLine, lengthImageLine
+	for y=1, #tImage do
+		imageLine = tImage[y]
+		
+		lengthImage[y] = {}
+		lengthImageLine = lengthImage[y]
+		
+		colorBefore, length = nil, nil
+		for x=1, w do
+			color = imageLine[x] or 0
+			
+			if length == nil then
+				colorBefore = color
+				length = 0
+			end
+			
+			if color == colorBefore then
+				length = length +1
+			else
+				if not lengthsCounter[length] then
+					if numLengths < 2 then
+						simpleLengthCodes[length]={numLengths}
+					end
+					numLengths = numLengths +1
+				end
+				lengthImageLine[#lengthImageLine+1]={c=colorBefore, l=length}
+				lengthsCounter[length] = (lengthsCounter[length] or 0) +1
+				
+				if not colorCounter[colorBefore] then
+					if numColors < 2 then
+						simpleColorCodes[colorBefore] = {numColors}
+					end
+					numColors = numColors +1
+				end
+				colorCounter[colorBefore] = (colorCounter[colorBefore] or 0) +1
+				
+				length = 1
+				colorBefore = color
+			end
+			numPixels = numPixels +1
+		end
+		
+		if not lengthsCounter[length] then
+			if numLengths < 2 then
+				simpleLengthCodes[length] = {numLengths}
+			end
+			numLengths = numLengths +1
+		end
+		lengthImageLine[#lengthImageLine+1]={c=colorBefore, l=length}
+		lengthsCounter[length] = (lengthsCounter[length] or 0) +1
+		
+		if not colorCounter[colorBefore] then
+			if numColors < 2 then
+				simpleColorCodes[colorBefore] = {numColors}
+			end
+			numColors = numColors +1
+		end
+		colorCounter[colorBefore] = (colorCounter[colorBefore] or 0) +1
+	end
+	
+	if w > 65535 or h > 65535 then
+		return nil, "image too large"
+	end
+	
+	local buffer = newBuffer("w")
+	local writeByte, writeChar, writeBit, writeBits, writeNumber, finishByte, writeWord, writeInteger = 
+		buffer.writeByte, buffer.writeChar, buffer.writeBit, buffer.writeBits, buffer.writeNumber, buffer.finishByte, buffer.writeWord, buffer.writeInteger
+	
+	local function serCode(c, c2)
+		local s = ""
+		local c3 = c
+		if c2 then
+			c3 = {unpack(c)}
+			c3[#c3 +1] = c2
+		end
+		for a = 1, #c3 do
+			s = s..c3[a]
+		end
+		return s
+	end
+	
+	local function generateHuffmanTree(c)
+		local codes, low1p, low1v, low2p, low2v, lastkey = {}
+			-- the huffman codes,
+			-- the lowest probability of a color/node, the value of the color/node,
+			-- the 2nd lowest probability of a color/node, the value of the color/node
+		
+		local numentries
+		while true do
+			low1p = nil
+			low1v = -1
+			low2p = nil
+			low2v = -1
+			
+			numentries = 0
+			for a, b in pairs(c) do
+				if b then
+					if (low1p == nil) or (b < low1p) then
+						if (low2p == nil) or (low1p < low2p) then
+							low2p = low1p
+							low2v = low1v
+						end
+						low1p = b
+						low1v = a
+					elseif (low2p == nil) or (b < low2p) then
+						low2p = b
+						low2v = a
+					end
+					numentries = numentries +1
+				end
+			end
+			
+			c[low1v] = nil
+			c[low2v] = nil
+			lastkey = {[0]=low2v, [1]=low1v}
+			c[lastkey] = low1p+low2p
+			
+			if numentries <= 2 then
+				break
+			end
+		end
+		
+		local touch;
+		function touch(t, huffcode)
+			if type(t) == "number" then
+				codes[t] = {unpack(huffcode)}
+				return
+			else
+				huffcode[#huffcode +1] = 0
+				touch(t[0], huffcode)
+				huffcode[#huffcode] = 1
+				touch(t[1], huffcode)
+				huffcode[#huffcode] = nil
+			end
+		end
+		touch(lastkey, {})
+		
+		return codes, lastkey
+	end
+	
+	local function writeHufftree(tree, writeValue)
+		local towrite = {tree}
+		if not tree[1] then
+			writeBit(1)
+			writeValue(tree[0])
+			return
+		else
+			writeBit(0)
+		end
+		local towrite2, sub0, sub1
+		while #towrite ~= 0 do
+			towrite2 = {}
+			for a = 1, #towrite do
+				sub0, sub1 = towrite[a][0], towrite[a][1]
+				if type(sub0) == "number" then
+					writeBit(1)
+					writeValue(sub0)
+				else
+					writeBit(0)
+					towrite2[#towrite2 +1] = sub0
+				end
+				if type(sub1) == "number" then
+					writeBit(1)
+					writeValue(sub1)
+				else
+					writeBit(0)
+					towrite2[#towrite2 +1] = sub1
+				end
+			end
+			towrite=towrite2
+		end
+	end
+	
+	local function writePalette(hufftree)
+		writeHufftree(hufftree, function(v)
+			if v == 0 then
+				writeNumber(5, 16)
+			else
+				writeNumber(5, math.log(v)/math.log(2))
+			end
+		end)
+	end
+	
+	local function writeLengthTree(hufftree)
+		writeHufftree(hufftree, function(v)
+			if v <= 12 then
+				writeNumber(4, v)
+			else
+				local nbits = math.floor(math.log(v)/math.log(2)) +1
+				if nbits <= 5 then
+					writeNumber(4, 13)
+					writeNumber(5, v)
+				elseif nbits <= 8 then
+					writeNumber(4, 14)
+					writeNumber(8, v)
+				else
+					writeNumber(4, 15)
+					writeNumber(16, v)
+				end
+			end
+		end)
+	end
+	
+	-- Header: 0xFF2137
+	-- U is the 21st letter in the alphabet
+	-- C is the 3rd letter in the alphabet
+	-- G is the 7th letter in the alphabet
+	writeByte(0xFF)
+	writeByte(0x21)
+	writeByte(0x37)
+	writeByte(ucgValues.VERSION)
+	
+	-- flags currently unused
+	flags = {0, 0, 0, 0, 0, 0, 0, 0}
+	writeBits(flags)
+	writeWord(w)
+	writeWord(h)
+	
+	local monocolor = numColors == 1
+	local colorcodes, colortree
+	if numColors <= 2 then
+		-- less or equal 2 colors, huffman tree algorithm would fail
+		colorcodes = simpleColorCodes
+		colortree = {}
+		for a, b in pairs(simpleColorCodes) do
+			colortree[b[1]] = a
+		end
+	else
+		-- generate color huffman tree
+		colorcodes, colortree = generateHuffmanTree(colorCounter)
+	end
+	writePalette(colortree)
+	
+	local monolength = numLengths == 1
+	local lengthcodes, lengthtree
+	if numLengths <= 2 then
+		-- less or equal 2 lengths, huffman tree algorithm would fail
+		lengthcodes = simpleLengthCodes
+		lengthtree = {}
+		for a, b in pairs(simpleLengthCodes) do
+			lengthtree[b[1]] = a
+		end
+	else
+		-- generate length huffman tree
+		lengthcodes, lengthtree = generateHuffmanTree(lengthsCounter)
+	end
+	writeLengthTree(lengthtree)
+	
+	local cFace, cWrite
+	if not monocolor then
+		cFace = buffer.newVariableCodeInterface()
+		cFace.loadCodes(colorcodes)
+		cWrite = cFace.writeValue
+	end
+	
+	local lFace, lWrite
+	if not monolength then
+		lFace = buffer.newVariableCodeInterface()
+		lFace.loadCodes(lengthcodes)
+		lWrite = lFace.writeValue
+	end
+	
+	-- write image data
+	for y = 1, h do
+		local line = lengthImage[y]
+		local dx = 0
+		for x = 1, #line do
+			local p = line[x]
+			if not monocolor then
+				cWrite(p.c)
+			end
+			if not monolength then
+				lWrite(p.l)
+			end
+			dx = dx + p.l
+		end
+	end
+	
+	finishByte(0)
+	
+	return buffer.getBytes()
 end
 
 function Image.pixels:set( pixels )
-    self.pixels = pixels
-    self.scaledCache = {
-        [self.width .. ":" .. self.height] = pixels;
-    }
+	self.pixels = pixels
+	self.scaledCache = {
+		[self.width .. ":" .. self.height] = pixels;
+	}
 end
 
 --[[
-    @desc Returns the image's pixels scaled to the desired dimensions. These are cached so performance should not be a huge concern.
-    @param [number] scaledWidth
-    @param [number] scaledHeight
-    @return [table] pixels -- the scaled pixels
+	@desc Returns the image's pixels scaled to the desired dimensions. These are cached so performance should not be a huge concern.
+	@param [number] scaledWidth
+	@param [number] scaledHeight
+	@return [table] pixels -- the scaled pixels
 ]]
 function Image:getScaledPixels( scaledWidth, scaledHeight )
-    scaledWidth = math.floor( scaledWidth + 0.5 )
-    scaledHeight = math.floor( scaledHeight + 0.5 )
+	scaledWidth = math.floor( scaledWidth + 0.5 )
+	scaledHeight = math.floor( scaledHeight + 0.5 )
 
-    local scaledCache = self.scaledCache
+	local scaledCache = self.scaledCache
 
-    if scaledCache[scaledWidth .. ":" .. scaledHeight] then
-        return scaledCache[scaledWidth .. ":" .. scaledHeight]
-    end
+	if scaledCache[scaledWidth .. ":" .. scaledHeight] then
+		return scaledCache[scaledWidth .. ":" .. scaledHeight]
+	end
 
-    local width, height, pixels = self.width, self.height, self.pixels
+	local width, height, pixels = self.width, self.height, self.pixels
 
-    local scaledPixels = {}
-    local widthRatio = width / scaledWidth
-    local heightRatio = height / scaledHeight
-    local ceil = math.ceil
+	local scaledPixels = {}
+	local widthRatio = width / scaledWidth
+	local heightRatio = height / scaledHeight
+	local ceil = math.ceil
 
-    for x = 1, scaledWidth do
-        for y = 1, scaledHeight do
-            scaledPixels[(y - 1) * scaledWidth + x] = pixels[ ceil( y * heightRatio - 1 ) * width + ceil( x * widthRatio ) ]
-        end
-    end
+	for x = 1, scaledWidth do
+		for y = 1, scaledHeight do
+			scaledPixels[(y - 1) * scaledWidth + x] = pixels[ ceil( y * heightRatio - 1 ) * width + ceil( x * widthRatio ) ]
+		end
+	end
 
-    scaledCache[scaledWidth .. ":" .. scaledHeight] = scaledPixels
+	scaledCache[scaledWidth .. ":" .. scaledHeight] = scaledPixels
 
-    return scaledPixels
+	return scaledPixels
 end
 
 --[[
-    @desc Renders the given image on top of the self image at the given position
-    @param [Image] appendingImage -- description
-    @param [number] x
-    @param [number] y
+	@desc Renders the given image on top of the self image at the given position
+	@param [Image] appendingImage -- description
+	@param [number] x
+	@param [number] y
 ]]
 function Image:appendImage( appendingImage, x, y )
-    local appendingWidth, appendingHeight, appendingPixels = appendingImage.width, appendingImage.height, appendingImage.pixels
-    local selfWidth, selfHeight, selfPixels = self.width, self.height, self.pixels
-    local TRANSPARENT = TRANSPARENT
-    local xLimit, yLimit = math.min( selfWidth, appendingWidth + x - 1 ), math.min( selfHeight, appendingHeight + y - 1 )
-    for _y = y, yLimit do
-        for _x = x, xLimit do
-            local appendingPixel = appendingPixels[(_y - y) * appendingWidth + (_x - x + 1)]
-            if appendingPixel and appendingPixel ~= TRANSPARENT then
-                selfPixels[(_y - 1) * selfWidth + _x] = appendingPixel
-            end
-        end
-    end
-    self.pixels = selfPixels
+	local appendingWidth, appendingHeight, appendingPixels = appendingImage.width, appendingImage.height, appendingImage.pixels
+	local selfWidth, selfHeight, selfPixels = self.width, self.height, self.pixels
+	local TRANSPARENT = TRANSPARENT
+	local xLimit, yLimit = math.min( selfWidth, appendingWidth + x - 1 ), math.min( selfHeight, appendingHeight + y - 1 )
+	for _y = y, yLimit do
+		for _x = x, xLimit do
+			local appendingPixel = appendingPixels[(_y - y) * appendingWidth + (_x - x + 1)]
+			if appendingPixel and appendingPixel ~= TRANSPARENT then
+				selfPixels[(_y - 1) * selfWidth + _x] = appendingPixel
+			end
+		end
+	end
+	self.pixels = selfPixels
+end
+
+--[[
+	@desc Adds transparent padding around an the images shorter side to prevent the image from being skewed when used in a square context
+]]
+function Image:squareCentred()
+	local width, height = self.width, self.height
+	if width ~= height then
+		local difference = math.abs( width - height )
+		local differenceOne, differenceTwo = math.ceil( difference / 2 ), math.floor( difference / 2 )
+		local pixels = self.pixels
+		if width > height then
+			-- we need to add rows to the bottom and top
+			local insert = table.insert
+			for i = 1, differenceOne * width do
+				insert( pixels, TRANSPARENT )
+			end
+
+			local length = #pixels
+			for i = 1, differenceTwo * width do
+				length = length + 1
+				pixels[length] = TRANSPARENT
+			end
+			self.height = width
+		else
+			-- we need to add columns to the left and right
+			local n = 1
+			local insert = table.insert
+			for i = 1, height do
+				for j = 1, differenceOne do
+					insert( pixels, n, TRANSPARENT )
+					n = n + 1
+				end
+				n = n + width
+				for j = 1, differenceTwo do
+					insert( pixels, n, TRANSPARENT )
+					n = n + 1
+				end
+			end
+			self.width = height
+		end
+		self.scaledCache = {}
+	end
 end
