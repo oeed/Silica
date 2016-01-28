@@ -1,4 +1,4 @@
 
-class ResizeHorizontalCursor extends Cursor {
+class ResizeVerticalCursor extends Cursor {
 	
 }
