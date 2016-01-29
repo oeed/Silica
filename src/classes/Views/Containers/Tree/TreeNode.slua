@@ -1,0 +1,4 @@
+
+class TreeNode extends Container implements ITreeChild {
+	
+}

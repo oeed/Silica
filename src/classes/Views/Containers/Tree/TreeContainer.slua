@@ -1,0 +1,11 @@
+
+class TreeContainer extends ListContainer implements IAutomaticLayout {
+	
+}
+
+function TreeContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
+	if not event.childView:typeOf( ITreeChild ) then
+		error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not extend ITreeChild to '" .. tostring( self ) .. "'", 0 )
+	end
+	self.needsLayoutUpdate = true
+end
