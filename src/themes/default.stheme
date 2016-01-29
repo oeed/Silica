@@ -326,7 +326,7 @@
 	<Cursor>
 		<image type="Image" default="cursor-default-tail" />
 		<hotSpotX type="Number" default="2" />
-		<hotSpotY type="Number" default="2" />
+		<hotSpotY type="Number" default="3" />
 	</Cursor>
 
 	<ClickableCursor>
