@@ -23,7 +23,7 @@ function SplitContainer:updateLayout()
 	local childrenCount = #children
 	if childrenCount > 0 and childrenCount % 2 == 1 then -- we MUST have an odd number of children, there should be a separator view between each main view
 		local width, height, isVertical = self.width, self.height, self.isVertical
-		local size, otherSize = isVertical and height or width, isVertical and width or height
+		local size = isVertical and height or width
 		local handleThickness, handleLeftMargin, handleRightMargin, handleSize
 		if childrenCount > 1 then
 			local theme = children[2].theme
@@ -40,7 +40,7 @@ function SplitContainer:updateLayout()
 
 		local segmentSize = size / ( #handlePositions + 1 )
 		local position, remainingSize = 1, size - ( handleThickness and ( #handlePositions * handleThickness ) or 0 )
-		local positionKey, otherPositionKey, sizeKey, otherSizeKey = isVertical and "y" or "x", isVertical and "x" or "y", isVertical and "height" or "width", isVertical and "width" or "height"
+		local positionKey, sizeKey = isVertical and "y" or "x", isVertical and "height" or "width"
 		for i = 1, childrenCount, 2 do
 			local childView = children[i]
 			local index = i / 2 + 0.5
@@ -51,17 +51,13 @@ function SplitContainer:updateLayout()
 				local handleView = children[i + 1]
 				handleView.contentPosition = position
 				handleView[positionKey] = position + childSize - handleLeftMargin
-				handleView[otherPositionKey] = 1
 				handleView[sizeKey] = handleSize
-				handleView[otherSizeKey] = otherSize
 			else
 				childSize = remainingSize
 			end
 			remainingSize = remainingSize - childSize
 			childView[positionKey] = position
-			childView[otherPositionKey] = 1
 			childView[sizeKey] = childSize
-			childView[otherSizeKey] = otherSize
 			position = position + childSize + ( handleThickness or 0 )
 		end
 		self.segmentSize = segmentSize
@@ -95,8 +91,13 @@ end
 function SplitContainer.isVertical:set( isVertical )
 	self.isVertical = isVertical
 	local children = self.children
+	local otherSize = isVertical and self.width or self.height
+	local otherPositionKey, otherSizeKey = isVertical and "x" or "y", isVertical and "width" or "height"
 	for i = 1, #children, 2 do
-		children[i].isVertical = isVertical
+		local childView = children[i]
+		childView.isVertical = isVertical
+		childView[otherPositionKey] = 1
+		childView[otherSizeKey] = otherSize
 	end
 end
 
@@ -121,6 +122,10 @@ function SplitContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phas
 		else
 			self.needsLayoutUpdate = true
 		end
+		local otherSize = self.isVertical and self.width or self.height
+		local otherPositionKey, otherSizeKey = isVertical and "x" or "y", isVertical and "width" or "height"
+		childView[otherPositionKey] = 1
+		childView[otherSizeKey] = otherSize
 	end
 end
 
