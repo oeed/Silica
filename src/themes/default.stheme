@@ -273,6 +273,8 @@
         <cornerRadius type="Number" default="3" />
 		<topMargin type="Number" default="4" />
 		<bottomMargin type="Number" default="4" />
+		<animationDuration type="Number" default="0.2" />
+		<animationEasing type="Animation.easings" default="IN_OUT_SINE" />
 	</ListContainer>
 
 	<ListItem>
