@@ -12,7 +12,7 @@ function ListContainer:initialise( ... )
 	self:super( ... )
 	self:event( ChildAddedInterfaceEvent, self.onChildAdded )
 	self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
-	self:event( ReadyInterfaceEvent, self.onReady )
+	self:event( ReadyInterfaceEvent, self.onReady, Event.phases.AFTER )
 end
 
 function ListContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
