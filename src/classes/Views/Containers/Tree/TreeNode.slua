@@ -3,6 +3,9 @@ class TreeNode extends LayoutContainer implements ITreeChild {
 	
 	text = String;
 	isSelected = Boolean( false );
+	isFolded = Boolean( false );
+	minHeight = Number.allowsNil;
+	maxHeight = Number.allowsNil;
 
 }
 
@@ -35,7 +38,10 @@ function TreeNode.text:set( text )
 end
 
 function TreeNode:updateThemeStyle()
-	self.theme.style = self.isEnabled and ( self.isSelected and "selected" or "default" ) or "disabled"
+	local theme = self.theme
+	theme.style = self.isEnabled and ( self.isSelected and "selected" or "default" ) or "disabled"
+	self.minHeight = theme:value( "topMargin" ) + theme:value( "topTextMargin" ) + theme:value( "font" ).height + theme:value( "bottomTextMargin" ) + theme:value( "bottomMargin" )
+	self.needsLayoutUpdate = true
 end
 
 function TreeNode.isEnabled:set( isEnabled )
@@ -59,12 +65,28 @@ end
 function TreeNode:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
 	if self.isSelected and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isSelected = false
+		self.isFolded = not self.isFolded
 		if self.isEnabled and self:hitTestEvent( event ) then
 			self.event:handleEvent( ActionInterfaceEvent( self ) )
 			local result = self.event:handleEvent( event )
 			return result == nil and true or result
 		end
 		return true
+	end
+end
+
+function TreeNode.isFolded:set( isFolded )
+    self.isFolded = isFolded
+    local height = isFolded and self.minHeight or self.maxHeight
+    if height then
+	    local theme = self.theme
+		self:animate( "height", height, theme:value( "animationDuration" ), nil, theme:value( "animationEasing" ) )
+	end
+	local parent = self.parent
+	if parent then
+		if parent:typeOf( TreeContainer ) then
+			parent.needsLayoutUpdate = true
+		end
 	end
 end
 
@@ -99,9 +121,13 @@ end
 function TreeNode:updateLayout( dontAnimate )
 	local width, theme = self.width, self.theme
 	local childrenMarginLeft = theme:value( "childrenMarginLeft" )
-	local y = 1 + theme:value( "topMargin" ) + theme:value( "topTextMargin" ) + theme:value( "childrenMarginTop" ) + theme:value( "font" ).height + theme:value( "bottomTextMargin" ) + theme:value( "bottomMargin" )
+	local y = 1 + self.minHeight + theme:value( "childrenMarginTop" )
 
-	local time, easing = 0.2, Animation.easings.IN_OUT_SINE
+	local time, easing
+	if not dontAnimate then
+		time = theme:value( "animationDuration" )
+		easing = theme:value( "animationEasing" )
+	end
 	for i, childView in ipairs( self.children ) do
 		if dontAnimate then
 			childView.y = y
@@ -113,7 +139,14 @@ function TreeNode:updateLayout( dontAnimate )
 		y = y + childView.height
 	end
 
-	self.height = y + theme:value( "bottomMargin" ) - 1 + theme:value( "childrenMarginBottom" )
+	local maxHeight = y + theme:value( "bottomMargin" ) - 1 + theme:value( "childrenMarginBottom" )
+	self.maxHeight = maxHeight
+	local height = self.isFolded and self.minHeight or maxHeight
+	if dontAnimate then
+		self.height = height
+	else
+		self:animate( "height", height, time, nil, easing )
+	end
 
 	self.needsLayoutUpdate = false
 end
