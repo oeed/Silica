@@ -70,6 +70,28 @@ function SplitContainer:updateLayout()
 	self.needsLayoutUpdate = false
 end
 
+--[[
+	@desc Locks the layout of children for performance
+]]
+function SplitContainer:lockChildren()
+	for i, childView in ipairs( self.children ) do
+		if childView:typeOf( ILockableLayout ) then
+			childView.isLayoutLocked = true
+		end
+	end
+end
+
+--[[
+	@desc Unlocks the layout of children
+]]
+function SplitContainer:unlockChildren()
+	for i, childView in ipairs( self.children ) do
+		if childView:typeOf( ILockableLayout ) then
+			childView.isLayoutLocked = false
+		end
+	end
+end
+
 function SplitContainer.isVertical:set( isVertical )
 	self.isVertical = isVertical
 	local children = self.children
