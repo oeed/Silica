@@ -1,4 +1,119 @@
 
-class TreeNode extends Container implements ITreeChild {
+class TreeNode extends LayoutContainer implements ITreeChild {
 	
+	text = String;
+	isSelected = Boolean( false );
+
 }
+
+function TreeNode:initialise( ... )
+	self:super( ... )
+
+	self:event( MouseDownEvent, self.onMouseDown )
+	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+	-- self:event( MouseHeldEvent, self.onMouseHeld )
+end
+
+function TreeNode:onDraw()
+	-- self.canvas:fill(2^math.random(1,14))
+
+
+	local width, theme, canvas, font = self.width, self.theme, self.canvas
+	local font, leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "font" ), theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
+	local leftTextMargin, rightTextMargin, topTextMargin, bottomTextMargin = theme:value( "leftTextMargin" ), theme:value( "rightTextMargin" ), theme:value( "topTextMargin" ), theme:value( "bottomTextMargin" )
+	local height = topTextMargin + font.height + bottomTextMargin
+
+	local roundedRectangleMask = RoundedRectangleMask( 1 + leftMargin, 1 + topMargin, width - leftMargin - rightMargin, height, theme:value( "cornerRadius" ) )
+	canvas:fill( theme:value( "fillColour" ), roundedRectangleMask )
+
+	canvas:fill( theme:value( "textColour" ),  TextMask( leftTextMargin + 1, topTextMargin + 1, width - leftTextMargin - rightTextMargin, height - topTextMargin - bottomTextMargin, self.text, font ) )
+end
+
+function TreeNode.text:set( text )
+	self.text = text
+	self.needsDraw = true
+end
+
+function TreeNode:updateThemeStyle()
+	self.theme.style = self.isEnabled and ( self.isSelected and "selected" or "default" ) or "disabled"
+end
+
+function TreeNode.isEnabled:set( isEnabled )
+	self.isEnabled = isEnabled
+	self:updateThemeStyle()
+end
+
+function TreeNode.isSelected:set( isSelected )
+	self.isSelected = isSelected
+	self:updateThemeStyle()
+end
+
+-- function TreeNode:onMouseHeld( MouseHeldEvent event, Event.phases phase )
+-- 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then
+-- 		self.isSelected = true
+-- 		self:startDragDrop( event, ListClipboardData( self ), true, function()self.isSelected = false end )
+-- 	end
+-- 	return true
+-- end
+
+function TreeNode:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+	if self.isSelected and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+		self.isSelected = false
+		if self.isEnabled and self:hitTestEvent( event ) then
+			self.event:handleEvent( ActionInterfaceEvent( self ) )
+			local result = self.event:handleEvent( event )
+			return result == nil and true or result
+		end
+		return true
+	end
+end
+
+function TreeNode:onMouseDown( MouseDownEvent event, Event.phases phase )
+	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+		local theme = self.theme
+		local font, topMargin, bottomMargin, topTextMargin, bottomTextMargin = theme:value( "font" ), theme:value( "topMargin" ), theme:value( "bottomMargin" ), theme:value( "topTextMargin" ), theme:value( "bottomTextMargin" )
+		local height = topTextMargin + font.height + bottomTextMargin
+		log(event.y)
+		if event.y <= topMargin + topTextMargin + font.height + bottomTextMargin + bottomMargin then
+			self.isSelected = not self.isSelected
+			return true
+		end
+	end
+end
+
+function TreeNode:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
+	if not event.childView:typeOf( ITreeChild ) then
+		error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not extend ITreeChild to '" .. tostring( self ) .. "'", 0 )
+	end
+	self.needsLayoutUpdate = true
+end
+
+function TreeNode.width:set( width )
+    self:super( width )
+	local childrenMarginLeft = self.theme:value( "childrenMarginLeft" )
+	for i, childView in ipairs( self.children ) do
+		childView.width = width - childrenMarginLeft
+	end
+end
+
+function TreeNode:updateLayout( dontAnimate )
+	local width, theme = self.width, self.theme
+	local childrenMarginLeft = theme:value( "childrenMarginLeft" )
+	local y = 1 + theme:value( "topMargin" ) + theme:value( "topTextMargin" ) + theme:value( "childrenMarginTop" ) + theme:value( "font" ).height + theme:value( "bottomTextMargin" ) + theme:value( "bottomMargin" )
+
+	local time, easing = 0.2, Animation.easings.IN_OUT_SINE
+	for i, childView in ipairs( self.children ) do
+		if dontAnimate then
+			childView.y = y
+		else
+			childView:animate( "y", y, time, nil, easing )
+		end
+		childView.x = 1 + childrenMarginLeft
+		childView.width = width - childrenMarginLeft
+		y = y + childView.height
+	end
+
+	self.height = y + theme:value( "bottomMargin" ) - 1 + theme:value( "childrenMarginBottom" )
+
+	self.needsLayoutUpdate = false
+end
