@@ -1,8 +1,8 @@
 
 class FlowContainer extends Container {
 	
-	needsLayoutUpdate = false;
-	expandVertically = true;
+	needsLayoutUpdate = Boolean( false );
+	isLayoutLocked = Boolean( false );
 
 }
 
@@ -24,7 +24,7 @@ end
 
 function FlowContainer:update( deltaTime )
 	self:super( deltaTime )
-	if self.needsLayoutUpdate then
+	if self.needsLayoutUpdate and not self.isLayoutLocked then
 		self:updateLayout()
 	end
 end
