@@ -1189,10 +1189,14 @@ function compileClass( compiledClass, name )
 			local functionTables, propertyTables, getterSetterTables = { "instanceFunctions", "staticFunctions" }, { "instanceProperties", "staticProperties", "enums" }, { "instanceGetters", "staticGetters", "staticSetters", "instanceSetters" } -- make sure we check actions too!
 			for i, tableName in ipairs( functionTables ) do
 				local classDefined = currentlyConstructing[tableName]
+				local superDefined = compiledSuperDetails and compiledSuperDetails[tableName]
 				for functionName, functionTable in pairs( interface[tableName] ) do
 					local classFunctionTable = classDefined[functionName]
 					if not classFunctionTable then
-						error( "class does not define function expected by interface '" .. interfaceName .. "': "..name ..":" .. functionName )
+						classFunctionTable = superDefined and superDefined[functionName]
+						if not classFunctionTable then
+							error( "class does not define function expected by interface '" .. interfaceName .. "': "..name ..":" .. functionName )
+						end
 					end
 					for i, argument in ipairs( functionTable) do
 						if i > FUNCTIONTABLE_FUNCTION then
