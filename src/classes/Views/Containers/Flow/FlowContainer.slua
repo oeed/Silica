@@ -1,5 +1,5 @@
 
-class FlowContainer extends Container {
+class FlowContainer extends Container implements IAutomaticLayout implements ILockableLayout {
 	
 	needsLayoutUpdate = Boolean( false );
 	isLayoutLocked = Boolean( false );

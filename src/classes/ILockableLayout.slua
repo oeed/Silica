@@ -1,0 +1,6 @@
+
+interface ILockableLayout {
+	
+	isLayoutLocked = Boolean( false );
+	
+}
