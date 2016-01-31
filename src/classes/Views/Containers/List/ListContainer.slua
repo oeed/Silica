@@ -26,6 +26,13 @@ function ListContainer:update( deltaTime )
 	end
 end
 
+function ListContainer.width:set( width )
+    self:super( width )
+	for i, childView in ipairs( self.children ) do
+		childView.width = width
+	end
+end
+
 function ListContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
 	if not event.childView:typeOf( ListItem ) then
 		error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not extend ListItem to '" .. tostring( self ) .. "'", 0 )
