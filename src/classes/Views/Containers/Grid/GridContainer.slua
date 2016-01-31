@@ -53,7 +53,7 @@ function GridContainer:updateLayout( Boolean( false ) dontAnimate )
 		end
 	end
 
-	local height = y + self.theme:value( "bottomMargin" )
+	local height = math.max( y + self.theme:value( "bottomMargin" ), self.parent.height )
 	if dontAnimate then
 		self.height = height
 	else
