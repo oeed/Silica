@@ -5,6 +5,7 @@ class ListItem extends View implements IDraggableView {
 	isSelected = Boolean( false );
 
 	text = String;
+	cursor = Cursor( ClickableCursor.static ).allowsNil;
 
 }
 
