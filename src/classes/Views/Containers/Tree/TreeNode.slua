@@ -89,11 +89,17 @@ function TreeNode.isFolded:set( isFolded )
 	end
 end
 
+function TreeNode.needsLayoutUpdate:set( needsLayoutUpdate )
+    self.needsLayoutUpdate = needsLayoutUpdate
+	local parent = self.parent
+	if parent then
+		parent.needsLayoutUpdate = true
+	end
+end
+
 function TreeNode:onMouseDown( MouseDownEvent event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		local theme = self.theme
-		-- local font, topMargin, bottomMargin = theme:value( "font" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
-		-- local height = topMargin + font.height + bottomMargin
 		if event.y <= self.minHeight then
 			self.isPressed = not self.isPressed
 			return true
