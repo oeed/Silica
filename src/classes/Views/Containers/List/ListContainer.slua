@@ -65,7 +65,12 @@ function ListContainer:updateLayout( dontAnimate )
 		y = y + childView.height
 	end
 
-	self.height = y + self.theme:value( "bottomMargin" )
+	local height = y + self.theme:value( "bottomMargin" )
+	if dontAnimate then
+		self.height = height
+	else
+		self:animate( "height", height, time, nil, easing )
+	end
 
 	self.needsLayoutUpdate = false
 end
