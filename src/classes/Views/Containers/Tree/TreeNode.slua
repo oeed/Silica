@@ -2,7 +2,7 @@
 class TreeNode extends LayoutContainer implements ITreeChild {
 	
 	text = String;
-	isSelected = Boolean( false );
+	isPressed = Boolean( false );
 	isFolded = Boolean( false );
 	minHeight = Number.allowsNil;
 	maxHeight = Number.allowsNil;
@@ -23,13 +23,13 @@ function TreeNode:onDraw()
 
 	local width, theme, canvas, font = self.width, self.theme, self.canvas
 	local font, leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "font" ), theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
-	local leftTextMargin, rightTextMargin, topTextMargin, bottomTextMargin = theme:value( "leftTextMargin" ), theme:value( "rightTextMargin" ), theme:value( "topTextMargin" ), theme:value( "bottomTextMargin" )
-	local height = topTextMargin + font.height + bottomTextMargin
+	local height = topMargin + font.height + bottomMargin
 
-	local roundedRectangleMask = RoundedRectangleMask( 1 + leftMargin, 1 + topMargin, width - leftMargin - rightMargin, height, theme:value( "cornerRadius" ) )
-	canvas:fill( theme:value( "fillColour" ), roundedRectangleMask )
+	canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, font ) )
 
-	canvas:fill( theme:value( "textColour" ),  TextMask( leftTextMargin + 1, topTextMargin + 1, width - leftTextMargin - rightTextMargin, height - topTextMargin - bottomTextMargin, self.text, font ) )
+	local symbol = theme:value( "symbol" )
+    canvas:fill( theme:value( "symbolColour" ), SymbolMask( 1 + theme:value( "leftSymbolMargin" ), 1 + math.floor( ( height - symbol.height ) / 2 ), symbol ) )
+	
 end
 
 function TreeNode.text:set( text )
@@ -39,8 +39,8 @@ end
 
 function TreeNode:updateThemeStyle()
 	local theme = self.theme
-	theme.style = self.isEnabled and ( self.isSelected and "selected" or "default" ) or "disabled"
-	self.minHeight = theme:value( "topMargin" ) + theme:value( "topTextMargin" ) + theme:value( "font" ).height + theme:value( "bottomTextMargin" ) + theme:value( "bottomMargin" )
+	theme.style = self.isEnabled and ( self.isFolded and ( self.isPressed and "foldedPressed" or "folded" ) or ( self.isPressed and "pressed" or "default" ) ) or "disabled"
+	self.minHeight = theme:value( "topMargin" ) + theme:value( "font" ).height + theme:value( "bottomMargin" )
 	self.needsLayoutUpdate = true
 end
 
@@ -49,22 +49,22 @@ function TreeNode.isEnabled:set( isEnabled )
 	self:updateThemeStyle()
 end
 
-function TreeNode.isSelected:set( isSelected )
-	self.isSelected = isSelected
+function TreeNode.isPressed:set( isPressed )
+	self.isPressed = isPressed
 	self:updateThemeStyle()
 end
 
 -- function TreeNode:onMouseHeld( MouseHeldEvent event, Event.phases phase )
 -- 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then
--- 		self.isSelected = true
--- 		self:startDragDrop( event, ListClipboardData( self ), true, function()self.isSelected = false end )
+-- 		self.isPressed = true
+-- 		self:startDragDrop( event, ListClipboardData( self ), true, function()self.isPressed = false end )
 -- 	end
 -- 	return true
 -- end
 
 function TreeNode:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
-	if self.isSelected and event.mouseButton == MouseEvent.mouseButtons.LEFT then
-		self.isSelected = false
+	if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+		self.isPressed = false
 		self.isFolded = not self.isFolded
 		if self.isEnabled and self:hitTestEvent( event ) then
 			self.event:handleEvent( ActionInterfaceEvent( self ) )
@@ -77,6 +77,7 @@ end
 
 function TreeNode.isFolded:set( isFolded )
     self.isFolded = isFolded
+	self:updateThemeStyle()
     local height = isFolded and self.minHeight or self.maxHeight
     if height then
 	    local theme = self.theme
@@ -84,20 +85,17 @@ function TreeNode.isFolded:set( isFolded )
 	end
 	local parent = self.parent
 	if parent then
-		if parent:typeOf( TreeContainer ) then
-			parent.needsLayoutUpdate = true
-		end
+		parent.needsLayoutUpdate = true
 	end
 end
 
 function TreeNode:onMouseDown( MouseDownEvent event, Event.phases phase )
 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		local theme = self.theme
-		local font, topMargin, bottomMargin, topTextMargin, bottomTextMargin = theme:value( "font" ), theme:value( "topMargin" ), theme:value( "bottomMargin" ), theme:value( "topTextMargin" ), theme:value( "bottomTextMargin" )
-		local height = topTextMargin + font.height + bottomTextMargin
-		log(event.y)
-		if event.y <= topMargin + topTextMargin + font.height + bottomTextMargin + bottomMargin then
-			self.isSelected = not self.isSelected
+		-- local font, topMargin, bottomMargin = theme:value( "font" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
+		-- local height = topMargin + font.height + bottomMargin
+		if event.y <= self.minHeight then
+			self.isPressed = not self.isPressed
 			return true
 		end
 	end
@@ -136,7 +134,7 @@ function TreeNode:updateLayout( dontAnimate )
 		end
 		childView.x = 1 + childrenMarginLeft
 		childView.width = width - childrenMarginLeft
-		y = y + childView.height
+		y = y + ( childView:typeOf( TreeNode ) and ( ( childView.isFolded and childView.minHeight or childView.maxHeight) or 0 ) or childView.height )
 	end
 
 	local maxHeight = y + theme:value( "bottomMargin" ) - 1 + theme:value( "childrenMarginBottom" )
