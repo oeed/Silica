@@ -298,6 +298,26 @@ function Container:connectInterfaceLink( String propertyName, View childView )
 end
 
 --[[
+	@desc Removes all the children from the container
+]]
+function Container:removeAll()
+	local children = self.children
+	for i = #children, 1, -1 do
+		self:remove( children[i] )
+	end
+end
+
+--[[
+	@desc Diposes all the children in the container
+]]
+function Container:disposeAll()
+	local children = self.children
+	for i = #children, 1, -1 do
+		children[i]:dispose()
+	end
+end
+
+--[[
 	@desc Removes the first instance of the child view from the container
 	@param [View] childView -- the view to add to the container
 	@return [boolean] didRemove -- whether a child was removed
@@ -305,17 +325,16 @@ end
 function Container:remove( removingView )
 	local didRemove = false
 
-	local children, canvas = self.children, self.canvas
+	local children = self.children
 	for i, childView in ipairs( children ) do
 		if childView == removingView then
-			-- canvas:remove( removingView.canvas )
 			table.remove( children, i )
 			didRemove = true
 			break
 		end
 	end
 
-	removingView.parent = false
+	removingView.parent = nil
 
 	if didRemove then
 		local identifier = removingView.identifier
