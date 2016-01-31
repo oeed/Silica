@@ -6,10 +6,6 @@ class GridContainer extends LayoutContainer {
 
 }
 
--- function TreeNode:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
--- 	self.needsLayoutUpdate = true
--- end
-
 function GridContainer:updateLayout( Boolean( false ) dontAnimate )
 	local theme = self.theme
 	local leftMargin, rightMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" )
@@ -61,4 +57,9 @@ function GridContainer:updateLayout( Boolean( false ) dontAnimate )
 	end
 
 	self.needsLayoutUpdate = false
+end
+
+function GridContainer.width:set( width )
+	self:super( width )
+	self.needsLayoutUpdate = true
 end
