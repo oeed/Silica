@@ -116,7 +116,11 @@ function FlowContainer:updateLayout( Boolean( false ) dontAnimate )
 		end
 	end
 
-	self:animate( "height",	 y + bottomMargin, time, nil, easing )
-
+	if dontAnimate then
+		self.height = y + bottomMargin
+	else
+		self:animate( "height",	y + bottomMargin, time, nil, easing )
+	end
+	
 	self.needsLayoutUpdate = false
 end
