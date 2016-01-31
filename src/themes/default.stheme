@@ -305,7 +305,7 @@
 		<bottomMargin type="Number" default="0" />
         <cornerRadius type="Number" default="6" />
 		<font type="Font" default="systemFont"/>
-		<childrenMarginLeft type="Number" default="10" />
+		<childrenMarginLeft type="Number" default="7" />
 		<childrenMarginTop type="Number" default="1" />
 		<childrenMarginBottom type="Number" default="4" />
 		<animationDuration type="Number" default="0.2" />
