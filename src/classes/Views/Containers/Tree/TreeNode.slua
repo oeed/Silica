@@ -65,8 +65,8 @@ end
 function TreeNode:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
 	if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 		self.isPressed = false
-		self.isFolded = not self.isFolded
 		if self.isEnabled and self:hitTestEvent( event ) then
+			self.isFolded = not self.isFolded
 			self.event:handleEvent( ActionInterfaceEvent( self ) )
 			local result = self.event:handleEvent( event )
 			return result == nil and true or result
