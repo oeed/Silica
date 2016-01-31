@@ -1,13 +1,16 @@
 
 class Theme {
+
 	name = String;
 	extends = String.allowsNil; -- the name of the theme this one extends
 	classes = Table( {} );
+	allowsNilProperties = Table( {} );
 	
 	static = {
 		active = Theme; -- @static	the current theme
 		themes = Table( {} ); -- @static  a cache of already created themes
 	}
+
 }
 
 --[[
@@ -67,6 +70,7 @@ function Theme:initialiseTheme( nodes, cantExtend )
 	end
 
 	local extends = nodes.attributes.extends
+	local allowsNilProperties = self.allowsNilProperties
 
 	local classes = {}
 	if extends then
@@ -94,10 +98,13 @@ function Theme:initialiseTheme( nodes, cantExtend )
 		for i2, propertyNode in ipairs( classNode.body ) do
 			local propertyTheme = classTheme[propertyNode.type] or {}
 			local validationTypeName = propertyNode.attributes.type
+			if validationTypeName:sub( #validationTypeName - 9 ) == ".allowsNil"  then
+				allowsNilProperties[propertyNode.type] = true
+			end
 			for styleName, styleValue in pairs( propertyNode.attributes ) do
 				if styleName ~= "type" then
-					local value = Validator.static:parse( styleValue, validationTypeName )
-					if value ~= nil then
+					local isValid, value, allowsNil = Validator.static:isValid( styleValue, validationTypeName )
+					if isValid then
 						propertyTheme[styleName] = value
 					else
 						return "Style value '" .. tostring( styleValue ) .. "' is invalid for type '" .. validationTypeName .. "' : '" .. styleName .. "' (of property: " .. propertyNode.type .. " and of class: " .. classNode.type .. ")" 
@@ -123,6 +130,7 @@ function Theme:value( _class, propertyName, styleName, noError )
 	if styleName == "type" then
 		error( "Reserved style name: " .. styleName, 0 )
 	end
+	local allowsNilProperties = self.allowsNilProperties
 	styleName = styleName or "default"
 	local className = _class.className
 
@@ -132,7 +140,7 @@ function Theme:value( _class, propertyName, styleName, noError )
 		local propertyTheme = classTheme[propertyName]
 		if propertyTheme then
 			local styleValue = propertyTheme[styleName] or propertyTheme["default"]
-			if styleValue ~= nil then
+			if allowsNilProperties[propertyName] or styleValue ~= nil then
 				return styleValue
 			else
 				err = "Theme '" .. self.name .. "' does not have any definition for style: '" .. styleName .. "' or 'default' (of property: " .. propertyName .. " and of class: " .. _class.className .. ")"

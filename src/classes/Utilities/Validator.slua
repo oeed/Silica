@@ -12,6 +12,13 @@ class Validator {
 ]]
 function Validator.static:parse( value, typeName )
 	-- TODO: make validator types dynamic
+	if typeName:sub( #typeName - 9 ) == ".allowsNil" then
+		if value == "nil" then
+			return nil, true
+		else
+			typeName = typeName:sub( 1, #typeName - 10 )
+		end
+	end
 	if typeName == "Graphics.colours" then
 		return Graphics.colours[value]
 	elseif typeName == "Number" then
@@ -45,5 +52,6 @@ end
 	@return [boolean] isValid -- whether the value is valid
 ]]
 function Validator.static:isValid( value, typeName )
-	return self:validatorType( value, typeName ) ~= nil
+	local parsed, allowsNil = self:parse( value, typeName )
+	return allowsNil or parsed ~= nil, parsed, allowsNil
 end
