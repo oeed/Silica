@@ -18,6 +18,9 @@ local function resolve( path )
 	if not path or #path == 0 then return "/" .. relativePath else local _ = tidy( path ):gsub( "^[^/]", relativePath .. "%1" ) return _ end
 end
 
+local fileCache = FileSystemItem.static.fileCache
+local osClock = os.clock
+
 class File extends FileSystemItem implements IEditableFileSystemItem {
 
 	contents = false; -- the string contents of the file
@@ -28,6 +31,8 @@ class File extends FileSystemItem implements IEditableFileSystemItem {
 
 function File.metatable:__call( path, ... )
 	path = resolve( path )
+	local cached = fileCache[path]
+	if cached then cached[2] = osClock() return cached[1] end
 	if fs.exists( path ) and not fs.isDir( path ) and not fs.isReadOnly( path ) then
 		local name = fs.getName( path )
 		if name ~= ".DS_Store" and name ~= ".metadata" and name ~= ".git" then

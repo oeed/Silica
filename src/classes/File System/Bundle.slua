@@ -17,6 +17,9 @@ local function resolve( path )
 	if not path or #path == 0 then return relativePath else return tidy( path ):gsub( "^[^/]", relativePath .. "%1" ) end
 end
 
+local fileCache = FileSystemItem.static.fileCache
+local osClock = os.clock
+
 class Bundle extends Folder {
 	
 	config = Table;
@@ -25,6 +28,8 @@ class Bundle extends Folder {
 
 function Bundle.metatable:__call( path, ... )
 	path = resolve( path )
+	local cached = fileCache[path]
+	if cached then cached[2] = osClock() return cached[1] end
 	if fs.exists( path ) and fs.isDir( path ) and not fs.isReadOnly( path ) and fs.exists( tidy( path .. "/bundle.sconfig" ) ) then
 		local name = fs.getName( path )
 		if name ~= ".DS_Store" and name ~= ".metadata" then

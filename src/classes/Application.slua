@@ -39,6 +39,7 @@ class Application {
 function Application.static:initialise( ... )
 	self.resourceTables = __resourceTables or {}
 	_G.__resourceTables = nil
+
 end
 
 --[[
@@ -92,6 +93,13 @@ function Application:initialise( ... )
 	Cursor.static:setupAll()
 	
 	self:reloadInterface()
+
+	FileSystemItem.static:purgeCached()
+	local function purge()
+		FileSystemItem.static:purgeOldCache()
+		self:schedule( purge, 30 )
+	end
+	self:schedule( purge, 30 )
 
 	self.event:connect( TimerEvent, self.onTimer )
 end
