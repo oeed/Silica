@@ -71,7 +71,7 @@ end
 ]]
 function SplitContainer:lockChildren()
 	for i, childView in ipairs( self.children ) do
-		if childView:typeOf( ILockableLayout ) then
+		if childView:typeOf( LayoutContainer ) then
 			childView.isLayoutLocked = true
 		end
 	end
@@ -82,7 +82,7 @@ end
 ]]
 function SplitContainer:unlockChildren()
 	for i, childView in ipairs( self.children ) do
-		if childView:typeOf( ILockableLayout ) then
+		if childView:typeOf( LayoutContainer ) then
 			childView.isLayoutLocked = false
 		end
 	end
