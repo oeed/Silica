@@ -1,5 +1,7 @@
 
-class ContainerEventManager extends EventManager {}
+class ContainerEventManager extends EventManager {
+	
+}
 
 --[[
 	@desc Perfoms the appropriate handles for the given event and then trickles them down through the owner's children
@@ -34,16 +36,18 @@ function ContainerEventManager:handleEvent( event )
 		local eventClass = event.class
 		for i = #children, 1, -1 do
 			local childView = children[i]
-			local childViewEvent = childView.event
-			if childView:typeOf( Container ) or childViewEvent:hasConnections( eventClass ) then
-				if childView:hitTestEvent( event, owner ) then
-					event:makeRelative( childView )
-					if childViewEvent:handleEvent( event ) then
-						return true
-					end
-					event:makeRelative( owner )
-				else
+			if childView then
+				local childViewEvent = childView.event
+				if childView:typeOf( Container ) or childViewEvent:hasConnections( eventClass ) then
+					if childView:hitTestEvent( event, owner ) then
+						event:makeRelative( childView )
+						if childViewEvent:handleEvent( event ) then
+							return true
+						end
+						event:makeRelative( owner )
+					else
 
+					end
 				end
 			end
 		end
