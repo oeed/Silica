@@ -15,6 +15,8 @@ function TreeNode:initialise( ... )
 	self:event( MouseDownEvent, self.onMouseDown )
 	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	-- self:event( MouseHeldEvent, self.onMouseHeld )
+    self:event( MouseEnteredInterfaceEvent, self.onMouseEnteredOrMoved )
+    self:event( MouseMoveEvent, self.onMouseEnteredOrMoved )
 end
 
 function TreeNode:onDraw()
@@ -49,6 +51,18 @@ end
 function TreeNode.isPressed:set( isPressed )
 	self.isPressed = isPressed
 	self:updateThemeStyle()
+end
+
+local clickableCursor, cursor = ClickableCursor.static, Cursor.static
+function TreeNode:onMouseEnteredOrMoved( Event event, Event.phases phase )
+	local currentCursor = self.cursor
+	local newCursor = cursor
+	if event.y <= self.minHeight then
+		newCursor = clickableCursor
+	end
+	if currentCursor ~= newCursor then
+		self.cursor = newCursor
+	end
 end
 
 -- function TreeNode:onMouseHeld( MouseHeldEvent event, Event.phases phase )
