@@ -289,7 +289,7 @@ function Container:connectInterfaceLink( String propertyName, View childView )
 		end ) {
 
 			catch( InvalidValueTypeClassException, function( exception )
-				error( "Attempted to attach " .. tostring( childView ) .. " with identifier '" .. identifier .. "' to property '" .. propertyName .. "' with an invalid ValueType of " .. tostring( self ) .. ". The ValueType you specified in the properties table is not the same as the one being linked to, either change the property' ValueType or change the identifier of the invalid View." )
+				error( "Attempted to attach " .. tostring( childView ) .. " with identifier '" .. childView.identifier .. "' to property '" .. propertyName .. "' with an invalid ValueType of " .. tostring( self ) .. ". The ValueType you specified in the properties table is not the same as the one being linked to, either change the property' ValueType or change the identifier of the invalid View." )
 			end )
 
 		}
