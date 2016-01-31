@@ -1,0 +1,4 @@
+
+class TreeItem extends ListItem implements ITreeChild {
+	
+}
