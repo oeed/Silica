@@ -5,4 +5,4 @@ interface IAutomaticLayout {
 
 }
 
-function IAutomaticLayout:updateLayout( dontAnimate )
+function IAutomaticLayout:updateLayout( Boolean( false ) dontAnimate )
