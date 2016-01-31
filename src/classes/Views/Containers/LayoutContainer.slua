@@ -31,5 +31,5 @@ function LayoutContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event
 	self.needsLayoutUpdate = true
 end
 
-function LayoutContainer:updateLayout( dontAnimate )
+function LayoutContainer:updateLayout( Boolean( false ) dontAnimate )
 end

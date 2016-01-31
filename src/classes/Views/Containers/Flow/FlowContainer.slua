@@ -39,7 +39,7 @@ function FlowContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.p
 	self.needsLayoutUpdate = true
 end
 
-function FlowContainer:updateLayout( dontAnimate )
+function FlowContainer:updateLayout( Boolean( false ) dontAnimate )
 	local width, height, theme = self.width, self.height, self.theme
 	local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
 

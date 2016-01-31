@@ -10,7 +10,7 @@ function TreeContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phase
 	self.needsLayoutUpdate = true
 end
 
-function TreeContainer:updateLayout( dontAnimate )
+function TreeContainer:updateLayout( Boolean( false ) dontAnimate )
 	local children, width = self.children, self.width
 	local theme = self.theme
 	local y = theme:value( "topMargin" ) + 1

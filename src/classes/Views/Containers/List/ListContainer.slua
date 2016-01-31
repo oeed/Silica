@@ -44,11 +44,11 @@ function ListContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.p
 	self.needsLayoutUpdate = true
 end
 
-function ListContainer:updateLayout( dontAnimate )
+function ListContainer:updateLayout( Boolean( false ) dontAnimate )
 	local children, width = self.children, self.width
 	local theme = self.theme
 	local y = theme:value( "topMargin" ) + 1
-	
+
 	local time, easing
 	if not dontAnimate then
 		time = theme:value( "animationDuration" )
