@@ -12,7 +12,7 @@ function ListContainer:initialise( ... )
 	self:super( ... )
 	self:event( ChildAddedInterfaceEvent, self.onChildAdded )
 	self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
-	self:event( ReadyInterfaceEvent, self.onReady )
+	self:event( ReadyInterfaceEvent, self.onReady, Event.phases.AFTER )
 end
 
 function ListContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
@@ -23,6 +23,13 @@ function ListContainer:update( deltaTime )
 	self:super( deltaTime )
 	if self.needsLayoutUpdate then
 		self:updateLayout()
+	end
+end
+
+function ListContainer.width:set( width )
+    self:super( width )
+	for i, childView in ipairs( self.children ) do
+		childView.width = width
 	end
 end
 
@@ -39,10 +46,14 @@ end
 
 function ListContainer:updateLayout( dontAnimate )
 	local children, width = self.children, self.width
-	local y = self.theme:value( "topMargin" ) + 1
-
-	local time, easing = 0.2, Animation.easings.IN_OUT_SINE
-
+	local theme = self.theme
+	local y = theme:value( "topMargin" ) + 1
+	
+	local time, easing
+	if not dontAnimate then
+		time = theme:value( "animationDuration" )
+		easing = theme:value( "animationEasing" )
+	end
 	for i, childView in ipairs( children ) do
 		if dontAnimate then
 			childView.y = y
@@ -54,7 +65,12 @@ function ListContainer:updateLayout( dontAnimate )
 		y = y + childView.height
 	end
 
-	self.height = y + self.theme:value( "bottomMargin" )
+	local height = y + self.theme:value( "bottomMargin" )
+	if dontAnimate then
+		self.height = height
+	else
+		self:animate( "height", height, time, nil, easing )
+	end
 
 	self.needsLayoutUpdate = false
 end

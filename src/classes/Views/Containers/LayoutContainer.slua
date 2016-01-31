@@ -1,0 +1,35 @@
+
+class LayoutContainer extends Container {
+	
+	needsLayoutUpdate = Boolean( false );
+
+}
+
+function LayoutContainer:initialise( ... )
+	self:super( ... )
+	self:event( ChildAddedInterfaceEvent, self.onChildAdded )
+	self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
+	self:event( ReadyInterfaceEvent, self.onReady, Event.phases.AFTER )
+end
+
+function LayoutContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
+	self:updateLayout( true )
+end
+
+function LayoutContainer:update( deltaTime )
+	self:super( deltaTime )
+	if self.needsLayoutUpdate then
+		self:updateLayout()
+	end
+end
+
+function LayoutContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
+	self.needsLayoutUpdate = true
+end
+
+function LayoutContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
+	self.needsLayoutUpdate = true
+end
+
+function LayoutContainer:updateLayout( dontAnimate )
+end

@@ -1,4 +1,156 @@
 
-class TreeNode extends Container implements ITreeChild {
+class TreeNode extends LayoutContainer implements ITreeChild {
 	
+	text = String;
+	isPressed = Boolean( false );
+	isFolded = Boolean( false );
+	minHeight = Number.allowsNil;
+	maxHeight = Number.allowsNil;
+
 }
+
+function TreeNode:initialise( ... )
+	self:super( ... )
+
+	self:event( MouseDownEvent, self.onMouseDown )
+	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+	-- self:event( MouseHeldEvent, self.onMouseHeld )
+end
+
+function TreeNode:onDraw()
+	-- self.canvas:fill(2^math.random(1,14))
+
+
+	local width, theme, canvas, font = self.width, self.theme, self.canvas
+	local font, leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "font" ), theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
+	local height = topMargin + font.height + bottomMargin
+
+	canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, font ) )
+
+	local symbol = theme:value( "symbol" )
+    canvas:fill( theme:value( "symbolColour" ), SymbolMask( 1 + theme:value( "leftSymbolMargin" ), 1 + math.floor( ( height - symbol.height ) / 2 ), symbol ) )
+	
+end
+
+function TreeNode.text:set( text )
+	self.text = text
+	self.needsDraw = true
+end
+
+function TreeNode:updateThemeStyle()
+	local theme = self.theme
+	theme.style = self.isEnabled and ( self.isFolded and ( self.isPressed and "foldedPressed" or "folded" ) or ( self.isPressed and "pressed" or "default" ) ) or "disabled"
+	self.minHeight = theme:value( "topMargin" ) + theme:value( "font" ).height + theme:value( "bottomMargin" )
+	self.needsLayoutUpdate = true
+end
+
+function TreeNode.isEnabled:set( isEnabled )
+	self.isEnabled = isEnabled
+	self:updateThemeStyle()
+end
+
+function TreeNode.isPressed:set( isPressed )
+	self.isPressed = isPressed
+	self:updateThemeStyle()
+end
+
+-- function TreeNode:onMouseHeld( MouseHeldEvent event, Event.phases phase )
+-- 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then
+-- 		self.isPressed = true
+-- 		self:startDragDrop( event, ListClipboardData( self ), true, function()self.isPressed = false end )
+-- 	end
+-- 	return true
+-- end
+
+function TreeNode:onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+	if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+		self.isPressed = false
+		if self.isEnabled and self:hitTestEvent( event ) then
+			self.isFolded = not self.isFolded
+			self.event:handleEvent( ActionInterfaceEvent( self ) )
+			local result = self.event:handleEvent( event )
+			return result == nil and true or result
+		end
+		return true
+	end
+end
+
+function TreeNode.isFolded:set( isFolded )
+    self.isFolded = isFolded
+	self:updateThemeStyle()
+    local height = isFolded and self.minHeight or self.maxHeight
+    if height then
+	    local theme = self.theme
+		self:animate( "height", height, theme:value( "animationDuration" ), nil, theme:value( "animationEasing" ) )
+	end
+	local parent = self.parent
+	if parent then
+		parent.needsLayoutUpdate = true
+	end
+end
+
+function TreeNode.needsLayoutUpdate:set( needsLayoutUpdate )
+    self.needsLayoutUpdate = needsLayoutUpdate
+	local parent = self.parent
+	if parent then
+		parent.needsLayoutUpdate = true
+	end
+end
+
+function TreeNode:onMouseDown( MouseDownEvent event, Event.phases phase )
+	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+		local theme = self.theme
+		if event.y <= self.minHeight then
+			self.isPressed = not self.isPressed
+			return true
+		end
+	end
+end
+
+function TreeNode:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
+	if not event.childView:typeOf( ITreeChild ) then
+		error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not extend ITreeChild to '" .. tostring( self ) .. "'", 0 )
+	end
+	self.needsLayoutUpdate = true
+end
+
+function TreeNode.width:set( width )
+    self:super( width )
+	local childrenMarginLeft = self.theme:value( "childrenMarginLeft" )
+	for i, childView in ipairs( self.children ) do
+		childView.width = width - childrenMarginLeft
+	end
+end
+
+function TreeNode:updateLayout( dontAnimate )
+	local width, theme = self.width, self.theme
+	local childrenMarginLeft = theme:value( "childrenMarginLeft" )
+	local y = 1 + self.minHeight + theme:value( "childrenMarginTop" )
+
+	local time, easing
+	if not dontAnimate then
+		time = theme:value( "animationDuration" )
+		easing = theme:value( "animationEasing" )
+	end
+	for i, childView in ipairs( self.children ) do
+		if dontAnimate then
+			childView.y = y
+		else
+			childView:animate( "y", y, time, nil, easing )
+		end
+		childView.x = 1 + childrenMarginLeft
+		childView.width = width - childrenMarginLeft
+		y = y + ( childView:typeOf( TreeNode ) and ( ( childView.isFolded and childView.minHeight or childView.maxHeight) or 0 ) or childView.height )
+	end
+
+	local maxHeight = y + theme:value( "bottomMargin" ) - 1 + theme:value( "childrenMarginBottom" )
+	self.maxHeight = maxHeight
+	local height = self.isFolded and self.minHeight or maxHeight
+	if dontAnimate then
+		self.height = height
+	else
+		self:animate( "height", height, time, nil, easing )
+	end
+
+	self.needsLayoutUpdate = false
+end

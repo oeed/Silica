@@ -9,3 +9,34 @@ function TreeContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phase
 	end
 	self.needsLayoutUpdate = true
 end
+
+function TreeContainer:updateLayout( dontAnimate )
+	local children, width = self.children, self.width
+	local theme = self.theme
+	local y = theme:value( "topMargin" ) + 1
+
+	local time, easing
+	if not dontAnimate then
+		time = theme:value( "animationDuration" )
+		easing = theme:value( "animationEasing" )
+	end
+	for i, childView in ipairs( children ) do
+		if dontAnimate then
+			childView.y = y
+		else
+			childView:animate( "y", y, time, nil, easing )
+		end
+		childView.x = 1
+		childView.width = width
+		y = y + ( childView:typeOf( TreeNode ) and ( ( childView.isFolded and childView.minHeight or childView.maxHeight) or 0 ) or childView.height )
+	end
+
+	local height = y + self.theme:value( "bottomMargin" )
+	if dontAnimate then
+		self.height = height
+	else
+		self:animate( "height", height, time, nil, easing )
+	end
+
+	self.needsLayoutUpdate = false
+end
