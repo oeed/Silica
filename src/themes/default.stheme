@@ -236,23 +236,23 @@
 	</ToolbarContainer>
 
 	<ToolbarButton>
-		<outlineColour type="Graphics.colours" default="LIGHT_BLUE" focused="LIGHT_BLUE" disabled="LIGHT_GREY" pressed="LIGHT_BLUE"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_BLUE" focused="LIGHT_BLUE" disabled="LIGHT_BLUE" pressed="LIGHT_BLUE"/>
 		<shadowColour type="Graphics.colours" default="TRANSPARENT" />
 	</ToolbarButton>
 
 	<ToolbarSymbolButton>
-		<outlineColour type="Graphics.colours" default="LIGHT_BLUE" focused="LIGHT_BLUE" disabled="LIGHT_GREY" pressed="LIGHT_BLUE"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_BLUE" focused="LIGHT_BLUE" disabled="LIGHT_BLUE" pressed="LIGHT_BLUE"/>
 		<shadowColour type="Graphics.colours" default="TRANSPARENT" />
 	</ToolbarSymbolButton>
 
 	<ToolbarSymbolSegmentButton>
-		<outlineColour type="Graphics.colours" default="LIGHT_BLUE" focused="LIGHT_BLUE" disabled="LIGHT_GREY" pressed="LIGHT_BLUE"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_BLUE" focused="LIGHT_BLUE" disabled="LIGHT_BLUE" pressed="LIGHT_BLUE"/>
 		<separatorOutlineColour type="Graphics.colours" default="LIGHT_BLUE"/>
 		<shadowColour type="Graphics.colours" default="TRANSPARENT" />
 	</ToolbarSymbolSegmentButton>
 
 	<ToolbarSegmentButton>
-		<outlineColour type="Graphics.colours" default="LIGHT_BLUE" focused="LIGHT_BLUE" disabled="LIGHT_GREY" pressed="LIGHT_BLUE"/>
+		<outlineColour type="Graphics.colours" default="LIGHT_BLUE" focused="LIGHT_BLUE" disabled="LIGHT_BLUE" pressed="LIGHT_BLUE"/>
 		<shadowColour type="Graphics.colours" default="TRANSPARENT" />
 	</ToolbarSegmentButton>
 
