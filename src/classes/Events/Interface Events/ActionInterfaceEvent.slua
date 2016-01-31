@@ -7,6 +7,7 @@ class ActionInterfaceEvent extends InterfaceEvent {
 
 	view = View; -- the View whose action it is
 	originalEvent = Event.allowsNil; -- the event the invoked this event (such as a mouse up, key click, etc.)
+	isSentToChildren = Boolean( false );
 
 }
 
