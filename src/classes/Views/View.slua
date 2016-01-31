@@ -512,6 +512,7 @@ function View:clearFocus( filter )
 	self.application:clearFocus( filter )
 end
 
+-- IMPORTANT: You MUST ALWAYS call super when overriding this function
 function View:dispose()
 	self.event:dispose()
 
