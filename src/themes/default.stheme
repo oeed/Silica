@@ -327,9 +327,9 @@
 
 	<SplitHandleView>
 		<fillColour type="Graphics.colours" default="BLUE" />
-		<thickness type="Number" default="2" />
-		<leftMargin type="Number" default="1" />
-		<rightMargin type="Number" default="1" />
+		<thickness type="Number" default="3" />
+		<leftMargin type="Number" default="0" />
+		<rightMargin type="Number" default="0" />
 	</SplitHandleView>
 
 	<Cursor>
