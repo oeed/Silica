@@ -49,13 +49,13 @@ class Image {
 	pixels = Table;
 	-- resource = false;
 	-- file = false;
-	contents = Any;
+	contents = Any.allowsNil;
 	scaledCache = {};
 	ucgValues = Enum( Number, ucgValues );
 
 }
 
-function Image:initialise( Table pixels, Number width, Number height, Any contents )
+function Image:initialise( Table pixels, Number width, Number height, Any.allowsNil contents )
 	local newPixels = {}
 	local maxLength = width * height
 	for i, pixel in pairs( pixels ) do
