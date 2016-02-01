@@ -75,11 +75,11 @@ function ListContainer:updateLayout( Boolean( false ) dontAnimate )
 	self.needsLayoutUpdate = false
 end
 
-function ListContainer:canAcceptDragDrop( data )
+function ListContainer:canAcceptDragDrop( ClipboardData data )
 	return data:typeOf( ListClipboardData ) and (self.canTransferItems or data.listItem.parent == self)
 end
 
-function ListContainer:dragDropMoved( data, dragView )
+function ListContainer:dragDropMoved( ClipboardData data, DragView dragView )
 	local _, selfY = self:position()
 	local listItem = data.listItem
 	local children = self.children
@@ -90,14 +90,14 @@ function ListContainer:dragDropMoved( data, dragView )
 	end
 end
 
-function ListContainer:dragDropEntered( data, dragView )
+function ListContainer:dragDropEntered( ClipboardData data, DragView dragView )
 end
 
-function ListContainer:dragDropExited( data, dragView )
+function ListContainer:dragDropExited( ClipboardData data, DragView dragView )
 	-- self:animate( "row", 0, 0.3 )
 end
 
-function ListContainer:dragDropDropped( data )
+function ListContainer:dragDropDropped( ClipboardData data )
 
 end
 
