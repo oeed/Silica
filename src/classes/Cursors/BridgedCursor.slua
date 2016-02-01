@@ -24,6 +24,11 @@ function BridgedCursor.static:updateBridge( Table.allowsNil bridge )
 		self.hotSpotY = bridge[bridgeKeys.HOT_SPOT_Y]
 		self.image = Image( bridge[bridgeKeys.PIXELS], bridge[bridgeKeys.WIDTH], bridge[bridgeKeys.HEIGHT], bridge )
 	end
+	local applicationContainer = self.application.container
+	if applicationContainer then
+		self.hasUpdatedApperance = true
+		applicationContainer.needsCursorUpdate = true
+	end
 end
 
 local cursorStatic = Cursor.static
@@ -32,6 +37,6 @@ function BridgedCursor.static:drawTo( Canvas canvas, Number x, Number y )
 	if image then
 		canvas:image( self.image, x - self.hotSpotX + 1, y - self.hotSpotY + 1 )
 	else
-		-- return Cursor.static:drawTo( canvas, x, y )
+		return cursorStatic:drawTo( canvas, x, y )
 	end
 end

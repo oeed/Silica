@@ -157,9 +157,13 @@ function ApplicationContainer:updateCursor()
 
 	local oldCursor = self.cursor
 	local newCursor = search( self, self.cursorX, self.cursorY, Cursor.static )
+	local didChange = false
 	if newCursor ~= oldCursor or newCursor.hasUpdatedApperance then
+		didChange = true
 		newCursor.hasUpdatedApperance = false
-		self.cursor = newCursor
+		if newCursor ~= oldCursor then
+			self.cursor = newCursor
+		end
 		if Quartz then
 			local image = newCursor.image
 			local bridgeKeys = BridgedCursor.bridgeKeys
@@ -173,7 +177,7 @@ function ApplicationContainer:updateCursor()
 		end
 	end
 	self.needsCursorUpdate = false
-	return newCursor ~= oldCursor
+	return didChange
 end
 
 function ApplicationContainer:onMouseMoveCursorBefore( MouseMoveEvent event, Event.phases phase )
