@@ -315,6 +315,7 @@ function Container:disposeAll()
 	for i = #children, 1, -1 do
 		children[i]:dispose()
 	end
+	self.needsDraw = true
 end
 
 --[[

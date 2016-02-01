@@ -10,7 +10,7 @@ function GridContainer:updateLayout( Boolean( false ) dontAnimate )
 	local theme = self.theme
 	local leftMargin, rightMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" )
 	local width, minimumCellWidth, cellHeight, children = self.width - leftMargin - rightMargin, self.minimumCellWidth, self.cellHeight, self.children
-	local columnsCount = minimumCellWidth and math.floor( width / minimumCellWidth ) or 1
+	local columnsCount = math.max( minimumCellWidth and math.floor( width / minimumCellWidth ) or 1, 1 )
 	local columnWidthFloor, columnWidthCeil = math.floor( width / columnsCount ), math.ceil( width / columnsCount )
 	local y = theme:value( "topMargin" ) + 1
 	local time, easing
