@@ -104,7 +104,7 @@ end
 function EventManager:disconnectAllGlobals()
 	for eventType, v in pairs( self.handlesGlobal ) do
 		for i, handle in pairs( v ) do
-			self.application.event:disconnect( eventType, handle[1], handle[2], handle[3], self)
+			self.application.event:disconnect( eventType, handle[1], handle[2], self, handle[3] )
 			v[i] = nil
 		end
 	end
