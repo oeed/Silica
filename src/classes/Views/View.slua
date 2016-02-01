@@ -489,7 +489,7 @@ end
 --[[
 	@desc Starts a drag and drop for the view
 ]]
-function View:startDragDrop( MouseDownEvent event, ClipboardData data, Boolean( true ) hideSource, Function.allowsNil completion, Table.allowsNil views )
+function View:startDragDrop( MouseEvent event, ClipboardData data, Boolean( true ) hideSource, Function.allowsNil completion, Table.allowsNil views )
 	self.application.dragDropManager:start( views or { self }, data, event.globalX, event.globalY, hideSource, completion )
 end
 
