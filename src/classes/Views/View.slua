@@ -60,8 +60,7 @@ class View {
 	isMouseInView = Boolean( false ); -- whether the mouse if currently hovering over the View. NEVER change this, you'll screw stuff up
 	cursor = Cursor.allowsNil;
 
-	lastMouseDown = Table( {} );
-	lastMouseUp = Table( {} );
+	specialMouseTimes = Table( { timers = {}; up = {}; down = {}; } );
 
 }
 
@@ -80,8 +79,8 @@ function View:initialise( Table.allowsNil properties )
 		end
 	end
 
-	self:event( MouseDownEvent, self.onMouseDownMetaEvents )
-	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUpMetaEvents )
+	self:event( MouseDownEvent, self.onMouseDownSpecialEvents )
+	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUpSpecialEvents )
 end
 
 --[[
@@ -438,45 +437,53 @@ end
 --[[
 	@desc Detects when the mouse is pressed. Used to fire mouse held and double click
 ]]
-function View:onMouseDownMetaEvents( MouseDownEvent event, Event.phases phase )
-	local mouseButton, time = event.mouseButton, os.time()
-	local lastMouseDown, lastMouseUp = self.lastMouseDown, self.lastMouseUp
+function View:onMouseDownSpecialEvents( MouseDownEvent event, Event.phases phase )
+	local eventManager = self.event
+	local hasHeld, hasDouble = eventManager:hasConnections( MouseHeldEvent ), eventManager:hasConnections( MouseDoubleClickEvent )
+	if hasHeld or hasDouble then
+		local mouseButton, time = event.mouseButton, os.clock()
+		local specialMouseTimes = self.specialMouseTimes
+		local down, timers = specialMouseTimes.down, specialMouseTimes.timers
+		local lastMouseDown = down[mouseButton]
+		down[mouseButton] = time
 
-	local thisLastMouseDown = lastMouseDown[mouseButton]
-	if thisLastMouseDown and time - thisLastMouseDown < MAX_DOUBLE_CLICK_TIME then
-		-- double click
-		if self.event:handleEvent( MouseDoubleClickEvent( mouseButton, event.x, event.y, event.globalX, event.globalY ) ) then
-			return true
-		end
-	else
-		
-		-- start a held timer
-		local application = self.application 
-		if lastMouseDown.timer then
-			application:unschedule( lastMouseDown.timer )
-		end
-
-		local x, y, globalX, globalY = event.x, event.y, event.globalX, event.globalY
-		local n
-		lastMouseDown.timer = application:schedule( function()
-			lastMouseDown.timer = nil
-			local thisLastMouseUp = lastMouseUp[mouseButton]
-			if not thisLastMouseUp or thisLastMouseUp < time then
-				if self.event:handleEvent( MouseHeldEvent( mouseButton, x, y, globalX, globalY ) ) then
+		if hasDouble then
+			if lastMouseDown and time - lastMouseDown < MAX_DOUBLE_CLICK_TIME then
+				-- double click
+				if eventManager:handleEvent( MouseDoubleClickEvent( mouseButton, event.x, event.y, event.globalX, event.globalY ) ) then
 					return true
 				end
 			end
-		end, MIN_MOUSE_HOLD_TIME )
-		n = lastMouseDown.timer
+		end
+			
+		-- start a held timer
+		if hasHeld then
+			local application = self.application 
+			local timer = timers[mouseButton]
+			if timer then
+				application:unschedule( timer )
+			end
+
+			local x, y, globalX, globalY = event.x, event.y, event.globalX, event.globalY
+			timer = application:schedule( function()
+				timers[mouseButton] = nil
+				local lastMouseUp = specialMouseTimes.up[mouseButton]
+				if not lastMouseUp or lastMouseUp < time then
+					if eventManager:handleEvent( MouseHeldEvent( mouseButton, x, y, globalX, globalY ) ) then
+						return true
+					end
+				end
+			end, MIN_MOUSE_HOLD_TIME )
+			timers[mouseButton] = timer
+		end
 	end
-	lastMouseDown[mouseButton] = time
 end
 
 --[[
 	@desc Detects when the mouse is released. Used to fire mouse held and double click
 ]]
-function View:onGlobalMouseUpMetaEvents( MouseUpEvent event, Event.phases phase )
-	self.lastMouseUp[event.mouseButton] = os.time()
+function View:onGlobalMouseUpSpecialEvents( MouseUpEvent event, Event.phases phase )
+	self.specialMouseTimes.up[event.mouseButton] = os.clock()
 end
 
 --[[
