@@ -19,12 +19,11 @@ class Icon extends Image {
 
 }
 
-function Icon:initialise( Table images, Table contents )
+function Icon:initialise( Table images, Any.allowsNil contents )
 	local maxSize = 0
 	local maxWidth, maxWidth
 	local pixels
 	for i, image in ipairs( images ) do
-		image:squareCentred()
 		local width, height = image.width, image.height
 		local size = width * height
 		if size > maxSize then
@@ -145,7 +144,7 @@ function Icon.static:fromName( String name )
 		return Icon.static:fromResource( resource )
 	end
 end
-
+											-- TODO: needs to be Bundle
 function Icon.static:fromNameInBundle( String name, Any bundle )
 	return Icon.static:fromFile( bundle:file( name, ICON_MIMES ) )
 end
