@@ -42,6 +42,11 @@ for i, v in ipairs( IMAGE_MIMES ) do
 	availableMimes[v] = true
 end
 
+local scaleMethods = {
+	STRETCH = 1;
+	FIT = 2;
+}
+
 class Image {
 	
 	width = Number;
@@ -52,6 +57,7 @@ class Image {
 	contents = Any.allowsNil;
 	scaledCache = {};
 	ucgValues = Enum( Number, ucgValues );
+	scaleMethods = Enum( Number, scaleMethods );
 
 }
 
@@ -116,7 +122,7 @@ function Image.static:fromNameInBundle( String name, Any bundle )
 	return Image.static:fromFile( bundle:file( name, IMAGE_MIMES ) )
 end
 
-function Image.static:fromResource( resource )
+function Image.static:fromResource( Resource resource )
 	local mime = resource.mime
 	if mime == mimes.UCG then
 		return Image.static:fromUniversalCompressedGraphics( resource.binaryContents )
@@ -1037,14 +1043,15 @@ end
 	@param [number] scaledHeight
 	@return [table] pixels -- the scaled pixels
 ]]
-function Image:getScaledPixels( scaledWidth, scaledHeight )
+														-- TODO: should be Image.scaleMethods.FIT
+function Image:getScaledPixels( Number scaledWidth, Number scaledHeight, Number( 2 ) method )
 	scaledWidth = math.floor( scaledWidth + 0.5 )
 	scaledHeight = math.floor( scaledHeight + 0.5 )
 
 	local scaledCache = self.scaledCache
 
-	if scaledCache[scaledWidth .. ":" .. scaledHeight] then
-		return scaledCache[scaledWidth .. ":" .. scaledHeight]
+	if scaledCache[method .. ":" .. scaledWidth .. ":" .. scaledHeight] then
+		return scaledCache[method .. ":" .. scaledWidth .. ":" .. scaledHeight]
 	end
 
 	local width, height, pixels = self.width, self.height, self.pixels
@@ -1054,13 +1061,49 @@ function Image:getScaledPixels( scaledWidth, scaledHeight )
 	local heightRatio = height / scaledHeight
 	local ceil = math.ceil
 
-	for x = 1, scaledWidth do
+	if method == scaleMethods.STRETCH then
+		local i = 1
 		for y = 1, scaledHeight do
-			scaledPixels[(y - 1) * scaledWidth + x] = pixels[ ceil( y * heightRatio - 1 ) * width + ceil( x * widthRatio ) ]
+			for x = 1, scaledWidth do
+				scaledPixels[i] = pixels[ ceil( y * heightRatio - 1 ) * width + ceil( x * widthRatio ) ]
+				i = i + 1
+			end
+		end
+	elseif method == scaleMethods.FIT then
+		local ratio = math.max( widthRatio, heightRatio )
+		local newWidth, newHeight = math.floor( width / ratio + 0.5 ), math.floor( height / ratio + 0.5 )
+		local offsetX, offsetY = ( scaledWidth - newWidth ) / 2, math.ceil( ( scaledHeight - newHeight ) / 2 )
+		local leftX, rightX, topY, bottomY = math.ceil( offsetX ), scaledWidth - math.floor( offsetX ), math.ceil( offsetY ), scaledHeight - math.floor( offsetY )
+		local i = 1
+		for y = 1, topY do
+			for x = 1, scaledWidth do
+				scaledPixels[i] = TRANSPARENT
+				i = i + 1
+			end
+		end
+		for y = topY + 1, bottomY do
+			for x = 1, leftX do
+				scaledPixels[i] = TRANSPARENT
+				i = i + 1
+			end
+			for x = leftX + 1, rightX do
+				scaledPixels[i] = pixels[ ceil( ( y - topY ) * ratio - 1 ) * width + ceil( ( x - leftX ) * ratio ) ]
+				i = i + 1
+			end
+			for x = rightX + 1, scaledWidth do
+				scaledPixels[i] = TRANSPARENT
+				i = i + 1
+			end
+		end
+		for y = bottomY + 1, scaledHeight do
+			for x = 1, scaledWidth do
+				scaledPixels[i] = TRANSPARENT
+				i = i + 1
+			end
 		end
 	end
 
-	scaledCache[scaledWidth .. ":" .. scaledHeight] = scaledPixels
+	scaledCache[method .. ":" .. scaledWidth .. ":" .. scaledHeight] = scaledPixels
 
 	return scaledPixels
 end
@@ -1071,10 +1114,13 @@ end
 	@param [number] x
 	@param [number] y
 ]]
-function Image:appendImage( appendingImage, x, y )
+function Image:appendImage( Image appendingImage, Number x, Number y )
 	local appendingWidth, appendingHeight, appendingPixels = appendingImage.width, appendingImage.height, appendingImage.pixels
+	return self:appendPixels( appendingPixels, appendingWidth, appendingHeight, x, y )
+end
+
+function Image:appendPixels( Table appendingPixels, Number appendingWidth, Number appendingHeight, Number x, Number y )
 	local selfWidth, selfHeight, selfPixels = self.width, self.height, self.pixels
-	local TRANSPARENT = TRANSPARENT
 	local xLimit, yLimit = math.min( selfWidth, appendingWidth + x - 1 ), math.min( selfHeight, appendingHeight + y - 1 )
 	for _y = y, yLimit do
 		for _x = x, xLimit do
