@@ -1175,3 +1175,10 @@ function Image:squareCentred()
 		self.scaledCache = {}
 	end
 end
+
+--[[
+	@desc Returns a copy of the image
+]]
+function Image:copy()
+	return Image( self.pixels, self.width, self.height, self.contents )
+end
