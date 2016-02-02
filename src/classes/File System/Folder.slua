@@ -155,11 +155,11 @@ function Folder.items:get()
 end
 
 function Folder.files:get()
-	return self:getItem( false, true )
+	return self:getItems( false, true )
 end
 
 function Folder.folders:get()
-	return self:getItem( true, false )
+	return self:getItems( true, false )
 end
 
 function Folder.items:set( items )
