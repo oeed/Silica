@@ -23,12 +23,12 @@ local osClock = os.clock
 
 class Folder extends FileSystemItem {
 	
-	allItems = false;
-	items = false;
-	files = false;
-	folders = false;
-	fs = false; -- an fs API sandbox 
-	io = false; -- an fs API sandbox 
+	allItems = Table.allowsNil;
+	items = Table.allowsNil;
+	files = Table.allowsNil;
+	folders = Table.allowsNil;
+	fs = Table.allowsNil; -- an fs API sandbox 
+	io = Table.allowsNil; -- an io API sandbox 
 
 }
 
