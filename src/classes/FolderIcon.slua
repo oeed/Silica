@@ -1,14 +1,56 @@
 
+local folderFrontIcon, folderBackIcon, folderIcon
+local VISIBLE_THUMBNAIL_COUNT, MINIMUM_SIZE = 2, 15
+local THUMBNAIL_POSITION_X = 0.6
+local THUMBNAIL_SCALE = 0.75
+
 class FolderIcon extends Icon {
 	
 	folder = Folder;
 
 }
 
-function FolderIcon.static:fromFolder( Folder folder )
-	-- if the folder has any *files* (i.e. not folders) directly within it then we'll use a thumbnail icon
-	local files = fileSystemItem.files
-	if #files > 0 then
+function FolderIcon:initialise( Table images, Folder folder )
+	self.folder = folder
+	self:super( images )
+end
 
+function FolderIcon.static:fromFolder( Folder folder )
+	local files = folder.files
+	local filesCount = #files
+	if filesCount > 0 then
+		-- if the folder has any *files* (i.e. not folders) directly within it then we'll use a custom icon
+		if not folderFrontIcon then
+			folderFrontIcon, folderBackIcon = Icon.static:fromName( "folder-front" ), Icon.static:fromName( "folder-back" )
+		end
+		local images = {}
+		local thumbnailCount = math.min( filesCount, VISIBLE_THUMBNAIL_COUNT )
+		local icons = {}
+		for n = 1, thumbnailCount do
+			icons[n] = files[n].icon
+		end
+
+		for i, _image in ipairs( folderBackIcon.images ) do
+			local image = _image:copy()
+			local width, height = image.width, image.height
+			local size = math.max( width, height )
+			if size >= MINIMUM_SIZE then
+				for n = 1, thumbnailCount do
+					local icon = icons[n]
+					-- local iconWidth, iconHeight, iconOriginalWidth, iconOriginalHeight = icon.width, icon.height, icon.originalWidth, icon.originalHeight
+					local iconPixels, iconWidth, iconHeight = icon:getScaledPixels( math.floor( size * THUMBNAIL_SCALE + 0.5 ) )
+					image:appendPixels( iconPixels, iconWidth, iconHeight, --[[math.floor( ( width - iconWidth ) / 2 + 0.5 )]]3 + (n - 1) * 5, 1 + (n - 1) * 3 )
+				end
+			end
+			image:appendImage( folderFrontIcon, 1, 1 )
+			images[i] = image
+		end
+
+		return FolderIcon( images, folder )
+	else
+		if not folderIcon then
+			folderIcon = Icon.static:fromName( "folder" )
+		end
+		return folderIcon
 	end
 end
