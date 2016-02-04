@@ -5,28 +5,6 @@ local MIN_MOUSE_HOLD_TIME = 0.3
 local ANIMATION_DEFAULT_TIME = 0.3
 local DEFAULT_EASING = Animation.easings.IN_OUT_SINE
 
-local function newAnimation( self, label, time, values, easing, onFinish, round )
-	local animations = self.animations
-	for i = #animations, 1, -1 do
-		if animations[i].label == label then
-			table.remove( animations, i )
-		end
-	end
-	
-	-- prevent values that won't change from being animated
-	local hasValue = false
-	for k, v in pairs( values ) do
-		if self[k] == v then
-			values[k] = nil
-		else
-			hasValue = true
-		end
-	end
-	if not hasValue then return end
-	local animation = Animation( time, self, values, easing, round == nil and true or round )
-	animations[#animations + 1] = { label = label, animation = animation, onFinish = onFinish }
-end
-
 class View {
 
 	x = Number( 1 );
@@ -408,9 +386,26 @@ end
 	@desc Animate a change in a certain property
 ]]
 function View:animate( String propertyName, Number value, Number( ANIMATION_DEFAULT_TIME ) time, Function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay, Boolean( true ) round )
-	local addAnimation = function()
-		newAnimation( self, propertyName, time, { [propertyName] = value }, easing or DEFAULT_EASING, onFinish, round )
+	-- if the value hasn't changed then just call the callback and return
+	if self[propertyName] == value then
+		if onFinish then
+			onFinish( self )
+			return
+		end
 	end
+
+	local addAnimation = function()
+		local animations = self.animations
+		for i = #animations, 1, -1 do
+			if animations[i].label == propertyName then
+				table.remove( animations, i )
+			end
+		end
+		
+		local animation = Animation( time, self, { [propertyName] = value }, easing, round )
+		animations[#animations + 1] = { label = label, animation = animation, onFinish = onFinish }
+	end
+
 	if delay <= 0 then
 		addAnimation()
 	else
