@@ -112,6 +112,6 @@ function ThumbnailIcon:getScaledPixels( Number maximumWidth, Number( maximumWidt
 			i = i - 1
 		end
 	end
-	scaledCache[maximumWidth .. ":" .. maximumHeight] = { pixels, pixelsWidth, pixelsHeight }
+	scaledCache[size] = { pixels, pixelsWidth, pixelsHeight }
 	return pixels, pixelsWidth, pixelsHeight
 end
