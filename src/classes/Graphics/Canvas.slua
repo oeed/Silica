@@ -194,11 +194,9 @@ function Canvas:image( Image image, Number x, Number y, Number( image.width ) wi
 	end
 	local selfWidth, selfHeight, selfPixels = self.width, self.height, self.pixels
 	local xLimit, yLimit = math.min( selfWidth, pixelsWidth + x - 1 ), math.min( selfHeight, pixelsHeight + y - 1 )
-	local i = 1
 	for _y = y, yLimit do
 		for _x = x, xLimit do
-			local pixel = pixels[i]--(_y - y) * pixelsWidth + (_x - x + 1)]
-			i = i + 1
+			local pixel = pixels[(_y - y) * pixelsWidth + (_x - x + 1)]
 			if pixel and pixel ~= TRANSPARENT then
 				selfPixels[(_y - 1) * selfWidth + _x] = pixel
 			end
