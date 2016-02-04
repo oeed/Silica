@@ -309,12 +309,12 @@
 		<leftMargin type="Number" default="10" />
 		<rightMargin type="Number" default="2" />
 		<topMargin type="Number" default="0" />
-		<bottomMargin type="Number" default="0" />
+		<bottomMargin type="Number" default="3" />
         <cornerRadius type="Number" default="6" />
 		<font type="Font" default="systemFont"/>
 		<childrenMarginLeft type="Number" default="7" />
-		<childrenMarginTop type="Number" default="1" />
-		<childrenMarginBottom type="Number" default="4" />
+		<childrenMarginTop type="Number" default="0" />
+		<childrenMarginBottom type="Number" default="3" />
 		<animationDuration type="Number" default="0.2" />
 		<animationEasing type="Animation.easings" default="IN_OUT_SINE" />
 		<leftSymbolMargin type="Number" default="2" />
