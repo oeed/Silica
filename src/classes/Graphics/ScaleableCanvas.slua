@@ -32,7 +32,7 @@ function ScaleableCanvas.contentMask:get()
 			local pixelX, pixelY = ceil( _x * widthRatio ), ceil( _y * heightRatio )
 			local colour = pixels[pixelY * width + pixelX]
 			if colour ~= TRANSPARENT then
-				maskPixels[( y + yMin + _y ) * width + x + xMin + _x] = true
+				maskPixels[( yMin + _y ) * width + xMin + _x] = true
 			end
 		end
 	end
