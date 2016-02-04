@@ -52,16 +52,8 @@ function ThumbnailIcon:getScaledPixels( Number maximumWidth, Number( maximumWidt
 	else
 		pixels = {}
 		local image = self.image
-		local imageWidth, imageHeight = image.width, image.height
-		local imageRatio = imageWidth / imageHeight
-		local thumbnailWidth, thumbnailHeight
-		if imageWidth > imageHeight then
-			thumbnailWidth = size - 2 * OUTLINE_SIZE
-			thumbnailHeight = math.floor( thumbnailWidth * ( imageHeight / imageWidth ) + 0.5 )
-		else
-			thumbnailHeight = size - 2 * OUTLINE_SIZE
-			thumbnailWidth = math.floor( thumbnailHeight * ( imageWidth / imageHeight ) + 0.5 )
-		end
+		local thumbnailSize = size - 2 * OUTLINE_SIZE
+		local thumbnailPixels, thumbnailWidth, thumbnailHeight = image:getScaledPixels( thumbnailSize, thumbnailSize, scaleMethods.FIT )
 
 		pixelsWidth, pixelsHeight = thumbnailWidth + 2 * OUTLINE_SIZE, thumbnailHeight + 2 * OUTLINE_SIZE
 		local i = 1
@@ -82,7 +74,6 @@ function ThumbnailIcon:getScaledPixels( Number maximumWidth, Number( maximumWidt
 			end
 		end
 
-		local thumbnailPixels = image:getScaledPixels( thumbnailWidth, thumbnailHeight, scaleMethods.STRETCH )
 		i = 1
 		for y = OUTLINE_SIZE + 1, pixelsHeight - OUTLINE_SIZE do
 			for x = OUTLINE_SIZE + 1, pixelsWidth - OUTLINE_SIZE do
