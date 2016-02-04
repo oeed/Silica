@@ -45,6 +45,7 @@ end
 local scaleMethods = {
 	STRETCH = 1;
 	FIT = 2;
+	COVER = 3;
 }
 
 class Image {
@@ -1065,27 +1066,29 @@ function Image:getScaledPixels( Number maximumWidth, Number maximumHeight, Numbe
 	local heightRatio = height / maximumHeight
 	local ceil = math.ceil
 
-	if method == scaleMethods.STRETCH then
-		local i = 1
-		for y = 1, maximumHeight do
-			for x = 1, maximumWidth do
-				scaledPixels[i] = pixels[ ceil( y * heightRatio - 1 ) * width + ceil( x * widthRatio ) ]
-				i = i + 1
-			end
+	local isFit, isCover = method == scaleMethods.FIT, method == scaleMethods.COVER
+
+	if isFit or isCover then
+		local ratio
+		if isFit then
+			ratio = math.max( widthRatio, heightRatio )
+		else
+			ratio = math.min( widthRatio, heightRatio )
 		end
-	elseif method == scaleMethods.FIT then
-		local ratio = math.max( widthRatio, heightRatio )
+
+		widthRatio, heightRatio = ratio, ratio
 		pixelsWidth, pixelsHeight = math.floor( width / ratio + 0.5 ), math.floor( height / ratio + 0.5 )
-		local i = 1
-		for y = 1, pixelsHeight do
-			for x = 1, pixelsWidth do
-				scaledPixels[i] = pixels[ ceil( y * ratio - 1 ) * width + ceil( x * ratio ) ]
-				i = i + 1
-			end
+	end
+
+	local i = 1
+	for y = 1, pixelsHeight do
+		for x = 1, pixelsWidth do
+			scaledPixels[i] = pixels[ ceil( y * heightRatio - 1 ) * width + ceil( x * widthRatio ) ]
+			i = i + 1
 		end
 	end
 
-	scaledCache[method .. ":" .. maximumWidth .. ":" .. maximumHeight] = { pixels, pixelsWidth, pixelsHeight }
+	scaledCache[method .. ":" .. maximumWidth .. ":" .. maximumHeight] = { scaledPixels, pixelsWidth, pixelsHeight }
 
 	return scaledPixels, pixelsWidth, pixelsHeight
 end
