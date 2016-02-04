@@ -109,7 +109,9 @@ function DragDropManager:cancel()
 			originalY = math.min( originalY, viewY )
 		end
 
-		dragView:animate( "x", originalX, time, function()
+		dragView:animate( "x", originalX, time, nil, easing )
+		dragView:animate( "y", originalY, time, nil, easing )
+		dragView:animate( "shadowSize", 0, time, function()
 			for i, view in ipairs( sourceViews ) do
 				if didHideSource then
 					view.isVisible = true
@@ -118,8 +120,6 @@ function DragDropManager:cancel()
 			dragView.parent:remove( dragView )
 			if completion then completion() end
 		end, easing )
-		dragView:animate( "y", originalY, time, nil, easing )
-		dragView:animate( "shadowSize", 0, time, nil, easing )
 		self.dragView = nil
 	end
 end
