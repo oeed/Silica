@@ -159,15 +159,19 @@ function Image:toPaintFormat()
 	local pixels = self.pixels
 	local paintFormat = ""
 	local width, height = self.width, self.height
-
+	local i, n = 1, 1
+	local t = {}
 	for y = 1, height do
 		for x = 1, width do
-			paintFormat = paintFormat .. getHexOf( pixels[(y - 1) * width + x] )
+			t[n] = getHexOf( pixels[i] )
+			i = i + 1
+			n = n + 1
 		end
-		paintFormat = paintFormat .. "\n"
+		t[n] = "\n"
+		n = n + 1
 	end
 
-	return paintFormat
+	return table.concat( t )
 end
 
 local function newBuffer(mode, source)
