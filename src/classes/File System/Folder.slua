@@ -54,8 +54,8 @@ function Folder.static:make( path, overwrite )
 
 	if not exists then
 		fs.makeDir( path )
-		return Folder( path )
 	end
+	return Folder( path )
 end
 
 function Folder:serialise( flatten, metadataProperties )
