@@ -122,7 +122,7 @@ function TreeNode:onMouseDown( MouseDownEvent event, Event.phases phase )
 	end
 end
 
-function TreeNode:canAcceptDragDrop( ClipboardData data )
+function TreeNode:canAcceptDragDrop( ClipboardData data, Boolean isMove )
 	return self.canRearrange and data:typeOf( TreeClipboardData )
 end
 

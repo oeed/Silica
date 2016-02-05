@@ -75,7 +75,7 @@ function ListContainer:updateLayout( Boolean( false ) dontAnimate )
 	self.needsLayoutUpdate = false
 end
 
-function ListContainer:canAcceptDragDrop( ClipboardData data )
+function ListContainer:canAcceptDragDrop( ClipboardData data, Boolean isMove )
 	return data:typeOf( ListClipboardData ) and (self.canTransferItems or data.listItem.parent == self)
 end
 

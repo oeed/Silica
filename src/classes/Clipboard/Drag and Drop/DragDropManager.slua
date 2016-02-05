@@ -215,7 +215,7 @@ function DragDropManager:updateDestination()
 	local dragView = self.dragView
 	if dragView then
 		local ownerContainer = self.owner.container
-		local data = self.data
+		local data, isMove = self.data, self.isMove
 
 		local function lookInView( view, x, y )
 			if view:typeOf( Container ) then
@@ -231,7 +231,7 @@ function DragDropManager:updateDestination()
 				end
 			end
 
-			if view:typeOf( IDragDropDestination ) and view:canAcceptDragDrop( data ) then
+			if view:typeOf( IDragDropDestination ) and view:canAcceptDragDrop( data, isMove ) then
 				return view
 			end
 
