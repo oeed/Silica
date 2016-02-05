@@ -97,7 +97,7 @@ function ListContainer:dragDropExited( ClipboardData data, DragView dragView )
 	-- self:animate( "row", 0, 0.3 )
 end
 
-function ListContainer:dragDropDropped( ClipboardData data )
+function ListContainer:dragDropDropped( ClipboardData data, Boolean isMove )
 
 end
 
