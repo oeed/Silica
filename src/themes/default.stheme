@@ -310,6 +310,8 @@
 		<rightMargin type="Number" default="2" />
 		<topMargin type="Number" default="0" />
 		<bottomMargin type="Number" default="3" />
+		<childTopMargin type="Number" default="0" />
+		<childBottomMargin type="Number" default="0" />
         <cornerRadius type="Number" default="6" />
 		<font type="Font" default="systemFont"/>
 		<childrenMarginLeft type="Number" default="7" />

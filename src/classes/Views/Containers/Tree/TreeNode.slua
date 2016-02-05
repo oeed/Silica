@@ -162,6 +162,7 @@ end
 function TreeNode:updateLayout( Boolean( self.dontAnimateLayoutUpdate ) dontAnimate )
 	local width, theme = self.width, self.theme
 	local childrenMarginLeft = theme:value( "childrenMarginLeft" )
+	local childTopMargin, childBottomMargin = theme:value( "childTopMargin" ), theme:value( "childBottomMargin" )
 	local y = 1 + self.minHeight + theme:value( "childrenMarginTop" )
 
 	local time, easing
@@ -171,13 +172,13 @@ function TreeNode:updateLayout( Boolean( self.dontAnimateLayoutUpdate ) dontAnim
 	end
 	for i, childView in ipairs( self.children ) do
 		if dontAnimate then
-			childView.y = y
+			childView.y = y + childTopMargin
 		else
-			childView:animate( "y", y, time, nil, easing )
+			childView:animate( "y", y + childTopMargin, time, nil, easing )
 		end
 		childView.x = 1 + childrenMarginLeft
 		childView.width = width - childrenMarginLeft
-		y = y + ( childView:typeOf( TreeNode ) and ( ( childView.isFolded and childView.minHeight or childView.maxHeight) or 0 ) or childView.height )
+		y = y + ( childView:typeOf( TreeNode ) and ( ( childView.isFolded and childView.minHeight or childView.maxHeight) or 0 ) or childView.height ) + childTopMargin + childBottomMargin
 	end
 
 	local maxHeight = y + theme:value( "bottomMargin" ) - 1 + theme:value( "childrenMarginBottom" )
