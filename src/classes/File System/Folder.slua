@@ -29,6 +29,7 @@ class Folder extends FileSystemItem {
 	folders = Table.allowsNil;
 	fs = Table.allowsNil; -- an fs API sandbox 
 	io = Table.allowsNil; -- an io API sandbox 
+	openIcon = Any.allowsNil;
 
 }
 
@@ -118,6 +119,15 @@ function Folder.icon:get()
 	local icon = FolderIcon.static:fromFolder( self )
 	self.icon = icon
 	return icon
+end
+
+function Folder.openIcon:get()
+	local cache = self.openIcon
+	if cache then return cache end
+
+	local openIcon = FolderIcon.static:fromFolder( self, true )
+	self.openIcon = openIcon
+	return openIcon
 end
 
 --[[
