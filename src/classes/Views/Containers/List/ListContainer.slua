@@ -94,10 +94,8 @@ function ListContainer:dragDropEntered( ClipboardData data, DragView dragView, N
 end
 
 function ListContainer:dragDropExited( ClipboardData data, DragView dragView, Number x, Number y )
-	-- self:animate( "row", 0, 0.3 )
 end
 
 function ListContainer:dragDropDropped( ClipboardData data, Boolean isMove, Number x, Number y )
-
 end
 
