@@ -2,3 +2,11 @@
 class TreeItem extends ListItem implements ITreeChild {
 	
 }
+
+function TreeItem:onMouseHeld( MouseHeldEvent event, Event.phases phase )
+	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then
+		self.isSelected = true
+		self:startDragDrop( event, TreeClipboardData( self ), true, function()self.isSelected = false end )
+	end
+	return true
+end
