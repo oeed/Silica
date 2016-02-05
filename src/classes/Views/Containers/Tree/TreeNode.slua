@@ -8,6 +8,8 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 	maxHeight = Number.allowsNil;
 
 	canRearrange = Boolean( true );
+	removingIndex = Number.allowsNil;
+	canRemove = Boolean( true );
 	dropStyle = DragDropManager.dropStyles.RETURN;
 
 }
@@ -125,20 +127,37 @@ function TreeNode:canAcceptDragDrop( ClipboardData data )
 end
 
 function TreeNode:dragDropEntered( ClipboardData data, DragView dragView, Number x, Number y )
+	if self.canRemove then
+		local removingIndex = self.removingIndex
+		if removingIndex then
+			self:insert( data.treeItem, removingInde )
+			self.dontAnimateLayoutUpdate = false
+			dragView.cursor = nil
+		end
+
+		self.removingIndex = nil
+	end
 end
 
 function TreeNode:dragDropMoved( ClipboardData data, DragView dragView, Number x, Number y )
-	local _, selfY = self:getPosition()
-	local treeItem = data.treeItem
-	local children = self.children
-	local index = math.max( math.min( math.floor( ( dragView.y - selfY - self.minHeight - self.theme:value( "childrenMarginTop" ) ) / treeItem.height + 1.5 ), #children), 1 )
-	if treeItem.index ~= index then
-		treeItem.index = index
-		self.needsLayoutUpdate = true
+	if not self.removingIndex then
+		local _, selfY = self:getPosition()
+		local treeItem = data.treeItem
+		local children = self.children
+		local index = math.max( math.min( math.floor( ( dragView.y - selfY - self.minHeight - self.theme:value( "childrenMarginTop" ) ) / treeItem.height + 1.5 ), #children), 1 )
+		if treeItem.index ~= index then
+			treeItem.index = index
+			self.needsLayoutUpdate = true
+		end
 	end
 end
 
 function TreeNode:dragDropExited( ClipboardData data, DragView dragView, Number x, Number y )
+	if self.canRemove then
+		self.removingIndex = dragView.index
+		self:remove( data.treeItem )
+		dragView.cursor = DeleteCursor.static
+	end
 end
 
 function TreeNode:dragDropDropped( ClipboardData data, Boolean isMove, Number x, Number y )

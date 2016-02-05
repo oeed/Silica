@@ -363,4 +363,10 @@
 		<hotSpotY type="Number" default="5" />
 	</TextCursor>
 
+	<DeleteCursor>
+		<image type="Image" default="cursor-delete" />
+		<hotSpotX type="Number" default="5" />
+		<hotSpotY type="Number" default="5" />
+	</DeleteCursor>
+
 </Theme>

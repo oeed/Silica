@@ -1,12 +1,15 @@
 
 class TreeItem extends ListItem implements ITreeChild {
 	
+	originalParent = TreeNode.allowsNil;
+
 }
 
 function TreeItem:onMouseHeld( MouseHeldEvent event, Event.phases phase )
-	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then
+	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and ( self.parent.canRearrange or self.parent.canRemove) then
 		self.isSelected = true
-		self:startDragDrop( event, TreeClipboardData( self ), true, function()self.isSelected = false end )
+		self.originalParent = self.parent
+		self:startDragDrop( event, TreeClipboardData( self ), true, function()self.originalParent = nil self.isSelected = false end )
 	end
 	return true
 end
