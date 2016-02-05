@@ -80,6 +80,7 @@ function ListContainer:canAcceptDragDrop( ClipboardData data )
 end
 
 function ListContainer:dragDropMoved( ClipboardData data, DragView dragView, Number x, Number y )
+	local _, selfY = self:getPosition()
 	local listItem = data.listItem
 	local children = self.children
 	local index = math.max( math.min( math.floor( ( dragView.y - selfY - self.theme:value( "topMargin" ) - 1 ) / listItem.height + 1.5 ), #children), 1 )
