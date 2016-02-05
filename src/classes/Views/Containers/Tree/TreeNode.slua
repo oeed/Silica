@@ -8,6 +8,7 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 	maxHeight = Number.allowsNil;
 
 	canRearrange = Boolean( true );
+	dropStyle = DragDropManager.dropStyles.RETURN;
 
 }
 
