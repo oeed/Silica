@@ -403,7 +403,7 @@ function View:animate( String propertyName, Number value, Number( ANIMATION_DEFA
 		end
 		
 		local animation = Animation( time, self, { [propertyName] = value }, easing, round )
-		animations[#animations + 1] = { label = label, animation = animation, onFinish = onFinish }
+		animations[#animations + 1] = { label = propertyName, animation = animation, onFinish = onFinish }
 	end
 
 	if delay <= 0 then
