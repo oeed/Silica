@@ -100,26 +100,33 @@ function DragDropManager:cancel()
 	if dragView then
 		local time, easing = 0.3, Animation.easings.OUT_SINE
 		local isMove, completion = self.isMove, self.completion
-
-		local sourceViews = self.sourceViews
-		local originalX, originalY = self.owner.container.width, self.owner.container.height
+		local x, y = dragView.x + self.relativeX - 1, dragView.y + self.relativeY - 1
+		local sourceViews, data = self.sourceViews, self.data
 		for i, view in ipairs( sourceViews ) do
-			local viewX, viewY = view:getPosition()
-			originalX = math.min( originalX, viewX )
-			originalY = math.min( originalY, viewY )
+			view:dragDropCancelled( data, dragView, x, y )
 		end
-
-		dragView:animate( "x", originalX, time, nil, easing )
-		dragView:animate( "y", originalY, time, nil, easing )
-		dragView:animate( "shadowSize", 0, time, function()
+		
+		local dragViewParent = dragView.parent
+		if dragViewParent then
+			local ownerContainer = self.owner.container
+			local originalX, originalY = ownerContainer.width, ownerContainer.height
 			for i, view in ipairs( sourceViews ) do
-				if isMove then
-					view.isVisible = true
-				end
+				local viewX, viewY = view:getPosition()
+				originalX = math.min( originalX, viewX )
+				originalY = math.min( originalY, viewY )
 			end
-			dragView.parent:remove( dragView )
-			if completion then completion() end
-		end, easing )
+			dragView:animate( "x", originalX, time, nil, easing )
+			dragView:animate( "y", originalY, time, nil, easing )
+			dragView:animate( "shadowSize", 0, time, function()
+				for i, view in ipairs( sourceViews ) do
+					if isMove then
+						view.isVisible = true
+					end
+				end
+				dragView.parent:remove( dragView )
+				if completion then completion() end
+			end, easing )
+		end
 		self.dragView = nil
 	end
 end
