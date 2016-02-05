@@ -89,6 +89,7 @@ end
 
 function Button.isEnabled:set( isEnabled )
 	self.isEnabled = isEnabled
+	self.cursor = isEnabled and ClickableCursor.static or Cursor.static
 	self:updateThemeStyle()
 end
 

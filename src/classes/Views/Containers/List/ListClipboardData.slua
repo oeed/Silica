@@ -2,7 +2,7 @@
 class ListClipboardData extends ClipboardData {
 	
 	type = "Silica:ListItem";
-	listItem = false;
+	listItem = ListItem;
 
 }
 

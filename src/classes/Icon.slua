@@ -19,12 +19,11 @@ class Icon extends Image {
 
 }
 
-function Icon:initialise( Table images, Table contents )
+function Icon:initialise( Table images, Any.allowsNil contents )
 	local maxSize = 0
 	local maxWidth, maxWidth
 	local pixels
 	for i, image in ipairs( images ) do
-		image:squareCentred()
 		local width, height = image.width, image.height
 		local size = width * height
 		if size > maxSize then
@@ -36,6 +35,14 @@ function Icon:initialise( Table images, Table contents )
 	end
 	self.images = images
 	self:super( pixels, maxWidth, maxHeight, contents )
+end
+
+function Icon.pixels:set( pixels )
+	self.pixels = pixels
+	
+	local scaledCache, width, height = {}, self.width, self.height
+	scaledCache[width .. ":" .. height] = { pixels, width, height };
+	self.scaledCache = scaledCache
 end
 
 function Icon.static:fromIcon( Table bytes )
@@ -145,7 +152,7 @@ function Icon.static:fromName( String name )
 		return Icon.static:fromResource( resource )
 	end
 end
-
+											-- TODO: needs to be Bundle
 function Icon.static:fromNameInBundle( String name, Any bundle )
 	return Icon.static:fromFile( bundle:file( name, ICON_MIMES ) )
 end
@@ -156,14 +163,13 @@ function Icon.static:fromFile( File file )
 	end
 end
 
-function Icon:getScaledPixels( scaledWidth, scaledHeight )
-	scaledWidth = math.floor( scaledWidth + 0.5 )
-	scaledHeight = math.floor( scaledHeight + 0.5 )
+function Icon:getScaledPixels( Number maximumWidth, Number( maximumWidth ) maximumHeight, Image.scaleMethods( Image.scaleMethods.FIT ) method )
+	size = math.floor( math.min( maximumWidth, maximumHeight ) + 0.5 )
 
 	local scaledCache = self.scaledCache
-
-	if scaledCache[scaledWidth .. ":" .. scaledHeight] then
-		return scaledCache[scaledWidth .. ":" .. scaledHeight]
+	local cache = scaledCache[size]
+	if cache then
+		return cache[1], cache[2], cache[3]
 	end
 
 	local width, height, pixels = self.width, self.height, self.pixels
@@ -172,14 +178,18 @@ function Icon:getScaledPixels( scaledWidth, scaledHeight )
 	local bestDiff = math.huge
 	for i, image in ipairs( self.images ) do
 		local width, height = image.width, image.height
-		local diff = math.min( math.abs( width - scaledWidth ), math.abs( height - scaledHeight ) )
+		local diff = math.abs( math.max( width, height ) - size )
 		if diff < bestDiff then
 			bestImage = image
 			bestDiff = diff
 		end
 	end
 
-	local pixels = bestImage:getScaledPixels( scaledWidth, scaledHeight )
-	scaledCache[scaledWidth .. ":" .. scaledHeight] = pixels
-	return pixels
+	local pixels, pixelsWidth, pixelsHeight = bestImage:getScaledPixels( size, size, method )
+	local n = 0
+	for k, v in pairs(pixels) do
+		n = n + 1
+	end
+	scaledCache[size] = { pixels, pixelsWidth, pixelsHeight }
+	return pixels, pixelsWidth, pixelsHeight
 end

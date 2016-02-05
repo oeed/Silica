@@ -1,0 +1,12 @@
+
+class TreeClipboardData extends ClipboardData {
+	
+	type = "Silica:TreeItem";
+	treeItem = TreeItem;
+
+}
+
+function TreeClipboardData:initialise( TreeItem treeItem )
+	self:super()
+	self.treeItem = treeItem
+end

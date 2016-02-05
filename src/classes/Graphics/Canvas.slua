@@ -1,6 +1,7 @@
 
 local SHADOW_RATIO = 2 / 3
 local SHADOW_COLOUR = Graphics.colours.GREY
+local TRANSPARENT = Graphics.colours.TRANSPARENT
 
 class Canvas {
 	
@@ -37,7 +38,6 @@ end
 ]]
 function Canvas.contentMask:get()
 	local pixels = {}
-	local TRANSPARENT = Graphics.colours.TRANSPARENT
 	for k, v in pairs( self.pixels ) do
 		if v ~= TRANSPARENT then
 			pixels[k] = true
@@ -59,14 +59,14 @@ end
 ]]
 function Canvas:hitTest( Number x, Number y )
 	local colour = self.pixels[ ( y - 1 ) * self.width + x ]
-	return colour and colour ~= Graphics.colours.TRANSPARENT
+	return colour and colour ~= TRANSPARENT
 end
 
 --[[
 	@desc Fills an area in the given mask with the given colour, defaulting to the entire canvas
 ]]
 function Canvas:fill( Graphics.colours colour, Mask( self.mask ) mask )
-	if colour == Graphics.colours.TRANSPARENT then return end
+	if colour == TRANSPARENT then return end
 	local pixels, width, height = self.pixels, self.width, self.height
 	local maskX, maskY, maskWidth, maskHeight = mask.x, mask.y, mask.width, mask.height
 	for index, isFilled in pairs( mask.pixels ) do
@@ -84,7 +84,7 @@ end
 	@desc Draws an outline around the given mask, defaulting to the canvas' content mask
 ]]
 function Canvas:outline( Graphics.colours colour, Mask( self.contentMask ) mask, Number( 1 ) leftThickness, Number( leftThickness ) topThickness, Number( leftThickness ) rightThickness, Number( topThickness ) bottomThickness )
-	if colour == Graphics.colours.TRANSPARENT then return end
+	if colour == TRANSPARENT then return end
 	local width, height, pixels = self.width, self.height, self.pixels
 	local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
 	local function xScanline( min, max, inc, thickness )
@@ -139,7 +139,6 @@ end
 function Canvas:drawTo( Canvas destinationCanvas, Number x, Number y, Mask.allowsNil mask )
 	local width, height = self.width, self.height
 	local destinationWidth, destinationHeight, destinationPixels = destinationCanvas.width, destinationCanvas.height, destinationCanvas.pixels
-	local TRANSPARENT = Graphics.colours.TRANSPARENT
 	local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
 	local maxIndex = width * height
 	for index, colour in pairs( self.pixels ) do
@@ -185,14 +184,19 @@ end
 --[[
 	@desc Draws an image to the canvas, scaling the image if needed
 ]]
-function Canvas:image( Image image, Number x, Number y, Number( image.width ) width, Number( image.height ) height )
-	local pixels = image:getScaledPixels( width, height )
+function Canvas:image( Image image, Number x, Number y, Number( image.width ) width, Number( image.height ) height, Image.scaleMethods( Image.scaleMethods.FIT ) method )
+	local pixels, pixelsWidth, pixelsHeight = image:getScaledPixels( width, height, method )
+	if pixelsWidth ~= width then
+		x = x + math.ceil( ( width - pixelsWidth ) / 2 )
+	end
+	if pixelsHeight ~= height then
+		y = y + math.ceil( ( height - pixelsHeight ) / 2 )
+	end
 	local selfWidth, selfHeight, selfPixels = self.width, self.height, self.pixels
-	local TRANSPARENT = Graphics.colours.TRANSPARENT
-	local xLimit, yLimit = math.min( selfWidth, width + x - 1 ), math.min( selfHeight, height + y - 1 )
+	local xLimit, yLimit = math.min( selfWidth, pixelsWidth + x - 1 ), math.min( selfHeight, pixelsHeight + y - 1 )
 	for _y = y, yLimit do
 		for _x = x, xLimit do
-			local pixel = pixels[(_y - y) * width + (_x - x + 1)]
+			local pixel = pixels[(_y - y) * pixelsWidth + (_x - x + 1)]
 			if pixel and pixel ~= TRANSPARENT then
 				selfPixels[(_y - 1) * selfWidth + _x] = pixel
 			end
@@ -204,7 +208,7 @@ end
 	@desc Draws a shadow mask to the parent's canvas
 ]]
 function Canvas:drawShadow( Graphics.colours( SHADOW_COLOUR ) shadowColour, Number x, Number y, Number shadowSize, Mask( self.contentMask ) shadowMask )
-	if shadowSize == 0 or shadowColour == Graphics.colours.TRANSPARENT then return end
+	if shadowSize == 0 or shadowColour == TRANSPARENT then return end
 	x = math.floor( x + shadowSize * SHADOW_RATIO + 0.5 )
 	y = y + shadowSize
 	local pixels, width, height = self.pixels, self.width, self.height

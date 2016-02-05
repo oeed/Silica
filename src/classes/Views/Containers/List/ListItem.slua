@@ -73,3 +73,6 @@ function ListItem:onMouseDown( MouseDownEvent event, Event.phases phase )
 	end
 	return true
 end
+
+function ListItem:dragDropCancelled( ClipboardData data, DragView dragView, Number x, Number y )
+end

@@ -55,6 +55,12 @@ function File.static:make( path, mime, overwrite, contents )
 		local file = self.class( path )
 		file.metadata.mime = mime
 		return file
+	else
+		local file = File( path )
+		if contents then
+			file.contents = contents
+		end
+		return file
 	end
 end
 

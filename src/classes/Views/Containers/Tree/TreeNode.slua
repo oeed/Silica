@@ -1,11 +1,16 @@
 
-class TreeNode extends LayoutContainer implements ITreeChild {
+class TreeNode extends LayoutContainer implements ITreeChild implements IDragDropDestination {
 	
 	text = String;
 	isPressed = Boolean( false );
 	isFolded = Boolean( false );
 	minHeight = Number.allowsNil;
 	maxHeight = Number.allowsNil;
+
+	canRearrange = Boolean( true );
+	removingIndex = Number.allowsNil;
+	canRemove = Boolean( true );
+	dropStyle = DragDropManager.dropStyles.RETURN;
 
 }
 
@@ -28,7 +33,6 @@ function TreeNode:onDraw()
 
 	local symbol = theme:value( "symbol" )
     canvas:fill( theme:value( "symbolColour" ), SymbolMask( 1 + theme:value( "leftSymbolMargin" ), 1 + math.floor( ( height - symbol.height ) / 2 ), symbol ) )
-	
 end
 
 function TreeNode.text:set( text )
@@ -118,11 +122,53 @@ function TreeNode:onMouseDown( MouseDownEvent event, Event.phases phase )
 	end
 end
 
+function TreeNode:canAcceptDragDrop( ClipboardData data, Boolean isMove )
+	return self.canRearrange and data:typeOf( TreeClipboardData )
+end
+
+function TreeNode:dragDropEntered( ClipboardData data, DragView dragView, Number x, Number y )
+	if self.canRemove then
+		local removingIndex = self.removingIndex
+		if removingIndex then
+			self:insert( data.treeItem, removingInde )
+			self.dontAnimateLayoutUpdate = false
+			dragView.cursor = nil
+		end
+
+		self.removingIndex = nil
+	end
+end
+
+function TreeNode:dragDropMoved( ClipboardData data, DragView dragView, Number x, Number y )
+	if not self.removingIndex then
+		local _, selfY = self:getPosition()
+		local treeItem = data.treeItem
+		local children = self.children
+		local index = math.max( math.min( math.floor( ( dragView.y - selfY - self.minHeight - self.theme:value( "childrenMarginTop" ) ) / treeItem.height + 1.5 ), #children), 1 )
+		if treeItem.index ~= index then
+			treeItem.index = index
+			self.needsLayoutUpdate = true
+		end
+	end
+end
+
+function TreeNode:dragDropExited( ClipboardData data, DragView dragView, Number x, Number y )
+	if self.canRemove then
+		self.removingIndex = dragView.index
+		self:remove( data.treeItem )
+		dragView.cursor = DeleteCursor.static
+	end
+end
+
+function TreeNode:dragDropDropped( ClipboardData data, Boolean isMove, Number x, Number y )
+end
+
 function TreeNode:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
 	if not event.childView:typeOf( ITreeChild ) then
 		error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not extend ITreeChild to '" .. tostring( self ) .. "'", 0 )
 	end
 	self.needsLayoutUpdate = true
+	self.dontAnimateLayoutUpdate = true
 end
 
 function TreeNode.width:set( width )
@@ -133,9 +179,10 @@ function TreeNode.width:set( width )
 	end
 end
 
-function TreeNode:updateLayout( Boolean( false ) dontAnimate )
+function TreeNode:updateLayout( Boolean( self.dontAnimateLayoutUpdate ) dontAnimate )
 	local width, theme = self.width, self.theme
 	local childrenMarginLeft = theme:value( "childrenMarginLeft" )
+	local childTopMargin, childBottomMargin = theme:value( "childTopMargin" ), theme:value( "childBottomMargin" )
 	local y = 1 + self.minHeight + theme:value( "childrenMarginTop" )
 
 	local time, easing
@@ -145,13 +192,13 @@ function TreeNode:updateLayout( Boolean( false ) dontAnimate )
 	end
 	for i, childView in ipairs( self.children ) do
 		if dontAnimate then
-			childView.y = y
+			childView.y = y + childTopMargin
 		else
-			childView:animate( "y", y, time, nil, easing )
+			childView:animate( "y", y + childTopMargin, time, nil, easing )
 		end
 		childView.x = 1 + childrenMarginLeft
 		childView.width = width - childrenMarginLeft
-		y = y + ( childView:typeOf( TreeNode ) and ( ( childView.isFolded and childView.minHeight or childView.maxHeight) or 0 ) or childView.height )
+		y = y + ( childView:typeOf( TreeNode ) and ( ( childView.isFolded and childView.minHeight or childView.maxHeight) or 0 ) or childView.height ) + childTopMargin + childBottomMargin
 	end
 
 	local maxHeight = y + theme:value( "bottomMargin" ) - 1 + theme:value( "childrenMarginBottom" )
@@ -163,5 +210,6 @@ function TreeNode:updateLayout( Boolean( false ) dontAnimate )
 		self:animate( "height", height, time, nil, easing )
 	end
 
+	self.dontAnimateLayoutUpdate = false
 	self.needsLayoutUpdate = false
 end

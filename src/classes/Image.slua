@@ -42,6 +42,12 @@ for i, v in ipairs( IMAGE_MIMES ) do
 	availableMimes[v] = true
 end
 
+local scaleMethods = {
+	STRETCH = 1;
+	FIT = 2;
+	COVER = 3;
+}
+
 class Image {
 	
 	width = Number;
@@ -49,13 +55,14 @@ class Image {
 	pixels = Table;
 	-- resource = false;
 	-- file = false;
-	contents = Any;
+	contents = Any.allowsNil;
 	scaledCache = {};
 	ucgValues = Enum( Number, ucgValues );
+	scaleMethods = Enum( Number, scaleMethods );
 
 }
 
-function Image:initialise( Table pixels, Number width, Number height, Any contents )
+function Image:initialise( Table pixels, Number width, Number height, Any.allowsNil contents )
 	local newPixels = {}
 	local maxLength = width * height
 	for i, pixel in pairs( pixels ) do
@@ -116,7 +123,7 @@ function Image.static:fromNameInBundle( String name, Any bundle )
 	return Image.static:fromFile( bundle:file( name, IMAGE_MIMES ) )
 end
 
-function Image.static:fromResource( resource )
+function Image.static:fromResource( Resource resource )
 	local mime = resource.mime
 	if mime == mimes.UCG then
 		return Image.static:fromUniversalCompressedGraphics( resource.binaryContents )
@@ -152,15 +159,19 @@ function Image:toPaintFormat()
 	local pixels = self.pixels
 	local paintFormat = ""
 	local width, height = self.width, self.height
-
+	local i, n = 1, 1
+	local t = {}
 	for y = 1, height do
 		for x = 1, width do
-			paintFormat = paintFormat .. getHexOf( pixels[(y - 1) * width + x] )
+			t[n] = getHexOf( pixels[i] )
+			i = i + 1
+			n = n + 1
 		end
-		paintFormat = paintFormat .. "\n"
+		t[n] = "\n"
+		n = n + 1
 	end
 
-	return paintFormat
+	return table.concat( t )
 end
 
 local function newBuffer(mode, source)
@@ -1026,9 +1037,12 @@ end
 
 function Image.pixels:set( pixels )
 	self.pixels = pixels
-	self.scaledCache = {
-		[self.width .. ":" .. self.height] = pixels;
-	}
+	
+	local scaledCache, width, height = {}, self.width, self.height
+	for k, v in pairs( scaleMethods ) do
+		scaledCache[v .. ":" .. width .. ":" .. height] = { pixels, width, height };
+	end
+	self.scaledCache = scaledCache
 end
 
 --[[
@@ -1037,32 +1051,50 @@ end
 	@param [number] scaledHeight
 	@return [table] pixels -- the scaled pixels
 ]]
-function Image:getScaledPixels( scaledWidth, scaledHeight )
-	scaledWidth = math.floor( scaledWidth + 0.5 )
-	scaledHeight = math.floor( scaledHeight + 0.5 )
+														-- TODO: should be Image.scaleMethods.FIT
+function Image:getScaledPixels( Number maximumWidth, Number maximumHeight, Number( 2 ) method )
+	maximumWidth = math.floor( maximumWidth + 0.5 )
+	maximumHeight = math.floor( maximumHeight + 0.5 )
 
 	local scaledCache = self.scaledCache
-
-	if scaledCache[scaledWidth .. ":" .. scaledHeight] then
-		return scaledCache[scaledWidth .. ":" .. scaledHeight]
+	local cache = scaledCache[method .. ":" .. maximumWidth .. ":" .. maximumHeight]
+	if cache then
+		return cache[1], cache[2], cache[3]
 	end
 
 	local width, height, pixels = self.width, self.height, self.pixels
+	local pixelsWidth, pixelsHeight = maximumWidth, maximumHeight
 
 	local scaledPixels = {}
-	local widthRatio = width / scaledWidth
-	local heightRatio = height / scaledHeight
+	local widthRatio = width / maximumWidth
+	local heightRatio = height / maximumHeight
 	local ceil = math.ceil
 
-	for x = 1, scaledWidth do
-		for y = 1, scaledHeight do
-			scaledPixels[(y - 1) * scaledWidth + x] = pixels[ ceil( y * heightRatio - 1 ) * width + ceil( x * widthRatio ) ]
+	local isFit, isCover = method == scaleMethods.FIT, method == scaleMethods.COVER
+
+	if isFit or isCover then
+		local ratio
+		if isFit then
+			ratio = math.max( widthRatio, heightRatio )
+		else
+			ratio = math.min( widthRatio, heightRatio )
+		end
+
+		widthRatio, heightRatio = ratio, ratio
+		pixelsWidth, pixelsHeight = math.floor( width / ratio + 0.5 ), math.floor( height / ratio + 0.5 )
+	end
+
+	local i = 1
+	for y = 1, pixelsHeight do
+		for x = 1, pixelsWidth do
+			scaledPixels[i] = pixels[ ceil( y * heightRatio - 1 ) * width + ceil( x * widthRatio ) ]
+			i = i + 1
 		end
 	end
 
-	scaledCache[scaledWidth .. ":" .. scaledHeight] = scaledPixels
+	scaledCache[method .. ":" .. maximumWidth .. ":" .. maximumHeight] = { scaledPixels, pixelsWidth, pixelsHeight }
 
-	return scaledPixels
+	return scaledPixels, pixelsWidth, pixelsHeight
 end
 
 --[[
@@ -1071,10 +1103,13 @@ end
 	@param [number] x
 	@param [number] y
 ]]
-function Image:appendImage( appendingImage, x, y )
+function Image:appendImage( Image appendingImage, Number x, Number y )
 	local appendingWidth, appendingHeight, appendingPixels = appendingImage.width, appendingImage.height, appendingImage.pixels
+	return self:appendPixels( appendingPixels, appendingWidth, appendingHeight, x, y )
+end
+
+function Image:appendPixels( Table appendingPixels, Number appendingWidth, Number appendingHeight, Number x, Number y )
 	local selfWidth, selfHeight, selfPixels = self.width, self.height, self.pixels
-	local TRANSPARENT = TRANSPARENT
 	local xLimit, yLimit = math.min( selfWidth, appendingWidth + x - 1 ), math.min( selfHeight, appendingHeight + y - 1 )
 	for _y = y, yLimit do
 		for _x = x, xLimit do
@@ -1128,4 +1163,11 @@ function Image:squareCentred()
 		end
 		self.scaledCache = {}
 	end
+end
+
+--[[
+	@desc Returns a copy of the image
+]]
+function Image:copy()
+	return Image( self.pixels, self.width, self.height, self.contents )
 end

@@ -75,12 +75,12 @@ function ListContainer:updateLayout( Boolean( false ) dontAnimate )
 	self.needsLayoutUpdate = false
 end
 
-function ListContainer:canAcceptDragDrop( data )
+function ListContainer:canAcceptDragDrop( ClipboardData data, Boolean isMove )
 	return data:typeOf( ListClipboardData ) and (self.canTransferItems or data.listItem.parent == self)
 end
 
-function ListContainer:dragDropMoved( data, dragView )
-	local _, selfY = self:position()
+function ListContainer:dragDropMoved( ClipboardData data, DragView dragView, Number x, Number y )
+	local _, selfY = self:getPosition()
 	local listItem = data.listItem
 	local children = self.children
 	local index = math.max( math.min( math.floor( ( dragView.y - selfY - self.theme:value( "topMargin" ) - 1 ) / listItem.height + 1.5 ), #children), 1 )
@@ -90,14 +90,12 @@ function ListContainer:dragDropMoved( data, dragView )
 	end
 end
 
-function ListContainer:dragDropEntered( data, dragView )
+function ListContainer:dragDropEntered( ClipboardData data, DragView dragView, Number x, Number y )
 end
 
-function ListContainer:dragDropExited( data, dragView )
-	-- self:animate( "row", 0, 0.3 )
+function ListContainer:dragDropExited( ClipboardData data, DragView dragView, Number x, Number y )
 end
 
-function ListContainer:dragDropDropped( data )
-
+function ListContainer:dragDropDropped( ClipboardData data, Boolean isMove, Number x, Number y )
 end
 

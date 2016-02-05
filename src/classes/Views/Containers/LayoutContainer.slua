@@ -2,6 +2,7 @@
 class LayoutContainer extends Container {
 	
 	needsLayoutUpdate = Boolean( false );
+	dontAnimateLayoutUpdate = Boolean( false );
 	isLayoutLocked = Boolean( false );
 
 }
@@ -26,6 +27,7 @@ end
 
 function LayoutContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
 	self.needsLayoutUpdate = true
+	self.dontAnimateLayoutUpdate = true
 end
 
 function LayoutContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
