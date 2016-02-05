@@ -10,7 +10,7 @@ class DragDropManager {
 	relativeX = Number.allowsNil;
 	relativeY = Number.allowsNil;
 	destination = View.allowsNil;
-	didHideSource = Boolean.allowsNil;
+	isMove = Boolean.allowsNil;
 	sourceViews = Table.allowsNil;
 	completion = Function.allowsNil;
 
@@ -38,10 +38,10 @@ end
 	@param [ClipboardData] data -- the data that will be given to the destination
 	@param [number] relativeX -- the x coordinate relative to view the mouse is located
 	@param [number] relativeY -- the x coordinate relative to view the mouse is located
-	@param [boolean] hideSource -- whether the source view should be hidden during dragging
+	@param [boolean] isMove -- whether the source view should be hidden during dragging
 	@param [function] completion -- called when the drag and drop is cancelled or successful (destination view passed if dropped, nil if cancelled)
 ]]
-function DragDropManager:start( Table views, ClipboardData data, Number relativeX, Number relativeY, Boolean( true ) hideSource, Function.allowsNil completion )
+function DragDropManager:start( Table views, ClipboardData data, Number relativeX, Number relativeY, Boolean( true ) isMove, Function.allowsNil completion )
 	local x, y, x2, y2 = self.owner.container.width, self.owner.container.height, 1, 1
 	local images = {}
 	for i, view in ipairs( views ) do
@@ -57,7 +57,7 @@ function DragDropManager:start( Table views, ClipboardData data, Number relative
 		y2 = math.max( y2, viewY + viewHeight - 1 )
 		table.insert( images, { viewX, viewY, view.canvas:toImage(), view.shadowMask } )
 
-		if hideSource then
+		if isMove then
 			view.isVisible = false
 		end
 	end
@@ -85,7 +85,7 @@ function DragDropManager:start( Table views, ClipboardData data, Number relative
 	self.data = data
 	self.relativeX = relativeX - x + 1
 	self.relativeY = relativeY - y + 1
-	self.didHideSource = hideSource
+	self.isMove = isMove
 	self.completion = completion
 	self.sourceViews = views
 	dragView:animate( "shadowSize", MAX_SHADOW_SIZE, 0.2, nil, Animation.easings.IN_SINE )
@@ -99,7 +99,7 @@ function DragDropManager:cancel()
 	local dragView = self.dragView
 	if dragView then
 		local time, easing = 0.3, Animation.easings.OUT_SINE
-		local didHideSource, completion = self.didHideSource, self.completion
+		local isMove, completion = self.isMove, self.completion
 
 		local sourceViews = self.sourceViews
 		local originalX, originalY = self.owner.container.width, self.owner.container.height
@@ -113,7 +113,7 @@ function DragDropManager:cancel()
 		dragView:animate( "y", originalY, time, nil, easing )
 		dragView:animate( "shadowSize", 0, time, function()
 			for i, view in ipairs( sourceViews ) do
-				if didHideSource then
+				if isMove then
 					view.isVisible = true
 				end
 			end
@@ -130,17 +130,22 @@ end
 ]]
 function DragDropManager.destination:set( destination )
 	local oldDestination = self.destination
-	if oldDestination ~= destination then
-		if oldDestination then
-			oldDestination:dragDropExited( self.data, self.dragView )
+	local dragView = self.dragView
+	if dragView then
+		if oldDestination ~= destination then
+			if oldDestination then
+				oldDestination:dragDropExited( self.data, dragView )
+			end
+			if destination then
+				destination:dragDropEntered( self.data, dragView )
+			end
+			self.destination = destination
 		end
 		if destination then
-			destination:dragDropEntered( self.data, self.dragView )
+			destination:dragDropMoved( self.data, dragView )
 		end
+	elseif oldDestination ~= destination then
 		self.destination = destination
-	end
-	if destination then
-		destination:dragDropMoved( self.data, self.dragView )
 	end
 end
 
@@ -173,11 +178,12 @@ function DragDropManager:onMouseUp( Event event, Event.phases phase )
 			dragView.x = event.globalX - self.relativeX + 1
 			dragView.y = event.globalY - self.relativeY + 1
 		else
-			destination:dragDropDropped( self.data )
+			local isMove = self.isMove
+			destination:dragDropDropped( self.data, isMove )
 			local dropStyle = destination.dropStyle
 			local dropStyles = DragDropManager.dropStyles
 			local function done()
-				if self.didHideSource then
+				if isMove then
 					for i, view in ipairs( self.sourceViews ) do
 						view.isVisible = true
 					end
@@ -193,7 +199,7 @@ function DragDropManager:onMouseUp( Event event, Event.phases phase )
 				dragView:animate( "height", 1, time, nil, easing )
 				dragView:animate( "x", math.ceil( x + self.relativeX - 1 ), time, nil, easing )
 				dragView:animate( "y", math.ceil( y + self.relativeY - 1), time, nil, easing )
-				dragView.shadowObject.isVisible = false
+				dragView.shadowSize = 0
 			elseif dropStyle == dropStyles.RETURN then
 				local time, easing = 0.2, Animation.easings.OUT_SINE
 				local originalX, originalY = self.owner.container.width, self.owner.container.height
