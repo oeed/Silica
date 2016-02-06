@@ -1,4 +1,5 @@
 
+local pins = View.pins
 class Container extends View {
 
 	children = {};
@@ -9,6 +10,11 @@ class Container extends View {
 	offsetY = 0;
 	cursorLastX = Number.allowsNil;
 	cursorLastY = Number.allowsNil;
+
+	needsPinUpdate = Boolean( true );
+	needsHorizontalPinUpdate = Boolean( true );
+	needsVerticalPinUpdate = Boolean( true );
+	childPins = Table( { references = {} } );
 
 }
 
@@ -71,9 +77,40 @@ end
 ]]
 function Container:update( deltaTime )
 	self:super( deltaTime )
+	if self.needsPinUpdate then
+		self:updatePins()
+	end
 	for i, childView in ipairs( self.children ) do
 		childView:update( deltaTime )
 	end
+end
+
+function Container:updatePins()
+	local updatingLocationPins = {}
+	local updatingSizePins = {}
+	local needsUpdate = false
+	if self.needsVerticalPinUpdate then
+		-- updatingLocationPins[pins.TOP] = "y"
+		-- updatingSizePins[pins.BOTTOM] = "height"
+		needsUpdate = true
+	end
+	if self.needsHorizontalPinUpdate then
+		updatingLocationPins[pins.LEFT] = "x"
+		updatingSizePins[pins.RIGHT] = "width"
+		needsUpdate = true
+	end
+
+	if needsUpdate then
+		for childView, childPins in pairs( self.childPins ) do
+			local positionValues = {}
+			for pinKey, propertyName in pairs( updatingLocationPins ) do
+				MathParser.static:eval
+			end
+		end
+	end
+	self.needsVerticalPinUpdate = false
+	self.needsHorizontalPinUpdate = false
+	self.needsPinUpdate = false
 end
 
 function Container:onDraw()
@@ -124,17 +161,6 @@ function Container:draw()
 		end
 	end
 	self.needsDraw = false
-end
-
---[[
-	@desc Fired after
-	@param [type] arg1 -- description
-	@param [type] arg2 -- description
-	@param [type] arg3 -- description
-	@return [type] returnedValue -- description
-]]
-function Container:onParentResizedConstraintUpdateAfter( arg1, arg2, arg3 )
-	return returnedValue
 end
 
 function Container.width:set( width )
@@ -238,6 +264,7 @@ function Container:insert( View childView, Number.allowsNil position )
 
 	local oldParent = childView.parent 
 	childView.parent = self
+	self.childPins[childView] = childView.parsedPins
 
 	-- we need to update the isEnabled value
 	childView.isEnabled = childView.raw.isEnabled
@@ -338,6 +365,7 @@ function Container:remove( removingView )
 	removingView.parent = nil
 
 	if didRemove then
+		self.childPins[removingView] = nil
 		local identifier = removingView.identifier
 		for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
 			if linkIdentifier == identifier then
