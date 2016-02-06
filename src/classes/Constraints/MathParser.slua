@@ -35,8 +35,8 @@ local functionParameterCounts = {
 	ceil = 1;
 	log = 1;
 	ran = 0;
-	degrees = 1;
-	radians = 1;
+	deg = 1;
+	rad = 1;
 }
 
 local functions = {
@@ -54,10 +54,10 @@ local functions = {
 	ceil = math.ceil;
 	log = math.log;
 	ran = math.random;
-	degrees = function( n )
+	deg = function( n )
 		return n * 180 / math.pi
 	end;
-	radians = function( n )
+	rad = function( n )
 		return n / 180 * math.pi
 	end;
 }
