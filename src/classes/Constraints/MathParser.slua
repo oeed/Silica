@@ -444,15 +444,11 @@ class MathParser {
 
 }
 
-function MathParser:initialise( Table tokens )
-	self.tokens = tokens
-end
-
-function MathParser.static:parse( String str )
+function MathParser:initialise( String str )
 	local tokens = lex( str )
 	parseRelativeIndexes( tokens )
 	parseMathConstants( tokens )
-	return MathParser( group( checkFunctionCalls( parse( tokens ) ) ) )
+	self.tokens = group( checkFunctionCalls( parse( tokens ) ) )
 end
 
 function MathParser.static:simplify( tokens )
@@ -485,66 +481,62 @@ end
 
 -- solve percentages
 -- plug in relative indexes
-function MathParser.static:resolve( Table tokens, Number parentSize )
-	references = references or {}
-	local t = {}
+function MathParser.static:resolve( Table tokens, Number.allowsNil percentageValue, Strings.allowsNil referencePropertyName Table.allowsNil references )
+	local knownList = {}
 	for i = 1, #tokens do
-		if type( tokens[i] ) == "number" or type( tokens[i] ) == "string" then -- these will be raw numbers
-			t[#t + 1] = tokens[i]
-		elseif tokens[i].type == "constant" then -- these will be raw numbers
-			t[#t + 1] = tokens[i].value
-		elseif tokens[i].type == "percentage" then -- these will be raw numbers
-			t[#t + 1] = tokens[i].value * parentSize
-		elseif tokens[i].type == "bracket" then -- this will be a bracket token
-			t[#t + 1] = {
-				type = "bracket";
-				value = MathParser.static:resolve( tokens[i].value, parentSize )
-			}
-		elseif tokens[i].type == "call" then -- this will be a call token
-			local parameters = {}
-			for i, v in ipairs( tokens[i].value.parameters ) do
-				parameters[i] = MathParser.static:resolve( v, parentSize )
-			end
-			t[#t + 1] = {
-				type = "call";
-				value = {
-					func = tokens[i].value.func;
-					parameters = parameters;
+		local token = tokens[i]
+		if type( token ) == "number" or type( token ) == "string" then -- these will be raw numbers
+			t[#t + 1] = token
+		else
+			local tokenType = token.type
+			if tokenType == "constant" then -- these will be raw numbers
+				t[#t + 1] = token.value
+			elseif tokenType == "percentage" then -- these will be raw numbers
+				t[#t + 1] = token.value * percentageValue
+			elseif tokenType == "bracket" then -- this will be a bracket token
+				t[#t + 1] = {
+					type = "bracket";
+					value = MathParser.static:resolve( token.value, percentageValue, references )
 				}
-			}
-		elseif tokens[i].type == "relative" then -- this will be a bracket token
-			-- local identifier, index = token.value.parent, token.value.index
-			-- local value = { 0 }
+			elseif tokenType == "call" then -- this will be a call token
+				local parameters = {}
+				for i, v in ipairs( token.value.parameters ) do
+					parameters[i] = MathParser.static:resolve( v, percentageValue, references )
+				end
+				t[#t + 1] = {
+					type = "call";
+					value = {
+						func = token.value.func;
+						parameters = parameters;
+					}
+				}
+			elseif tokenType == "relative" then -- this will be a bracket token
+				local identifier, index = token.value.parent, token.value.index
+				local value = 0
 
-			-- if identifier == "parent" then
-			-- 	error( "Constraint can not use 'parent' for a relative value. Use percentages for getting parent width or height (100%)", 0 )
-			-- elseif identifier == "self" and property == index then
-			-- 	error( "Cannot use recursive constraint index. (tried to use self." .. index .. " within self." .. index .. ")", 0 )
-			-- else
-			-- 	references[identifier] = true
-			-- 	-- local view = identifier == "self" and object or parent:findChild( identifier, false )
-			-- 	if view then
-			-- 		value = view:parseConstraint( index ) or value
-			-- 	else
-			-- 		error( "Could not find view '" .. identifier .. "'", 0 )
-			-- 	end
-			-- end
-			-- t[#t + 1] = {
-			-- 	type = "bracket";
-			-- 	value = value;
-			-- }
+				if identifier == "self" and referencePropertyName == index then
+					error( "Cannot use recursive constraint index. (tried to use self." .. index .. " within self." .. index .. ")", 0 )
+				else
+					local reference = references[identifier]
+					if reference then
+						value = reference[index]
+					else
+						error( "Could not find view '" .. identifier .. "'", 0 )
+					end
+				end
+				t[#t + 1] = {
+					type = "bracket";
+					value = value;
+				}
+			end
 		end
 	end
-	return t, references
-end
-
-function MathParser.static:eval( list )
-	-- return eval.knownList( list )
 end
 
 --[[
-	@desc Returns the evaluated value with the relative inputs
+	@desc Returns the evaluated value with the references inputs
 ]]
-function MathParser.static:value( Number.allowsNil percentageValue, Table.allowsNil references )
-	local tokens = self.tokens
+function MathParser.static:value( Number.allowsNil percentageValue, String.allowsNil referencePropertyName, Table.allowsNil references )
+	local knownList = MathParser.static:resolve( self.tokens, percentageValue, referencePropertyName, references )
+	return eval.knownList( list )
 end
