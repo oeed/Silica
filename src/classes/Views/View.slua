@@ -5,6 +5,13 @@ local MIN_MOUSE_HOLD_TIME = 0.3
 local ANIMATION_DEFAULT_TIME = 0.3
 local DEFAULT_EASING = Animation.easings.IN_OUT_SINE
 
+local pins = {
+	LEFT = "left",
+	RIGHT = "right",
+	TOP = "top",
+	BOTTOM = "bottom",
+}
+
 class View {
 
 	x = Number( 1 );
@@ -39,6 +46,13 @@ class View {
 	cursor = Cursor.allowsNil;
 
 	specialMouseTimes = Table( { timers = {}; up = {}; down = {}; } );
+
+	leftPin = String.allowsNil;
+	rightPin = String.allowsNil;
+	topPin = String.allowsNil;
+	bottomPin = String.allowsNil;
+	parsedPins = Table( {} );
+	pins = Enum( String, pins );
 
 }
 
@@ -512,6 +526,58 @@ end
 
 function View:clearFocus( filter )
 	self.application:clearFocus( filter )
+end
+
+function View.leftPin:set( leftPin )
+    self.leftPin = leftPin
+    local parsed = MathParser.static:parse( leftPin )
+    self.parsedPins[pins.LEFT] = parsed
+    local parent = self.parent
+    if parent then
+    	local childPinTable = parent.childPins[self]
+    	if childPinTable then
+    		childPinTable[pins.LEFT] = parsed
+    	end
+    end
+end
+
+function View.rightPin:set( rightPin )
+    self.rightPin = rightPin
+    local parsed = MathParser.static:parse( rightPin )
+    self.parsedPins[pins.RIGHT] = parsed
+    local parent = self.parent
+    if parent then
+    	local childPinTable = parent.childPins[self]
+    	if childPinTable then
+    		childPinTable[pins.RIGHT] = parsed
+    	end
+    end
+end
+
+function View.topPin:set( topPin )
+    self.topPin = topPin
+    local parsed = MathParser.static:parse( topPin )
+    self.parsedPins[pins.TOP] = parsed
+    local parent = self.parent
+    if parent then
+    	local childPinTable = parent.childPins[self]
+    	if childPinTable then
+    		childPinTable[pins.TOP] = parsed
+    	end
+    end
+end
+
+function View.bottomPin:set( bottomPin )
+    self.bottomPin = bottomPin
+    local parsed = MathParser.static:parse( bottomPin )
+    self.parsedPins[pins.BOTTOM] = parsed
+    local parent = self.parent
+    if parent then
+    	local childPinTable = parent.childPins[self]
+    	if childPinTable then
+    		childPinTable[pins.BOTTOM] = parsed
+    	end
+    end
 end
 
 -- IMPORTANT: You MUST ALWAYS call super when overriding this function
