@@ -530,7 +530,7 @@ end
 
 function View.leftPin:set( leftPin )
     self.leftPin = leftPin
-    local parsed = MathParser.static:parse( leftPin )
+    local parsed = MathParser( leftPin )
     self.parsedPins[pins.LEFT] = parsed
     local parent = self.parent
     if parent then
@@ -543,7 +543,7 @@ end
 
 function View.rightPin:set( rightPin )
     self.rightPin = rightPin
-    local parsed = MathParser.static:parse( rightPin )
+    local parsed = MathParser( rightPin )
     self.parsedPins[pins.RIGHT] = parsed
     local parent = self.parent
     if parent then
@@ -556,7 +556,7 @@ end
 
 function View.topPin:set( topPin )
     self.topPin = topPin
-    local parsed = MathParser.static:parse( topPin )
+    local parsed = MathParser( topPin )
     self.parsedPins[pins.TOP] = parsed
     local parent = self.parent
     if parent then
@@ -569,7 +569,7 @@ end
 
 function View.bottomPin:set( bottomPin )
     self.bottomPin = bottomPin
-    local parsed = MathParser.static:parse( bottomPin )
+    local parsed = MathParser( bottomPin )
     self.parsedPins[pins.BOTTOM] = parsed
     local parent = self.parent
     if parent then
