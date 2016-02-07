@@ -13,9 +13,9 @@ class Container extends View {
 	cursorLastX = Number.allowsNil;
 	cursorLastY = Number.allowsNil;
 
-	needsPinUpdate = Boolean( true );
-	needsHorizontalPinUpdate = Boolean( true );
-	needsVerticalPinUpdate = Boolean( true );
+	needsPinUpdate = Boolean( false );
+	needsHorizontalPinUpdate = Boolean( false );
+	needsVerticalPinUpdate = Boolean( false );
 	childPins = Table( { references = {} } );
 
 }
@@ -200,6 +200,20 @@ function Container:updatePins()
 	self.needsPinUpdate = false
 end
 
+function Container.needsVerticalPinUpdate:set( needsVerticalPinUpdate )
+	self.needsVerticalPinUpdate = needsVerticalPinUpdate
+	if needsVerticalPinUpdate then
+		self.needsPinUpdate = true
+	end
+end
+
+function Container.needsHorizontalPinUpdate:set( needsHorizontalPinUpdate )
+	self.needsHorizontalPinUpdate = needsHorizontalPinUpdate
+	if needsHorizontalPinUpdate then
+		self.needsPinUpdate = true
+	end
+end
+
 function Container:onDraw()
 	local canvas, theme = self.canvas, self.theme
 	local cornerRadius = theme:value( "cornerRadius" )
@@ -353,7 +367,15 @@ function Container:insert( View childView, Number.allowsNil position )
 
 	local oldParent = childView.parent 
 	childView.parent = self
-	self.childPins[childView] = childView.parsedPins
+
+	local parsedPins = childView.parsedPins
+	self.childPins[childView] = parsedPins
+	if parsedPins[pins.LEFT] or parsedPins[pins.RIGHT] then
+		self.needsHorizontalPinUpdate = true
+	end
+	if parsedPins[pins.TOP] or parsedPins[pins.BOTTOM] then
+		self.needsVerticalPinUpdate = true
+	end
 
 	-- we need to update the isEnabled value
 	childView.isEnabled = childView.raw.isEnabled

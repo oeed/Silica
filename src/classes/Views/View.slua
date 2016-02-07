@@ -244,6 +244,12 @@ function View.height:set( height )
 		self.needsDraw = true
 		local parent = self.parent
 		if parent then
+			if not self.bottomPin then
+				local selfReferences = parent.childPins.references[self]
+				if selfReferences and selfReferences[pins.BOTTOM] then
+					parent.needsVerticalPinUpdate = true
+				end
+			end
 			parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
 		end
 	end
@@ -256,6 +262,12 @@ function View.width:set( width )
 		self.needsDraw = true
 		local parent = self.parent
 		if parent then
+			if not self.rightPin then
+				local selfReferences = parent.childPins.references[self]
+				if selfReferences and selfReferences[pins.RIGHT] then
+					parent.needsHorizontalPinUpdate = true
+				end
+			end
 			parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
 		end
 	end
@@ -266,6 +278,12 @@ function View.x:set( x )
 		self.x = x
 		local parent = self.parent
 		if parent then
+			if not self.leftPin then
+				local selfReferences = parent.childPins.references[self]
+				if selfReferences and ( selfReferences[pins.LEFT] or selfReferences[pins.RIGHT] ) then
+					parent.needsHorizontalPinUpdate = true
+				end
+			end
 			parent.needsDraw = true
 			parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
 		end
@@ -277,6 +295,12 @@ function View.y:set( y )
 		self.y = y
 		local parent = self.parent
 		if parent then
+			if not self.topPin then
+				local selfReferences = parent.childPins.references[self]
+				if selfReferences and ( selfReferences[pins.TOP] or selfReferences[pins.BOTTOM] ) then
+					parent.needsVerticalPinUpdate = true
+				end
+			end
 			parent.needsDraw = true
 			parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
 		end
@@ -530,54 +554,66 @@ end
 
 function View.leftPin:set( leftPin )
     self.leftPin = leftPin
-    local parsed = MathParser( leftPin )
-    self.parsedPins[pins.LEFT] = parsed
-    local parent = self.parent
-    if parent then
-    	local childPinTable = parent.childPins[self]
-    	if childPinTable then
-    		childPinTable[pins.LEFT] = parsed
-    	end
-    end
+    if leftPin then
+	    local parsed = MathParser( leftPin )
+	    self.parsedPins[pins.LEFT] = parsed
+	    local parent = self.parent
+	    if parent then
+	    	local childPinTable = parent.childPins[self]
+	    	if childPinTable then
+	    		childPinTable[pins.LEFT] = parsed
+	    	end
+	    	parent.needsHorizontalPinUpdate = true
+	    end
+	end
 end
 
 function View.rightPin:set( rightPin )
     self.rightPin = rightPin
-    local parsed = MathParser( rightPin )
-    self.parsedPins[pins.RIGHT] = parsed
-    local parent = self.parent
-    if parent then
-    	local childPinTable = parent.childPins[self]
-    	if childPinTable then
-    		childPinTable[pins.RIGHT] = parsed
-    	end
-    end
+    if rightPin then
+	    local parsed = MathParser( rightPin )
+	    self.parsedPins[pins.RIGHT] = parsed
+	    local parent = self.parent
+	    if parent then
+	    	local childPinTable = parent.childPins[self]
+	    	if childPinTable then
+	    		childPinTable[pins.RIGHT] = parsed
+	    	end
+	    	parent.needsHorizontalPinUpdate = true
+	    end
+	end
 end
 
 function View.topPin:set( topPin )
     self.topPin = topPin
-    local parsed = MathParser( topPin )
-    self.parsedPins[pins.TOP] = parsed
-    local parent = self.parent
-    if parent then
-    	local childPinTable = parent.childPins[self]
-    	if childPinTable then
-    		childPinTable[pins.TOP] = parsed
-    	end
-    end
+    if topPin then
+	    local parsed = MathParser( topPin )
+	    self.parsedPins[pins.TOP] = parsed
+	    local parent = self.parent
+	    if parent then
+	    	local childPinTable = parent.childPins[self]
+	    	if childPinTable then
+	    		childPinTable[pins.TOP] = parsed
+	    	end
+	    	parent.needsVerticalPinUpdate = true
+	    end
+	end
 end
 
 function View.bottomPin:set( bottomPin )
     self.bottomPin = bottomPin
-    local parsed = MathParser( bottomPin )
-    self.parsedPins[pins.BOTTOM] = parsed
-    local parent = self.parent
-    if parent then
-    	local childPinTable = parent.childPins[self]
-    	if childPinTable then
-    		childPinTable[pins.BOTTOM] = parsed
-    	end
-    end
+    if bottomPin then
+	    local parsed = MathParser( bottomPin )
+	    self.parsedPins[pins.BOTTOM] = parsed
+	    local parent = self.parent
+	    if parent then
+	    	local childPinTable = parent.childPins[self]
+	    	if childPinTable then
+	    		childPinTable[pins.BOTTOM] = parsed
+	    	end
+	    	parent.needsVerticalPinUpdate = true
+	    end
+	end
 end
 
 -- IMPORTANT: You MUST ALWAYS call super when overriding this function
