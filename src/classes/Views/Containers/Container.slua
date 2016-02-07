@@ -1,5 +1,7 @@
 
 local pins = View.pins
+local pinProperties = {}
+
 class Container extends View {
 
 	children = {};
@@ -101,10 +103,95 @@ function Container:updatePins()
 	end
 
 	if needsUpdate then
-		for childView, childPins in pairs( self.childPins ) do
-			local positionValues = {}
-			for pinKey, propertyName in pairs( updatingLocationPins ) do
-				MathParser.static:eval
+		local keys = { pins.LEFT, pins.TOP, pins.RIGHT, pins.BOTTOM, "x", "y", "width", "height" }
+		local childPins = self.childPins
+		local childPinReferences = {}
+		childPins.references = childPinReferences
+		for i = self.needsHorizontalPinUpdate and 1 or 2, self.needsVerticalPinUpdate and 2 or 1 do
+			local parentSize = i == 1 and self.width or self.height
+			local positionPin, sizePin, positionProperty, sizeProperty = keys[i], keys[i + 2], keys[i + 4], keys[i + 6]
+			local allowedPins = { [positionPin] = true, [sizePin] = true }
+			local allowedProperties = { [positionProperty] = true, [sizeProperty] = true }
+			local pinConvert = { [positionPin] = positionProperty, [sizePin] = sizeProperty }
+
+			local values = {}
+			local references = {}
+			local stack = {}
+			for childView, childPins in pairs( childPins ) do
+				if childView ~= "references" then
+					local valueReference = {}
+					setmetatable( valueReference, {
+						__index = function( _, key )
+							if not allowedPins[key] then
+								error( "access bad key "..key ) -- only the right orientation pins can be referenced too
+							else
+								local stackView = stack[childView]
+								if stackView and stackView[key] then
+									error( "circular reference" )
+								elseif stackView then
+									stackView[key] = true
+								else
+									stack[childView] = { [key] = true }
+								end
+
+								local propertyName = pinConvert[key]
+								local mathParser = childPins[key]
+								local value
+								if mathParser then
+									references.self = valueReference
+									value = mathParser:value( parentSize, propertyName, references )
+									references.self = nil
+								else
+									if key == positionPin then
+										value = childView[positionProperty]
+									else
+										value = valueReference[positionPin] + childView[sizeProperty]
+									end
+								end
+								valueReference[key] = value
+								return value
+							end
+						end
+					} )
+					values[childView] = valueReference
+					local identifier = childView.identifier
+					if identifier then
+						local referenceValue = {}
+						setmetatable( referenceValue, {
+							__index = function( _, key )
+								log("ref "..key)
+								local ref = childPinReferences[childView]
+								if not ref then
+									ref = {}
+									childPinReferences[childView] = ref
+								end
+								ref[key] = true
+								return valueReference[key]
+							end
+						} )
+						references[identifier] = referenceValue
+					end
+				end
+			end
+			for childView, childPins in pairs( childPins ) do
+				if childPins[positionPin] or childPins[sizePin] then
+					log("pinning "..tostring(childView))
+					local valueReference = values[childView]
+					local position = valueReference[positionPin]
+					log(positionPin .. ": " .. valueReference[positionPin])
+					local sizePosition = valueReference[sizePin]
+					if sizePosition < position then
+						error( sizePin .. " pin was less than " .. positionPin )
+					end
+					if childView[positionProperty] ~= position then
+						childView[positionProperty] = position
+					end
+					log(sizePin .. ": " .. valueReference[sizePin])
+					local size = valueReference[sizePin] - position + 1
+					if childView[sizeProperty] ~= size then
+						childView[sizeProperty] = size
+					end
+				end
 			end
 		end
 	end
@@ -166,6 +253,7 @@ end
 function Container.width:set( width )
 	self:super( width )
 	width = self.width
+	self.needsHorizontalPinUpdate = true
 	local event = self.event
 	if event then
 		event:handleEvent( ParentResizedInterfaceEvent( true, false, self ) )
@@ -175,6 +263,7 @@ end
 function Container.height:set( height )
 	self:super( height )
 	height = self.height
+	self.needsVerticalPinUpdate = true
 	local event = self.event
 	if event then
 		event:handleEvent( ParentResizedInterfaceEvent( false, true, self ) )
