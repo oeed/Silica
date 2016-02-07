@@ -71,6 +71,17 @@ function View:initialise( Table.allowsNil properties )
 		end
 	end
 
+	local setPins = {
+		[pins.LEFT] = self.leftPin;
+		[pins.RIGHT] = self.rightPin;
+		[pins.TOP] = self.topPin;
+		[pins.BOTTOM] = self.bottomPin;
+	}
+	local parsedPins = self.parsedPins
+	for k, v in pairs( setPins ) do
+		parsedPins[k] = MathParser( v )
+	end
+
 	self:event( MouseDownEvent, self.onMouseDownSpecialEvents )
 	self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUpSpecialEvents )
 end
