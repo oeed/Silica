@@ -1,5 +1,5 @@
 
-class SplitContainer extends Container {
+class SplitContainer extends LayoutContainer {
 	
 	needsLayoutUpdate = Boolean( false );
 	segmentSize = Number.allowsNil;
@@ -7,18 +7,27 @@ class SplitContainer extends Container {
 
 }
 
-function SplitContainer:initialise( ... )
-	self:super( ... )
-	self:event( ReadyInterfaceEvent, self.onReady )
-	self:event( ChildAddedInterfaceEvent, self.onChildAdded )
-	self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
+function SplitContainer.width:set( width )
+    self:super( width )
+    if self.isVertical then
+    	local children = self.children
+	    for i = 2, #children, 2 do
+			children[i].width = width
+		end
+	end
 end
 
-function SplitContainer:onReady( ReadyInterfaceEvent event, Event.phases phase )
-	self:updateLayout()
+function SplitContainer.height:set( height )
+    self:super( height )
+    if not self.isVertical then
+    	local children = self.children
+	    for i = 2, #children, 2 do
+			children[i].height = height
+		end
+	end
 end
 
-function SplitContainer:updateLayout()
+function SplitContainer:updateLayout( Boolean( false ) dontAnimate )
 	local children = self.children
 	local childrenCount = #children
 	if childrenCount > 0 and childrenCount % 2 == 1 then -- we MUST have an odd number of children, there should be a separator view between each main view
@@ -93,19 +102,12 @@ function SplitContainer.isVertical:set( isVertical )
 	local children = self.children
 	local otherSize = isVertical and self.width or self.height
 	local otherPositionKey, otherSizeKey = isVertical and "x" or "y", isVertical and "width" or "height"
-	for i = 1, #children, 2 do
+	for i = 2, #children, 2 do
 		local childView = children[i]
 		childView.isVertical = isVertical
 		childView[otherPositionKey] = 1
 		childView[otherSizeKey] = otherSize
 	end
-end
-
-function SplitContainer:update( deltaTime )
-	if self.needsLayoutUpdate then
-		self:updateLayout()
-	end
-	self:super( deltaTime )
 end
 
 function SplitContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
@@ -127,10 +129,6 @@ function SplitContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phas
 		childView[otherPositionKey] = 1
 		childView[otherSizeKey] = otherSize
 	end
-end
-
-function SplitContainer:onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
-	self.needsLayoutUpdate = true
 end
 
 function SplitContainer:onFocusesChanged( FocusesChangedInterfaceEvent event, Event.phases phase )
