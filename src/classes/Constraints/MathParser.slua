@@ -481,20 +481,20 @@ end
 
 -- solve percentages
 -- plug in relative indexes
-function MathParser.static:resolve( Table tokens, Number.allowsNil percentageValue, Strings.allowsNil referencePropertyName Table.allowsNil references )
+function MathParser.static:resolve( Table tokens, Number.allowsNil percentageValue, String.allowsNil referencePropertyName, Table.allowsNil references )
 	local knownList = {}
 	for i = 1, #tokens do
 		local token = tokens[i]
 		if type( token ) == "number" or type( token ) == "string" then -- these will be raw numbers
-			t[#t + 1] = token
+			knownList[#knownList + 1] = token
 		else
 			local tokenType = token.type
 			if tokenType == "constant" then -- these will be raw numbers
-				t[#t + 1] = token.value
+				knownList[#knownList + 1] = token.value
 			elseif tokenType == "percentage" then -- these will be raw numbers
-				t[#t + 1] = token.value * percentageValue
+				knownList[#knownList + 1] = token.value * percentageValue
 			elseif tokenType == "bracket" then -- this will be a bracket token
-				t[#t + 1] = {
+				knownList[#knownList + 1] = {
 					type = "bracket";
 					value = MathParser.static:resolve( token.value, percentageValue, references )
 				}
@@ -503,14 +503,14 @@ function MathParser.static:resolve( Table tokens, Number.allowsNil percentageVal
 				for i, v in ipairs( token.value.parameters ) do
 					parameters[i] = MathParser.static:resolve( v, percentageValue, references )
 				end
-				t[#t + 1] = {
+				knownList[#knownList + 1] = {
 					type = "call";
 					value = {
 						func = token.value.func;
 						parameters = parameters;
 					}
 				}
-			elseif tokenType == "relative" then -- this will be a bracket token
+			elseif tokenType == "relative" then -- this will be a raw number
 				local identifier, index = token.value.parent, token.value.index
 				local value = 0
 
@@ -524,19 +524,17 @@ function MathParser.static:resolve( Table tokens, Number.allowsNil percentageVal
 						error( "Could not find view '" .. identifier .. "'", 0 )
 					end
 				end
-				t[#t + 1] = {
-					type = "bracket";
-					value = value;
-				}
+				knownList[#knownList + 1] = value
 			end
 		end
 	end
+	return knownList
 end
 
 --[[
 	@desc Returns the evaluated value with the references inputs
 ]]
-function MathParser.static:value( Number.allowsNil percentageValue, String.allowsNil referencePropertyName, Table.allowsNil references )
+function MathParser:value( Number.allowsNil percentageValue, String.allowsNil referencePropertyName, Table.allowsNil references )
 	local knownList = MathParser.static:resolve( self.tokens, percentageValue, referencePropertyName, references )
-	return eval.knownList( list )
+	return eval.knownList( knownList )
 end
