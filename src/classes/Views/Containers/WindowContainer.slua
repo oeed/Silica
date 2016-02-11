@@ -1,4 +1,9 @@
 
 class WindowContainer extends Container {
 
+	leftPin = String( "1" ).allowsNil;
+	rightPin = String( "100% - 3" ).allowsNil;
+	topPin = String( "11" ).allowsNil;
+	bottomPin = String( "100% - 4" ).allowsNil;
+
 }

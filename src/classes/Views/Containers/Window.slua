@@ -16,8 +16,6 @@ class Window extends Container {
 
 	minWidth = 60;
 	minHeight = 40;
-	maxWidth = 100;
-	maxHeight = 150;
 
 }
 
@@ -66,35 +64,17 @@ function Window:loadInterface()
 	if interfaceName then
 		local interface = Interface( interfaceName, WindowContainer )
 		local container = interface.container
-		container.x = 1
-		container.y = 11
-		container.width = self.width - RESIZE_MARGIN_X
-		container.height = self.height - RESIZE_MARGIN_Y
 		self.container = self:insert( container )
 		interface:ready()
 	end
 end
 
 function Window.height:set( height )
-	height = math.max( math.min( height, self.maxHeight ), self.minHeight )
-	if self.height ~= height then
-		self:super( height )
-		local container = self.container
-		if container then
-			container.height = height - 10 - RESIZE_MARGIN_Y
-		end
-	end
+	self:super( math.max( math.min( height, self.maxHeight ), self.minHeight ) )
 end
 
 function Window.width:set( width )
-	width = math.max( math.min( width, self.maxWidth ), self.minWidth )
-	if self.width ~= width then
-		self:super( width )
-		local container = self.container
-		if container then
-			container.width = width - RESIZE_MARGIN_X
-		end
-	end
+	self:super( math.max( math.min( width, self.maxWidth ), self.minWidth ) )
 end
 
 function Window:onInterfaceLoaded( LoadedInterfaceEvent event, Event.phases phase )
@@ -102,10 +82,6 @@ function Window:onInterfaceLoaded( LoadedInterfaceEvent event, Event.phases phas
 	for i, childView in ipairs( self.children ) do
 		if childView:typeOf( WindowContainer ) then
 			if childView ~= currentContainer then
-				childView.x = 1
-				childView.y = 11
-				childView.width = self.width - RESIZE_MARGIN_X
-				childView.height = self.height - 10 - RESIZE_MARGIN_Y
 				self.container = childView
 			end
 			return
