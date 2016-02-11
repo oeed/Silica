@@ -277,11 +277,10 @@ function Container:draw()
 end
 
 function Container.width:set( width )
-	self:super( width )
 	if width ~= self.width then
 		self.needsHorizontalPinUpdate = true
 	end
-	width = self.width
+	self:super( width )
 	local event = self.event
 	if event then
 		event:handleEvent( ParentResizedInterfaceEvent( true, false, self ) )
@@ -289,11 +288,10 @@ function Container.width:set( width )
 end
 
 function Container.height:set( height )
-	self:super( height )
 	if height ~= self.height then
 		self.needsVerticalPinUpdate = true
 	end
-	height = self.height
+	self:super( height )
 	local event = self.event
 	if event then
 		event:handleEvent( ParentResizedInterfaceEvent( false, true, self ) )
