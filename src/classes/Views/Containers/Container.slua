@@ -7,7 +7,7 @@ class Container extends View {
 	children = {};
 	interfaceLinks = Table; -- TODO: .isReadOnly
 	interfaceLinkActions = Table; -- TODO: .isReadOnly
-	interfaceName = false;
+	interfaceName = String.allowsNil;
 	offsetX = 0;
 	offsetY = 0;
 	cursorLastX = Number.allowsNil;

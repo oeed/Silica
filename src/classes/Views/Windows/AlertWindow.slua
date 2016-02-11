@@ -1,7 +1,7 @@
 
 class AlertWindow extends Window {
 
-	interfaceName = "alert";
+	interfaceName = String( "alert" ).allowsNil;
 	okayButton = View( "okayButton" );
 
 }
