@@ -5,6 +5,13 @@ local MIN_MOUSE_HOLD_TIME = 0.3
 local ANIMATION_DEFAULT_TIME = 0.3
 local DEFAULT_EASING = Animation.easings.IN_OUT_SINE
 
+local pins = {
+	LEFT = "left",
+	RIGHT = "right",
+	TOP = "top",
+	BOTTOM = "bottom",
+}
+
 class View {
 
 	x = Number( 1 );
@@ -40,6 +47,13 @@ class View {
 
 	specialMouseTimes = Table( { timers = {}; up = {}; down = {}; } );
 
+	leftPin = String.allowsNil;
+	rightPin = String.allowsNil;
+	topPin = String.allowsNil;
+	bottomPin = String.allowsNil;
+	parsedPins = Table( {} );
+	pins = Enum( String, pins );
+
 }
 
 --[[
@@ -55,6 +69,17 @@ function View:initialise( Table.allowsNil properties )
 		for k, v in pairs(properties) do
 			self[k] = v
 		end
+	end
+
+	local setPins = {
+		[pins.LEFT] = self.leftPin;
+		[pins.RIGHT] = self.rightPin;
+		[pins.TOP] = self.topPin;
+		[pins.BOTTOM] = self.bottomPin;
+	}
+	local parsedPins = self.parsedPins
+	for k, v in pairs( setPins ) do
+		parsedPins[k] = MathParser( v )
 	end
 
 	self:event( MouseDownEvent, self.onMouseDownSpecialEvents )
@@ -230,6 +255,12 @@ function View.height:set( height )
 		self.needsDraw = true
 		local parent = self.parent
 		if parent then
+			if not self.bottomPin then
+				local selfReferences = parent.childPins.references[self]
+				if selfReferences and selfReferences[pins.BOTTOM] then
+					parent.needsVerticalPinUpdate = true
+				end
+			end
 			parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
 		end
 	end
@@ -242,6 +273,12 @@ function View.width:set( width )
 		self.needsDraw = true
 		local parent = self.parent
 		if parent then
+			if not self.rightPin then
+				local selfReferences = parent.childPins.references[self]
+				if selfReferences and selfReferences[pins.RIGHT] then
+					parent.needsHorizontalPinUpdate = true
+				end
+			end
 			parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
 		end
 	end
@@ -252,6 +289,12 @@ function View.x:set( x )
 		self.x = x
 		local parent = self.parent
 		if parent then
+			if not self.leftPin then
+				local selfReferences = parent.childPins.references[self]
+				if selfReferences and ( selfReferences[pins.LEFT] or selfReferences[pins.RIGHT] ) then
+					parent.needsHorizontalPinUpdate = true
+				end
+			end
 			parent.needsDraw = true
 			parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
 		end
@@ -263,6 +306,12 @@ function View.y:set( y )
 		self.y = y
 		local parent = self.parent
 		if parent then
+			if not self.topPin then
+				local selfReferences = parent.childPins.references[self]
+				if selfReferences and ( selfReferences[pins.TOP] or selfReferences[pins.BOTTOM] ) then
+					parent.needsVerticalPinUpdate = true
+				end
+			end
 			parent.needsDraw = true
 			parent.event:handleEvent( ChildRepositionedInterfaceEvent( self ) )
 		end
@@ -512,6 +561,70 @@ end
 
 function View:clearFocus( filter )
 	self.application:clearFocus( filter )
+end
+
+function View.leftPin:set( leftPin )
+    self.leftPin = leftPin
+    if leftPin then
+	    local parsed = MathParser( leftPin )
+	    self.parsedPins[pins.LEFT] = parsed
+	    local parent = self.parent
+	    if parent then
+	    	local childPinTable = parent.childPins[self]
+	    	if childPinTable then
+	    		childPinTable[pins.LEFT] = parsed
+	    	end
+	    	parent.needsHorizontalPinUpdate = true
+	    end
+	end
+end
+
+function View.rightPin:set( rightPin )
+    self.rightPin = rightPin
+    if rightPin then
+	    local parsed = MathParser( rightPin )
+	    self.parsedPins[pins.RIGHT] = parsed
+	    local parent = self.parent
+	    if parent then
+	    	local childPinTable = parent.childPins[self]
+	    	if childPinTable then
+	    		childPinTable[pins.RIGHT] = parsed
+	    	end
+	    	parent.needsHorizontalPinUpdate = true
+	    end
+	end
+end
+
+function View.topPin:set( topPin )
+    self.topPin = topPin
+    if topPin then
+	    local parsed = MathParser( topPin )
+	    self.parsedPins[pins.TOP] = parsed
+	    local parent = self.parent
+	    if parent then
+	    	local childPinTable = parent.childPins[self]
+	    	if childPinTable then
+	    		childPinTable[pins.TOP] = parsed
+	    	end
+	    	parent.needsVerticalPinUpdate = true
+	    end
+	end
+end
+
+function View.bottomPin:set( bottomPin )
+    self.bottomPin = bottomPin
+    if bottomPin then
+	    local parsed = MathParser( bottomPin )
+	    self.parsedPins[pins.BOTTOM] = parsed
+	    local parent = self.parent
+	    if parent then
+	    	local childPinTable = parent.childPins[self]
+	    	if childPinTable then
+	    		childPinTable[pins.BOTTOM] = parsed
+	    	end
+	    	parent.needsVerticalPinUpdate = true
+	    end
+	end
 end
 
 -- IMPORTANT: You MUST ALWAYS call super when overriding this function
