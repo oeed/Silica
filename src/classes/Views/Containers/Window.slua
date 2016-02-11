@@ -14,8 +14,10 @@ class Window extends Container {
 	isResizingX = Boolean( false );
 	isResizingY = Boolean( false );
 
-	minWidth = 60;
-	minHeight = 40;
+	minWidth = Number ( 60 );
+	minHeight = Number ( 40 );
+	maxWidth = Number ( math.huge );
+	maxHeight = Number ( math.huge );
 
 }
 
