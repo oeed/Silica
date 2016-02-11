@@ -2,6 +2,8 @@
 class ToolbarContainer extends Container {
 
 	needsLayoutUpdate = Boolean( false );
+	leftPin = String( "1" ).allowsNil;
+	rightPin = String( "100%" ).allowsNil;
 
 }
 

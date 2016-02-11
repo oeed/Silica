@@ -25,6 +25,16 @@ function LayoutContainer:update( deltaTime )
 	end
 end
 
+function LayoutContainer.width:set( width )
+    self:super( width )
+    self.needsLayoutUpdate = true
+end
+
+function LayoutContainer.height:set( height )
+    self:super( height )
+    self.needsLayoutUpdate = true
+end
+
 function LayoutContainer:onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
 	self.needsLayoutUpdate = true
 	self.dontAnimateLayoutUpdate = true

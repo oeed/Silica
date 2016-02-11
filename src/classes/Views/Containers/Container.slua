@@ -1,4 +1,7 @@
 
+local pins = View.pins
+local pinProperties = {}
+
 class Container extends View {
 
 	children = {};
@@ -9,6 +12,11 @@ class Container extends View {
 	offsetY = 0;
 	cursorLastX = Number.allowsNil;
 	cursorLastY = Number.allowsNil;
+
+	needsPinUpdate = Boolean( false );
+	needsHorizontalPinUpdate = Boolean( false );
+	needsVerticalPinUpdate = Boolean( false );
+	childPins = Table( { references = {} } );
 
 }
 
@@ -24,6 +32,7 @@ function Container:initialise( ... )
 	self:event( ChildRemovedInterfaceEvent, self.onChildOfChildRemoved )
 	self:event( ChildRepositionedInterfaceEvent, self.onChildRepositionedMouseEnterExit )
 	self:event( ReadyInterfaceEvent, self.onReadyLoadInterface )
+	self:event( LoadedInterfaceEvent, self.onLoadedInterfacePinUpdate )
 	self:event( MouseMoveEvent, self.onUpdateChildMouseEnterExit )
 	self:event( MouseExitedInterfaceEvent, self.onUpdateChildMouseEnterExit )
 	self:event( MouseEnteredInterfaceEvent, self.onUpdateChildMouseEnterExit )
@@ -45,6 +54,12 @@ end
 
 function Container:onReadyLoadInterface( ReadyInterfaceEvent event, Event.phases phase )
 	self:loadInterface()
+end
+
+function Container:onLoadedInterfacePinUpdate( LoadedInterfaceEvent event, Event.phases phase )
+	if self.needsPinUpdate then
+		self:updatePins()
+	end
 end
 
 --[[
@@ -71,8 +86,138 @@ end
 ]]
 function Container:update( deltaTime )
 	self:super( deltaTime )
+	if self.needsPinUpdate then
+		self:updatePins()
+	end
 	for i, childView in ipairs( self.children ) do
 		childView:update( deltaTime )
+	end
+end
+
+function Container:updatePins()
+	local keys = { pins.LEFT, pins.TOP, pins.RIGHT, pins.BOTTOM, "x", "y", "width", "height" }
+	local childPins = self.childPins
+	local childPinReferences = {}
+	childPins.references = childPinReferences
+	for i = self.needsHorizontalPinUpdate and 1 or 2, self.needsVerticalPinUpdate and 2 or 1 do
+		local parentSize = i == 1 and self.width or self.height
+		local positionPin, sizePin, positionProperty, sizeProperty = keys[i], keys[i + 2], keys[i + 4], keys[i + 6]
+		local allowedPins = { [positionPin] = true, [sizePin] = true }
+		local allowedProperties = { [positionProperty] = true, [sizeProperty] = true }
+		local pinConvert = { [positionPin] = positionProperty, [sizePin] = sizeProperty }
+
+		local values = {}
+		local references = {}
+		local stack = {}
+		for childView, childPins in pairs( childPins ) do
+			if childView ~= "references" then
+				local valueReference = {}
+				setmetatable( valueReference, {
+					__index = function( _, key, noSelfSourcing )
+						if not allowedPins[key] then
+							error( "access bad key "..key ) -- only the right orientation pins can be referenced too
+						else
+							local stackView = stack[childView]
+							if stackView and stackView[key] then
+								error( "circular reference" )
+							elseif stackView then
+								stackView[key] = true
+							else
+								stackView = { [key] = true }
+								stack[childView] = stackView
+							end
+
+							local propertyName = pinConvert[key]
+							local mathParser = childPins[key]
+							local value
+							if mathParser then
+								references.self = valueReference
+								if noSelfSourcing then
+									local rawValue = rawget( valueReference, key )
+									if rawValue then
+										return rawValue
+									end
+								end
+								value = mathParser:value( parentSize, propertyName, references )
+								references.self = nil
+							elseif not noSelfSourcing then
+								if key == positionPin then
+									value = childView[positionProperty]
+								else
+									value = valueReference[positionPin] + childView[sizeProperty]
+								end
+							end
+							valueReference[key] = value
+							stackView[key] = nil
+							return value
+						end
+					end
+				} )
+				values[childView] = valueReference
+				local identifier = childView.identifier
+				if identifier then
+					local referenceValue = {}
+					setmetatable( referenceValue, {
+						__index = function( _, key )
+							local ref = childPinReferences[childView]
+							if not ref then
+								ref = {}
+								childPinReferences[childView] = ref
+							end
+							ref[key] = true
+							return valueReference[key]
+						end
+					} )
+					references[identifier] = referenceValue
+				end
+			end
+		end
+		for childView, childPins in pairs( childPins ) do
+			if childPins[positionPin] or childPins[sizePin] then
+				local valueReference = values[childView]
+				local getValue = getmetatable( valueReference ).__index
+				local childPosition, childSize = childView[positionProperty], childView[sizeProperty]
+
+				local position = getValue( nil, positionPin, true )
+				local sizePosition = getValue( nil, sizePin, true )
+				local newPosition, newSize = childPosition, childSize
+				if position and sizePosition then
+					if sizePosition < position then
+						error( sizePin .. " pin was less than " .. positionPin )
+					end
+					newPosition = position
+					newSize = sizePosition - position + 1
+				elseif position then
+					newPosition = position
+				elseif sizePosition then
+					newPosition = sizePosition - childSize + 1
+				end
+
+				if childPosition ~= newPosition then
+					childView[positionProperty] = newPosition
+				end
+				if childSize ~= newSize then
+					childView[sizeProperty] = newSize
+				end
+			end
+		end
+	end
+	self.needsVerticalPinUpdate = false
+	self.needsHorizontalPinUpdate = false
+	self.needsPinUpdate = false
+end
+
+function Container.needsVerticalPinUpdate:set( needsVerticalPinUpdate )
+	self.needsVerticalPinUpdate = needsVerticalPinUpdate
+	if needsVerticalPinUpdate then
+		self.needsPinUpdate = true
+	end
+end
+
+function Container.needsHorizontalPinUpdate:set( needsHorizontalPinUpdate )
+	self.needsHorizontalPinUpdate = needsHorizontalPinUpdate
+	if needsHorizontalPinUpdate then
+		self.needsPinUpdate = true
 	end
 end
 
@@ -126,32 +271,25 @@ function Container:draw()
 	self.needsDraw = false
 end
 
---[[
-	@desc Fired after
-	@param [type] arg1 -- description
-	@param [type] arg2 -- description
-	@param [type] arg3 -- description
-	@return [type] returnedValue -- description
-]]
-function Container:onParentResizedConstraintUpdateAfter( arg1, arg2, arg3 )
-	return returnedValue
-end
-
 function Container.width:set( width )
-	self:super( width )
-	width = self.width
-	local event = self.event
-	if event then
-		event:handleEvent( ParentResizedInterfaceEvent( true, false, self ) )
+	if width ~= self.width then
+		self.needsHorizontalPinUpdate = true
+		self:super( width )
+		local event = self.event
+		if event then
+			event:handleEvent( ParentResizedInterfaceEvent( true, false, self ) )
+		end
 	end
 end
 
 function Container.height:set( height )
-	self:super( height )
-	height = self.height
-	local event = self.event
-	if event then
-		event:handleEvent( ParentResizedInterfaceEvent( false, true, self ) )
+	if height ~= self.height then
+		self.needsVerticalPinUpdate = true
+		self:super( height )
+		local event = self.event
+		if event then
+			event:handleEvent( ParentResizedInterfaceEvent( false, true, self ) )
+		end
 	end
 end
 
@@ -238,6 +376,15 @@ function Container:insert( View childView, Number.allowsNil position )
 
 	local oldParent = childView.parent 
 	childView.parent = self
+
+	local parsedPins = childView.parsedPins
+	self.childPins[childView] = parsedPins
+	if parsedPins[pins.LEFT] or parsedPins[pins.RIGHT] then
+		self.needsHorizontalPinUpdate = true
+	end
+	if parsedPins[pins.TOP] or parsedPins[pins.BOTTOM] then
+		self.needsVerticalPinUpdate = true
+	end
 
 	-- we need to update the isEnabled value
 	childView.isEnabled = childView.raw.isEnabled
@@ -338,6 +485,7 @@ function Container:remove( removingView )
 	removingView.parent = nil
 
 	if didRemove then
+		self.childPins[removingView] = nil
 		local identifier = removingView.identifier
 		for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
 			if linkIdentifier == identifier then
