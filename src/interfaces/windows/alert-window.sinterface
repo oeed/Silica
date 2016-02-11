@@ -1,0 +1,4 @@
+<WindowContainer>
+	<Label identifier=label x=6 rightPin="100%-6" y=5 text="Self-destruct?" />
+	<Button identifier=okayButton rightPin="100%-6" bottomPin="100%-5" text=Okay />
+</WindowContainer>
