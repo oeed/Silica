@@ -113,7 +113,7 @@ function Container:updatePins()
 			if childView ~= "references" then
 				local valueReference = {}
 				setmetatable( valueReference, {
-					__index = function( _, key )
+					__index = function( _, key, noSelfSourcing )
 						if not allowedPins[key] then
 							error( "access bad key "..key ) -- only the right orientation pins can be referenced too
 						else
@@ -123,7 +123,8 @@ function Container:updatePins()
 							elseif stackView then
 								stackView[key] = true
 							else
-								stack[childView] = { [key] = true }
+								stackView = { [key] = true }
+								stack[childView] = stackView
 							end
 
 							local propertyName = pinConvert[key]
@@ -131,9 +132,15 @@ function Container:updatePins()
 							local value
 							if mathParser then
 								references.self = valueReference
+								if noSelfSourcing then
+									local rawValue = rawget( valueReference, key )
+									if rawValue then
+										return rawValue
+									end
+								end
 								value = mathParser:value( parentSize, propertyName, references )
 								references.self = nil
-							else
+							elseif not noSelfSourcing then
 								if key == positionPin then
 									value = childView[positionProperty]
 								else
@@ -141,6 +148,7 @@ function Container:updatePins()
 								end
 							end
 							valueReference[key] = value
+							stackView[key] = nil
 							return value
 						end
 					end
@@ -169,19 +177,32 @@ function Container:updatePins()
 			if childPins[positionPin] or childPins[sizePin] then
 				log("pinning "..tostring(childView))
 				local valueReference = values[childView]
-				local position = valueReference[positionPin]
 				log(positionPin .. ": " .. valueReference[positionPin])
-				local sizePosition = valueReference[sizePin]
-				if sizePosition < position then
-					error( sizePin .. " pin was less than " .. positionPin )
+				local getValue = getmetatable( valueReference ).__index
+				local childPosition, childSize = childView[positionProperty], childView[sizeProperty]
+
+				local position = getValue( nil, positionPin, true )
+				local sizePosition = getValue( nil, sizePin, true )
+				local newPosition, newSize = childPosition, childSize
+				if position and sizePosition then
+					if sizePosition < position then
+						error( sizePin .. " pin was less than " .. positionPin )
+					end
+					newPosition = position
+					newSize = sizePosition - position + 1
+				elseif position then
+					newPosition = position
+				elseif sizePosition then
+					newPosition = sizePosition - childSize + 1
 				end
-				if childView[positionProperty] ~= position then
-					childView[positionProperty] = position
+
+				if childPosition ~= newPosition then
+					childView[positionProperty] = newPosition
 				end
 				log(sizePin .. ": " .. valueReference[sizePin])
 				local size = valueReference[sizePin] - position + 1
-				if childView[sizeProperty] ~= size then
-					childView[sizeProperty] = size
+				if childSize ~= newSize then
+					childView[sizeProperty] = newSize
 				end
 			end
 		end
