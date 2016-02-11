@@ -279,22 +279,22 @@ end
 function Container.width:set( width )
 	if width ~= self.width then
 		self.needsHorizontalPinUpdate = true
-	end
-	self:super( width )
-	local event = self.event
-	if event then
-		event:handleEvent( ParentResizedInterfaceEvent( true, false, self ) )
+		self:super( width )
+		local event = self.event
+		if event then
+			event:handleEvent( ParentResizedInterfaceEvent( true, false, self ) )
+		end
 	end
 end
 
 function Container.height:set( height )
 	if height ~= self.height then
 		self.needsVerticalPinUpdate = true
-	end
-	self:super( height )
-	local event = self.event
-	if event then
-		event:handleEvent( ParentResizedInterfaceEvent( false, true, self ) )
+		self:super( height )
+		local event = self.event
+		if event then
+			event:handleEvent( ParentResizedInterfaceEvent( false, true, self ) )
+		end
 	end
 end
 
