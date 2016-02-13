@@ -439,8 +439,8 @@ function View:animate( String propertyName, Number value, Number( ANIMATION_DEFA
 	if self[propertyName] == value then
 		if onFinish then
 			onFinish( self )
-			return
 		end
+		return
 	end
 
 	local addAnimation = function()

@@ -172,11 +172,15 @@ function TreeNode:onChildAdded( ChildAddedInterfaceEvent event, Event.phases pha
 end
 
 function TreeNode.width:set( width )
-    self:super( width )
+    self.super:super( width )
 	local childrenMarginLeft = self.theme:value( "childrenMarginLeft" )
 	for i, childView in ipairs( self.children ) do
 		childView.width = width - childrenMarginLeft
 	end
+end
+
+function TreeNode.height:set( height )
+    self.super:super( height )
 end
 
 function TreeNode:updateLayout( Boolean( self.dontAnimateLayoutUpdate ) dontAnimate )

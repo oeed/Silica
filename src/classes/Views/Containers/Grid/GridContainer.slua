@@ -59,7 +59,6 @@ function GridContainer:updateLayout( Boolean( false ) dontAnimate )
 	self.needsLayoutUpdate = false
 end
 
-function GridContainer.width:set( width )
-	self:super( width )
-	self.needsLayoutUpdate = true
+function GridContainer.height:set( height )
+    self.super:super( height )
 end
