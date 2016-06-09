@@ -124,4 +124,5 @@ local fs = Quartz and Quartz.fs or fs
 			-- TODO: file writing error handling
 		end
 	end
+
 end

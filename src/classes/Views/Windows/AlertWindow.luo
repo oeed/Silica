@@ -21,4 +21,5 @@ class AlertWindow extends Window
 	static function display( String message, String( "Alert" ) title, function.allowsNil callback, Table( { "Okay" } ) buttons, Number( 1 ) defaultButton )
 		self.application.container:insert( AlertWindow() )
 	end
+
 end

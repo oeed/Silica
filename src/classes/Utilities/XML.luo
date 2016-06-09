@@ -286,4 +286,5 @@
 		h.close()
 		return XML.fromText( text )
 	end
+
 end

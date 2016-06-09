@@ -6,4 +6,5 @@ class ArgumentCountClassException extends ClassException
 		message = "Incorrect number of arguments: " .. message
 		super( message, level )
 	end
+
 end

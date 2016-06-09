@@ -5,4 +5,5 @@ class StyleClassException extends ClassException
 		message = "Naming/code styling was incorrect (the Silica code style should consistent across all programs and developers): " .. message
 		super( message, level )
 	end
+
 end

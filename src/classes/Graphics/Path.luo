@@ -407,4 +407,5 @@ local sin, cos, floor, min, max, abs, acos, PI, remove, insert = math.sin, math.
 		cache[scaleX .. ":" .. scaleY] = { fill, outline }
 		return fill, outline
 	end
+
 end

@@ -47,4 +47,5 @@ class SegmentContainer extends Container
 		super( ... )
 		self.needsLayoutUpdate = true
 	end
+
 end

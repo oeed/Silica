@@ -6,4 +6,5 @@ class ArgumentValueTypeParsingClassException extends ClassException
 		message = "Incorrect declaration of function or argument: " .. message
 		super( message, level )
 	end
+
 end

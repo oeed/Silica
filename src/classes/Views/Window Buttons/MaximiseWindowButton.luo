@@ -7,4 +7,5 @@ class MaximiseWindowButton extends WindowButton }
 			return true
 		end
 	end
+
 end

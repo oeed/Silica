@@ -12,4 +12,5 @@ class KeyDownEvent extends KeyEvent
 		super( keyCode )
 		self.isRepeat = isRepeat
 	end
+
 end

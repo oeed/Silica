@@ -17,4 +17,5 @@ class SeparatorMask extends Mask
 
 		super( x, y, width, height, pixels )
 	end
+
 end

@@ -216,4 +216,5 @@ class Window extends Container
 		self.isVisible = false
 		self.parent:remove( self )
 	end
+
 end

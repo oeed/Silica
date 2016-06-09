@@ -6,4 +6,5 @@ class ValueTypeClassException extends ClassException
 		message = "Incorrect usage of ValueTypes: " .. message
 		super( message, level )
 	end
+
 end

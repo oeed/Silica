@@ -107,4 +107,5 @@ if Quartz then
 	static function getAllAssociations( String mime )
 		return self.associations[mime] or {}
 	end
+
 end

@@ -7,4 +7,5 @@ class CloseWindowButton extends WindowButton }
 			return true
 		end
 	end
+
 end

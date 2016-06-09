@@ -23,4 +23,5 @@ class CircleMask extends Mask
 
 		super( x, y, diameter, diameter, pixels )
 	end
+
 end

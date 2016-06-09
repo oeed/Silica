@@ -24,4 +24,5 @@ class HomeSymbol extends Symbol
 
 		super( path )
 	end
+
 end

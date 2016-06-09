@@ -186,4 +186,5 @@ class MenuBarItem extends View
 		end
 		return true
 	end
+
 end

@@ -8,4 +8,5 @@ class PathMask extends Mask
 		local fill = path:getFill( scaleX, scaleY )
 		super( x, y, width, height, fill )
 	end
+
 end

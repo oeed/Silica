@@ -75,4 +75,5 @@ class Checkbox extends View
 		end
 		return true
 	end
+
 end

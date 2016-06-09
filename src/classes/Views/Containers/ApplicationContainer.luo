@@ -201,4 +201,5 @@ class ApplicationContainer extends Container
 	set needsDraw( needsDraw )
 		self.needsDraw = needsDraw -- View passed needsDraw to parent, but we never have a aprent
 	end
+
 end

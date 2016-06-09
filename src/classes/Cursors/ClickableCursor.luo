@@ -15,4 +15,5 @@ class ClickableCursor extends Cursor
 	static function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
 		self.theme.style = "default"
 	end
+
 end

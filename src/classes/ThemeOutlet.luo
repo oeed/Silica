@@ -103,4 +103,5 @@ class ThemeOutlet
 	function value( valueName, style )
 		return Theme.static.active:value( self.ownerClass, valueName, style or self.style )
 	end
+
 end

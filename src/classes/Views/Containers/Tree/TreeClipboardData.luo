@@ -9,4 +9,5 @@ class TreeClipboardData extends ClipboardData
 		super()
 		self.treeItem = treeItem
 	end
+
 end

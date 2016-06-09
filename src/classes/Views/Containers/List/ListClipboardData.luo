@@ -9,4 +9,5 @@ class ListClipboardData extends ClipboardData
 		super()
 		self.listItem = listItem
 	end
+
 end

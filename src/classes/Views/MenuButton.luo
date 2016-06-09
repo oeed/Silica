@@ -136,4 +136,5 @@ class MenuButton extends Button
 		end
 		return true
 	end
+
 end

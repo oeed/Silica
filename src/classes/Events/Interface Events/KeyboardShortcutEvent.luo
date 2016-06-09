@@ -39,4 +39,5 @@ class KeyboardShortcutEvent extends Event
 
 		return eventKeysLength == #keys
 	end
+
 end

@@ -5,4 +5,5 @@ class EnumValueTypeClassException extends ClassException
 		message = "Incorrect usage of Enum ValueTypes: " .. message
 		super( message, level )
 	end
+
 end

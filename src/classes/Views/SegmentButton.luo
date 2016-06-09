@@ -55,4 +55,5 @@ class SegmentButton extends Button
 	function onSiblingOrParentChanged( InterfaceEvent event, Event.phases phase )
 		self.needsDraw = true
 	end
+
 end

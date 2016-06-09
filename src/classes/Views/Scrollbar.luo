@@ -144,4 +144,5 @@ class Scrollbar extends View
 			event:makeRelative( oldRelative )
 		end
 	end
+
 end

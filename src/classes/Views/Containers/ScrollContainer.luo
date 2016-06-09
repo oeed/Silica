@@ -9,4 +9,5 @@ class ScrollContainer extends Container
 	function updateWidth( width )
 		self.parent:updateContainerSize()
 	end
+
 end
