@@ -1,9 +1,0 @@
-
-interface IDraggableView {
-	
-}
-
---[[
-	@desc Fired when the drag and drop view is released without a destination
-]]
-function IDraggableView:dragDropCancelled( ClipboardData data, DragView dragView, Number x, Number y )

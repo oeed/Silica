@@ -1,0 +1,13 @@
+
+class SeparatorView extends View 
+
+	property Number width = 1
+	property Number height = 1
+
+
+	function onDraw()
+		local width, height, theme, canvas = self.width, self.height, self.theme
+		self.canvas:fill( theme:value( "separatorColour" ), theme:value( "separatorIsDashed" ) and SeparatorMask( 1, 1, width, height ) or RectangleMask( 1, 1, width, height ) )
+	end
+
+end

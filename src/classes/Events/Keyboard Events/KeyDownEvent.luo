@@ -1,0 +1,15 @@
+
+class KeyDownEvent extends KeyEvent 
+	
+	property Boolean isRepeat
+	
+	static = {
+		eventType = "key"
+	};
+
+
+	function initialise( Number keyCode, Boolean isRepeat )
+		self:super( keyCode )
+		self.isRepeat = isRepeat
+	end
+end

@@ -1,0 +1,24 @@
+
+class AlertWindow extends Window 
+
+	property String allowsNil interfaceName = "alert-window"
+	property Button link okayButton
+
+
+	function initialise( ... )
+		self:super( ... )
+
+		self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
+		self:event( ReadyInterfaceEvent, self.onReady )
+	end
+
+	function onReady( ReadyInterfaceEvent event, Event.phases phase )
+		self:centre()
+		self:focus()
+		self.okayButton:focus()
+	end
+
+	static function display( String message, String( "Alert" ) title, function.allowsNil callback, Table( { "Okay" } ) buttons, Number( 1 ) defaultButton )
+		self.application.container:insert( AlertWindow() )
+	end
+end

@@ -1,0 +1,24 @@
+
+class CloseSymbol extends Symbol 
+
+	static = {
+		property String symbolName = "close"
+		property Number height = 5
+		property Number width = 5
+	};
+
+
+	static function initialise()
+		local path = Path( self.width, self.height, 1, 1 )
+		path:lineTo( 5, 5 )
+		path:lineTo( 3, 3 )
+		path:lineTo( 5, 1 )
+		path:lineTo( 5, 1 )
+		path:lineTo( 1, 5 )
+		path:lineTo( 3, 3 )
+		path:close()
+
+		self:super( path )
+	end
+
+end

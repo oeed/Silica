@@ -1,0 +1,7 @@
+
+class UnknownTypeValidationException extends ValidationException 
+
+	
+
+}
+end

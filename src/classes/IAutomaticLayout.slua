@@ -1,8 +1,0 @@
-
-interface IAutomaticLayout {
-
-	needsLayoutUpdate = Boolean( false );
-
-}
-
-function IAutomaticLayout:updateLayout( Boolean( false ) dontAnimate )

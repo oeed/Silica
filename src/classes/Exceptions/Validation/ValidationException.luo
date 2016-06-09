@@ -1,0 +1,13 @@
+
+class ValidationException extends Exception 
+
+	
+
+
+	function initialise( String message, Number.allowsNil level )
+		message = "Value validation exception: " .. message
+		self:super( message, level )
+	end
+
+
+end

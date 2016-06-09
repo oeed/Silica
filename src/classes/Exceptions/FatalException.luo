@@ -1,0 +1,8 @@
+
+class FatalException extends Exception 
+
+	
+
+}
+
+end

@@ -1,0 +1,43 @@
+
+local bridgeKeys = {
+	HOT_SPOT_X = 1;
+	HOT_SPOT_Y = 2;
+	WIDTH = 3;
+	HEIGHT = 4;
+	PIXELS = 5;
+}
+
+class BridgedCursor extends Cursor 
+	
+	enum Number bridgeKeys = bridgeKeys
+
+
+	static function updateAppearance()
+	end
+
+	static function updateBridge( Table.allowsNil bridge )
+		if not bridge then
+			self.image = nil
+		else
+			self.hotSpotX = bridge[bridgeKeys.HOT_SPOT_X]
+			self.hotSpotY = bridge[bridgeKeys.HOT_SPOT_Y]
+			self.image = Image( bridge[bridgeKeys.PIXELS], bridge[bridgeKeys.WIDTH], bridge[bridgeKeys.HEIGHT], bridge )
+		end
+		local applicationContainer = self.application.container
+		if applicationContainer then
+			self.hasUpdatedApperance = true
+			applicationContainer.needsCursorUpdate = true
+		end
+	end
+
+	local cursorStatic = Cursor.static
+	static function drawTo( Canvas canvas, Number x, Number y )
+		local image = self.image
+		if image then
+			canvas:image( self.image, x - self.hotSpotX + 1, y - self.hotSpotY + 1 )
+		else
+			return cursorStatic:drawTo( canvas, x, y )
+		end
+	end
+
+end

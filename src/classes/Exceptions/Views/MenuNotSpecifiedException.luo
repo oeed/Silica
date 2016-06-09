@@ -1,0 +1,6 @@
+
+class MenuNotSpecifiedException extends Exception 
+
+}
+
+end

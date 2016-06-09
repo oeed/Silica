@@ -1,4 +1,0 @@
-
-class MenuNotSpecifiedException extends Exception {
-
-}

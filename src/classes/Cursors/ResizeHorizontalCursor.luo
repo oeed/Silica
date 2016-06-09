@@ -1,0 +1,6 @@
+
+class ResizeHorizontalCursor extends Cursor 
+	
+}
+
+end

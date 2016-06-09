@@ -1,0 +1,15 @@
+
+class BridgedFileAssociation extends FileAssociation 
+	
+
+	function initialise( Table info )
+		self.id = info.id
+		self.name = info.name
+		self.mime = info.mime
+		if info.icon then
+			self.icon = Icon.static:fromIcon( info.icon )
+		end
+		self.extensions = info.extensions
+	end
+
+end

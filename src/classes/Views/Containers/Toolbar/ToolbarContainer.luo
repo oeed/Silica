@@ -1,0 +1,98 @@
+
+class ToolbarContainer extends Container 
+
+	property Boolean needsLayoutUpdate = false
+	property String allowsNil leftPin = "1"
+	property String allowsNil rightPin = "100%"
+
+
+	function initialise( ... )
+		self:super( ... )
+
+		self:event( ChildAddedInterfaceEvent, self.onChildAdded )
+		self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
+	end
+
+	function onDraw()
+		local width, height, theme, canvas, font = self.width, self.height, self.theme, self.canvas
+		canvas:fill( theme:value( "fillColour" ) )
+		canvas:fill( theme:value( "separatorColour" ), theme:value( "separatorIsDashed" ) and SeparatorMask( 1, height, width, 1 ) or RectangleMask( 1, height, width, 1 ) )
+	end
+
+	function update( deltaTime )
+		self:super( deltaTime )
+		if self.needsLayoutUpdate then
+			self:updateLayout()
+		end
+	end
+
+	function onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
+		if event.container == self then
+			if not event.childView:typeOf( IToolbarItem ) then
+				error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not implement IToolbarItem to '" .. tostring( self ) .. "'", 0 )
+			end
+			self.needsLayoutUpdate = true
+		end
+	end
+
+	function onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
+		if event.container == self then
+			self.needsLayoutUpdate = true
+		end
+	end
+
+	function updateLayout()
+		local children, width, theme = self.children, self.width, self.theme
+		local leftMargin, rightMargin, topMargin, bottomMargin, itemMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" ), theme:value( "itemMargin" )
+		local remainingWidth = width - leftMargin - rightMargin
+		local x = 1 + leftMargin
+		local dynamicItems = 0
+		local items = {}
+
+		local contentHeight = 0
+
+		for i, childView in ipairs( children ) do
+			local isPressable = childView:typeOf( IToolbarPressableItem )
+			childView.y = 1 + topMargin
+			contentHeight = math.max( childView.height - (isPressable and 1 or 0), contentHeight )
+
+			if childView:typeOf( ToolbarStaticSpace ) then
+				local childWidth = childView.width
+				remainingWidth = remainingWidth - childWidth + itemMargin
+				items[i] = { nil, childWidth }
+			elseif childView:typeOf( IToolbarDynamicItem ) then
+				dynamicItems = dynamicItems + 1
+				items[i] = { childView, nil, isPressable }
+				remainingWidth = remainingWidth - itemMargin
+			else
+				local childWidth = childView.width
+				remainingWidth = remainingWidth - childWidth - itemMargin + 1
+				items[i] = { childView, childWidth, isPressable }
+			end
+		end
+
+		local dynamicWidth = (remainingWidth + itemMargin) / dynamicItems
+		local passedFirstDynamic = false
+		for i, item in ipairs( items ) do
+			local childView, childWidth, isPressable = item[1], item[2], item[3]
+			if not childWidth then
+				if passedFirstDynamic then
+					childWidth = math.floor( dynamicWidth )
+				else
+					childWidth = math.ceil( dynamicWidth )
+					passedFirstDynamic = true
+				end
+			end
+			if childView then
+				childView.x = x
+				childView.width = childWidth
+			end
+			x = x + childWidth - (isPressable and 1 or 0) + ((not childView or (i < #items and not items[i + 1][1]) ) and 0 or itemMargin)
+		end
+
+		self.height = contentHeight + topMargin + bottomMargin + 1 -- + 1 for separator
+
+		self.needsLayoutUpdate = false
+	end
+
+end

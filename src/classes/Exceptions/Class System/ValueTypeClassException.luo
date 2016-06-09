@@ -1,0 +1,9 @@
+
+class ValueTypeClassException extends ClassException 
+
+
+	function initialise( String message, Number.allowsNil level )
+		message = "Incorrect usage of ValueTypes: " .. message
+		self:super( message, level )
+	end
+end

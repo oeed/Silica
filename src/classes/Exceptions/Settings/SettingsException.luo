@@ -1,0 +1,7 @@
+
+class SettingsException extends FatalException 
+	
+}
+
+
+end

@@ -1,0 +1,268 @@
+
+local fs = Quartz and Quartz.fs or fs
+
+	local function tidy( path )
+		if path == "/" then return path end
+		path = path:gsub( "/.-/%.%./", "/" )
+				   :gsub( "^.-/%.%./", "" )
+				   :gsub( "/%./", "/" )
+				   :gsub( "^%.%./", "" )
+				   :gsub( "^%.%.$", "" )
+				   :gsub( "//+", "/" )
+				   :gsub( "/$", "" )
+		return path
+	end
+
+	local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) ):gsub( "[^/]$", "%1/" ):gsub( "^[^/]", "/%1" )
+	log(relativePath)
+	local function resolve( path, to )
+		to = to and tidy( to ) .. "/" or relativePath
+		if not path or #path == 0 then return "/" .. to else local _ = tidy( path ):gsub( "^[^/]", to .. "%1" ) return _ end
+	end
+
+	local MAX_FILE_AGE = 120
+	local osClock = os.clock
+	local iconCache = {}
+	local fileCache = {}
+	local unknownIcon
+
+	class FileSystemItem 
+		
+		property String path
+		property String name
+		property String fullName
+		property String allowsNil extension
+		property Any allowsNil association -- TODO: should be a FileAssociation (recursion issue)
+		property Any allowsNil icon
+		property Number allowsNil size
+		property String allowsNil sizeString
+		property Any allowsNil parent -- TODO: should be Folder
+		property String allowsNil parentPath
+		property Metadata allowsNil metadata
+		property String allowsNil metadataPath
+
+		static = {
+			resourceFolders = {}; -- the folders in which the applications resources are
+			property false resourceTables -- the tables of files where resources are
+			property fileCache fileCache
+		}
+
+
+	function FileSystemItem.metatable:__call( path, ... )
+		path = resolve( path )
+		local cached = fileCache[path]
+		if cached then cached[2] = osClock() return cached[1] end
+		if fs.isDir( path ) then
+			-- for speed we asume here that if has a bundle.scfg file then it's a bundle, we'll check in greater depth once we create the bundle
+			if fs.exists( tidy( path .. "/bundle.sconfig" ) ) then
+				return Bundle( path, ... )
+			else
+				return Folder( path, ... )
+			end
+		else
+			return File( path, ... )
+		end
+	end
+
+	static function purgeCached()
+		for k, v in pairs( fileCache ) do
+			fileCache[k] = nil
+		end
+	end
+
+	static function purgeOldCache()
+		local minClock = osClock() - MAX_FILE_AGE
+		for k, v in pairs( fileCache ) do
+			if v[2] < minClock then
+				fileCache[k] = nil
+			end
+		end
+	end
+
+	--[[
+		@desc Tidys a path (removes double slashes etc.)
+	]]
+	static function tidy( String path )
+		return tidy( path )
+	end
+
+	--[[
+		@desc Resolves a path (makes absolute)
+	]]
+	static function resolve( String path, String.allowsNil root )
+		return resolve( path, root )
+	end
+
+	--[[
+		@desc Returns true if the file exists
+	]]
+	static function exists( String path )
+		return fs.exists( resolve( path ) )
+	end
+
+	function initialise( path, parent )
+		self.path = path
+		if parent then
+			self.raw.parent = parent
+		end
+	end
+
+	function FileSystemItem.path:set( path )
+		path = resolve( path )
+		if not fs.exists( path ) then error( "Attempted to set FileSystemItem.path to non-existant path '" .. path .. "'.", 2 ) end
+		local oldPath = self.path
+		if oldPath then
+			fileCache[oldPath] = nil
+		end
+		self.path = path
+		fileCache[path] = { self, osClock() }
+
+		local parentPath, fullName = path:match( "(.*)/(.+)" )
+		fullName = fullName or ""
+		self.fullName = fullName
+		self.raw.parentPath = ( parentPath == "" and "/" or parentPath )
+		local name, extension = fullName:match( "^(.+)%.(%w-)$" )
+		self.name = name or fullName
+		self.extension = extension
+	end
+
+	function FileSystemItem.association:get()
+		local association = self.association
+		if association then return association end
+
+		association = FileAssociationManager.static:getAssociation( self.metadata.mime )
+		self.association = association
+		return association
+	end
+
+	--[[
+		@desc Opens the file with the appropriate program (or the given association)
+	]]
+							-- TODO: Any should be FileAssociation
+	function open( Any.allowsNil association )
+		FileAssociationManager.static:open( self, association )
+	end
+
+	function FileSystemItem.size:get()
+		return fs.getSize( self.path )
+	end
+
+	function FileSystemItem.size:set( size )
+		error( "FileSystemItem.size is a read-only property.", 2 )
+	end
+
+	function FileSystemItem.sizeString:get()
+		local size = self.size
+		if size == 0 then return "0B" end
+		local prefixes = { [0] = ""; "k"; "M"; "G"; "T"; "P"; }
+		local order = math.floor( math.log( size ) / math.log( 1024 ) )
+		local bytes = math.ceil( (size / ( 1024 ^ order) ) * 10 )
+		return bytes / 10 .. prefixes[order] .. "B"
+	end
+
+	function FileSystemItem.sizeString:set( sizeString )
+		error( "FileSystemItem.sizeString is a read-only property.", 2 )
+	end
+
+	function FileSystemItem.icon:get()
+		local cache = self.icon
+		if cache then return cache end
+
+		local mime = self.metadata.mime
+		local cached = iconCache[mime]
+		if cached then
+			return cached
+		end
+
+		local icon
+		if Image.static:isMIME( mime ) then
+			-- this file is an image. we'll make a thumbnail icon for it instead if it's a valid image
+			icon = ThumbnailIcon.static:fromFile( self )
+		end
+
+		if not icon then
+			local association = self.association
+			if association then
+				icon = association.icon
+			end
+		end
+
+		if icon then
+			self.icon = icon
+			return icon
+		end
+
+		if not unknownIcon then
+			unknownIcon = Icon.static:fromPath( "/src/resources/Icons/unknown.sicon" )
+		end
+		return unknownIcon
+	end
+
+	function FileSystemItem.parent:get()
+		local parent = self.parent
+		if parent then return parent end
+		if self.path == "/" then return nil end
+
+		local parentPath = self.parentPath
+		return Folder( parentPath )
+	end
+
+	function FileSystemItem.parent:set( parent )
+		error( "FileSystemItem.parent is a read-only property. To move a FileSystemItem use :moveTo", 2 )
+	end
+
+	function FileSystemItem.parentPath:set( parentPath )
+		error( "FileSystemItem.parentPath is a read-only property. To move a FileSystemItem use :moveTo", 2 )
+	end
+
+	function delete()
+		fs.delete( self.path )
+		self.metadata:delete( folder )
+		self:dispose()
+	end
+
+	function moveTo( folder )
+		local folderPath = folder.path
+		if folderPath == self.parentPath then return end
+
+		local newPath = folderPath .. "/" .. self.fullName
+		fs.move( self.path, newPath )
+		self.metadata:moveTo( folder )
+		self.raw.parentPath = folderPath
+		self.raw.parent = nil -- delete the cache of the old parent
+	end
+
+	function copyTo( folder )
+		local folderPath = folder.path
+		if folderPath == self.parentPath then return end
+		
+		local newPath = folderPath .. "/" .. self.fullName
+		fs.copy( self.path, newPath )
+		local newFile = FileSystemItem( newPath )
+		self.metadata:copyTo( folder, newFile )
+	end
+
+	function rename( fullName )
+		local newPath = self.parentPath .. "/" .. fullName
+		fs.move( self.path, newPath )
+		self.metadata:rename( fullName )
+	end
+
+	function FileSystemItem.metadataPath:get()
+		return self.parentPath .. "/.metadata/" ..self.fullName
+	end
+
+	function FileSystemItem.metadata:get()
+		local metadata = self.metadata
+		if metadata then return metadata end
+
+		metadata = Metadata( self )
+		self.raw.metadata = metadata
+		return metadata
+	end
+
+	function FileSystemItem.metadata:set( metadata )
+		error( "FileSystemItem.metadata is a read-only property.", 2 )
+	end
+
+end

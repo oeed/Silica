@@ -1,0 +1,106 @@
+
+class ListContainer extends ScrollContainer implements IDragDropDestination 
+	
+	property Boolean needsLayoutUpdate = false
+	property Boolean canRearrange = true
+	property DragDropManager dropStyles RETURN dropStyle
+	property Boolean canTransferItems = false
+
+
+	function initialise( ... )
+		self:super( ... )
+		self:event( ChildAddedInterfaceEvent, self.onChildAdded )
+		self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
+		self:event( ReadyInterfaceEvent, self.onReady, Event.phases.AFTER )
+	end
+
+	function onReady( ReadyInterfaceEvent event, Event.phases phase )
+		self:updateLayout( true )
+	end
+
+	function update( deltaTime )
+		self:super( deltaTime )
+		if self.needsLayoutUpdate then
+			self:updateLayout()
+		end
+	end
+
+	function ListContainer.width:set( width )
+	    self:super( width )
+		for i, childView in ipairs( self.children ) do
+			childView.width = width
+		end
+	end
+
+	function onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
+		if not event.childView:typeOf( ListItem ) then
+			error( "Attempted to add view '" .. tostring( event.childView ) .. "' that does not extend ListItem to '" .. tostring( self ) .. "'", 0 )
+		end
+		self.needsLayoutUpdate = true
+	end
+
+	function onChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
+		self.needsLayoutUpdate = true
+	end
+
+	function updateLayout( Boolean( false ) dontAnimate )
+		local children, width = self.children, self.width
+		local theme = self.theme
+		local y = theme:value( "topMargin" ) + 1
+
+		local time, easing
+		if not dontAnimate then
+			time = theme:value( "animationDuration" )
+			easing = theme:value( "animationEasing" )
+		end
+		for i, childView in ipairs( children ) do
+			if dontAnimate then
+				childView.y = y
+			else
+				childView:animate( "y", y, time, nil, easing )
+			end
+			childView.x = 1
+			childView.width = width
+			y = y + childView.height
+		end
+
+		local height = y + self.theme:value( "bottomMargin" )
+		if dontAnimate then
+			self.height = height
+		else
+			self:animate( "height", height, time, nil, easing )
+		end
+
+		self.needsLayoutUpdate = false
+	end
+
+	function ListContainer.height:set( height )
+	    self.super:super( height )
+	end
+
+	function canAcceptDragDrop( ClipboardData data, Boolean isMove )
+		return data:typeOf( ListClipboardData ) and (self.canTransferItems or data.listItem.parent == self)
+	end
+
+	function dragDropMoved( ClipboardData data, DragView dragView, Number x, Number y )
+		local _, selfY = self:getPosition()
+		local listItem = data.listItem
+		local children = self.children
+		local index = math.max( math.min( math.floor( ( dragView.y - selfY - self.theme:value( "topMargin" ) - 1 ) / listItem.height + 1.5 ), #children), 1 )
+		if listItem.index ~= index then
+			listItem.index = index
+			self.needsLayoutUpdate = true
+		end
+	end
+
+	function dragDropEntered( ClipboardData data, DragView dragView, Number x, Number y )
+	end
+
+	function dragDropExited( ClipboardData data, DragView dragView, Number x, Number y )
+	end
+
+	function dragDropDropped( ClipboardData data, Boolean isMove, Number x, Number y )
+	end
+
+
+end

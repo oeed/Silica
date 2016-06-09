@@ -1,0 +1,109 @@
+
+local iconValues = Icon.iconValues
+local scaleMethods = Image.scaleMethods
+local DEFAULT_WIDTH, DEFAULT_HEIGHT = iconValues.DEFAULT_WIDTH, iconValues.DEFAULT_HEIGHT
+local FLAP_SIZE, OUTLINE_SIZE, MINIMUM_SIZE = 7, 3, 12
+local GREY, WHITE, LIGHT_GREY, TRANSPARENT = Graphics.colours.GREY, Graphics.colours.WHITE, Graphics.colours.LIGHT_GREY, Graphics.colours.TRANSPARENT
+
+class ThumbnailIcon extends Icon 
+	
+	property File file
+	property Image image
+	property Icon alternateIcon
+
+
+	function initialise( File file, Image image )
+		self.file = file
+		self.image = image
+
+		-- we need to generate the default icon's pixels, i.e. how the icon looks in the default size
+		local defaultPixels = self:getScaledPixels( DEFAULT_WIDTH, DEFAULT_HEIGHT )
+
+		self.super:super( defaultPixels, DEFAULT_WIDTH, DEFAULT_HEIGHT, image.contents ) -- go over Icon's head
+		self.images = {} -- Icon requires an images table, but we don't need one
+	end
+
+	function ThumbnailIcon.file:set( file )
+	    self.file = file
+	    self.alternateIcon = file.association.icon
+	end
+
+	static function fromFile( File file )
+		local image = Image.static:fromFile( file )
+		if image then
+			-- the image is valid, we're good to go
+			return ThumbnailIcon( file, image )
+		end
+	end
+
+	function getScaledPixels( Number maximumWidth, Number( maximumWidth ) maximumHeight, Image.scaleMethods( Image.scaleMethods.FIT ) method )
+		size = math.floor( math.min( maximumWidth, maximumHeight ) + 0.5 )
+
+		local scaledCache = self.scaledCache
+		local cache = scaledCache[size]
+		if cache then
+			return cache[1], cache[2], cache[3]
+		end
+
+		local pixels, pixelsWidth, pixelsHeight
+		if size < MINIMUM_SIZE then
+			pixels, pixelsWidth, pixelsHeight = self.alternateIcon:getScaledPixels( maximumWidth, maximumHeight, method )
+		else
+			pixels = {}
+			local image = self.image
+			local thumbnailSize = size - 2 * OUTLINE_SIZE
+			local thumbnailPixels, thumbnailWidth, thumbnailHeight = image:getScaledPixels( thumbnailSize, thumbnailSize, scaleMethods.FIT )
+
+			pixelsWidth, pixelsHeight = thumbnailWidth + 2 * OUTLINE_SIZE, thumbnailHeight + 2 * OUTLINE_SIZE
+			local i = 1
+			local flapX, flapY = pixelsWidth - FLAP_SIZE + 1, pixelsHeight - FLAP_SIZE + 1
+			for y = 1, pixelsHeight do
+				for x = 1, pixelsWidth do
+					local colour
+					local isVerticalEdge, isHorizontalEdge = y == 1 or y == pixelsHeight, x == 1 or x == pixelsWidth
+					if isVerticalEdge and isHorizontalEdge then -- corner
+					elseif x >= flapX and y >= flapY and not ( x == flapX and y == flapY ) then -- flap
+					elseif isVerticalEdge or isHorizontalEdge then -- outline
+						colour = GREY
+					else
+						colour = WHITE
+					end
+					if colour then pixels[i] = colour end
+					i = i + 1
+				end
+			end
+
+			i = 1
+			for y = OUTLINE_SIZE + 1, pixelsHeight - OUTLINE_SIZE do
+				for x = OUTLINE_SIZE + 1, pixelsWidth - OUTLINE_SIZE do
+					if x < flapX or y < flapY or ( x == flapX and y == flapY ) then
+						local colour = thumbnailPixels[i]
+						if colour and colour ~= TRANSPARENT then
+							pixels[(y - 1) * pixelsWidth + x] = colour
+						end
+					end
+					i = i + 1
+				end
+			end
+
+			i = pixelsWidth
+			for y = flapY, pixelsHeight do
+				for x = flapX, pixelsWidth do
+					if x ~= flapX or y ~= flapY then -- the corner
+						local colour = LIGHT_GREY
+						if x > i then -- past the flap
+							break
+						elseif x == i or x == flapX or y == flapY then -- diagonal line/outline
+							colour = GREY
+						end
+						pixels[(y - 1) * pixelsWidth + x] = colour
+					end
+				end
+				i = i - 1
+			end
+		end
+		scaledCache[size] = { pixels, pixelsWidth, pixelsHeight }
+		return pixels, pixelsWidth, pixelsHeight
+	end
+
+end

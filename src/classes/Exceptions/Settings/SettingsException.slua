@@ -1,5 +1,0 @@
-
-class SettingsException extends FatalException {
-	
-}
-

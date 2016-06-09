@@ -1,0 +1,12 @@
+
+class ListClipboardData extends ClipboardData 
+	
+	type = "Silica:ListItem";
+	property ListItem listItem
+
+
+	function initialise( listItem )
+		self:super()
+		self.listItem = listItem
+	end
+end

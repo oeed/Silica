@@ -1,0 +1,18 @@
+
+class ClickableCursor extends Cursor 
+	
+
+	static function setup( ... )
+		self:super( ... )
+		self.event:connectGlobal( MouseDownEvent, self.onGlobalMouseDown, Event.phases.BEFORE )
+		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+	end
+
+	static function onGlobalMouseDown( MouseDownEvent event, Event.phases phase )
+		self.theme.style = "down"
+	end
+
+	static function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+		self.theme.style = "default"
+	end
+end

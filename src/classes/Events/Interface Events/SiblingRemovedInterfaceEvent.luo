@@ -1,0 +1,21 @@
+
+class SiblingRemovedInterfaceEvent extends InterfaceEvent 
+
+	static = {
+		eventType = "interface_sibling_removed";
+	};
+	property false view -- the new sibling that was removed
+	property Boolean isSentToChildren = false
+
+}
+
+--[[
+	@constructor
+	@desc Creates a siblings changed event from the arguments
+	@param [View] view -- the removed sibling view
+]]
+	function initialise( view )
+		self.view = view
+	end
+
+end

@@ -1,26 +1,26 @@
--- need to fix scheduling ... cancelling them won't work right now
+-- TODO: need to fix scheduling ... cancelling them won't work right now
 -- each one needs to have its own ID and return that ID
 
-class Application {
+class Application 
 
-	name = String;
-	path = String.allowsNil;
-	userDataPath = String( "userdata" );
-	userDataFolder = Folder;
-	updateTimer = Number.allowsNil;
-	lastUpdate = Number.allowsNil;
-	arguments = Table.allowsNil;
-	isRunning = Boolean( false );
-	container = Container;
-	document = Document.allowsNil;
-	event = ApplicationEventManager;
-	schedules = Table( {} );
-	keyboardShortcutManager = KeyboardShortcutManager;
-	dragDropManager = DragDropManager;
-	focuses = Table( {} );
-	settings = Settings.allowsNil;
+	property String name
+	property String allowsNil path
+	property String userDataPath = "userdata"
+	property Folder userDataFolder
+	property Number allowsNil updateTimer
+	property Number allowsNil lastUpdate
+	property Table allowsNil arguments
+	property Boolean isRunning = false
+	property Container container
+	property Document allowsNil document
+	property ApplicationEventManager event
+	property Table schedules = {}
+	property KeyboardShortcutManager keyboardShortcutManager
+	property DragDropManager dragDropManager
+	property Table focuses = {}
+	property Settings allowsNil settings
 
-	interfaceName = String.allowsNil;
+	property String allowsNil interfaceName
 
 	-- TODO: exit codes
 	-- exitCode = {
@@ -31,12 +31,10 @@ class Application {
 
 	static = {
 		resourceFolders = {}; -- the folders in which the applications resources are
-		resourceTables = false; -- the tables of files where resources are
+		property false resourceTables -- the tables of files where resources are
 	}
 
-}
-
-function Application.static:initialise( ... )
+static function initialise( ... )
 	self.resourceTables = __resourceTables or {}
 	_G.__resourceTables = nil
 
@@ -46,7 +44,7 @@ end
 	@desc Adds the given directory to the resource listing and loads any classes
 	@param [string] path -- the path to the directory of resources
 ]]
-function Application.static:load( String path )
+static function load( String path )
 	local folder = Folder( path )
 	if folder then
 		table.insert( self.resourceFolders, folder )
@@ -68,7 +66,7 @@ function Application.static:load( String path )
 	end
 end
 
-function Application:initialise( ... )
+function initialise( ... )
 	class.setApplication( self )
 	if Quartz then
 		Quartz.silicaApplication = self
@@ -104,10 +102,10 @@ function Application:initialise( ... )
 	self.event:connect( TimerEvent, self.onTimer )
 end
 
-function Application:initialiseSettings()
+function initialiseSettings()
 end
 
-function Application:initialiseFileAssociations()
+function initialiseFileAssociations()
 	if Quartz then
 		-- if we're running in Quartz we'll need to extract all the file associations from it
 	else
@@ -122,7 +120,7 @@ end
 	@param ... -- the arguments feed to the program (simply use ... for the arguments)
 	@return [number] exitCode -- returns the exit code of the application
 ]]
-function Application:run( ... )
+function run( ... )
 	self.isRunning = true
 	try( function()
 		self:update()
@@ -155,7 +153,7 @@ end
 --[[
 	@desc Loads the application container or changes it if there is one.
 ]]
-function Application:reloadInterface()
+function reloadInterface()
 	local interfaceName = self.interfaceName
 
 	local oldContainer = self.container
@@ -177,7 +175,7 @@ end
 --[[
 	@desc Update all application's views
 ]]
-function Application:update()
+function update()
 	-- TODO: not exactally sure how to handle deltaTime for the first one. for now it's one 60th
 	local clock = os.clock()
 	local lastUpdate = self.lastUpdate or ( clock - 1/60 )
@@ -197,7 +195,7 @@ end
 	@param [table{View}] searchFocuses -- the focuses to look through, i.e. from the focuses changed event (defaults to the current ones)
 	@return [table{View}] focuses -- the focuses
 ]]
-function Application:focusesOfType( _type, searchFocuses )
+function focusesOfType( _type, searchFocuses )
 	local focuses = {}
 	for view, _ in pairs( searchFocuses or self.focuses ) do
 		if view:typeOf( _type ) then
@@ -211,7 +209,7 @@ end
 	@desc Returns true if there is at least one focused view
 	@return [boolean] hasFocus
 ]]
-function Application:hasFocus()
+function hasFocus()
 	return next( self.focuses ) ~= nil
 end
 
@@ -220,7 +218,7 @@ end
 	@param [View] newFocus -- the view that is to be focused upon
 	@param [class] filter -- the filter class. any other views that are focused that extend this class will be unfocused, all others will be untouched
 ]]
-function Application:focus( newFocus, filter )
+function focus( newFocus, filter )
 	local focuses = self.focuses
 	local oldFocuses = {}
 	local hadOtherFocus = false
@@ -247,7 +245,7 @@ end
 	@desc Adds the given view to the list of focused views, unfocusing single focus only views
 	@param [view] newFocus -- the view that is to be focused upon
 ]]
-function Application:addFocus( newFocus )
+function addFocus( newFocus )
 	local focuses = self.focuses
 	local oldFocuses = {}
 	if not focuses[newFocus] then
@@ -267,7 +265,7 @@ end
 	@desc Removes the given view from the list of focused views
 	@param [view] oldFocus -- the view that is to be focused upon
 ]]
-function Application:unfocus( oldFocus )
+function unfocus( oldFocus )
 	local focuses = self.focuses
 	if focuses[oldFocus] then
 		local oldFocuses = {}
@@ -284,7 +282,7 @@ end
 	@desc Unfocuses the view that is currently focused (i.e. the selected text box)
 	@param [class] filter -- the filter class. views that are focused that extend this class will be unfocused, all others will be untouched. if nil all are unfocused
 ]]
-function Application:unfocusAll( filter )
+function unfocusAll( filter )
 	local focuses = self.focuses
 	local oldFocuses = {}
 	for oldFocus, _ in pairs( focuses ) do
@@ -305,7 +303,7 @@ end
 	@param ... -- any values you want. will be passed as the parameters (other than self)
 	@return [number] scheduleId -- the ID of the scheduled task
 ]]
-function Application:schedule( func, time, ... )
+function schedule( func, time, ... )
 	time = time or 0.05
 	local schedules = self.schedules
 	table.insert( schedules, { func, os.clock() + time, ... } )
@@ -317,7 +315,7 @@ end
 	@param [number] scheduleId -- the ID of the scheduled task
 	@return [boolean] didUnschedule -- whether the task was unscheduled. this is only false if the task no longer exists or never existed
 ]]
-function Application:unschedule( scheduleId )
+function unschedule( scheduleId )
 	local schedules = self.schedules
 	if schedules[scheduleId] then
 		schedules[scheduleId] = nil
@@ -329,7 +327,7 @@ end
 	@desc Run any scheduled tasks that need to be run
 	@param [number] lastUpdate -- the time of the last update
 ]]
-function Application:checkScheduled( lastUpdate )
+function checkScheduled( lastUpdate )
 	local now = os.clock()
 	local schedules = self.schedules
 	for scheduleId, task in pairs( schedules ) do
@@ -348,9 +346,13 @@ end
 	@param [TimerEvent] event -- the timer event
 	@return [boolean] stopPropagation -- whether following handlers should not recieve this event
 ]]
-function Application:onTimer( Event event, Event.phases phase )
+function onTimer( Event event, Event.phases phase )
 	if event.timer and event.timer == self.updateTimer then
 		self:update()
 		return true
 	end
+end
+
+
+end
 end

@@ -1,0 +1,54 @@
+
+class Cursor 
+	
+	static = {
+
+		property ThemeOutlet theme
+		property EventManager event
+		property Image allowsNil image
+		property Number hotSpotX
+		property Number hotSpotY
+		property Boolean hasUpdatedApperance = false
+
+	}
+	
+
+	static function setupAll()
+		self:setup()
+		for i, subclass in ipairs( Cursor.subclasses ) do
+			subclass.static:setup()
+		end
+	end
+
+	-- we can't use initialise here because static intialise occurs before the Application is initialised
+	static function setup()
+		self.theme = ThemeOutlet( self )
+		local event = EventManager( self )
+		self.event = event
+		event:connectGlobal( ThemeChangedInterfaceEvent, self.onThemeChanged )
+	end
+
+	static function updateAppearance()
+		local theme = self.theme
+		self.image = theme:value( "image" )
+		self.hotSpotX = theme:value( "hotSpotX" )
+		self.hotSpotY = theme:value( "hotSpotY" )
+		local applicationContainer = self.application.container
+		if applicationContainer then
+			self.hasUpdatedApperance = true
+			applicationContainer.needsCursorUpdate = true
+		end
+	end
+
+	static function onThemeChanged( ThemeChangedInterfaceEvent event, Event.phases phase )
+		self:updateAppearance()
+	end
+
+	static function drawTo( Canvas canvas, Number x, Number y )
+		local image = self.image
+		if image then
+			canvas:image( image, x - self.hotSpotX + 1, y - self.hotSpotY + 1 )
+		end
+	end
+
+end

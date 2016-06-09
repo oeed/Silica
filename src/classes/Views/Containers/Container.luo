@@ -1,0 +1,594 @@
+
+local pins = View.pins
+local pinProperties = {}
+
+class Container extends View 
+
+	children = {};
+	property Table interfaceLinks -- TODO: .isReadOnly
+	property Table interfaceLinkActions -- TODO: .isReadOnly
+	property String allowsNil interfaceName
+	offsetX = 0;
+	offsetY = 0;
+	property Number allowsNil cursorLastX
+	property Number allowsNil cursorLastY
+
+	property Boolean needsPinUpdate = false
+	property Boolean needsHorizontalPinUpdate = false
+	property Boolean needsVerticalPinUpdate = false
+	property Table childPins = { references = {} }
+
+}
+
+--[[
+	@constructor
+	@desc Initialises the container, linking up any InterfaceOutlets
+	@param ...
+]]
+	function initialise( ... )
+		self:super( ... )
+
+		self:event( ChildAddedInterfaceEvent, self.onChildOfChildAdded )
+		self:event( ChildRemovedInterfaceEvent, self.onChildOfChildRemoved )
+		self:event( ChildRepositionedInterfaceEvent, self.onChildRepositionedMouseEnterExit )
+		self:event( ReadyInterfaceEvent, self.onReadyLoadInterface )
+		self:event( LoadedInterfaceEvent, self.onLoadedInterfacePinUpdate )
+		self:event( MouseMoveEvent, self.onUpdateChildMouseEnterExit )
+		self:event( MouseExitedInterfaceEvent, self.onUpdateChildMouseEnterExit )
+		self:event( MouseEnteredInterfaceEvent, self.onUpdateChildMouseEnterExit )
+	end
+
+	--[[
+		@desc Creates a container from interface file
+		@param [string] interfaceName -- the name of the interface file
+		@param [class] _class -- the class that the container must extend (e.g. ApplicationContainer). If this is being called on a subclass you MUST pass in the class.
+		@return [Container or _class] container -- the container
+	]]
+	static function fromInterface( interfaceName, _class )
+		local interface = Interface( interfaceName, _class or Container )
+		if interface then
+			interface:ready()
+			return interface.container
+		end
+	end
+
+	function onReadyLoadInterface( ReadyInterfaceEvent event, Event.phases phase )
+		self:loadInterface()
+	end
+
+	function onLoadedInterfacePinUpdate( LoadedInterfaceEvent event, Event.phases phase )
+		if self.needsPinUpdate then
+			self:updatePins()
+		end
+	end
+
+	--[[
+		@desc Loads the children and properties of the interface specified by the self.interfaceName interface name. Called automatically during Container:init, do not call this yourself.
+	]]
+	function loadInterface()
+		local interfaceName = self.interfaceName
+		if interfaceName then
+			-- this does all the work for us
+			Interface( interfaceName, self.class, self ):ready( true )
+		end
+	end
+
+	--[[
+		@desc Initialises the custom container event manger
+	]]
+	function initialiseEventManager()
+		self.event = ContainerEventManager( self )
+	end
+
+	--[[
+		@desc Updates the view and it's children When overriding this self.super:update must be called AFTER the custom drawing code.
+		@param [number] deltaTime -- the time since last update
+	]]
+	function update( deltaTime )
+		self:super( deltaTime )
+		if self.needsPinUpdate then
+			self:updatePins()
+		end
+		for i, childView in ipairs( self.children ) do
+			childView:update( deltaTime )
+		end
+	end
+
+	function updatePins()
+		local keys = { pins.LEFT, pins.TOP, pins.RIGHT, pins.BOTTOM, "x", "y", "width", "height" }
+		local childPins = self.childPins
+		local childPinReferences = {}
+		childPins.references = childPinReferences
+		for i = self.needsHorizontalPinUpdate and 1 or 2, self.needsVerticalPinUpdate and 2 or 1 do
+			local parentSize = i == 1 and self.width or self.height
+			local positionPin, sizePin, positionProperty, sizeProperty = keys[i], keys[i + 2], keys[i + 4], keys[i + 6]
+			local allowedPins = { [positionPin] = true, [sizePin] = true }
+			local allowedProperties = { [positionProperty] = true, [sizeProperty] = true }
+			local pinConvert = { [positionPin] = positionProperty, [sizePin] = sizeProperty }
+
+			local values = {}
+			local references = {}
+			local stack = {}
+			for childView, childPins in pairs( childPins ) do
+				if childView ~= "references" then
+					local valueReference = {}
+					setmetatable( valueReference, {
+						__index = function( _, key, noSelfSourcing )
+							if not allowedPins[key] then
+								error( "access bad key "..key ) -- only the right orientation pins can be referenced too
+							else
+								local stackView = stack[childView]
+								if stackView and stackView[key] then
+									error( "circular reference" )
+								elseif stackView then
+									stackView[key] = true
+								else
+									stackView = { [key] = true }
+									stack[childView] = stackView
+								end
+
+								local propertyName = pinConvert[key]
+								local mathParser = childPins[key]
+								local value
+								if mathParser then
+									references.self = valueReference
+									if noSelfSourcing then
+										local rawValue = rawget( valueReference, key )
+										if rawValue then
+											return rawValue
+										end
+									end
+									value = mathParser:value( parentSize, propertyName, references )
+									references.self = nil
+								elseif not noSelfSourcing then
+									if key == positionPin then
+										value = childView[positionProperty]
+									else
+										value = valueReference[positionPin] + childView[sizeProperty]
+									end
+								end
+								valueReference[key] = value
+								stackView[key] = nil
+								return value
+							end
+						end
+					} )
+					values[childView] = valueReference
+					local identifier = childView.identifier
+					if identifier then
+						local referenceValue = {}
+						setmetatable( referenceValue, {
+							__index = function( _, key )
+								local ref = childPinReferences[childView]
+								if not ref then
+									ref = {}
+									childPinReferences[childView] = ref
+								end
+								ref[key] = true
+								return valueReference[key]
+							end
+						} )
+						references[identifier] = referenceValue
+					end
+				end
+			end
+			for childView, childPins in pairs( childPins ) do
+				if childPins[positionPin] or childPins[sizePin] then
+					local valueReference = values[childView]
+					local getValue = getmetatable( valueReference ).__index
+					local childPosition, childSize = childView[positionProperty], childView[sizeProperty]
+
+					local position = getValue( nil, positionPin, true )
+					local sizePosition = getValue( nil, sizePin, true )
+					local newPosition, newSize = childPosition, childSize
+					if position and sizePosition then
+						if sizePosition < position then
+							error( sizePin .. " pin was less than " .. positionPin )
+						end
+						newPosition = position
+						newSize = sizePosition - position + 1
+					elseif position then
+						newPosition = position
+					elseif sizePosition then
+						newPosition = sizePosition - childSize + 1
+					end
+
+					if childPosition ~= newPosition then
+						childView[positionProperty] = newPosition
+					end
+					if childSize ~= newSize then
+						childView[sizeProperty] = newSize
+					end
+				end
+			end
+		end
+		self.needsVerticalPinUpdate = false
+		self.needsHorizontalPinUpdate = false
+		self.needsPinUpdate = false
+	end
+
+	function Container.needsVerticalPinUpdate:set( needsVerticalPinUpdate )
+		self.needsVerticalPinUpdate = needsVerticalPinUpdate
+		if needsVerticalPinUpdate then
+			self.needsPinUpdate = true
+		end
+	end
+
+	function Container.needsHorizontalPinUpdate:set( needsHorizontalPinUpdate )
+		self.needsHorizontalPinUpdate = needsHorizontalPinUpdate
+		if needsHorizontalPinUpdate then
+			self.needsPinUpdate = true
+		end
+	end
+
+	function onDraw()
+		local canvas, theme = self.canvas, self.theme
+		local cornerRadius = theme:value( "cornerRadius" )
+		local mask
+		if cornerRadius > 0 then
+			mask = RoundedRectangleMask( 1, 1, self.width, self.height, cornerRadius )
+		end
+		canvas:fill( theme:value( "fillColour" ), mask )
+		canvas:outline( theme:value( "outlineColour" ), mask, theme:value( "outlineThickness" ) )
+	end
+
+	--[[
+		@desc Draws the Container and its children to its Canvas
+	]]
+	function draw()
+		local canvas = self.canvas
+		canvas:clear()
+		
+		-- first draw ourself
+		local childMask = self:onDraw()
+
+		-- then draw the children
+		for i, childView in ipairs( self.children ) do
+			-- only draw if something changed
+			if childView.isVisible then
+				local needsDraw = childView.needsDraw
+				local x, y = childView.x, childView.y
+				-- first draw the contents
+				if needsDraw then
+					childView:draw()
+				end
+
+				local shadowSize = childView.shadowSize
+				if shadowSize > 0 then
+					-- if there's a shadow draw it to the canvas
+					local shadowMask = childView.shadowMask
+					shadowColour = childView.theme:value( "shadowColour" )
+					canvas:drawShadow( shadowColour, x, y, shadowSize, shadowMask )
+				end
+
+				-- draw the childView to the canvas
+				childView.canvas:drawTo( canvas, x, y, childMask )
+				if needsDraw then
+					childView.needsDraw = false
+				end
+			end
+		end
+		self.needsDraw = false
+	end
+
+	function Container.width:set( width )
+		if width ~= self.width then
+			self.needsHorizontalPinUpdate = true
+			self:super( width )
+			local event = self.event
+			if event then
+				event:handleEvent( ParentResizedInterfaceEvent( true, false, self ) )
+			end
+		end
+	end
+
+	function Container.height:set( height )
+		if height ~= self.height then
+			self.needsVerticalPinUpdate = true
+			self:super( height )
+			local event = self.event
+			if event then
+				event:handleEvent( ParentResizedInterfaceEvent( false, true, self ) )
+			end
+		end
+	end
+
+	function Container.isEnabled:set( isEnabled )
+		self.isEnabled = isEnabled
+		for i, childView in ipairs( self.children ) do
+			-- we need to update the isEnabled value for all children, the best way is just to send the current value
+			childView.isEnabled = childView.raw.isEnabled
+		end
+	end
+
+	--[[
+		@desc Moves the view to be the top of it's siblings
+		@param [View] childView -- the view to make front most
+	]]
+	function sendToFront( frontView, position )
+		local children = self.children
+		for i, childView in ipairs( children ) do
+			if childView == frontView then
+				table.remove( children, i )
+				if position then table.insert( children, position, childView )
+				else table.insert( children, childView ) end
+			end
+		end
+		
+		-- TODO: screen order changed events?
+		-- for i, childView in ipairs( self.children ) do
+		--	local onSiblingsChanged = childView.onSiblingsChanged
+		--	if onSiblingsChanged then onSiblingsChanged( childView ) end
+		-- end
+
+		self.needsDraw = true
+	end
+
+	--[[
+		@desc Moves the view to be the bottom of it's siblings
+		@param [View] childView -- the view to make botom most
+	]]
+	function sendToBack( childView )
+		self:sendToFront( childView, 1 )
+	end
+
+	function onChildOfChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )
+		if event.container ~= self then
+			local childView = event.childView
+			local identifier = childView.identifier
+			if identifier then
+				for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
+					if linkIdentifier == identifier then
+						self:connectInterfaceLink( propertyName, childView )
+					end
+				end
+			end
+		end
+	end
+
+	function onChildOfChildRemoved( ChildRemovedInterfaceEvent event, Event.phases phase )
+		if event.container ~= self then
+			local childView = event.childView
+			local identifier = childView.identifier
+			for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
+				if linkIdentifier == identifier then
+					if self[propertyName] == childView then
+						self:connectInterfaceLink( propertyName, self:findChild( identifier ) )
+					end
+				end
+			end
+		end
+	end
+
+	--[[
+		@desc Adds a child view to the container (on the top by default)
+		@param [View] childView -- the view to add to the container
+		@param [number] position -- the z-position of the child (top by default). higher number means further back
+		@return [View] childView -- the sent child view
+	]]
+	function insert( View childView, Number.allowsNil position )
+		local children = self.children
+		if position then
+			table.insert( children, position, childView )
+		else
+			children[#children + 1] = childView
+		end
+
+		local oldParent = childView.parent 
+		childView.parent = self
+
+		local parsedPins = childView.parsedPins
+		self.childPins[childView] = parsedPins
+		if parsedPins[pins.LEFT] or parsedPins[pins.RIGHT] then
+			self.needsHorizontalPinUpdate = true
+		end
+		if parsedPins[pins.TOP] or parsedPins[pins.BOTTOM] then
+			self.needsVerticalPinUpdate = true
+		end
+
+		-- we need to update the isEnabled value
+		childView.isEnabled = childView.raw.isEnabled
+
+		for i, _childView in ipairs( children ) do
+			if _childView == childView then
+				_childView.event:handleEvent( ParentChangedInterfaceEvent( self, oldParent ) )
+			else
+				_childView.event:handleEvent( SiblingAddedInterfaceEvent( childView ) )
+			end
+		end
+
+		local identifier = childView.identifier
+		if identifier then
+			for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
+				if linkIdentifier == identifier then
+					self:connectInterfaceLink( propertyName, childView )
+				end
+			end
+		end
+
+		self.event:handleEvent( ChildAddedInterfaceEvent( childView, self ) )
+
+		self.needsDraw = true
+
+		return childView
+	end
+
+	--[[
+		@desc Connects an interface link to the Container
+	]]
+	function connectInterfaceLink( String propertyName, View childView )
+		local oldChildView = self[propertyName]
+		if oldChildView ~= childView then -- don't touch anything if it's the same view
+			local action = self.interfaceLinkActions[propertyName]
+			if action then
+				if oldChildView then
+					-- if there's an old view disconnect the old action handler
+					oldView.event:disconnect( ActionInterfaceEvent, action, Event.phases.BEFORE, nil, self )
+				end
+				-- connect the new event view to the handler
+				if childView then
+					childView:event( ActionInterfaceEvent, action, Event.phases.BEFORE, nil, self )
+				end
+			end
+
+			try( function() 
+				self[propertyName] = childView
+			end ) {
+
+				catch( InvalidValueTypeClassException, function( exception )
+					error( "Attempted to attach " .. tostring( childView ) .. " with identifier '" .. childView.identifier .. "' to property '" .. propertyName .. "' with an invalid ValueType of " .. tostring( self ) .. ". The ValueType you specified in the properties table is not the same as the one being linked to, either change the property' ValueType or change the identifier of the invalid View." )
+				end )
+
+			}
+			
+		end
+	end
+
+	--[[
+		@desc Removes all the children from the container
+	]]
+	function removeAll()
+		local children = self.children
+		for i = #children, 1, -1 do
+			self:remove( children[i] )
+		end
+	end
+
+	--[[
+		@desc Diposes all the children in the container
+	]]
+	function disposeAll()
+		local children = self.children
+		for i = #children, 1, -1 do
+			children[i]:dispose()
+		end
+		self.needsDraw = true
+	end
+
+	--[[
+		@desc Removes the first instance of the child view from the container
+		@param [View] childView -- the view to add to the container
+		@return [boolean] didRemove -- whether a child was removed
+	]]
+	function remove( removingView )
+		local didRemove = false
+
+		local children = self.children
+		for i, childView in ipairs( children ) do
+			if childView == removingView then
+				table.remove( children, i )
+				didRemove = true
+				break
+			end
+		end
+
+		removingView.parent = nil
+
+		if didRemove then
+			self.childPins[removingView] = nil
+			local identifier = removingView.identifier
+			for propertyName, linkIdentifier in pairs( self.interfaceLinks ) do
+				if linkIdentifier == identifier then
+					if self[propertyName] == childView then
+						self:connectInterfaceLink( propertyName, self:findChild( identifier ) )
+					end
+				end
+			end
+		
+			self.event:handleEvent( ChildRemovedInterfaceEvent( removingView, self ) )
+		end
+
+
+		return didRemove
+	end
+
+	--[[
+		@desc Returns the ( first ) child with the given identifier
+		@param [string] identifier -- the identifier of the child view
+		@param [boolean] descendTree -- true by default. whether child Containers should be looked through
+		@return [View] childView -- the found child view
+	]]
+	function findChild( String identifier, Boolean( true ) descendTree )
+		for i, childView in ipairs( self.children ) do
+			if childView.identifier == identifier then
+				return childView
+			end
+
+			-- look in child Containers 
+			if descendTree and childView:typeOf( Container ) then
+				local child = childView:findChild( identifier )
+				if child then
+					return child
+				end
+			end
+		end
+	end
+
+	--[[
+		@desc Returns all children with the given identifier
+		@param [string] identifier -- the identifier of the child view
+		@param [boolean] descendTree -- true by default. whether child Containers should be looked through
+		@return [table] childrenViews -- the table of the found found children views
+	]]
+	function findChildren( identifier, descendTree )
+		descendTree = (descendTree == nil and true or descendTree)
+		
+		local children = {}
+		for i, childView in ipairs( self.children ) do
+			if childView.identifier == identifier then
+				table.insert( children, childView )
+			end
+
+			-- look in child Containers 
+			if descendTree and childView:typeOf( Container ) then
+				local childChildren = childView:findChildren( identifier )
+				for i2, childChild in ipairs( childChildren ) do
+					table.insert( children, childChild )
+				end
+			end
+		end
+		return children
+	end
+
+	function onChildRepositionedMouseEnterExit( ChildRepositionedInterfaceEvent event, Event.phases phase )
+		if self.isMouseInView and event.childView.parent == self then
+			self:onUpdateChildMouseEnterExit( nil, nil, self.cursorLastX, self.cursorLastY )
+		end
+	end
+
+	--[[
+		@desc Checks if the mouse has entered or exited one of its children and sends an event if so
+	]]
+	function onUpdateChildMouseEnterExit( Event.allowsNil event, Event.phases.allowsNil phase, Number( event.x ) x, Number( event.y ) y )
+		local children = self.children
+		self.cursorLastX = x
+		self.cursorLastY = y
+		for i = #children, 1, -1 do
+			local childView = children[i]
+			local isMouseInView = childView.isMouseInView
+			if childView:hitTest( x, y ) then
+				if not isMouseInView then
+					-- mouse entered
+					local _x, _y = x - childView.x + 1, y - childView.y + 1
+					childView.event:handleEvent( MouseEnteredInterfaceEvent( _x, _y ) )
+					childView.isMouseInView = true
+				end
+			else
+				if isMouseInView then
+					-- mouse exited
+					local _x, _y = x - childView.x + 1, y - childView.y + 1
+					childView.event:handleEvent( MouseExitedInterfaceEvent( _x, _y ) )
+					childView.isMouseInView = false
+				end
+			end
+		end
+	end
+
+	function dispose()
+		self:super()
+		for i, childView in ipairs( self.children ) do
+			childView:dispose()
+		end
+	end
+
+end

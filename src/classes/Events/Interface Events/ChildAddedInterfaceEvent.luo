@@ -1,0 +1,25 @@
+
+class ChildAddedInterfaceEvent extends InterfaceEvent 
+
+	static = {
+		eventType = "interface_child_added";
+	};
+
+	property Container container
+	property View childView -- the added child
+	property Boolean isSentToChildren = false
+	property Boolean isSentToParents = true
+
+}
+
+--[[
+	@constructor
+	@desc Creates a child added event from the arguments
+	@param [View] childView -- the added child
+]]
+	function initialise( View childView, Container container )
+		self.childView = childView
+		self.container = container
+	end
+
+end

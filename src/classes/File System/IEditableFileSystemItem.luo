@@ -1,0 +1,6 @@
+
+interface IEditableFileSystemItem {
+	
+	property false contents -- the contents of the file
+
+}

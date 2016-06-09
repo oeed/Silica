@@ -1,0 +1,19 @@
+
+class MouseExitedInterfaceEvent extends Event 
+	
+	static = {
+		eventType = "interface_mouse_exited";
+	};
+
+	x = Number;
+	y = Number;
+	property Boolean isSentToChildren = false
+
+
+	function initialise( x, y )
+		self.x = x
+		self.y = y
+	end
+
+
+end

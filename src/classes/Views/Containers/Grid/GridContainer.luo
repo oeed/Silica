@@ -1,0 +1,65 @@
+
+class GridContainer extends LayoutContainer 
+	
+	property Number allowsNil minimumCellWidth
+	property Number cellHeight = 1
+
+
+	function updateLayout( Boolean( false ) dontAnimate )
+		local theme = self.theme
+		local leftMargin, rightMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" )
+		local width, minimumCellWidth, cellHeight, children = self.width - leftMargin - rightMargin, self.minimumCellWidth, self.cellHeight, self.children
+		local columnsCount = math.max( minimumCellWidth and math.floor( width / minimumCellWidth ) or 1, 1 )
+		local columnWidthFloor, columnWidthCeil = math.floor( width / columnsCount ), math.ceil( width / columnsCount )
+		local y = theme:value( "topMargin" ) + 1
+		local time, easing
+		if not dontAnimate then
+			time = theme:value( "animationDuration" )
+			easing = theme:value( "animationEasing" )
+		end
+
+		local i, okay, childrenLength = 1, true, #children
+		for row = 1, math.ceil( childrenLength / columnsCount ) do
+			if okay then
+				local x = leftMargin
+				for column = 1, columnsCount do
+					local childView = children[i]
+					local columnWidth = column == 1 and columnWidthCeil or columnWidthFloor
+					if dontAnimate then
+						childView.y = y
+						childView.x = x
+						childView.width = columnWidth
+						childView.height = cellHeight
+					else
+						childView:animate( "y", y, time, nil, easing )
+						childView:animate( "x", x, time, nil, easing )
+						childView:animate( "width", columnWidth, time, nil, easing )
+						childView:animate( "height", cellHeight, time, nil, easing )
+					end
+
+					x = x + columnWidth
+					i = i + 1
+					if i > childrenLength then
+						okay = false
+						break
+					end
+				end
+				y = y + cellHeight
+			end
+		end
+
+		local height = math.max( y + self.theme:value( "bottomMargin" ), self.parent.height )
+		if dontAnimate then
+			self.height = height
+		else
+			self:animate( "height", height, time, nil, easing )
+		end
+
+		self.needsLayoutUpdate = false
+	end
+
+	function GridContainer.height:set( height )
+	    self.super:super( height )
+	end
+
+end

@@ -1,0 +1,72 @@
+
+local eventClasses = {}
+
+class Event 
+	
+	property false eventType
+
+	static = {
+		property false eventType
+	};
+
+	property false relativeView -- the view that the event is relative of
+	property false sender
+
+	property Boolean isSentToChildren = true -- whether the event will be passed to children
+	property Boolean isSentToSender = true -- whether the event will be handled by the sender
+	property Boolean isSentToParents = false -- whether the event will be passed to the parent
+
+		-- functions can be called either before or after tickle down
+		enum Number phases = {
+			BEFORE = 1;
+			AFTER = 2;
+		}
+	}
+
+	--[[
+		@desc Registers an Event subclass to a event type name (e.g. MouseDownEvent links with "mouse_down")
+		@param [class] _class -- the class that was constructed
+	]]
+	static function register( eventType, subclass )
+		eventClasses[eventType] = subclass
+	end
+
+	--[[
+		@desc Registers an Event subclass after it has just been constructed
+	]]
+	static function initialise()
+		local eventType = self.eventType
+		if eventType then
+			Event.static:register( self.eventType, self.class )
+		end
+	end
+
+	--[[
+		@desc Creates an event with the arguments in a table from os.pullEvent or similar function
+		@param [Event.eventTypes] eventType -- the event type
+		@param ... -- the event arguments
+		@return [Event] event
+	]]
+	static function create( eventType, ... )
+		if not eventType then error( "No event type given to Event.create!", 0 ) end
+
+		local eventClass = eventClasses[eventType]
+		local event
+		if eventClass then
+			event = eventClass( ... )
+		else
+			event = Event()
+		end
+		event.eventType = eventType
+		return event
+	end
+
+	--[[
+		@desc Make the event relative to the supplied view
+		@param [View] view -- the view to be relative to
+	]]
+	function makeRelative( view )
+		self.relativeView = view
+	end
+
+end

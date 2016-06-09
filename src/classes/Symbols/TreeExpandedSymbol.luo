@@ -1,0 +1,20 @@
+
+class TreeExpandedSymbol extends Symbol 
+
+	static = {
+		property String symbolName = "treeExpanded"
+		property Number width = 5
+		property Number height = 3
+	};
+
+
+	static function initialise()
+		local path = Path( self.width, self.height, 1, 1 )
+		path:lineTo( 3, 3 )
+		path:lineTo( 5, 1 )
+		path:close()
+
+		self:super( path )
+	end
+
+end

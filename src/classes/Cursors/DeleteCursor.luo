@@ -1,0 +1,6 @@
+
+class DeleteCursor extends Cursor 
+	
+}
+
+end

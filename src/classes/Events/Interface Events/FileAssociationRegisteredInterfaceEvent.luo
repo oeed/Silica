@@ -1,0 +1,15 @@
+
+class FileAssociationRegisteredInterfaceEvent extends InterfaceEvent 
+	
+	static = {
+		eventType = "interface_file_association_registered";
+	};
+
+	property FileAssociation fileAssociation
+
+
+	function initialise( FileAssociation fileAssociation )
+		self.fileAssociation = fileAssociation
+	end
+
+end

@@ -1,0 +1,56 @@
+
+-- written in love2d so I'll port it over at some point
+
+class TextFormatter 
+	width = 0;
+	height = 0;
+
+	text = "";
+
+	-- this stuff is actually controlled by the Font class
+	-- might be better to make it a table of fonts and the range of the string
+	-- but up to you, i'm not really sure how it works
+
+	-- these are defaults, since they can change
+	property Graphics colours GREY colour
+	property false underline
+	property false strikethrough
+
+	font_name = "default";
+	font_size = 5;
+	font_mode = "default"; -- italic, bold, bolditalic
+
+	xAlignment = "left"; -- alignment.LEFT ?
+	yAlignment = "top"; -- alignment.TOP?
+
+	property false changed
+	property false stream
+	property false wrappedStream
+
+	function initialise( text, width, height )
+		self.text = text
+		self.width = width
+		self.height = height
+	end
+
+	 -- this is called when a variable is set right?:  Yes, arguments are key, value if you want them
+	function set()
+		self.changed = true
+	end
+
+	function tostream()
+		if not self.changed and self.stream then
+			return self.stream
+		end
+		-- convert text into a formatted stream of characters
+	end
+
+	function wrapstream( display_width, display_height, stream )
+		if not self.changed and self.wrappedStream then
+			return self.wrappedStream
+		end
+		stream = stream or self:tostream()
+		-- wordwrap the stream and sort out alignment
+	end
+
+end

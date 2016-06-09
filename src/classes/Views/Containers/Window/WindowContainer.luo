@@ -1,0 +1,11 @@
+
+class WindowContainer extends Container 
+
+	property String allowsNil leftPin = "1"
+	property String allowsNil rightPin = "100% - 3"
+	property String allowsNil topPin = "11"
+	property String allowsNil bottomPin = "100% - 4"
+
+}
+
+end

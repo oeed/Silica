@@ -1,0 +1,6 @@
+
+class TextCursor extends Cursor 
+	
+}
+
+end

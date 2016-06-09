@@ -1,0 +1,17 @@
+
+class InterfaceEvent extends Event 
+
+	property false owner -- TODO: is this ever used?
+
+}
+
+--[[
+	@constructor
+	@desc Creates an interface event from the arguments
+	@param [class] owner -- the owner view
+]]
+	function initialise( owner )
+		self.owner = owner
+	end
+
+end

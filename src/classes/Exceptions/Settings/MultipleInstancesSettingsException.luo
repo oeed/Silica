@@ -1,0 +1,6 @@
+
+class MultipleInstancesSettingsException extends SettingsException 
+	
+}
+
+end

@@ -1,0 +1,15 @@
+
+class UnknownFileAssociation extends FileAssociation 
+
+
+	function initialise()
+		self.id = 0
+		self.mime = nil
+		self.name = "Unknown"
+		self.icon = Icon.static:fromName( "unknownFile" )
+		self.extensions = {}
+		self.programBundle = nil
+		self.argumentFormat = {}
+	end
+
+end

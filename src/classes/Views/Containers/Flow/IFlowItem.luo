@@ -1,0 +1,8 @@
+
+interface IFlowItem {
+
+	property false idealWidth
+	property false minWidth
+	property false maxWidth
+	
+}

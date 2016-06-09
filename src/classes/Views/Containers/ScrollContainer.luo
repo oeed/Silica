@@ -1,0 +1,12 @@
+
+class ScrollContainer extends Container 
+	
+
+	function updateHeight( height )
+		self.parent:updateContainerSize()
+	end
+
+	function updateWidth( width )
+		self.parent:updateContainerSize()
+	end
+end

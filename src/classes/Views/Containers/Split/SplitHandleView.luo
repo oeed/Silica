@@ -1,0 +1,81 @@
+
+class SplitHandleView extends View 
+
+	property Number position = 1
+	property Number allowsNil contentPosition
+	property Boolean isVertical = false
+
+	property Boolean isDragging = false
+	property Number allowsNil dragX
+	property Number allowsNil dragY
+
+	property Cursor allowsNil cursor = ResizeHorizontalCursor.static
+
+
+	function initialise( ... )
+		self:super( ... )
+
+		self:event( MouseDownEvent, self.onMouseDown, Event.phases.AFTER )
+		self:event( ParentChangedInterfaceEvent, self.onParentChanged )
+		self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
+		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+	end
+
+	function onDraw()
+		self.canvas:fill( self.theme:value( "fillColour" ) )
+	end
+
+	function onParentChanged( ParentChangedInterfaceEvent event, Event.phases phase )
+		local parent = self.parent
+		if parent and parent:typeOf( SplitContainer ) then
+			self.isVertical = parent.isVertical
+		end
+	end
+
+	function onMouseDown( MouseDownEvent event, Event.phases phase )
+		if event.mouseButton == MouseEvent.mouseButtons.LEFT then
+			self.dragX = event.x
+			self.dragY = event.y
+			self.isDragging = true
+			self.parent:lockChildren()
+		end
+		return true
+	end
+
+	function SplitHandleView.isVertical:set( isVertical )
+		self.isVertical = isVertical
+		if isVertical then
+			self.cursor = ResizeVerticalCursor.static
+		else
+			self.cursor = ResizeHorizontalCursor.static
+		end
+	end
+
+	function SplitHandleView.position:set( position )
+		self.position = position
+		local parent = self.parent
+		if parent then
+			parent.needsLayoutUpdate = true
+		end
+	end
+
+	function onGlobalMouseDrag( MouseDragEvent event, Event.phases phase )
+		if self.isDragging and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+			local segmentSize, contentPosition = self.parent.segmentSize, self.contentPosition
+			local width = event.x - self.dragX + 1 - contentPosition + self.theme:value( "leftMargin" )
+			self.position = width / segmentSize
+			return true
+		end
+	end
+
+	function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+		if self.isDragging and event.mouseButton == MouseEvent.mouseButtons.LEFT then
+			self.dragX = nil
+			self.dragY = nil
+			self.isDragging = false
+			self.parent:unlockChildren()
+			return true
+		end
+	end
+
+end

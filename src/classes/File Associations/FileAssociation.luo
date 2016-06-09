@@ -1,0 +1,43 @@
+
+local n = 1
+
+class FileAssociation implements ISerialiseable 
+
+	property Number id
+	property String name
+	property String allowsNil mime
+	property Icon allowsNil icon
+	property Table extensions
+	property Bundle allowsNil programBundle
+	property Table argumentFormat = { true }
+	
+
+	function initialise( String name, String mime, Icon.allowsNil icon, Table extensions, Table.allowsNil argumentFormat, Bundle programBundle )
+		self.id = n
+		n = n + 1
+		self.name = name
+		self.mime = mime
+		self.icon = icon
+		self.extensions = extensions
+		self.programBundle = programBundle
+		self.argumentFormat = argumentFormat
+	end
+
+	function serialise()
+		local icon = self.icon
+		local programBundle = self.programBundle
+		return textutils.serialise( {
+			property self id id
+			property self name name
+			property self mime mime
+			icon = icon and icon.contents;
+			property self extensions extensions
+		} )
+	end
+
+	static function unserialise( String serialisedContent )
+		local info = textutils.unserialise( serialisedContent )
+		return BridgedFileAssociation( info )
+	end
+
+end
