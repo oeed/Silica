@@ -1,4 +1,3 @@
-
 local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class MenuButton extends Button 
@@ -10,11 +9,9 @@ class MenuButton extends Button
 
 	property Boolean allowsNil isActive -- TODO: isReadOnly
 
-}
-
---[[
-	@desc Creates a MenuButton object and connects the event handlers
-]]
+	--[[
+		@desc Creates a MenuButton object and connects the event handlers
+	]]
 	function initialise( ... )
 		super( ... )
 

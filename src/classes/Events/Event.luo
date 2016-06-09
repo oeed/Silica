@@ -1,7 +1,6 @@
-
 local eventClasses = {}
 
-class Event 
+class Event
 	
 	property eventType
 

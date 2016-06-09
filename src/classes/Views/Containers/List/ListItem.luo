@@ -1,4 +1,3 @@
-
 class ListItem extends View implements IDraggableView 
 	
 	property Number height = 12

@@ -1,5 +1,3 @@
-
 class ClassException extends FatalException 
 
-}
 end

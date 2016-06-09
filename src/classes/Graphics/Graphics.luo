@@ -1,5 +1,4 @@
-
-class Graphics 
+class Graphics
 	
 	enum Number colours = {
 		TRANSPARENT = 0;
@@ -25,8 +24,7 @@ class Graphics
 		LIGHT_GRAY = colours.lightGrey;
 	}
 
-}
-
-Graphics:alias( Graphics.colours, "colors" )
+	-- TODO: add this to Luo
+	alias colors = colours
 
 end

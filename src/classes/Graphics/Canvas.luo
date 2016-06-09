@@ -1,9 +1,8 @@
-
 local SHADOW_RATIO = 2 / 3
 local SHADOW_COLOUR = Graphics.colours.GREY
 local TRANSPARENT = Graphics.colours.TRANSPARENT
 
-class Canvas 
+class Canvas
 	
 	property Number width
 	property Number height

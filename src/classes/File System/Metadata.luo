@@ -1,4 +1,3 @@
-
 local fs = Quartz and Quartz.fs or fs
 
 local DEFAULT_TIMESTAMP = 1451606400; -- default date 00:00 1/1/2016
@@ -96,7 +95,7 @@ local g_tLuaKeywords = {
 		property nil UNKNOWN
 	}
 
-	class Metadata 
+	class Metadata
 		
 		property FileSystemItem file
 		property String metadataPath

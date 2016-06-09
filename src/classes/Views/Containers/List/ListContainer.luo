@@ -1,4 +1,3 @@
-
 class ListContainer extends ScrollContainer implements IDragDropDestination 
 	
 	property Boolean needsLayoutUpdate = false

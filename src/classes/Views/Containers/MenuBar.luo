@@ -1,4 +1,3 @@
-
 class MenuBar extends Container 
 
 	property needsLayoutUpdate	

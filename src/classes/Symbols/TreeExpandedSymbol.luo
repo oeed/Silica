@@ -1,12 +1,8 @@
-
 class TreeExpandedSymbol extends Symbol 
-
 	
 	static property String symbolName = "treeExpanded"
 	static property Number width = 5
 	static property Number height = 3
-	
-
 
 	static function initialise()
 		local path = Path( self.width, self.height, 1, 1 )

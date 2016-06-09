@@ -1,4 +1,3 @@
-
 class SplitContainer extends LayoutContainer 
 	
 	property Boolean needsLayoutUpdate = false

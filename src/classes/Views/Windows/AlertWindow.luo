@@ -1,4 +1,3 @@
-
 class AlertWindow extends Window 
 
 	property String allowsNil interfaceName = "alert-window"

@@ -1,4 +1,3 @@
-
 local iconValues = Icon.iconValues
 local scaleMethods = Image.scaleMethods
 local DEFAULT_WIDTH, DEFAULT_HEIGHT = iconValues.DEFAULT_WIDTH, iconValues.DEFAULT_HEIGHT

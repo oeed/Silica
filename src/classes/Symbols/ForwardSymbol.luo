@@ -1,4 +1,3 @@
-
 class ForwardSymbol extends Symbol 
 
 	

@@ -1,4 +1,3 @@
-
 local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class Button extends View 
@@ -16,11 +15,9 @@ class Button extends View
 
 	property Cursor allowsNil cursor = ClickableCursor.static
 
-}
-
---[[
-	@desc Creates a button object and connects the event handlers
-]]
+	--[[
+		@desc Creates a button object and connects the event handlers
+	]]
 	function initialise( ... )
 		super( ... )
 

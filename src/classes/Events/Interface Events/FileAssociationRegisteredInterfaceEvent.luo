@@ -1,14 +1,8 @@
-
 class FileAssociationRegisteredInterfaceEvent extends InterfaceEvent 
 	
-	
-		eventType = "interface_file_association_registered";
-	
-
-	default wow = this
+	static default eventType = "interface_file_association_registered";
 
 	property FileAssociation fileAssociation
-
 
 	function initialise( FileAssociation fileAssociation )
 		self.fileAssociation = fileAssociation

@@ -1,4 +1,3 @@
-
 class ListSymbol extends Symbol 
 
 	

@@ -1,25 +1,19 @@
-
 class ActionInterfaceEvent extends InterfaceEvent 
 
+	static default eventType = "interface_action";
 	
-		eventType = "interface_action";
-	
-
 	property View view -- the View whose action it is
 	property Event allowsNil originalEvent -- the event the invoked this event (such as a mouse up, key click, etc.)
 	property Boolean isSentToChildren = false
 
-}
-
---[[
-	@constructor
-	@desc Creates a focus event from the arguments
-	@param [View] view -- the View whose action it is
-]]
+	--[[
+		@constructor
+		@desc Creates a focus event from the arguments
+		@param [View] view -- the View whose action it is
+	]]
 	function initialise( View view, Event.allowsNil originalEvent )
 		self.view = view
 		self.originalEvent = originalEvent
 	end
-
 
 end

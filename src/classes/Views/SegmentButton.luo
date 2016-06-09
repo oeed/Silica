@@ -1,8 +1,6 @@
-
 local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class SegmentButton extends Button 
-	
 
 	function initialise( ... )
 		super( ... )

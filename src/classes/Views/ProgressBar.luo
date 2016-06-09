@@ -1,4 +1,3 @@
-
 class ProgressBar extends View 
 	
 	property Number height = 7

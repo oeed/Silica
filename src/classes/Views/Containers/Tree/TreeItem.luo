@@ -1,4 +1,3 @@
-
 class TreeItem extends ListItem implements ITreeChild 
 	
 	property TreeNode allowsNil originalParent

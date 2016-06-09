@@ -1,4 +1,3 @@
-
 class ScreenCanvas extends Canvas 
 	
 	property Boolean drawsCorners = true

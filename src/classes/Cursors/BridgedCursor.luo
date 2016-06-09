@@ -1,11 +1,12 @@
-
 local bridgeKeys = {
 	HOT_SPOT_X = 1;
 	HOT_SPOT_Y = 2;
 	WIDTH = 3;
 	HEIGHT = 4;
 	PIXELS = 5;
-}
+
+
+end
 
 class BridgedCursor extends Cursor 
 	

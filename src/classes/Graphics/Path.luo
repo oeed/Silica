@@ -1,4 +1,3 @@
-
 -- TODO: ensure that the path is valid when it's closed
 
 local sin, cos, floor, min, max, abs, acos, PI, remove, insert = math.sin, math.cos, math.floor, math.min, math.max, math.abs, math.acos, math.pi, table.remove, table.insert
@@ -95,7 +94,7 @@ local sin, cos, floor, min, max, abs, acos, PI, remove, insert = math.sin, math.
 		return t;
 	end
 
-	class Path 
+	class Path
 		
 		property Table lines = {}
 		property Boolean isClosed = false

@@ -1,4 +1,3 @@
-
 local MAX_DOUBLE_CLICK_TIME = 0.8
 local MIN_MOUSE_HOLD_TIME = 0.3
 
@@ -12,7 +11,7 @@ local pins = {
 	BOTTOM = "bottom",
 }
 
-class View 
+class View
 
 	x = Number( 1 );
 	y = Number( 1 );
@@ -54,12 +53,10 @@ class View
 	property Table parsedPins = {}
 	property Enum pins = String, pins
 
-}
-
---[[
-	@constructor
-	@desc Initialise a view instance
-]]
+	--[[
+		@constructor
+		@desc Initialise a view instance
+	]]
 	function initialise( Table.allowsNil properties )
 		self:initialiseEventManager()
 		self.theme = ThemeOutlet( self )

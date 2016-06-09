@@ -12,13 +12,12 @@ class ApplicationContainer extends Container
 	property Boolean needsCursorUpdate = true
 	property ScreenCanvas allowsNil screenCanvas
 
-}
 
---[[
-	@constructo
-	@desc Initialise a application container instance
-	@param [table] properties -- the properties for the view
-]]
+	--[[
+		@constructor
+		@desc Initialise a application container instance
+		@param [table] properties -- the properties for the view
+	]]
 	function initialise( ... )
 		super( ... )
 		self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )

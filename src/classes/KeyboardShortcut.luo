@@ -1,4 +1,3 @@
-
 	local function split(a,e)
 		local t,e=e or":",{}
 		local t=string.format("([^%s]+)",t)
@@ -6,7 +5,7 @@
 		return e
 	end
 
-	class KeyboardShortcut 
+	class KeyboardShortcut
 		keys = {};
 	}
 

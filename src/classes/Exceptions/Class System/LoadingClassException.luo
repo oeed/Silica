@@ -1,4 +1,3 @@
-
 class LoadingClassException extends ClassException 
 
 

@@ -1,10 +1,11 @@
-
 class KeyUpEvent extends KeyEvent 
 
 	
-		eventType = "key_up";
+	static default eventType = "key_up";
 	
 
-}
+
+
+end
 
 end

@@ -1,4 +1,3 @@
-
 class Label extends View 
 
 	property String text = ""

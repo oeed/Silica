@@ -1,11 +1,12 @@
-
 class MouseDoubleClickEvent extends MouseEvent 
 
 	default eventType = "mouse_double_click"
 	property mouseButton
 	property Boolean isSentToChildren = false
 
-}
+
+
+end
 
 --[[
 	@desc Creates a mouse held event from the arguments

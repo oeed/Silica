@@ -1,23 +1,19 @@
-
--- TODO: thrown an error when there is an identically named file in a resource folder
-
-class Resource 
+class Resource
+	-- TODO: thrown an error when there is an identically named file in a resource folder
 
 	property File allowsNil file
 	property String allowsNil contents
 	property Table allowsNil binaryContents
 	property Metadata mimes mime
 
-}
-
---[[
-	@constructor
-	@desc Creates a resource class, allowing ease resolving and loading of files
-	@param [string] match -- the name of the file without the extension
-	@param [Metadata.mimes/table{Metadata.mimes}] mimes -- a mime or table of mimes
-	@param [string] category -- the category (folder, such as classes, interfaces) to look in
-	@param [boolean] allowDirectories -- default false, whether directories are able to be matched
-]]
+	--[[
+		@constructor
+		@desc Creates a resource class, allowing ease resolving and loading of files
+		@param [string] match -- the name of the file without the extension
+		@param [Metadata.mimes/table{Metadata.mimes}] mimes -- a mime or table of mimes
+		@param [string] category -- the category (folder, such as classes, interfaces) to look in
+		@param [boolean] allowDirectories -- default false, whether directories are able to be matched
+	]]
 	function initialise( name, mimes, category, allowDirectories )
 		if not name then error( "Resource() requires a file name (without extension)", 5 ) end
 		if not mimes then error( "Resource() requires a mime type (e.g. text/lua)", 5 ) end

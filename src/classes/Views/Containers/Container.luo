@@ -1,4 +1,3 @@
-
 local pins = View.pins
 local pinProperties = {}
 
@@ -18,13 +17,11 @@ class Container extends View
 	property Boolean needsVerticalPinUpdate = false
 	property Table childPins = { references = {} }
 
-}
-
---[[
-	@constructor
-	@desc Initialises the container, linking up any InterfaceOutlets
-	@param ...
-]]
+	--[[
+		@constructor
+		@desc Initialises the container, linking up any InterfaceOutlets
+		@param ...
+	]]
 	function initialise( ... )
 		super( ... )
 

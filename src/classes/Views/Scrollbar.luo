@@ -1,4 +1,3 @@
-
 class Scrollbar extends View 
 
 	property Number width = 7

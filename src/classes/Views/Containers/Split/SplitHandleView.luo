@@ -1,4 +1,3 @@
-
 class SplitHandleView extends View 
 
 	property Number position = 1

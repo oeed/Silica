@@ -1,10 +1,5 @@
-
 class TerminateEvent extends Event 
 
+	static default eventType = "terminate";
 	
-		eventType = "terminate";
-	
-
-}
-
 end

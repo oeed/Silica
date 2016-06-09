@@ -1,4 +1,3 @@
-
 class GridContainer extends LayoutContainer 
 	
 	property Number allowsNil minimumCellWidth

@@ -1,9 +1,7 @@
+class ClipboardData
 
-class ClipboardData }
-
+	-- TODO: why is this here?
 	function initialise()
-	end
-
 	end
 
 end

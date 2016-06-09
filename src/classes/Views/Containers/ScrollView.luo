@@ -18,8 +18,6 @@ class ScrollView extends Container
 	default verticalVelocity = 0
 	default horizontalVelocity = 0
 
-}
-
 --[[
 	@constructor
 	@desc Initialise a application container instance

@@ -1,6 +1,3 @@
-
-class TextCursor extends Cursor 
-	
-}
+class TextCursor extends Cursor
 
 end

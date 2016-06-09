@@ -1,10 +1,9 @@
-
 class MouseEvent extends Event 
 
-	x = 0;
-	y = 0;
-	default globalX = 0
-	default globalY = 0
+	property Number x = 0;
+	property Number y = 0;
+	property Number globalX = 0
+	property Number globalY = 0
 
 	enum Number mouseButtons = {
 		LEFT = 1;
@@ -16,14 +15,11 @@ class MouseEvent extends Event
 		UP = -1;
 		DOWN = 1;
 	}
-	
-}
 
-
---[[
-	@desc Make the event's coordinates relative to the supplied view
-	@param [View] view -- the view who's coordinate system will be used
-]]
+	--[[
+		@desc Make the event's coordinates relative to the supplied view
+		@param [View] view -- the view who's coordinate system will be used
+	]]
 	function makeRelative( view )
 		if not view then end
 		local oldRelativeView = self.relativeView

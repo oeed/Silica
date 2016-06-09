@@ -1,20 +1,16 @@
-
 class MouseUpEvent extends MouseEvent 
 
-	
-		eventType = "mouse_up";
+	static default eventType = "mouse_up";
 	
 	property mouseButton
 
-}
-
---[[
-	@constructor
-	@desc Creates a click mouse event from the arguments
-	@param [MouseEvent.mouseButtons] mouseButton -- the mouse button (left, right, etc.)
-	@param [number] x -- the x screen coordinate
-	@param [number] y -- the y screen coordinate
-]]
+	--[[
+		@constructor
+		@desc Creates a click mouse event from the arguments
+		@param [MouseEvent.mouseButtons] mouseButton -- the mouse button (left, right, etc.)
+		@param [number] x -- the x screen coordinate
+		@param [number] y -- the y screen coordinate
+	]]
 	function initialise( mouseButton, x, y )
 		self.mouseButton = mouseButton
 		self.x = x
@@ -22,6 +18,5 @@ class MouseUpEvent extends MouseEvent
 		self.globalX = x
 		self.globalY = y
 	end
-
 
 end

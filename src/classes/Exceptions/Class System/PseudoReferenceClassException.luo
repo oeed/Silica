@@ -1,4 +1,3 @@
-
 class PseudoReferenceClassException extends ClassException 
 
 

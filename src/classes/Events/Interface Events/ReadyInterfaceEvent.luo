@@ -1,10 +1,5 @@
-
 class ReadyInterfaceEvent extends InterfaceEvent 
 
-	
-		eventType = "interface_ready";
-	
-
-}
+	static default eventType = "interface_ready";
 
 end

@@ -1,4 +1,3 @@
-
 class LayoutContainer extends Container 
 	
 	property Boolean needsLayoutUpdate = false

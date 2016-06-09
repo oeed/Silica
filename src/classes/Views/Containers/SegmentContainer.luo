@@ -1,11 +1,8 @@
-
 local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class SegmentContainer extends Container 
 
 	property needsLayoutUpdate	
-
-}
 
 --[[
 	@desc Updates the location and size of the menu as well as the location and size of the menu items

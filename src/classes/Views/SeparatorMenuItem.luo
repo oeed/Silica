@@ -1,4 +1,3 @@
-
 class SeparatorMenuItem extends MenuItem 
 
 	property Number height = 3

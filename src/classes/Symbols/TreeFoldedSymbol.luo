@@ -1,13 +1,9 @@
-
 class TreeFoldedSymbol extends Symbol 
-
 	
 	static property String symbolName = "treeFolded"
 	static property Number width = 3
 	static property Number height = 5
 	
-
-
 	static function initialise()
 		local path = Path( self.width, self.height, 1, 1 )
 		path:lineTo( 3, 3 )

@@ -1,11 +1,10 @@
-
 local hasInitialised = false
 
 local FILE_NAME = "settings.suserdata"
 local TYPETABLE_NAME, TYPETABLE_TYPE, TYPETABLE_CLASS, TYPETABLE_ALLOWS_NIL, TYPETABLE_IS_VAR_ARG, TYPETABLE_IS_LINK, TYPETABLE_IS_ENUM, TYPETABLE_ENUM_ITEM_TYPE, TYPETABLE_HAS_DEFAULT_VALUE, TYPETABLE_IS_DEFAULT_VALUE_REFERENCE, TYPETABLE_DEFAULT_VALUE = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 local SYSTEM_KEYS = { defaults = true; settingsFile = true; }
 
-class Settings 
+class Settings
 	
 	property Table defaults
 	property File settingsFile

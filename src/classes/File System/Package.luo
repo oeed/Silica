@@ -1,4 +1,3 @@
-
 local RESOURCE_PACKAGE_FOLDERS = { classes = true; fonts = true; interfaces = true; themes = true; resources = true; miscellaneous = true; }
 
 local RESOURCE_PACKAGE_TEMPLATE = [[

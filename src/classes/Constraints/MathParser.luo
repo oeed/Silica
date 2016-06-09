@@ -1,4 +1,3 @@
-
 local symbols = {
 	["+"] = true;
 	["-"] = true;
@@ -9,7 +8,9 @@ local symbols = {
 	[","] = true;
 	["^"] = true;
 	["%"] = true;
-}
+
+
+end
 
 local operatorLevels = {
 	["+"] = 1;
@@ -18,7 +19,9 @@ local operatorLevels = {
 	["/"] = 2;
 	["%"] = 2;
 	["^"] = 3;
-}
+
+
+end
 
 	local functionParameterCounts = {
 		min = 2;
@@ -438,7 +441,7 @@ local operatorLevels = {
 		end
 	end
 
-	class MathParser 
+	class MathParser
 		
 		property Table tokens
 

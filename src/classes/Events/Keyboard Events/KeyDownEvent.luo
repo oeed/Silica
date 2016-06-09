@@ -1,12 +1,8 @@
-
 class KeyDownEvent extends KeyEvent 
 	
-	property Boolean isRepeat
-	
-	
-		eventType = "key"
-	
+	static default eventType = "key"
 
+	property Boolean isRepeat
 
 	function initialise( Number keyCode, Boolean isRepeat )
 		super( keyCode )

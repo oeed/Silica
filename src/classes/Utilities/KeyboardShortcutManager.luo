@@ -1,4 +1,3 @@
-
 local keyStrings = {
 	nil,	"1",	"2",	"3",	"4",
 	"5",	"6",	"7",	"8",	"9",
@@ -31,7 +30,8 @@ local keySymbols = {
 	alt = string.char( 143 );
 }
 
-class KeyboardShortcutManager 
+class KeyboardShortcutManager
+
 	default keysDown = {}
 	default keysUpdates = {}
 	property owner

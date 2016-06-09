@@ -1,12 +1,13 @@
-
 class MouseDragEvent extends MouseEvent 
 
 	
-		eventType = "mouse_drag";
+	static default eventType = "mouse_drag";
 	
 	property mouseButton
 
-}
+
+
+end
 
 --[[
 	@constructor

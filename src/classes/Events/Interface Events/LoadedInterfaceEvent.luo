@@ -1,12 +1,7 @@
-
 class LoadedInterfaceEvent extends InterfaceEvent 
-
 	
-		eventType = "interface_loaded";
-	
+	static default eventType = "interface_loaded";
 
 	property Boolean isSentToChildren = false
-
-}
 
 end

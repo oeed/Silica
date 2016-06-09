@@ -1,4 +1,3 @@
-
 class MaximiseWindowButton extends WindowButton }
 
 	function onMouseUp( Event event, Event.phases phase )	  

@@ -1,4 +1,3 @@
-
 class TreeNode extends LayoutContainer implements ITreeChild implements IDragDropDestination 
 	
 	property String text

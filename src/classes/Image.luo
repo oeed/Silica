@@ -1,4 +1,3 @@
-
 local TRANSPARENT = Graphics.colours.TRANSPARENT
 
 local hexnums = { [10] = "a", [11] = "b", [12] = "c", [13] = "d", [14] = "e" , [15] = "f" }
@@ -34,7 +33,9 @@ local mimes = Metadata.mimes
 local ucgValues = {
 	SIGNATURE = 0xFF2137,
 	VERSION = 3
-}
+
+
+end
 
 local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG, mimes.SICON }
 local availableMimes = {}
@@ -46,9 +47,11 @@ local scaleMethods = {
 	STRETCH = 1;
 	FIT = 2;
 	COVER = 3;
-}
 
-class Image 
+
+end
+
+class Image
 
 	property Number width
 	property Number height

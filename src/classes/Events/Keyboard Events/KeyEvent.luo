@@ -1,11 +1,12 @@
-
 class KeyEvent extends Event 
 
 	property Number keyCode
 	property String allowsNil keyString
 	property Boolean isCharacter
 
-}
+
+
+end
 
 --[[
 	@constructor

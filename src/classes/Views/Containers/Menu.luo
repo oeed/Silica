@@ -1,4 +1,3 @@
-
 local MENU_OWNER_LEFT_OFFSET = 5
 local MENU_OWNER_TOP_OFFSET = 9
 local MENU_CONTEXT_OFFSET = 5
@@ -27,13 +26,12 @@ class Menu extends Container
 
 	property needsLayoutUpdate	
 
-}
 
---[[
-	@constructor
-	@desc Initialise a application container instance
-	@param [table] properties -- the properties for the view
-]]
+	--[[
+		@constructor
+		@desc Initialise a application container instance
+		@param [table] properties -- the properties for the view
+	]]
 	function initialise( ... )
 		super( ... )
 

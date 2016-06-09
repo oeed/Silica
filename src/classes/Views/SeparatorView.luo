@@ -1,4 +1,3 @@
-
 class SeparatorView extends View 
 
 	property Number width = 1

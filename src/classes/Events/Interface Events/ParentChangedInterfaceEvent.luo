@@ -1,21 +1,17 @@
-
 class ParentChangedInterfaceEvent extends InterfaceEvent 
-
 	
-		eventType = "interface_parent_changed";
+	static default eventType = "interface_parent_changed";
 	
 	property newParent -- the new parent
 	property oldParent -- the old parent
 	property Boolean isSentToChildren = false
 
-}
-
---[[
-	@constructor
-	@desc Creates a siblings changed event from the arguments
-	@param [Container] newParent -- the new parent view
-	@param [Container] oldParent -- the old parent view
-]]
+	--[[
+		@constructor
+		@desc Creates a siblings changed event from the arguments
+		@param [Container] newParent -- the new parent view
+		@param [Container] oldParent -- the old parent view
+	]]
 	function initialise( newParent, oldParent )
 		self.newParent = newParent
 		self.oldParent = oldParent

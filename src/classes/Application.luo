@@ -1,7 +1,7 @@
 -- TODO: need to fix scheduling ... cancelling them won't work right now
 -- each one needs to have its own ID and return that ID
 
-class Application 
+class Application
 
 	property String name
 	property String allowsNil path
@@ -28,12 +28,8 @@ class Application
 	-- ERROR = 2;
 	--	-- etc
 	-- };
-	default resourceFolders = {} -- the folders in which the applications resources are
-
-	
-		resourceFolders = { -- the folders in which the applications resources are
-		property resourceTables -- the tables of files where resources are
-	}
+	static default resourceFolders = {} -- the folders in which the applications resources are
+	static property resourceTables -- the tables of files where resources are
 
 	static function initialise( ... )
 		self.resourceTables = __resourceTables or {}

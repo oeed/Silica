@@ -1,20 +1,16 @@
-
 class FocusesChangedInterfaceEvent extends InterfaceEvent 
 
-	
-		eventType = "interface_focuses_changed";
+	static default eventType = "interface_focuses_changed";
 	
 	property newFocuses -- the new views that are being focused on. doesn't lose it's focus when it recieves this event.
 	property oldFocuses -- the old views that previously were focused
 
-}
-
---[[
-	@constructor
-	@desc Creates a focus event from the arguments
-	@param [table] newFocuses -- the new focuses
-	@param [table] oldFocuses -- the old focuses
-]]
+	--[[
+		@constructor
+		@desc Creates a focus event from the arguments
+		@param [table] newFocuses -- the new focuses
+		@param [table] oldFocuses -- the old focuses
+	]]
 	function initialise( newFocuses, oldFocuses )
 		self.newFocuses = newFocuses
 		self.oldFocuses = oldFocuses

@@ -1,10 +1,8 @@
-
-class ThemeOutlet 
+class ThemeOutlet
 	default style = "default"
 	property owner
 	property ownerClass
 	default connections = {}
-}
 
 --[[
 	@constructor

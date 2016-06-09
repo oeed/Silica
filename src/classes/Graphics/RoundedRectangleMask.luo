@@ -1,4 +1,3 @@
-
 -- draws a corner with the given radius for the corner given
 	local function corner( pixels, width, height, radius, position ) -- position is a byte. first bit is 0 if top, second bit is 0 if left
 		if radius <= 0 then return end

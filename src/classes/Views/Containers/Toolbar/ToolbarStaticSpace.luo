@@ -1,8 +1,5 @@
-
 class ToolbarStaticSpace extends View implements IToolbarItem 
 
 	property Number width = 12
-
-}
 
 end

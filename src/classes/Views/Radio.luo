@@ -1,4 +1,3 @@
-
 class Radio extends View 
 
 	property Number width = 8

@@ -1,17 +1,16 @@
-
-class Theme 
+class Theme
 
 	property String name
 	property String allowsNil extends -- the name of the theme this one extends
 	property Table classes = {}
 	property Table allowsNilProperties = {}
 	
-	static = {
-		property Theme active -- @static	the current theme
-		property Table themes = {} -- @static  a cache of already created themes
-	}
+	static property Theme active -- @static	the current theme
+	static property Table themes = {} -- @static  a cache of already created themes
 
-}
+
+
+end
 
 --[[
 	@constructor

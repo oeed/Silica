@@ -1,7 +1,6 @@
-
 -- written in love2d so I'll port it over at some point
 
-class TextFormatter 
+class TextFormatter
 	default width = 0
 	default height = 0
 

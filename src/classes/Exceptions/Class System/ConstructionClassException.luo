@@ -1,4 +1,3 @@
-
 class ConstructionClassException extends ClassException 
 
 

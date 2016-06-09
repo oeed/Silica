@@ -1,4 +1,3 @@
-
 --[[
 	TODO
 		Shift clicking
@@ -20,10 +19,10 @@ local concat = table.concat
 local floor = math.floor
 
 local SELECTION_DIRECTIONS = {
-		BOTH = 0;
-		LEFT = -1;
-		RIGHT = 0;
-	}
+	BOTH = 0;
+	LEFT = -1;
+	RIGHT = 0;
+}
 
 class TextBox extends View 
 
@@ -54,12 +53,10 @@ class TextBox extends View
 
 	property Enum selectionDirections = Number, SELECTION_DIRECTIONS
 
-}
-
---[[
-	@constructor
-	@desc Creates a text box view and connects the event handlers
-]]
+	--[[
+		@constructor
+		@desc Creates a text box view and connects the event handlers
+	]]
 	function initialise( ... )
 		super( ... )
 		self:event( KeyUpEvent, self.onKeyUp )

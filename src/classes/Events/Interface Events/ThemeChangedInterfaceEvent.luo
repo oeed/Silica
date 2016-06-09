@@ -1,20 +1,16 @@
-
 class ThemeChangedInterfaceEvent extends InterfaceEvent 
 
-	
-		eventType = "interface_theme_changed";
+	static default eventType = "interface_theme_changed";
 	
 	property newThemeName
 	property oldThemeName
 
-}
-
---[[
-	@constructor
-	@desc Creates a theme changed event from the arguments
-	@param newThemeName -- the theme that is now active
-	@param oldThemeName -- the theme that was previously active
-]]
+	--[[
+		@constructor
+		@desc Creates a theme changed event from the arguments
+		@param newThemeName -- the theme that is now active
+		@param oldThemeName -- the theme that was previously active
+	]]
 	function initialise( newThemeName, oldThemeName )
 		self.newThemeName = newThemeName
 		self.oldThemeName = oldThemeName

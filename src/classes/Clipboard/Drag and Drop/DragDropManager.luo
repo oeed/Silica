@@ -1,8 +1,7 @@
-
 local SHADOW_RATIO = 2/3
 local MAX_SHADOW_SIZE = 3
 
-class DragDropManager 
+class DragDropManager
 	
 	property Application owner
 	property DragView allowsNil dragView

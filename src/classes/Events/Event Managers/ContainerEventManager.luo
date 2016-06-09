@@ -1,13 +1,10 @@
-
 class ContainerEventManager extends EventManager 
 	
-}
-
---[[
-	@desc Perfoms the appropriate handles for the given event and then trickles them down through the owner's children
-	@param [Event] event -- the event to handle
-	@return [boolean] stopPropagation -- whether no further handles should recieve this event
-]]
+	--[[
+		@desc Perfoms the appropriate handles for the given event and then trickles them down through the owner's children
+		@param [Event] event -- the event to handle
+		@return [boolean] stopPropagation -- whether no further handles should recieve this event
+	]]
 	function handleEvent( event )
 		local sender = event.sender
 		local isSentToSender = not sender or ( self == sender and event.isSentToSender )

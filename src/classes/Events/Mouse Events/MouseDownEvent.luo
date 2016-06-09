@@ -1,12 +1,13 @@
-
 class MouseDownEvent extends MouseEvent 
 
 	
-		eventType = "mouse_click";
+	static default eventType = "mouse_click";
 	
 	property mouseButton
 
-}
+
+
+end
 
 --[[
 	@constructor

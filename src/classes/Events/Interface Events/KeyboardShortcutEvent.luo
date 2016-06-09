@@ -1,19 +1,15 @@
-
 class KeyboardShortcutEvent extends Event 
-
 	
-		eventType = "interface_keyboard_shortcut";
+	static default eventType = "interface_keyboard_shortcut";
 	
-	property keys
+	property Table keys
 
-}
-
---[[
-	@constructor
-	@desc Creates a key event from the arguments
-	@param [table] arguments -- the event arguments
-]]
-	function initialise( keys )
+	--[[
+		@constructor
+		@desc Creates a key event from the arguments
+		@param [table] arguments -- the event arguments
+	]]
+	function initialise( Table keys )
 		self.keys = keys
 	end
 

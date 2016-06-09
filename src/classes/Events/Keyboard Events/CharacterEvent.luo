@@ -1,18 +1,14 @@
-
 class CharacterEvent extends Event 
-
 	
-		eventType = "char";
+	static default eventType = "char";
 	
 	property String character
 
-}
-
---[[
-	@constructor
-	@desc Creates a char event from the arguments
-	@param [string] character -- the event character
-]]
+	--[[
+		@constructor
+		@desc Creates a char event from the arguments
+		@param [string] character -- the event character
+	]]
 	function initialise( String character )
 		self.character = character
 	end

@@ -1,4 +1,3 @@
-
 local RESIZE_MARGIN_X, RESIZE_MARGIN_Y = 3, 4
 
 class Window extends Container 
@@ -19,13 +18,11 @@ class Window extends Container
 	property Number maxWidth = math.huge
 	property Number maxHeight = math.huge
 
-}
-
---[[
-	@constructor
-	@desc Initialise a application container instance
-	@param [table] properties -- the properties for the view
-]]
+	--[[
+		@constructor
+		@desc Initialise a application container instance
+		@param [table] properties -- the properties for the view
+	]]
 	function initialise( ... )
 		super( ... )
 		self.closeButton = self:insert( CloseWindowButton( { x = 2, y = 1, window = self } ))

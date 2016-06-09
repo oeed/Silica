@@ -1,7 +1,6 @@
-
 local n = 1
 
-class FileAssociation implements ISerialiseable 
+class FileAssociationimplements ISerialiseable 
 
 	property Number id
 	property String name

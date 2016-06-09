@@ -1,4 +1,3 @@
-
 class SearchBox extends TextBox 
 	
 	property String allowsNil placeholder = "Search..."

@@ -1,4 +1,3 @@
-
 local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class SymbolSegmentButton extends SegmentButton 

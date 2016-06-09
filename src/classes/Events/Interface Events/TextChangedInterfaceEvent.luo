@@ -1,20 +1,16 @@
-
 class TextChangedInterfaceEvent extends InterfaceEvent 
-
 	
-		eventType = "interface_text";
+	static default eventType = "interface_text";
 	
 	property text -- the new text value
 	property oldText -- the previous text value
 
-}
-
---[[
-	@constructor
-	@desc Creates a Text event from the arguments
-	@param text -- the new text value
-	@param oldText -- the old text value
-]]
+	--[[
+		@constructor
+		@desc Creates a Text event from the arguments
+		@param text -- the new text value
+		@param oldText -- the old text value
+	]]
 	function initialise( text, oldText )
 		self.text = text
 		self.oldText = oldText

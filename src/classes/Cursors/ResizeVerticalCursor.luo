@@ -1,6 +1,3 @@
-
-class ResizeVerticalCursor extends Cursor 
-	
-}
+class ResizeVerticalCursor extends Cursor
 
 end

@@ -1,4 +1,3 @@
-
 local TEXT_MARGIN = 12
 
 class MenuBarItem extends View 
@@ -13,13 +12,11 @@ class MenuBarItem extends View
 	property Menu allowsNil menu -- TODO: readonly
 	property String menuName
 
-}
-
---[[
-	@constructor
-	@desc Initialise a menu item instance
-	@param [table] properties -- the properties for the view
-]]
+	--[[
+		@constructor
+		@desc Initialise a menu item instance
+		@param [table] properties -- the properties for the view
+	]]
 	function initialise( ... )
 		super( ... )
 

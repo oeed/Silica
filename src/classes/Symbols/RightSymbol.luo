@@ -1,8 +1,6 @@
-
 class RightSymbol extends Symbol 
 
-	
-		symbolName =  String( "right" );
+	static default symbolName = "right"
 	
 
 

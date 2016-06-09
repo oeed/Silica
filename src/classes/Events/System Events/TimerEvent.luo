@@ -1,19 +1,15 @@
-
 class TimerEvent extends Event 
 
+	static default eventType = "timer";
 	
-		eventType = "timer";
-	
-	property timer
+	property Number timer
 
-}
-
---[[
-	@constructor
-	@desc Creates a timer event from the arguments
-	@param [number] time -- the ID of the timer
-]]
-	function initialise( timer )
+	--[[
+		@constructor
+		@desc Creates a timer event from the arguments
+		@param [number] time -- the ID of the timer
+	]]
+	function initialise( Number timer )
 		self.timer = timer
 	end
 

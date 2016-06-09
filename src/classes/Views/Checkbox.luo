@@ -1,4 +1,3 @@
-
 class Checkbox extends View 
 
 	property Number width = 8

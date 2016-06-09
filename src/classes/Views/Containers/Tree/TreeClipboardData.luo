@@ -1,4 +1,3 @@
-
 class TreeClipboardData extends ClipboardData 
 	
 	default type = "Silica:TreeItem"

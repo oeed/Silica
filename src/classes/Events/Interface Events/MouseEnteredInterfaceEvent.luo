@@ -1,12 +1,9 @@
-
 class MouseEnteredInterfaceEvent extends Event 
 	
-	
-		eventType = "interface_mouse_entered";
-	
+	static default eventType = "interface_mouse_entered";
 
-	x = Number;
-	y = Number;
+	property Number x;
+	property Number y;
 	property Boolean isSentToChildren = false
 
 

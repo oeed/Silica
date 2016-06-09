@@ -1,18 +1,15 @@
-
-class Document 
+class Document
 
 	property contents
 	property file
 	property Boolean isBinary = false
 	property Boolean isModified = false
 
-}
-
---[[
-	@constructor
-	@desc Creates a document from the given path
-	@param [string] path -- the path of the document
-]]
+	--[[
+		@constructor
+		@desc Creates a document from the given path
+		@param [string] path -- the path of the document
+	]]
 	function initialise( path )
 		self.path = path
 			

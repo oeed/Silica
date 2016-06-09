@@ -1,15 +1,12 @@
-
--- validates and parses values (so BLUE becomes Graphics.colours.BLUE)
-class Validator 
+class Validator
+	-- validates and parses values (so BLUE becomes Graphics.colours.BLUE)
 	
-}
-
---[[
-	@desc Parse a value to the given type
-	@param value -- the value to parse
-	@param [string] typeName -- the type to parse to
-	@return parsedValue -- the parsed value
-]]
+	--[[
+		@desc Parse a value to the given type
+		@param value -- the value to parse
+		@param [string] typeName -- the type to parse to
+		@return parsedValue -- the parsed value
+	]]
 	static function parse( value, typeName )
 		-- TODO: make validator types dynamic
 		if typeName:sub( #typeName - 9 ) == ".allowsNil" then

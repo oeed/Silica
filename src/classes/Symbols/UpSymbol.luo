@@ -1,10 +1,6 @@
-
 class UpSymbol extends Symbol 
 
-	
 	static property String symbolName = "up"
-	
-
 
 	static function initialise()
 		local path = Path( self.width, self.height, 4, 1 )

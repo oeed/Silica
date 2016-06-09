@@ -1,4 +1,3 @@
-
 class ListClipboardData extends ClipboardData 
 	
 	default type = "Silica:ListItem"

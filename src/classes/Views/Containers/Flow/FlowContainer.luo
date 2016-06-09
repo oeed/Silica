@@ -1,4 +1,3 @@
-
 class FlowContainer extends Container implements IAutomaticLayout implements ILockableLayout 
 	
 	property Boolean needsLayoutUpdate = false

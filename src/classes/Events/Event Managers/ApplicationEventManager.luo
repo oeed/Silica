@@ -1,15 +1,12 @@
-
 class ApplicationEventManager extends EventManager 
 
 	property handlesGlobal
 
-}
-
---[[
-	@desc Perfoms the appropriate handles for the given event and then trickles them down through the owner's children
-	@param [Event] event -- the event to handle
-	@return [boolean] stopPropagation -- whether no further handles should recieve this event
-]]
+	--[[
+		@desc Perfoms the appropriate handles for the given event and then trickles them down through the owner's children
+		@param [Event] event -- the event to handle
+		@return [boolean] stopPropagation -- whether no further handles should recieve this event
+	]]
 	function handleEvent( event )
 		-- run the before phase handles first
 		if self:handleEventPhase( event, Event.phases.BEFORE ) then

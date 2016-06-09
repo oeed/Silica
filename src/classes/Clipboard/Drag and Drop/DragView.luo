@@ -1,4 +1,3 @@
-
 class DragView extends View 
 
 	property Image image
