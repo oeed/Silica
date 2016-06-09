@@ -1,2 +1,3 @@
+interface IToolbarPressableItem
 
-interface IToolbarPressableItem {}
+end

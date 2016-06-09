@@ -1,4 +1,3 @@
+interface ITreeChild
 
-interface ITreeChild {
-	
-}
+end

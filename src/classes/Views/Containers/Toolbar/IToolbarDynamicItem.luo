@@ -1,2 +1,3 @@
+interface IToolbarDynamicItem
 
-interface IToolbarDynamicItem {}
+end

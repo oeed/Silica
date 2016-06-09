@@ -1,6 +1,5 @@
+interface IEditableFileSystemItem
 
-interface IEditableFileSystemItem {
-	
 	property contents -- the contents of the file
 
-}
+end

@@ -1,6 +1,5 @@
+interface ILockableLayout
 
-interface ILockableLayout {
-	
 	property Boolean isLayoutLocked = false
-	
-}
+
+end
