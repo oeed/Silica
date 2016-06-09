@@ -4,6 +4,6 @@ class ArgumentValueTypeParsingClassException extends ClassException
 
 	function initialise( String message, Number.allowsNil level )
 		message = "Incorrect declaration of function or argument: " .. message
-		self:super( message, level )
+		super( message, level )
 	end
 end

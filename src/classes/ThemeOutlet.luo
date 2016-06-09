@@ -76,7 +76,7 @@ class ThemeOutlet
 		@desc Sets the current style (pressed, checked, disabled, etc) for the owner. If the style changed the owner.needsDraw will be set to true if it's a View
 		@param [string] style -- the style name
 	]]
-	function ThemeOutlet.style:set( style )
+	set style( style )
 		local oldStyle = self.style
 		if oldStyle ~= style then
 			self.style = style

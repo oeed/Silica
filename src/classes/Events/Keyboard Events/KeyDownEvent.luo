@@ -9,7 +9,7 @@ class KeyDownEvent extends KeyEvent
 
 
 	function initialise( Number keyCode, Boolean isRepeat )
-		self:super( keyCode )
+		super( keyCode )
 		self.isRepeat = isRepeat
 	end
 end

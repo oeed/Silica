@@ -21,7 +21,7 @@ class MenuBarItem extends View
 	@param [table] properties -- the properties for the view
 ]]
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 
 		-- local menuName = self.menuName
 		-- if not menuName then error( "MenuBarItems must specify the property menuName (the name of the interface file to use).", 0 ) end
@@ -81,13 +81,13 @@ class MenuBarItem extends View
 		end
 	end
 
-	function MenuBarItem.text:set( text )
+	set text( text )
 		self.text = text
 		self:updateWidth()
 	end
 
-	function MenuBarItem.x:set( x )
-		self:super( x )
+	set x( x )
+		super( x )
 		local menu = self.menu
 		if menu then
 			menu.x = self.x + self.parent.x + - 1 + self.theme:value( "menuOffsetX" )
@@ -95,7 +95,8 @@ class MenuBarItem extends View
 	end
 
 	function update( deltaTime )
-		self:super( deltaTime )
+		super( deltaTime )
+		super:super( deltaTime )
 		local isFlashing = self.isFlashing
 		if isFlashing then
 			if isFlashing <= 0 then
@@ -113,7 +114,7 @@ class MenuBarItem extends View
 		self.isFlashing = 0.2
 	end
 
-	function MenuBarItem.isFlashing:set( isFlashing )
+	set isFlashing( isFlashing )
 		self.isFlashing = isFlashing
 		self:updateThemeStyle()
 	end
@@ -134,12 +135,12 @@ class MenuBarItem extends View
 		self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or ( self.isActive and "active" or "default" ) ) or "disabled"
 	end
 
-	function MenuBarItem.isEnabled:set( isEnabled )
+	set isEnabled( isEnabled )
 		self.isEnabled = isEnabled
 		self:updateThemeStyle()
 	end
 
-	function MenuBarItem.isPressed:set( isPressed )
+	set isPressed( isPressed )
 		self.isPressed = isPressed
 		self:updateThemeStyle()
 	end

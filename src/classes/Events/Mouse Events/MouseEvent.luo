@@ -27,7 +27,7 @@ class MouseEvent extends Event
 	function makeRelative( view )
 		if not view then end
 		local oldRelativeView = self.relativeView
-		self:super( view )
+		super( view )
 		
 		local x, y = self.x, self.y
 

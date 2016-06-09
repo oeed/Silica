@@ -4,7 +4,7 @@ class InvalidValueTypeClassException extends ClassException
 
 	function initialise( String message, Number.allowsNil level )
 		message = "Invalid value/ValueType of property/argument: " .. message
-		self:super( message, level )
+		super( message, level )
 	end
 
 end

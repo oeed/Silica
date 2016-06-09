@@ -2,63 +2,63 @@
 local TRANSPARENT = Graphics.colours.TRANSPARENT
 
 local hexnums = { [10] = "a", [11] = "b", [12] = "c", [13] = "d", [14] = "e" , [15] = "f" }
-	local function getHexOf(colour)
-		if colour == TRANSPARENT or not colour or not tonumber(colour) then
-			return " "
-		end
-		local value = math.log(colour)/math.log(2)
-		if value > 9 then
-				value = hexnums[value]
-		end
-		return value
+local function getHexOf(colour)
+	if colour == TRANSPARENT or not colour or not tonumber(colour) then
+		return " "
 	end
-
-	local function getColourOf(hex)
-		if hex == ' ' then
-			return TRANSPARENT
-		end
-		local value = tonumber(hex, 16)
-		if not value then return nil end
-		value = math.pow(2,value)
-		return value
+	local value = math.log(colour)/math.log(2)
+	if value > 9 then
+			value = hexnums[value]
 	end
+	return value
+end
 
-	local function split(a,e)
-		local t,e=e or":",{}
-		local t=string.format("([^%s]+)",t)
-		a:gsub(t,function(t)e[#e+1]=t end)
-		return e
+local function getColourOf(hex)
+	if hex == ' ' then
+		return TRANSPARENT
 	end
+	local value = tonumber(hex, 16)
+	if not value then return nil end
+	value = math.pow(2,value)
+	return value
+end
 
-	local mimes = Metadata.mimes
-	local ucgValues = {
-		SIGNATURE = 0xFF2137,
-		VERSION = 3
-	}
+local function split(a,e)
+	local t,e=e or":",{}
+	local t=string.format("([^%s]+)",t)
+	a:gsub(t,function(t)e[#e+1]=t end)
+	return e
+end
 
-	local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG, mimes.SICON }
-	local availableMimes = {}
-	for i, v in ipairs( IMAGE_MIMES ) do
-		availableMimes[v] = true
-	end
+local mimes = Metadata.mimes
+local ucgValues = {
+	SIGNATURE = 0xFF2137,
+	VERSION = 3
+}
 
-	local scaleMethods = {
-		STRETCH = 1;
-		FIT = 2;
-		COVER = 3;
-	}
+local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG, mimes.SICON }
+local availableMimes = {}
+for i, v in ipairs( IMAGE_MIMES ) do
+	availableMimes[v] = true
+end
 
-	class Image 
-		
-		property Number width
-		property Number height
-		property Table pixels
-		-- resource = false;
-		-- file = false;
-		property Any allowsNil contents
-		scaledCache = {};
-		property Enum ucgValues = Number, ucgValues
-		property Enum scaleMethods = Number, scaleMethods
+local scaleMethods = {
+	STRETCH = 1;
+	FIT = 2;
+	COVER = 3;
+}
+
+class Image 
+
+	property Number width
+	property Number height
+	property Table pixels
+	-- resource = false;
+	-- file = false;
+	property Any allowsNil contents
+	scaledCache = {};
+	property Enum ucgValues = Number, ucgValues
+	property Enum scaleMethods = Number, scaleMethods
 
 
 	function initialise( Table pixels, Number width, Number height, Any.allowsNil contents )
@@ -1034,7 +1034,7 @@ local hexnums = { [10] = "a", [11] = "b", [12] = "c", [13] = "d", [14] = "e" , [
 		return buffer.getBytes()
 	end
 
-	function Image.pixels:set( pixels )
+	set pixels( pixels )
 		self.pixels = pixels
 		
 		local scaledCache, width, height = {}, self.width, self.height

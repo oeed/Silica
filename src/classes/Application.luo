@@ -143,7 +143,7 @@ class Application
 		@desc Changes the interface name, reloading the interface
 		@param [string] interfaceName -- the name of the interface (the file name without extension)
 	]]
-	function Application.interfaceName:set( interfaceName )
+	set interfaceName( interfaceName )
 		if interfaceName and self.interfaceName ~= interfaceName then
 			self.interfaceName = interfaceName
 			self:reloadInterface()

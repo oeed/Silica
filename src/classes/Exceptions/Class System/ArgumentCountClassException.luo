@@ -4,6 +4,6 @@ class ArgumentCountClassException extends ClassException
 
 	function initialise( String message, Number.allowsNil level )
 		message = "Incorrect number of arguments: " .. message
-		self:super( message, level )
+		super( message, level )
 	end
 end

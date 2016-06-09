@@ -33,10 +33,10 @@ class Icon extends Image
 			end
 		end
 		self.images = images
-		self:super( pixels, maxWidth, maxHeight, contents )
+		super( pixels, maxWidth, maxHeight, contents )
 	end
 
-	function Icon.pixels:set( pixels )
+	set pixels( pixels )
 		self.pixels = pixels
 		
 		local scaledCache, width, height = {}, self.width, self.height

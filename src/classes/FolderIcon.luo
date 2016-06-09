@@ -12,7 +12,7 @@ class FolderIcon extends Icon
 
 	function initialise( Table images, Folder folder )
 		self.folder = folder
-		self:super( images )
+		super( images )
 	end
 
 	static function fromFolder( Folder folder, Boolean( false ) isOpen )
