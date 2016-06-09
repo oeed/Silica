@@ -1,9 +1,9 @@
 
 class DownSymbol extends Symbol 
 
-	static = {
-		property String symbolName = "down"
-	};
+	
+	static property String symbolName = "down"
+	
 
 
 	static function initialise()
@@ -17,7 +17,7 @@ class DownSymbol extends Symbol
 		path:lineTo( 3, 1 )
 		path:close()
 
-		self:super( path )
+		super( path )
 	end
 
 

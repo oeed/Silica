@@ -14,7 +14,7 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 
 
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 
 		self:event( MouseDownEvent, self.onMouseDown )
 		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
@@ -34,7 +34,7 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 	    canvas:fill( theme:value( "symbolColour" ), SymbolMask( 1 + theme:value( "leftSymbolMargin" ), 1 + math.floor( ( height - symbol.height ) / 2 ), symbol ) )
 	end
 
-	function TreeNode.text:set( text )
+	set text( text )
 		self.text = text
 		self.needsDraw = true
 	end
@@ -46,12 +46,12 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 		self.needsLayoutUpdate = true
 	end
 
-	function TreeNode.isEnabled:set( isEnabled )
+	set isEnabled( isEnabled )
 		self.isEnabled = isEnabled
 		self:updateThemeStyle()
 	end
 
-	function TreeNode.isPressed:set( isPressed )
+	set isPressed( isPressed )
 		self.isPressed = isPressed
 		self:updateThemeStyle()
 	end
@@ -89,7 +89,7 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 		end
 	end
 
-	function TreeNode.isFolded:set( isFolded )
+	set isFolded( isFolded )
 	    self.isFolded = isFolded
 		self:updateThemeStyle()
 	    local height = isFolded and self.minHeight or self.maxHeight
@@ -103,7 +103,7 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 		end
 	end
 
-	function TreeNode.needsLayoutUpdate:set( needsLayoutUpdate )
+	set needsLayoutUpdate( needsLayoutUpdate )
 	    self.needsLayoutUpdate = needsLayoutUpdate
 		local parent = self.parent
 		if parent then
@@ -170,16 +170,16 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 		self.dontAnimateLayoutUpdate = true
 	end
 
-	function TreeNode.width:set( width )
-	    self.super:super( width )
+	set width( width )
+	    super:super( width )
 		local childrenMarginLeft = self.theme:value( "childrenMarginLeft" )
 		for i, childView in ipairs( self.children ) do
 			childView.width = width - childrenMarginLeft
 		end
 	end
 
-	function TreeNode.height:set( height )
-	    self.super:super( height )
+	set height( height )
+	    super:super( height )
 	end
 
 	function updateLayout( Boolean( self.dontAnimateLayoutUpdate ) dontAnimate )

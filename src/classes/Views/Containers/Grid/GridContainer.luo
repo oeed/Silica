@@ -58,8 +58,8 @@ class GridContainer extends LayoutContainer
 		self.needsLayoutUpdate = false
 	end
 
-	function GridContainer.height:set( height )
-	    self.super:super( height )
+	set height( height )
+	    super:super( height )
 	end
 
 end

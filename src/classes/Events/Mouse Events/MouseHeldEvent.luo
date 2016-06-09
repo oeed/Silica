@@ -1,8 +1,8 @@
 
 class MouseHeldEvent extends MouseEvent 
 
-	eventType = "mouse_held";
-	property false mouseButton
+	default eventType = "mouse_held"
+	property mouseButton
 	property Boolean isSentToChildren = false
 
 }

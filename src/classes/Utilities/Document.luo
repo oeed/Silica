@@ -1,8 +1,8 @@
 
 class Document 
 
-	property false contents
-	property false file
+	property contents
+	property file
 	property Boolean isBinary = false
 	property Boolean isModified = false
 
@@ -111,7 +111,7 @@ class Document
 		error( err )
 	end
 
-	function Document.contents:set( contents )
+	set contents( contents )
 		self.contents = contents
 		-- if self.hasInitialised then
 			self.isModified = true

@@ -5,7 +5,7 @@ class SearchBox extends TextBox
 
 
 	function onDraw()
-		self:super()
+		super()
 		local theme = self.theme
 		local symbol = theme:value( "symbol" )
 		self.canvas:fill( theme:value( "symbolColour" ), SymbolMask( 1 + theme:value( "symbolMargin" ), 1 + math.floor( ( self.height - symbol.height ) / 2 ), symbol ) )

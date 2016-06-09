@@ -1,7 +1,7 @@
 
 class InterfaceEvent extends Event 
 
-	property false owner -- TODO: is this ever used?
+	property owner -- TODO: is this ever used?
 
 }
 

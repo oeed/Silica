@@ -3,14 +3,14 @@ local symbolClasses = {}
 
 class Symbol 
 	
-	static = {
+	
 
-		property String symbolName = ""
-		property Number width = 7
-		property Number height = 7
-		property Path allowsNil path
+	static property String symbolName = ""
+	static property Number width = 7
+	static property Number height = 7
+	static property Path allowsNil path
 
-	};
+	
 
 
 	static function initialise( Path.allowsNil path )

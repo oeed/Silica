@@ -1,7 +1,7 @@
 
 class ApplicationEventManager extends EventManager 
 
-	property false handlesGlobal
+	property handlesGlobal
 
 }
 

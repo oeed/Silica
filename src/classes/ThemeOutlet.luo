@@ -1,9 +1,9 @@
 
 class ThemeOutlet 
-	style = "default";
-	property false owner
-	property false ownerClass
-	connections = {};
+	default style = "default"
+	property owner
+	property ownerClass
+	default connections = {}
 }
 
 --[[

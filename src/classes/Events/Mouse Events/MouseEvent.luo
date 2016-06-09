@@ -3,8 +3,8 @@ class MouseEvent extends Event
 
 	x = 0;
 	y = 0;
-	globalX = 0;
-	globalY = 0;
+	default globalX = 0
+	default globalY = 0
 
 	enum Number mouseButtons = {
 		LEFT = 1;

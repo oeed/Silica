@@ -1,9 +1,9 @@
 
 class ThumbnailSymbol extends Symbol 
 
-	static = {
-		property String symbolName = "thumbnail"
-	};
+	
+	static property String symbolName = "thumbnail"
+	
 
 
 	static function initialise()
@@ -29,7 +29,7 @@ class ThumbnailSymbol extends Symbol
 
 		path:close()
 
-		self:super( path )
+		super( path )
 	end
 
 end

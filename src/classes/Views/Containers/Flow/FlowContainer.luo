@@ -5,14 +5,14 @@ class FlowContainer extends Container implements IAutomaticLayout implements ILo
 
 
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 		self:event( ChildAddedInterfaceEvent, self.onChildAdded )
 		self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
 		self:event( ReadyInterfaceEvent, self.onReady )
 	end
 
-	function FlowContainer.width:set( width )
-		self:super( width )
+	set width( width )
+		super( width )
 		self.needsLayoutUpdate = true
 	end
 
@@ -21,7 +21,7 @@ class FlowContainer extends Container implements IAutomaticLayout implements ILo
 	end
 
 	function update( deltaTime )
-		self:super( deltaTime )
+		super( deltaTime )
 		if self.needsLayoutUpdate and not self.isLayoutLocked then
 			self:updateLayout()
 		end

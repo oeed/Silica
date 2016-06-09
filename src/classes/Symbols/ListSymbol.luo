@@ -1,9 +1,9 @@
 
 class ListSymbol extends Symbol 
 
-	static = {
-		property String symbolName = "list"
-	};
+	
+	static property String symbolName = "list"
+	
 
 
 	static function initialise()
@@ -22,7 +22,7 @@ class ListSymbol extends Symbol
 
 		path:close()
 
-		self:super( path )
+		super( path )
 	end
 
 end

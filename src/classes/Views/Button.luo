@@ -22,7 +22,7 @@ class Button extends View
 	@desc Creates a button object and connects the event handlers
 ]]
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 
 		self:event( MouseDownEvent, self.onMouseDown )
 		self:event( KeyDownEvent, self.onKeyDown )
@@ -53,14 +53,14 @@ class Button extends View
 		self.shadowSize = shadowSize
 	end
 
-	function Button.text:set( text )
+	set text( text )
 		self.text = text
 		self.needsDraw = true
 		self.needsAutosize = true
 	end
 
 	function update( deltaTime )
-		self:super( deltaTime )
+		super( deltaTime )
 		if self.needsAutosize then
 			self:autosize()
 		end
@@ -87,18 +87,18 @@ class Button extends View
 		self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or ( self.isFocused and "focused" or "default" ) ) or "disabled"
 	end
 
-	function Button.isEnabled:set( isEnabled )
+	set isEnabled( isEnabled )
 		self.isEnabled = isEnabled
 		self.cursor = isEnabled and ClickableCursor.static or Cursor.static
 		self:updateThemeStyle()
 	end
 
-	function Button.isPressed:set( isPressed )
+	set isPressed( isPressed )
 		self.isPressed = isPressed
 		self:updateThemeStyle()
 	end
 
-	function Button.isFocused:set( isFocused )
+	set isFocused( isFocused )
 		self.isFocused = isFocused
 		self:updateThemeStyle()
 	end

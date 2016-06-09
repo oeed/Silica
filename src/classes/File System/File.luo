@@ -23,9 +23,9 @@ local fs = Quartz and Quartz.fs or fs
 
 	class File extends FileSystemItem implements IEditableFileSystemItem 
 
-		property false contents -- the string contents of the file
-		property false binaryContents -- a table of bytes; the file contents, read and written using the rb/wb mode 
-		property false serialisedContents -- the texutils.(un)serialised contents of the file. automatically serialises/unserialises each time
+		property contents -- the string contents of the file
+		property binaryContents -- a table of bytes; the file contents, read and written using the rb/wb mode 
+		property serialisedContents -- the texutils.(un)serialised contents of the file. automatically serialises/unserialises each time
 		
 
 	function File.metatable:__call( path, ... )
@@ -63,7 +63,7 @@ local fs = Quartz and Quartz.fs or fs
 		end
 	end
 
-	function File.contents:set( contents )
+	set contents( contents )
 		local handle = fs.open( self.path, "w" )
 		if handle then
 			handle.write( contents )
@@ -73,11 +73,11 @@ local fs = Quartz and Quartz.fs or fs
 		end
 	end
 
-	function File.serialisedContents:set( serialisedContents )
+	set serialisedContents( serialisedContents )
 		self.contents = textutils.serialize( serialisedContents )
 	end
 
-	function File.binaryContents:set( binaryContents )
+	set binaryContents( binaryContents )
 		if type( binaryContents ) ~= "table" then error( "File.binaryContents must be set with a table of bytes.", 2 ) end
 		local handle = fs.open( self.path, "wb" )
 		if handle then

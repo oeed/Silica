@@ -124,7 +124,7 @@ local g_tLuaKeywords = {
 		end
 		-- log(contents)
 		-- log( serialise( allItems, {} ) )
-		return self:super( path, isResourcePackage and Metadata.mimes.RESOURCEPKG or Metadata.mimes.PACKAGE, overwrite, contents )
+		return super( path, isResourcePackage and Metadata.mimes.RESOURCEPKG or Metadata.mimes.PACKAGE, overwrite, contents )
 	end
 
 

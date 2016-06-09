@@ -1,9 +1,9 @@
 
 class LeftSymbol extends Symbol 
 
-	static = {
-		property String symbolName = "left"
-	};
+	
+	static property String symbolName = "left"
+	
 
 
 	static function initialise()
@@ -16,7 +16,7 @@ class LeftSymbol extends Symbol
 		path:lineTo( 1, 4 )
 		path:close()
 
-		self:super( path )
+		super( path )
 	end
 
 end

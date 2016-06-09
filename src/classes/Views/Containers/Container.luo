@@ -4,12 +4,12 @@ local pinProperties = {}
 
 class Container extends View 
 
-	children = {};
+	default children = {}
 	property Table interfaceLinks -- TODO: .isReadOnly
 	property Table interfaceLinkActions -- TODO: .isReadOnly
 	property String allowsNil interfaceName
-	offsetX = 0;
-	offsetY = 0;
+	default offsetX = 0
+	default offsetY = 0
 	property Number allowsNil cursorLastX
 	property Number allowsNil cursorLastY
 
@@ -26,7 +26,7 @@ class Container extends View
 	@param ...
 ]]
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 
 		self:event( ChildAddedInterfaceEvent, self.onChildOfChildAdded )
 		self:event( ChildRemovedInterfaceEvent, self.onChildOfChildRemoved )
@@ -81,11 +81,11 @@ class Container extends View
 	end
 
 	--[[
-		@desc Updates the view and it's children When overriding this self.super:update must be called AFTER the custom drawing code.
+		@desc Updates the view and it's children When overriding this super:update must be called AFTER the custom drawing code.
 		@param [number] deltaTime -- the time since last update
 	]]
 	function update( deltaTime )
-		self:super( deltaTime )
+		super( deltaTime )
 		if self.needsPinUpdate then
 			self:updatePins()
 		end
@@ -207,14 +207,14 @@ class Container extends View
 		self.needsPinUpdate = false
 	end
 
-	function Container.needsVerticalPinUpdate:set( needsVerticalPinUpdate )
+	set needsVerticalPinUpdate( needsVerticalPinUpdate )
 		self.needsVerticalPinUpdate = needsVerticalPinUpdate
 		if needsVerticalPinUpdate then
 			self.needsPinUpdate = true
 		end
 	end
 
-	function Container.needsHorizontalPinUpdate:set( needsHorizontalPinUpdate )
+	set needsHorizontalPinUpdate( needsHorizontalPinUpdate )
 		self.needsHorizontalPinUpdate = needsHorizontalPinUpdate
 		if needsHorizontalPinUpdate then
 			self.needsPinUpdate = true
@@ -271,10 +271,10 @@ class Container extends View
 		self.needsDraw = false
 	end
 
-	function Container.width:set( width )
+	set width( width )
 		if width ~= self.width then
 			self.needsHorizontalPinUpdate = true
-			self:super( width )
+			super( width )
 			local event = self.event
 			if event then
 				event:handleEvent( ParentResizedInterfaceEvent( true, false, self ) )
@@ -282,10 +282,10 @@ class Container extends View
 		end
 	end
 
-	function Container.height:set( height )
+	set height( height )
 		if height ~= self.height then
 			self.needsVerticalPinUpdate = true
-			self:super( height )
+			super( height )
 			local event = self.event
 			if event then
 				event:handleEvent( ParentResizedInterfaceEvent( false, true, self ) )
@@ -293,7 +293,7 @@ class Container extends View
 		end
 	end
 
-	function Container.isEnabled:set( isEnabled )
+	set isEnabled( isEnabled )
 		self.isEnabled = isEnabled
 		for i, childView in ipairs( self.children ) do
 			-- we need to update the isEnabled value for all children, the best way is just to send the current value
@@ -585,7 +585,7 @@ class Container extends View
 	end
 
 	function dispose()
-		self:super()
+		super()
 		for i, childView in ipairs( self.children ) do
 			childView:dispose()
 		end

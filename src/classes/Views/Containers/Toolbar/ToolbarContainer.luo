@@ -7,7 +7,7 @@ class ToolbarContainer extends Container
 
 
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 
 		self:event( ChildAddedInterfaceEvent, self.onChildAdded )
 		self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
@@ -20,7 +20,7 @@ class ToolbarContainer extends Container
 	end
 
 	function update( deltaTime )
-		self:super( deltaTime )
+		super( deltaTime )
 		if self.needsLayoutUpdate then
 			self:updateLayout()
 		end

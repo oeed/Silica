@@ -1,9 +1,9 @@
 
 class RightSymbol extends Symbol 
 
-	static = {
+	
 		symbolName =  String( "right" );
-	};
+	
 
 
 	static function initialise()
@@ -17,7 +17,7 @@ class RightSymbol extends Symbol
 		path:lineTo( 4, 1 )
 		path:close()
 
-		self:super( path )
+		super( path )
 	end
 
 end

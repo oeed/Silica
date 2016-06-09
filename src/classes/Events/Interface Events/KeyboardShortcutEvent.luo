@@ -1,10 +1,10 @@
 
 class KeyboardShortcutEvent extends Event 
 
-	static = {
+	
 		eventType = "interface_keyboard_shortcut";
-	};
-	property false keys
+	
+	property keys
 
 }
 

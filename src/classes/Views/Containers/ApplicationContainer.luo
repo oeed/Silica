@@ -20,7 +20,7 @@ class ApplicationContainer extends Container
 	@param [table] properties -- the properties for the view
 ]]
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 		self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
 		self:event( MouseMoveEvent, self.onMouseMoveCursorBefore )
 	end
@@ -29,12 +29,12 @@ class ApplicationContainer extends Container
 		if Quartz then
 			self.canvas = ScreenCanvas( self.width, self.height, self )
 		else
-			self:super()
+			super()
 			self.screenCanvas = ScreenCanvas( self.width, self.height, self )
 		end
 	end
 
-	function ApplicationContainer.theme:set( theme )
+	set theme( theme )
 		if type( theme ) == "string" then error( "To the set the theme of an ApplicationContainer using a string, use the property 'themeName', rather than 'theme'. Most likely cause: you have use theme=\"" .. theme .. "\" in an interface file, rather than themeName=\"" .. theme .. "\"", 0 ) end
 		self.theme = theme
 	end
@@ -43,7 +43,7 @@ class ApplicationContainer extends Container
 		@desc Sets the container's theme based upon it's name
 		@return [string] themeName -- the name of the theme
 	]]
-	function ApplicationContainer.themeName:set( themeName )
+	set themeName( themeName )
 		local oldThemeName = self.themeName
 		self.themeName = themeName
 		Theme.static.active = Theme.static:named( themeName )
@@ -59,7 +59,7 @@ class ApplicationContainer extends Container
 	function draw()
 		if Quartz then
 			if self.needsDraw then
-				self:super()
+				super()
 				self.canvas:drawToScreen( term )
 			end
 			if self.needsCursorUpdate then
@@ -74,7 +74,7 @@ class ApplicationContainer extends Container
 				end
 				local canvas, screenCanvas = self.canvas, self.screenCanvas
 				if needsDraw then
-					self:super()
+					super()
 				end
 				canvas:transfer( screenCanvas )
 				self.cursor:drawTo( screenCanvas, self.cursorX, self.cursorY )
@@ -97,7 +97,7 @@ class ApplicationContainer extends Container
 		@desc Update the container than draw the changes (if any) to the screen
 	]]
 	function update( ... )
-		self:super( ... )
+		super( ... )
 		self:draw()
 	end
 
@@ -190,7 +190,7 @@ class ApplicationContainer extends Container
 	end
 
 	function dispose()
-		self:super()
+		super()
 		self.application:clearFocus()
 	end
 
@@ -198,7 +198,7 @@ class ApplicationContainer extends Container
 		return self.isVisible -- View requires having a parent to be visible, but we never have a parent
 	end
 
-	function ApplicationContainer.needsDraw:set( needsDraw )
+	set needsDraw( needsDraw )
 		self.needsDraw = needsDraw -- View passed needsDraw to parent, but we never have a aprent
 	end
 end

@@ -3,7 +3,7 @@ local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class SegmentContainer extends Container 
 
-	property false needsLayoutUpdate	
+	property needsLayoutUpdate	
 
 }
 
@@ -32,19 +32,19 @@ class SegmentContainer extends Container
 	end
 
 	function update( deltaTime )
-		self:super( deltaTime )
+		super( deltaTime )
 		if self.needsLayoutUpdate then
 			self:updateLayout()
 		end
 	end
 
 	function insert( ... )
-		self:super( ... )
+		super( ... )
 		self.needsLayoutUpdate = true
 	end
 
 	function removeChild( ... )
-		self:super( ... )
+		super( ... )
 		self.needsLayoutUpdate = true
 	end
 end

@@ -8,7 +8,7 @@ class SymbolButton extends Button
 
 
 	function onDraw()
-		self:super()
+		super()
 		local width, height, theme, sPressed = self.width, self.height, self.theme, self.isPressed
 
 		-- get all the shadow size details so we can adjust the compression as needed
@@ -22,13 +22,13 @@ class SymbolButton extends Button
 		self.canvas:fill( theme:value( "symbolColour" ), SymbolMask( theme:value( "leftMargin" ) + shadowX + 1, 1 + theme:value( "topMargin" ) + shadowOffset, symbol ) )
 	end
 
-	function SymbolButton.symbol:set( symbol )
+	set symbol( symbol )
 		self.symbol = symbol
 		self.needsAutosize = true
 		self.raw.symbolName = symbol.symbolName
 	end
 
-	function SymbolButton.symbolName:set( symbolName )
+	set symbolName( symbolName )
 		self.symbol = Symbol.static:fromName( symbolName )
 	end
 

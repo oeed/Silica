@@ -1,9 +1,9 @@
 
 class ChildRemovedInterfaceEvent extends InterfaceEvent 
 
-	static = {
+	
 		eventType = "interface_child_removed";
-	};
+	
 
 	property Container container
 	property View childView -- the added child

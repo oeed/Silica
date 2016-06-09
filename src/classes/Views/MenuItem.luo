@@ -19,7 +19,7 @@ class MenuItem extends View
 	@param [table] properties -- the properties for the view
 ]]
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 
 		self:event( MouseDownEvent, self.onMouseDown )
 		self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
@@ -61,12 +61,12 @@ class MenuItem extends View
 		end
 	end
 
-	function MenuItem.text:set( text )
+	set text( text )
 		self.text = text
 		self:updateText()
 	end
 
-	function MenuItem.shortcut:set( shortcut )
+	set shortcut( shortcut )
 		if type( shortcut ) == "string" and #shortcut > 0 then
 			self.shortcut = KeyboardShortcut.static:fromString( shortcut ) or false
 		elseif not shortcut then
@@ -79,12 +79,12 @@ class MenuItem extends View
 		self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
 	end
 
-	function MenuItem.isEnabled:set( isEnabled )
+	set isEnabled( isEnabled )
 		self.isEnabled = isEnabled
 		self:updateThemeStyle()
 	end
 
-	function MenuItem.isPressed:set( isPressed )
+	set isPressed( isPressed )
 		self.isPressed = isPressed
 		self:updateThemeStyle()
 	end

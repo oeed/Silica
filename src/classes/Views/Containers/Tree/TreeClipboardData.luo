@@ -1,12 +1,12 @@
 
 class TreeClipboardData extends ClipboardData 
 	
-	type = "Silica:TreeItem";
+	default type = "Silica:TreeItem"
 	property TreeItem treeItem
 
 
 	function initialise( TreeItem treeItem )
-		self:super()
+		super()
 		self.treeItem = treeItem
 	end
 end

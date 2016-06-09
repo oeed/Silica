@@ -15,7 +15,7 @@ class WindowButton extends View
 	@desc Creates a button object and connects the event handlers
 ]]
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 		
 		self:event( MouseDownEvent, self.onMouseDown )
 		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
@@ -35,12 +35,12 @@ class WindowButton extends View
 		self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
 	end
 
-	function WindowButton.isEnabled:set( isEnabled )
+	set isEnabled( isEnabled )
 		self.isEnabled = isEnabled
 		self:updateThemeStyle()
 	end
 
-	function WindowButton.isPressed:set( isPressed )
+	set isPressed( isPressed )
 		self.isPressed = isPressed
 		self:updateThemeStyle()
 	end

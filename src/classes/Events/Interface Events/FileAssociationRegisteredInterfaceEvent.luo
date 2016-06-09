@@ -1,9 +1,11 @@
 
 class FileAssociationRegisteredInterfaceEvent extends InterfaceEvent 
 	
-	static = {
+	
 		eventType = "interface_file_association_registered";
-	};
+	
+
+	default wow = this
 
 	property FileAssociation fileAssociation
 

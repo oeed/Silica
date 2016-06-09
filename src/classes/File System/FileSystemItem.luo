@@ -41,9 +41,9 @@ local fs = Quartz and Quartz.fs or fs
 		property Metadata allowsNil metadata
 		property String allowsNil metadataPath
 
-		static = {
-			resourceFolders = {}; -- the folders in which the applications resources are
-			property false resourceTables -- the tables of files where resources are
+		
+			resourceFolders = { -- the folders in which the applications resources are
+			property resourceTables -- the tables of files where resources are
 			property fileCache fileCache
 		}
 
@@ -107,7 +107,7 @@ local fs = Quartz and Quartz.fs or fs
 		end
 	end
 
-	function FileSystemItem.path:set( path )
+	set path( path )
 		path = resolve( path )
 		if not fs.exists( path ) then error( "Attempted to set FileSystemItem.path to non-existant path '" .. path .. "'.", 2 ) end
 		local oldPath = self.path
@@ -147,7 +147,7 @@ local fs = Quartz and Quartz.fs or fs
 		return fs.getSize( self.path )
 	end
 
-	function FileSystemItem.size:set( size )
+	set size( size )
 		error( "FileSystemItem.size is a read-only property.", 2 )
 	end
 
@@ -160,7 +160,7 @@ local fs = Quartz and Quartz.fs or fs
 		return bytes / 10 .. prefixes[order] .. "B"
 	end
 
-	function FileSystemItem.sizeString:set( sizeString )
+	set sizeString( sizeString )
 		error( "FileSystemItem.sizeString is a read-only property.", 2 )
 	end
 
@@ -207,11 +207,11 @@ local fs = Quartz and Quartz.fs or fs
 		return Folder( parentPath )
 	end
 
-	function FileSystemItem.parent:set( parent )
+	set parent( parent )
 		error( "FileSystemItem.parent is a read-only property. To move a FileSystemItem use :moveTo", 2 )
 	end
 
-	function FileSystemItem.parentPath:set( parentPath )
+	set parentPath( parentPath )
 		error( "FileSystemItem.parentPath is a read-only property. To move a FileSystemItem use :moveTo", 2 )
 	end
 
@@ -261,7 +261,7 @@ local fs = Quartz and Quartz.fs or fs
 		return metadata
 	end
 
-	function FileSystemItem.metadata:set( metadata )
+	set metadata( metadata )
 		error( "FileSystemItem.metadata is a read-only property.", 2 )
 	end
 

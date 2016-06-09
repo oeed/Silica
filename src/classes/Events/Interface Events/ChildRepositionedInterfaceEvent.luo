@@ -1,9 +1,9 @@
 
 class ChildRepositionedInterfaceEvent extends InterfaceEvent 
 	
-	static = {
+	
 		eventType = "interface_child_repositioned";
-	};
+	
 
 	property View childView
 	property Boolean isSentToSender = true

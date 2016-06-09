@@ -1,9 +1,9 @@
 
 class CharacterEvent extends Event 
 
-	static = {
+	
 		eventType = "char";
-	};
+	
 	property String character
 
 }

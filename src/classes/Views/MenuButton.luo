@@ -16,7 +16,7 @@ class MenuButton extends Button
 	@desc Creates a MenuButton object and connects the event handlers
 ]]
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 
 		self:event( MenuChangedInterfaceEvent, self.onMenuChanged )
 		self:event( ParentChangedInterfaceEvent, self.onParentChanged )
@@ -24,7 +24,7 @@ class MenuButton extends Button
 	end
 
 	function onDraw()
-		self:super()
+		super()
 		local theme = self.theme
 		local defaultShadowSize = theme:value( "shadowSize", "default" )
 		local shadowPressedSize = theme:value( "shadowSize", "pressed" )
@@ -67,24 +67,24 @@ class MenuButton extends Button
 		end
 	end
 
-	function MenuButton.width:set( width )
-		self:super( width )
+	set width( width )
+		super( width )
 		local menu = self.menu
 		if menu then
 			menu.width = width
 		end
 	end
 
-	function MenuButton.x:set( x )
-		self:super( x )
+	set x( x )
+		super( x )
 		local menu = self.menu
 		if menu then
 			menu.x = x + self.theme:value( "menuOffsetX" )
 		end
 	end
 
-	function MenuButton.y:set( y )
-		self:super( y )
+	set y( y )
+		super( y )
 		local menu = self.menu
 		if menu then
 			menu.y = y + self.theme:value( "menuOffsetY" )

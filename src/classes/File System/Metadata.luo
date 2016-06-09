@@ -263,17 +263,17 @@ local g_tLuaKeywords = {
 		self.modifiedTimestamp = os.time()
 	end
 
-	function Metadata.createdTimestamp:set( createdTimestamp )
+	set createdTimestamp( createdTimestamp )
 		self.createdTimestamp = createdTimestamp
 		self:save()
 	end
 
-	function Metadata.openedTimestamp:set( openedTimestamp )
+	set openedTimestamp( openedTimestamp )
 		self.openedTimestamp = openedTimestamp
 		self:save()
 	end
 
-	function Metadata.modifiedTimestamp:set( modifiedTimestamp )
+	set modifiedTimestamp( modifiedTimestamp )
 		self.modifiedTimestamp = modifiedTimestamp
 		self:save()
 	end

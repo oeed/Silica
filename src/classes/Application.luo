@@ -28,10 +28,11 @@ class Application
 	-- ERROR = 2;
 	--	-- etc
 	-- };
+	default resourceFolders = {} -- the folders in which the applications resources are
 
-	static = {
-		resourceFolders = {}; -- the folders in which the applications resources are
-		property false resourceTables -- the tables of files where resources are
+	
+		resourceFolders = { -- the folders in which the applications resources are
+		property resourceTables -- the tables of files where resources are
 	}
 
 	static function initialise( ... )

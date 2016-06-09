@@ -1,10 +1,10 @@
 
 class MenuOpenSymbol extends Symbol 
 
-	static = {
-		property String symbolName = "menuOpen"
-		property Number height = 4
-	};
+	
+	static property String symbolName = "menuOpen"
+	static property Number height = 4
+	
 
 
 	static function initialise()
@@ -13,7 +13,7 @@ class MenuOpenSymbol extends Symbol
 		path:lineTo( 7, 1 )
 		path:close()
 
-		self:super( path )
+		super( path )
 	end
 
 end

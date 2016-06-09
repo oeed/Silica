@@ -1,7 +1,7 @@
 
 class FontWindowContainer extends WindowContainer 
 
-	property false backgroundObject
+	property backgroundObject
 
 
 	function initialiseCanvas()

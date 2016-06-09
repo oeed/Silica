@@ -1,7 +1,7 @@
 
 interface IDragDropDestination {
 	
-	property false dropStyle -- [DragDropManager.dropStyles] the desired style for what should occur on drop (i.e. instantly disappear, animated shrink, etc.)
+	property dropStyle -- [DragDropManager.dropStyles] the desired style for what should occur on drop (i.e. instantly disappear, animated shrink, etc.)
 
 }
 

@@ -8,7 +8,7 @@ class DragView extends View
 		self.canvas:image( self.image, 1, 1, self.width, self.height )
 	end
 
-	function DragView.image:set( image )
+	set image( image )
 		self.image = image
 		self.needsDraw = true
 	end
@@ -17,7 +17,7 @@ class DragView extends View
 		return self.shadowMask
 	end
 
-	function DragView.shadowMask:set( shadowMask )
+	set shadowMask( shadowMask )
 		self.shadowMask = shadowMask
 		self.needsDraw = true
 	end

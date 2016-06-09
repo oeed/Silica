@@ -1,7 +1,7 @@
 
 class MenuBar extends Container 
 
-	property false needsLayoutUpdate	
+	property needsLayoutUpdate	
 
 
 	function onDraw()
@@ -31,24 +31,24 @@ class MenuBar extends Container
 	end
 
 	function update( deltaTime )
-		self:super( deltaTime )
+		super( deltaTime )
 		if self.needsLayoutUpdate then
 			self:updateLayout()
 		end
 	end
 
-	function MenuBar.isEnabled:set( isEnabled )
+	set isEnabled( isEnabled )
 		self.isEnabled = isEnabled
 		self:updateThemeStyle()
 	end
 
 	function insert( ... )
-		self:super( ... )
+		super( ... )
 		self.needsLayoutUpdate = true
 	end
 
 	function removeChild( ... )
-		self:super( ... )
+		super( ... )
 		self.needsLayoutUpdate = true
 	end
 

@@ -1,11 +1,11 @@
 
 class ParentChangedInterfaceEvent extends InterfaceEvent 
 
-	static = {
+	
 		eventType = "interface_parent_changed";
-	};
-	property false newParent -- the new parent
-	property false oldParent -- the old parent
+	
+	property newParent -- the new parent
+	property oldParent -- the old parent
 	property Boolean isSentToChildren = false
 
 }

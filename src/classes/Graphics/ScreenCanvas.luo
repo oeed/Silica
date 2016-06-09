@@ -6,7 +6,7 @@ class ScreenCanvas extends Canvas
 
 
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 		self:fill( Graphics.colours.BLACK )
 	end
 

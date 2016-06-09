@@ -13,7 +13,7 @@ class SplitHandleView extends View
 
 
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 
 		self:event( MouseDownEvent, self.onMouseDown, Event.phases.AFTER )
 		self:event( ParentChangedInterfaceEvent, self.onParentChanged )
@@ -42,7 +42,7 @@ class SplitHandleView extends View
 		return true
 	end
 
-	function SplitHandleView.isVertical:set( isVertical )
+	set isVertical( isVertical )
 		self.isVertical = isVertical
 		if isVertical then
 			self.cursor = ResizeVerticalCursor.static
@@ -51,7 +51,7 @@ class SplitHandleView extends View
 		end
 	end
 
-	function SplitHandleView.position:set( position )
+	set position( position )
 		self.position = position
 		local parent = self.parent
 		if parent then

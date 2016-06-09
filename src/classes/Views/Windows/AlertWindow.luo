@@ -6,7 +6,7 @@ class AlertWindow extends Window
 
 
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 
 		self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
 		self:event( ReadyInterfaceEvent, self.onReady )

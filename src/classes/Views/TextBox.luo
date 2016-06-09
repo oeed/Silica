@@ -32,7 +32,7 @@ class TextBox extends View
 	property String text = ""
 	property String allowsNil placeholder
 
-	cursorFlashCounter = 0;
+	default cursorFlashCounter = 0
 	property cursorColour Graphics.colours = Graphics.colours.BLACK;
 
 	property Number cursorX = 0
@@ -46,8 +46,8 @@ class TextBox extends View
 
 	property Number scroll = 0
 	property Number maxScroll = 0
-	cursorPosition = 1;
-	property false maximumLength
+	default cursorPosition = 1
+	property maximumLength
 	property Number allowsNil selectionPosition
 
 	property Cursor allowsNil cursor = TextCursor.static
@@ -61,7 +61,7 @@ class TextBox extends View
 	@desc Creates a text box view and connects the event handlers
 ]]
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 		self:event( KeyUpEvent, self.onKeyUp )
 		self:event( KeyDownEvent, self.onKeyDown )
 		self:event( CharacterEvent, self.onCharacter )
@@ -122,7 +122,7 @@ class TextBox extends View
 	end
 
 	function update( deltaTime )
-		self:super( deltaTime )
+		super( deltaTime )
 
 		if self.isFocused then
 			local cursorFlashCounter = self.cursorFlashCounter
@@ -144,7 +144,7 @@ class TextBox extends View
 		end
 	end
 
-	function TextBox.cursorColour:set( cursorColour )
+	set cursorColour( cursorColour )
 		if self.cursorColour ~= cursorColour then
 			self.cursorColour = cursorColour
 			self.needsDraw = true
@@ -189,7 +189,7 @@ class TextBox extends View
 		return true
 	end
 
-	function TextBox.cursorPosition:set( cursorPosition )
+	set cursorPosition( cursorPosition )
 		cursorPosition = math.max( math.min( cursorPosition, #self.text + 1 ), 1 )
 		self.cursorPosition = cursorPosition
 		self.cursorFlashCounter = 0
@@ -240,17 +240,17 @@ class TextBox extends View
 		self.maxScroll = theme:value( "font" ):getWidth( self.text ) - ( self.width - theme:value( "leftMargin" ) - theme:value( "rightMargin" ) )
 	end
 
-	function TextBox.scroll:set( scroll )
+	set scroll( scroll )
 		self.scroll = math.max( math.min( scroll, self.maxScroll ), 0 )
 		self.needsDraw = true
 	end
 
-	function TextBox.maxScroll:set( maxScroll )
+	set maxScroll( maxScroll )
 		self.maxScroll = math.max( maxScroll, 0 )
 		self.scroll = self.scroll -- this will check that the scroll value is okay
 	end
 
-	function TextBox.cursorX:set( cursorX )
+	set cursorX( cursorX )
 		self.cursorX = cursorX
 
 		-- if the cursor is extending past the visible bounds adjust scroll to keep it visible
@@ -271,17 +271,17 @@ class TextBox extends View
 		end
 	end
 
-	function TextBox.selectionX:set( selectionX )
+	set selectionX( selectionX )
 		self.selectionX = selectionX
 		self.needsDraw = true
 	end
 
-	function TextBox.selectionWidth:set( selectionWidth )
+	set selectionWidth( selectionWidth )
 		self.selectionWidth = selectionWidth
 		self.needsDraw = true
 	end
 
-	function TextBox.selectionPosition:set( selectionPosition )
+	set selectionPosition( selectionPosition )
 		self.selectionPosition = selectionPosition
 		self.cursorFlashCounter = 0
 		self:updateSelection()
@@ -321,18 +321,18 @@ class TextBox extends View
 		@desc Set the text of the text box.
 		@param [string] text -- the text of the text box
 	]]
-	function TextBox.text:set( text )
+	set text( text )
 		self.text = text
 		self:updateMaxScroll()
 		self.needsDraw = true
 	end
 
-	function TextBox.placeholder:set( placeholder )
+	set placeholder( placeholder )
 		self.placeholder = placeholder
 		self.needsDraw = true
 	end
 
-	function TextBox.isMasked:set( isMasked )
+	set isMasked( isMasked )
 		self.isMasked = isMasked
 		self.needsDraw = true
 	end
@@ -341,12 +341,12 @@ class TextBox extends View
 		self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or ( self.isFocused and "focused" or "default" ) ) or "disabled"
 	end
 
-	function TextBox.isPressed:set( isPressed )
+	set isPressed( isPressed )
 		self.isPressed = isPressed
 		self:updateThemeStyle()
 	end
 
-	function TextBox.isEnabled:set( isEnabled )
+	set isEnabled( isEnabled )
 		self.isEnabled = isEnabled
 		if not isEnabled then
 			self:unfocus( TextBox )
@@ -354,7 +354,7 @@ class TextBox extends View
 		self:updateThemeStyle()
 	end
 
-	function TextBox.isFocused:set( isFocused )
+	set isFocused( isFocused )
 		self.isFocused = isFocused
 		self.cursorPosition = self.cursorPosition or 1
 		self:updateThemeStyle()

@@ -1,11 +1,11 @@
 
 class FocusesChangedInterfaceEvent extends InterfaceEvent 
 
-	static = {
+	
 		eventType = "interface_focuses_changed";
-	};
-	property false newFocuses -- the new views that are being focused on. doesn't lose it's focus when it recieves this event.
-	property false oldFocuses -- the old views that previously were focused
+	
+	property newFocuses -- the new views that are being focused on. doesn't lose it's focus when it recieves this event.
+	property oldFocuses -- the old views that previously were focused
 
 }
 

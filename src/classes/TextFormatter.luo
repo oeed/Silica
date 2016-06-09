@@ -2,10 +2,10 @@
 -- written in love2d so I'll port it over at some point
 
 class TextFormatter 
-	width = 0;
-	height = 0;
+	default width = 0
+	default height = 0
 
-	text = "";
+	default text = ""
 
 	-- this stuff is actually controlled by the Font class
 	-- might be better to make it a table of fonts and the range of the string
@@ -13,19 +13,19 @@ class TextFormatter
 
 	-- these are defaults, since they can change
 	property Graphics colours GREY colour
-	property false underline
-	property false strikethrough
+	property underline
+	property strikethrough
 
-	font_name = "default";
-	font_size = 5;
-	font_mode = "default"; -- italic, bold, bolditalic
+	default font_name = "default"
+	default font_size = 5
+	default font_mode = "default" -- italic, bold, bolditalic
 
-	xAlignment = "left"; -- alignment.LEFT ?
-	yAlignment = "top"; -- alignment.TOP?
+	default xAlignment = "left" -- alignment.LEFT ?
+	default yAlignment = "top" -- alignment.TOP?
 
-	property false changed
-	property false stream
-	property false wrappedStream
+	property changed
+	property stream
+	property wrappedStream
 
 	function initialise( text, width, height )
 		self.text = text

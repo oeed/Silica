@@ -6,6 +6,6 @@ class PathMask extends Mask
 		local pixels = {}
 		local scaleX, scaleY = width / path.width, height / path.height
 		local fill = path:getFill( scaleX, scaleY )
-		self:super( x, y, width, height, fill )
+		super( x, y, width, height, fill )
 	end
 end

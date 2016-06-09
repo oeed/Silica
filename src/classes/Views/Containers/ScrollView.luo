@@ -10,13 +10,13 @@ local SPEED_CUTOFF = 0.2
 
 class ScrollView extends Container 
 
-	property false contents
-	property false horizontalScrollbar
-	property false verticalScrollbar
-	property false container
-	verticalVelocityTime = 0;
-	verticalVelocity = 0;
-	horizontalVelocity = 0;
+	property contents
+	property horizontalScrollbar
+	property verticalScrollbar
+	property container
+	default verticalVelocityTime = 0
+	default verticalVelocity = 0
+	default horizontalVelocity = 0
 
 }
 
@@ -26,7 +26,7 @@ class ScrollView extends Container
 	@param [table] properties -- the properties for the view
 ]]
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 
 		local width, height = self.width, self.height
 		self.verticalScrollbar = self:insert( Scrollbar( { isHorizontal = false, x = width - Scrollbar.width + 1, height = height } ) )
@@ -39,7 +39,7 @@ class ScrollView extends Container
 	end
 
 	function initialiseCanvas()
-		self:super()
+		super()
 
 		self.theme:connect( self.canvas, "fillColour" )
 	end
@@ -110,7 +110,7 @@ class ScrollView extends Container
 
 
 	function update( deltaTime )
-		self:super( deltaTime )
+		super( deltaTime )
 		local verticalVelocity = self.verticalVelocity
 		if verticalVelocity ~= 0 then
 			local startTime

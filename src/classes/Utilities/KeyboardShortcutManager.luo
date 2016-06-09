@@ -32,10 +32,10 @@ local keySymbols = {
 }
 
 class KeyboardShortcutManager 
-	keysDown = {};
-	keysUpdates = {};
-	property false owner
-	property false event
+	default keysDown = {}
+	default keysUpdates = {}
+	property owner
+	property event
 
 	function initialise( owner )
 		self.owner = owner

@@ -80,6 +80,6 @@ class TextMask extends Mask
 			xShift = xShift + characterWidth + spacing * scale
 		end
 	   
-		self:super( x, y, width, height, pixels )
+		super( x, y, width, height, pixels )
 	end
 end

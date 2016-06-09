@@ -1,8 +1,8 @@
 
 class EventManager 
-	property false owner
-	handles = {};
-	handlesGlobal = {};
+	property owner
+	default handles = {}
+	default handlesGlobal = {}
 }
 
 

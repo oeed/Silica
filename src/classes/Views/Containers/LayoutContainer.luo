@@ -7,7 +7,7 @@ class LayoutContainer extends Container
 
 
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 		self:event( ChildAddedInterfaceEvent, self.onChildAdded )
 		self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
 		self:event( ReadyInterfaceEvent, self.onReady, Event.phases.AFTER )
@@ -18,24 +18,24 @@ class LayoutContainer extends Container
 	end
 
 	function update( deltaTime )
-		self:super( deltaTime )
+		super( deltaTime )
 		if self.needsLayoutUpdate and not self.isLayoutLocked then
 			self:updateLayout()
 		end
 	end
 
-	function LayoutContainer.width:set( width )
+	set width( width )
 		if self.width ~= width then
 		    self.needsLayoutUpdate = true
 		end
-	    self:super( width )
+	    super( width )
 	end
 
-	function LayoutContainer.height:set( height )
+	set height( height )
 		if self.height ~= height then
 			self.needsLayoutUpdate = true
 		end
-	    self:super( height )
+	    super( height )
 	end
 
 	function onChildAdded( ChildAddedInterfaceEvent event, Event.phases phase )

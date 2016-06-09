@@ -3,21 +3,21 @@ local RESIZE_MARGIN_X, RESIZE_MARGIN_Y = 3, 4
 
 class Window extends Container 
 
-	property false container
-	property false closeButton
-	property false maximiseButton
+	property container
+	property closeButton
+	property maximiseButton
 	property Boolean isEnabled = false
 
-	property false dragX
-	property false dragY
+	property dragX
+	property dragY
 	property Boolean isDragging = false
 	property Boolean isResizingX = false
 	property Boolean isResizingY = false
 
-	minWidth = Number ( 60 );
-	minHeight = Number ( 40 );
-	maxWidth = Number ( math.huge );
-	maxHeight = Number ( math.huge );
+	property Number minWidth = 60
+	property Number minHeight = 40
+	property Number maxWidth = math.huge
+	property Number maxHeight = math.huge
 
 }
 
@@ -27,7 +27,7 @@ class Window extends Container
 	@param [table] properties -- the properties for the view
 ]]
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 		self.closeButton = self:insert( CloseWindowButton( { x = 2, y = 1, window = self } ))
 		self.maximiseButton = self:insert( MaximiseWindowButton( { x = 11, y = 1, window = self } ))
 
@@ -71,12 +71,12 @@ class Window extends Container
 		end
 	end
 
-	function Window.height:set( height )
-		self:super( math.max( math.min( height, self.maxHeight ), self.minHeight ) )
+	set height( height )
+		super( math.max( math.min( height, self.maxHeight ), self.minHeight ) )
 	end
 
-	function Window.width:set( width )
-		self:super( math.max( math.min( width, self.maxWidth ), self.minWidth ) )
+	set width( width )
+		super( math.max( math.min( width, self.maxWidth ), self.minWidth ) )
 	end
 
 	function onInterfaceLoaded( LoadedInterfaceEvent event, Event.phases phase )
@@ -96,8 +96,8 @@ class Window extends Container
 		self.theme.style = self.isEnabled and "default" or "disabled"
 	end
 
-	function Window.isEnabled:set( isEnabled )
-		self:super( isEnabled )
+	set isEnabled( isEnabled )
+		super( isEnabled )
 		self:updateThemeStyle()
 	end
 

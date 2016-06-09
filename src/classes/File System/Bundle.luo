@@ -37,9 +37,9 @@ local fs = Quartz and Quartz.fs or fs
 		end
 	end
 
-	function Bundle.path:set( path )
+	set path( path )
 		path = resolve( path )
-		self:super( path )
+		super( path )
 
 		local configFile = self:find( "bundle", Metadata.mimes.SCONFIG, true )
 		if not configFile then

@@ -14,6 +14,6 @@ class StripeMask extends Mask
 				pixels[i] = ( ( (i - 1) % width + n ) / stripeWidth ) % 2 < 1
 			end
 		end
-		self:super( x, y, width, height, pixels )
+		super( x, y, width, height, pixels )
 	end
 end

@@ -9,7 +9,7 @@ class ListItem extends View implements IDraggableView
 
 
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 
 		self:event( MouseDownEvent, self.onMouseDown )
 		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
@@ -27,7 +27,7 @@ class ListItem extends View implements IDraggableView
 		canvas:fill( theme:value( "textColour" ),  TextMask( leftTextMargin + 1, topTextMargin + 1, width - leftTextMargin - rightTextMargin, height - topTextMargin - bottomTextMargin, self.text, theme:value( "font" ) ) )
 	end
 
-	function ListItem.text:set( text )
+	set text( text )
 		self.text = text
 		self.needsDraw = true
 	end
@@ -36,12 +36,12 @@ class ListItem extends View implements IDraggableView
 		self.theme.style = self.isEnabled and ( self.isSelected and "selected" or "default" ) or "disabled"
 	end
 
-	function ListItem.isEnabled:set( isEnabled )
+	set isEnabled( isEnabled )
 		self.isEnabled = isEnabled
 		self:updateThemeStyle()
 	end
 
-	function ListItem.isSelected:set( isSelected )
+	set isSelected( isSelected )
 		self.isSelected = isSelected
 		self:updateThemeStyle()
 	end

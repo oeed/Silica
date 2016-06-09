@@ -15,6 +15,6 @@ class SeparatorMask extends Mask
 			end
 		end
 
-		self:super( x, y, width, height, pixels )
+		super( x, y, width, height, pixels )
 	end
 end

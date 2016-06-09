@@ -1,9 +1,9 @@
 
 class ChildAddedInterfaceEvent extends InterfaceEvent 
 
-	static = {
+	
 		eventType = "interface_child_added";
-	};
+	
 
 	property Container container
 	property View childView -- the added child

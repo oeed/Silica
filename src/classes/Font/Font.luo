@@ -28,11 +28,11 @@ local NO_CHAR_MAP = {
 }
 
 class Font 
-	height = 0;
-	desiredHeight = 0;
-	spacing = 1;
-	property false characters
-	property false scale
+	default height = 0
+	default desiredHeight = 0
+	default spacing = 1
+	property characters
+	property scale
 
 	enum Number alignments = {
 		LEFT = 0;
@@ -42,10 +42,10 @@ class Font
 		JUSTIFIED = 3;
 	}
 
-	static = {
-		property Font systemFont
-		property Table cache = {}
-	};
+	
+	static property Font systemFont
+	static property Table cache = {}
+	
 
 	--[[
 		@constructor

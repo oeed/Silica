@@ -6,8 +6,8 @@ class SplitContainer extends LayoutContainer
 	property Boolean isVertical = false
 
 
-	function SplitContainer.width:set( width )
-	    self:super( width )
+	set width( width )
+	    super( width )
 	    if self.isVertical then
 	    	local children = self.children
 		    for i = 2, #children, 2 do
@@ -16,8 +16,8 @@ class SplitContainer extends LayoutContainer
 		end
 	end
 
-	function SplitContainer.height:set( height )
-	    self:super( height )
+	set height( height )
+	    super( height )
 	    if not self.isVertical then
 	    	local children = self.children
 		    for i = 2, #children, 2 do
@@ -96,7 +96,7 @@ class SplitContainer extends LayoutContainer
 		end
 	end
 
-	function SplitContainer.isVertical:set( isVertical )
+	set isVertical( isVertical )
 		self.isVertical = isVertical
 		local children = self.children
 		local otherSize = isVertical and self.width or self.height

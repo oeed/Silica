@@ -1,9 +1,9 @@
 
 class ParentResizedInterfaceEvent extends InterfaceEvent 
 
-	static = {
+	
 		eventType = "interface_parent_resized";
-	};
+	
 	property Boolean isHorizontal = false
 	property Boolean isVertical = false
 	property Boolean isSentToSender = false

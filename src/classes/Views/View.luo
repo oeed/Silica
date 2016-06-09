@@ -107,7 +107,7 @@ class View
 		return self.canvas.contentMask -- self.canvas.mask is the mask of the currently drawn pixels to the canvas, i.e. everything will cast a shadow
 	end
 
-	function View.shadowSize:set( shadowSize )
+	set shadowSize( shadowSize )
 		self.shadowSize = shadowSize
 		self.needsDraw = true 
 	end
@@ -127,7 +127,7 @@ class View
 
 	end
 
-	function View.needsDraw:set( needsDraw )
+	set needsDraw( needsDraw )
 		self.needsDraw = needsDraw
 		if needsDraw then
 			local parent = self.parent
@@ -210,7 +210,7 @@ class View
 	--[[
 		@desc Sets the z index of the view in it's parent container
 	]]
-	function View.index:set( index )
+	set index( index )
 		local parent = self.parent
 		if parent then
 			local containerChildren = parent.children
@@ -248,7 +248,7 @@ class View
 		return siblings
 	end
 
-	function View.height:set( height )
+	set height( height )
 		if self.height ~= height then
 			self.height = height
 			self.canvas.height = height
@@ -266,7 +266,7 @@ class View
 		end
 	end
 
-	function View.width:set( width )
+	set width( width )
 		if self.width ~= width then
 			self.width = width
 			self.canvas.width = width
@@ -284,7 +284,7 @@ class View
 		end
 	end
 
-	function View.x:set( x )
+	set x( x )
 		if self.x ~= x then
 			self.x = x
 			local parent = self.parent
@@ -301,7 +301,7 @@ class View
 		end
 	end
 
-	function View.y:set( y )
+	set y( y )
 		if self.y ~= y then
 			self.y = y
 			local parent = self.parent
@@ -322,7 +322,7 @@ class View
 		return self.parent and self.isVisible -- if we don't have a parent we're effectively not visible
 	end
 
-	function View.isVisible:set( isVisible )
+	set isVisible( isVisible )
 		self.isVisible = isVisible
 		local parent = self.parent
 		if parent then
@@ -537,7 +537,7 @@ class View
 		self.application.dragDropManager:start( views or { self }, data, event.globalX, event.globalY, hideSource, completion )
 	end
 
-	function View.isFocused:set( isFocused )
+	set isFocused( isFocused )
 		local wasFocused = self.isFocused
 		if wasFocused ~= isFocused then
 			self.isFocused = isFocused
@@ -563,7 +563,7 @@ class View
 		self.application:clearFocus( filter )
 	end
 
-	function View.leftPin:set( leftPin )
+	set leftPin( leftPin )
 	    self.leftPin = leftPin
 	    if leftPin then
 		    local parsed = MathParser( leftPin )
@@ -579,7 +579,7 @@ class View
 		end
 	end
 
-	function View.rightPin:set( rightPin )
+	set rightPin( rightPin )
 	    self.rightPin = rightPin
 	    if rightPin then
 		    local parsed = MathParser( rightPin )
@@ -595,7 +595,7 @@ class View
 		end
 	end
 
-	function View.topPin:set( topPin )
+	set topPin( topPin )
 	    self.topPin = topPin
 	    if topPin then
 		    local parsed = MathParser( topPin )
@@ -611,7 +611,7 @@ class View
 		end
 	end
 
-	function View.bottomPin:set( bottomPin )
+	set bottomPin( bottomPin )
 	    self.bottomPin = bottomPin
 	    if bottomPin then
 		    local parsed = MathParser( bottomPin )

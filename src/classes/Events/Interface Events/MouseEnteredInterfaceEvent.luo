@@ -1,9 +1,9 @@
 
 class MouseEnteredInterfaceEvent extends Event 
 	
-	static = {
+	
 		eventType = "interface_mouse_entered";
-	};
+	
 
 	x = Number;
 	y = Number;

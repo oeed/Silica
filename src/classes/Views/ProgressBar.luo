@@ -9,8 +9,8 @@ class ProgressBar extends View
 
 	property Number animationStep = 0
 
-	value = 0.3;
-	maximum = 1;
+	default value = 0.3
+	default maximum = 1
 
 
 	function onDraw()
@@ -43,7 +43,7 @@ class ProgressBar extends View
 		end
 	end
 	 
-	function ProgressBar.isEnabled:set( isEnabled )
+	set isEnabled( isEnabled )
 		self.isEnabled = isEnabled
 		self.theme.style = isEnabled and "default" or "disabled"
 	end
@@ -52,7 +52,7 @@ class ProgressBar extends View
 		@desc Set the value of the progress bar
 		@param [number] value -- the value
 	]]
-	function ProgressBar.value:set( value )
+	set value( value )
 		self.value = math.min( math.max( value, 0 ), self.maximum )
 	end
 
@@ -60,11 +60,11 @@ class ProgressBar extends View
 		@desc Set the maximum value of the progress bar
 		@param [number] maximum -- the maximum value
 	]]
-	function ProgressBar.maximum:set( maximum )
+	set maximum( maximum )
 		self.maximum = math.max( maximum, 0 )
 	end
 
-	function ProgressBar.animationStep:set( animationStep )
+	set animationStep( animationStep )
 		animationStep = math.floor( animationStep + 0.5 )
 		local oldAnimationStep = self.animationStep
 		if oldAnimationStep ~= animationStep then

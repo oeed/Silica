@@ -3,9 +3,9 @@ class KeyDownEvent extends KeyEvent
 	
 	property Boolean isRepeat
 	
-	static = {
+	
 		eventType = "key"
-	};
+	
 
 
 	function initialise( Number keyCode, Boolean isRepeat )

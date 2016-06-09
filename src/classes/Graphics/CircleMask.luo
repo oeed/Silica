@@ -21,6 +21,6 @@ class CircleMask extends Mask
 			end
 		end
 
-		self:super( x, y, diameter, diameter, pixels )
+		super( x, y, diameter, diameter, pixels )
 	end
 end

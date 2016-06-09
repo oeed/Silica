@@ -3,14 +3,14 @@ local eventClasses = {}
 
 class Event 
 	
-	property false eventType
+	property eventType
 
-	static = {
-		property false eventType
-	};
+	
+	static property eventType
+	
 
-	property false relativeView -- the view that the event is relative of
-	property false sender
+	property relativeView -- the view that the event is relative of
+	property sender
 
 	property Boolean isSentToChildren = true -- whether the event will be passed to children
 	property Boolean isSentToSender = true -- whether the event will be handled by the sender

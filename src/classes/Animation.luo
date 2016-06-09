@@ -67,10 +67,10 @@ end
 class Animation 
 	property Enum easings = function, {}
 	property Number duration
-	property false subject
-	property false targetValues -- if a targetValue is an array, not a single value, the values are used as evenly spaced 'keyframes'. This can be used for colours.
-	property false easingFunc
-	property false initialValues
+	property subject
+	property targetValues -- if a targetValue is an array, not a single value, the values are used as evenly spaced 'keyframes'. This can be used for colours.
+	property easingFunc
+	property initialValues
 	property Number time
 	property Boolean round = false
 

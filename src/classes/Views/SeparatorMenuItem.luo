@@ -8,7 +8,7 @@ class SeparatorMenuItem extends MenuItem
 
 
 	function initialise( ... )
-		self.super:super( ... ) -- by pass the normal menuitem's event connecting, we don't need to get any events
+		super:super( ... ) -- by pass the normal menuitem's event connecting, we don't need to get any events
 		self:event( ThemeChangedInterfaceEvent, self.updateSize )
 		self:updateSize()
 	end

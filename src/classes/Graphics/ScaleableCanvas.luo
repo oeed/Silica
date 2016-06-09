@@ -70,7 +70,7 @@ class ScaleableCanvas extends Canvas
 	function drawTo( Canvas destinationCanvas, Number x, Number y, Mask.allowsNil mask )
 		local scaleX, scaleY = self.scaleX, self.scaleY
 		if scaleX == 1 and scaleY == 1 then
-			return self:super( destinationCanvas, x, y, mask )
+			return super( destinationCanvas, x, y, mask )
 		end
 		local pixels, width, height = self.pixels, self.width, self.height
 		local scaledWidth, scaledHeight = floor( width * scaleX + 0.5 ), floor( height * scaleY + 0.5 )

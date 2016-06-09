@@ -3,15 +3,15 @@ class Scrollbar extends View
 
 	property Number width = 7
 	property Boolean isHorizontal = false
-	property false scrollerObject
-	property false grabberObject
-	property false dragPoint
-	property false direction
+	property scrollerObject
+	property grabberObject
+	property dragPoint
+	property direction
 	property Boolean isPressed = false
 
 
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 		-- self:event( MouseScrollEvent, self.onMouseScroll )
 		self:event( MouseDownEvent, self.onMouseDown )
 		self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
@@ -22,7 +22,7 @@ class Scrollbar extends View
 		@desc Sets up the canvas and it's graphics objects
 	]]
 	function initialiseCanvas()
-		self:super()
+		super()
 
 		self.theme:connect( self.canvas, "fillColour" )
 
@@ -48,12 +48,12 @@ class Scrollbar extends View
 		self.theme.style = self.isEnabled and ( self.isPressed and "pressed" or "default" ) or "disabled"
 	end
 
-	function Scrollbar.isEnabled:set( isEnabled )
+	set isEnabled( isEnabled )
 		self.isEnabled = isEnabled
 		self:updateThemeStyle()
 	end
 
-	function Scrollbar.isPressed:set( isPressed )
+	set isPressed( isPressed )
 		self.isPressed = isPressed
 		self:updateThemeStyle()
 	end

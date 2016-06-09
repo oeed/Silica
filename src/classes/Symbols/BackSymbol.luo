@@ -1,10 +1,10 @@
 
 class BackSymbol extends Symbol 
 
-	static = {
-		property String symbolName = "back"
-		property Number width = 4
-	};
+	
+	static property String symbolName = "back"
+	static property Number width = 4
+	
 
 
 	static function initialise()
@@ -13,7 +13,7 @@ class BackSymbol extends Symbol
 		path:lineTo( 4, 7 )
 		path:close()
 
-		self:super( path )
+		super( path )
 	end
 
 end

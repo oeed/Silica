@@ -8,7 +8,7 @@ class ListContainer extends ScrollContainer implements IDragDropDestination
 
 
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 		self:event( ChildAddedInterfaceEvent, self.onChildAdded )
 		self:event( ChildRemovedInterfaceEvent, self.onChildRemoved )
 		self:event( ReadyInterfaceEvent, self.onReady, Event.phases.AFTER )
@@ -19,14 +19,14 @@ class ListContainer extends ScrollContainer implements IDragDropDestination
 	end
 
 	function update( deltaTime )
-		self:super( deltaTime )
+		super( deltaTime )
 		if self.needsLayoutUpdate then
 			self:updateLayout()
 		end
 	end
 
-	function ListContainer.width:set( width )
-	    self:super( width )
+	set width( width )
+	    super( width )
 		for i, childView in ipairs( self.children ) do
 			childView.width = width
 		end
@@ -74,8 +74,8 @@ class ListContainer extends ScrollContainer implements IDragDropDestination
 		self.needsLayoutUpdate = false
 	end
 
-	function ListContainer.height:set( height )
-	    self.super:super( height )
+	set height( height )
+	    super:super( height )
 	end
 
 	function canAcceptDragDrop( ClipboardData data, Boolean isMove )

@@ -56,7 +56,7 @@ class Image
 	-- resource = false;
 	-- file = false;
 	property Any allowsNil contents
-	scaledCache = {};
+	default scaledCache = {}
 	property Enum ucgValues = Number, ucgValues
 	property Enum scaleMethods = Number, scaleMethods
 

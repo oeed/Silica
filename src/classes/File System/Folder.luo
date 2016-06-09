@@ -171,15 +171,15 @@ local fs = Quartz and Quartz.fs or fs
 		return self:getItems( true, false )
 	end
 
-	function Folder.items:set( items )
+	set items( items )
 		error( "Folder.items is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
 	end
 
-	function Folder.files:set( files )
+	set files( files )
 		error( "Folder.files is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
 	end
 
-	function Folder.folders:set( folders )
+	set folders( folders )
 		error( "Folder.folders is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
 	end
 
@@ -292,7 +292,7 @@ local fs = Quartz and Quartz.fs or fs
 		return _fs
 	end
 
-	function Folder.fs:set( fs )
+	set fs( fs )
 		error( "Folder.fs is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
 	end
 
@@ -318,7 +318,7 @@ local fs = Quartz and Quartz.fs or fs
 		return _io
 	end
 
-	function Folder.io:set( io )
+	set io( io )
 		error( "Folder.io is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
 	end
 

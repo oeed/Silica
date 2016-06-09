@@ -5,7 +5,7 @@ class SegmentButton extends Button
 	
 
 	function initialise( ... )
-		self:super( ... )
+		super( ... )
 		self:event( ParentChangedInterfaceEvent, self.onSiblingOrParentChanged )
 		self:event( SiblingAddedInterfaceEvent, self.onSiblingOrParentChanged )
 	end
@@ -44,8 +44,8 @@ class SegmentButton extends Button
 		self.shadowSize = shadowSize
 	end
 
-	function SegmentButton.width:set( width )
-		self:super( width + ( self.isLast and 0 or 1 ) ) -- add extra room for the separator
+	set width( width )
+		super( width + ( self.isLast and 0 or 1 ) ) -- add extra room for the separator
 	end
 
 	--[[
