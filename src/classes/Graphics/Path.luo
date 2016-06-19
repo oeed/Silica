@@ -118,7 +118,7 @@ local sin, cos, floor, min, max, abs, acos, PI, remove, insert = math.sin, math.
 		@param [number] currentX -- the starting x coordinate
 		@param [number] currentY -- the starting y coordinate
 	]]
-	function initialise( Number width, Number height, Number currentX = 1, Number( 1 ) currentY, Table.allowsNil lines )
+	function initialise( Number width, Number height, Number currentX = 1, Number currentY = 1, Table.allowsNil lines )
 		self.width = width
 		self.height = height
 		self.currentX = currentX
@@ -298,7 +298,7 @@ local sin, cos, floor, min, max, abs, acos, PI, remove, insert = math.sin, math.
 		return n2 and ( n1 == n2 or ( n1 + ERROR_MARGIN > n2 and n1 - ERROR_MARGIN < n2 ) )
 	end
 
-	function getFill( Number scaleX = 1, Number( 1 ) scaleY )
+	function getFill( Number scaleX = 1, Number scaleY = 1 )
 		local cache = self.cache
 		local scaleCache = cache[scaleX .. ":" .. scaleY]
 		if scaleCache then

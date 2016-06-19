@@ -1,7 +1,7 @@
 class OutlineMask extends Mask 
 
 
-	function initialise( Number x, Number y, Number width, Number height, Number leftThickness = 1, Number( leftThickness ) topThickness, Number( leftThickness ) rightThickness, Number( topThickness ) bottomThickness )
+	function initialise( Number x, Number y, Number width, Number height, Number leftThickness = 1, Number topThickness = leftThickness, Number rightThickness = leftThickness, Number bottomThickness = topThickness )
 		local pixels = {}
 		local i = 0
 		for y = 1, height do

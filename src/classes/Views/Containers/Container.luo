@@ -556,7 +556,7 @@ class Container extends View
 	--[[
 		@desc Checks if the mouse has entered or exited one of its children and sends an event if so
 	]]
-	function onUpdateChildMouseEnterExit( Event.allowsNil event, Event.phases.allowsNil phase, Number x = event.x, Number( event.y ) y )
+	function onUpdateChildMouseEnterExit( Event.allowsNil event, Event.phases.allowsNil phase, Number x = event.x, Number y = event.y )
 		local children = self.children
 		self.cursorLastX = x
 		self.cursorLastY = y

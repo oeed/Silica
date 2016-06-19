@@ -431,7 +431,7 @@ class View
 	--[[
 		@desc Animate a change in a certain property
 	]]
-	function animate( String propertyName, Number value, Number time = ANIMATION_DEFAULT_TIME, function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay, Boolean( true ) round )
+	function animate( String propertyName, Number value, Number time = ANIMATION_DEFAULT_TIME, function.allowsNil onFinish, Animation.easings easing = DEFAULT_EASING, Number delay = 0, Boolean round = true )
 		-- if the value hasn't changed then just call the callback and return
 		if self[propertyName] == value then
 			if onFinish then
@@ -462,7 +462,7 @@ class View
 	--[[
 		@desc Animate a change in the position
 	]]
-	function animateMove(	Number x, Number y, Number time = ANIMATION_DEFAULT_TIME, function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay )
+	function animateMove(	Number x, Number y, Number time = ANIMATION_DEFAULT_TIME, function.allowsNil onFinish, Animation.easings easing = DEFAULT_EASING, Number delay = 0 )
 		self:animate( "x", x, time, onFinish, easing, delay )
 		self:animate( "y", y, time, nil, easing, delay )
 	end
@@ -470,7 +470,7 @@ class View
 	--[[
 		@desc Animate a change in the size
 	]]
-	function animateResize( Number width, Number height, Number time = ANIMATION_DEFAULT_TIME, function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay )
+	function animateResize( Number width, Number height, Number time = ANIMATION_DEFAULT_TIME, function.allowsNil onFinish, Animation.easings easing = DEFAULT_EASING, Number delay = 0 )
 		self:animate( "width", width, time, onFinish, easing, delay )
 		self:animate( "height", height, time, nil, easing, delay )
 	end

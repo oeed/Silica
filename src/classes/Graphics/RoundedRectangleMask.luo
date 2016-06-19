@@ -30,7 +30,7 @@
 		
 
 
-	function initialise( Number x, Number y, Number width, Number height, Number topLeftRadius, Number topRightRadius = topLeftRadius, Number( topLeftRadius ) bottomLeftRadius, Number( topRightRadius ) bottomRightRadius )
+	function initialise( Number x, Number y, Number width, Number height, Number topLeftRadius, Number topRightRadius = topLeftRadius, Number bottomLeftRadius = topLeftRadius, Number bottomRightRadius = topRightRadius )
 		local pixels = {}
 
 		corner( pixels, width, height, topLeftRadius, 0 )

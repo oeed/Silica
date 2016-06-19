@@ -3,9 +3,7 @@ local iconValues = {
 	SIGNATURE = 0xFF2138;
 	DEFAULT_WIDTH = 32;
 	DEFAULT_HEIGHT = 32;
-
-
-end
+}
 
 local mimes = Metadata.mimes
 local ICON_MIMES = { mimes.SICON }
@@ -163,7 +161,7 @@ class Icon extends Image
 		end
 	end
 
-	function getScaledPixels( Number maximumWidth, Number maximumHeight = maximumWidth, Image.scaleMethods( Image.scaleMethods.FIT ) method )
+	function getScaledPixels( Number maximumWidth, Number maximumHeight = maximumWidth, Image.scaleMethods method = Image.scaleMethods.FIT )
 		size = math.floor( math.min( maximumWidth, maximumHeight ) + 0.5 )
 
 		local scaledCache = self.scaledCache

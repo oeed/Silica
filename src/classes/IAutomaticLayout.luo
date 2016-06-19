@@ -2,6 +2,6 @@ interface IAutomaticLayout
 
 	property Boolean needsLayoutUpdate
 
-	function updateLayout( Boolean dontAnimate = false )
+	function updateLayout( Boolean dontAnimate )
 
 end

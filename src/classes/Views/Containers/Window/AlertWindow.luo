@@ -3,7 +3,7 @@ class AlertWindow extends Window
 	interfaceName = String( "alert-window" )
 
 
-	static function display( String message, String title = "Alert", function.allowsNil callback, Table( { "Okay" } ) buttons, Number( 1 ) defaultButton )
+	static function display( String message, String title = "Alert", function.allowsNil callback, Table buttons = { "Okay" }, Number defaultButton = 1 )
 		self.application.container:insert( AlertWindow() )
 	end
 

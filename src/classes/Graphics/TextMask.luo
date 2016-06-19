@@ -14,7 +14,7 @@ local NO_CHAR_MAP = {
 
 class TextMask extends Mask 
 
-	function initialise( Number x, Number y, Number.allowsNil width, Number.allowsNil height, String text, Font font = Font.static.systemFont, Font.alignments( Font.alignments.LEFT ) alignment )
+	function initialise( Number x, Number y, Number.allowsNil width, Number.allowsNil height, String text, Font font = Font.static.systemFont, Font.alignments alignment = Font.alignments.LEFT )
 		local fontWidth = font:getWidth( text )
 		local width = width or fontWidth
 		local fontHeight = font.height

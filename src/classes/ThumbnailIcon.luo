@@ -35,7 +35,7 @@ class ThumbnailIcon extends Icon
 		end
 	end
 
-	function getScaledPixels( Number maximumWidth, Number maximumHeight = maximumWidth, Image.scaleMethods( Image.scaleMethods.FIT ) method )
+	function getScaledPixels( Number maximumWidth, Number maximumHeight = maximumWidth, Image.scaleMethods method = Image.scaleMethods.FIT )
 		size = math.floor( math.min( maximumWidth, maximumHeight ) + 0.5 )
 
 		local scaledCache = self.scaledCache
