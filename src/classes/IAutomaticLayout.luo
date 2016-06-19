@@ -1,7 +1,7 @@
 interface IAutomaticLayout
 
-	property Boolean needsLayoutUpdate = false
+	property Boolean needsLayoutUpdate
 
-	function updateLayout( Boolean( false ) dontAnimate )
+	function updateLayout( Boolean dontAnimate = false )
 
 end

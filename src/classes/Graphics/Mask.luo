@@ -32,7 +32,7 @@
 		property Table pixels
 
 
-	function initialise( Number x, Number y, Number width, Number height, Table( {} ) pixels )
+	function initialise( Number x, Number y, Number width, Number height, Table pixels = {} )
 		self.x = x
 		self.y = y
 		self.width = width

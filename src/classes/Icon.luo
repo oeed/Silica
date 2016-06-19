@@ -163,7 +163,7 @@ class Icon extends Image
 		end
 	end
 
-	function getScaledPixels( Number maximumWidth, Number( maximumWidth ) maximumHeight, Image.scaleMethods( Image.scaleMethods.FIT ) method )
+	function getScaledPixels( Number maximumWidth, Number maximumHeight = maximumWidth, Image.scaleMethods( Image.scaleMethods.FIT ) method )
 		size = math.floor( math.min( maximumWidth, maximumHeight ) + 0.5 )
 
 		local scaledCache = self.scaledCache

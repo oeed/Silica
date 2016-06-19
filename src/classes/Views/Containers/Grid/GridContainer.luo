@@ -4,7 +4,7 @@ class GridContainer extends LayoutContainer
 	property Number cellHeight = 1
 
 
-	function updateLayout( Boolean( false ) dontAnimate )
+	function updateLayout( Boolean dontAnimate = false )
 		local theme = self.theme
 		local leftMargin, rightMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" )
 		local width, minimumCellWidth, cellHeight, children = self.width - leftMargin - rightMargin, self.minimumCellWidth, self.cellHeight, self.children

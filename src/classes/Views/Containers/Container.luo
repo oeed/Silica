@@ -505,7 +505,7 @@ class Container extends View
 		@param [boolean] descendTree -- true by default. whether child Containers should be looked through
 		@return [View] childView -- the found child view
 	]]
-	function findChild( String identifier, Boolean( true ) descendTree )
+	function findChild( String identifier, Boolean descendTree = true )
 		for i, childView in ipairs( self.children ) do
 			if childView.identifier == identifier then
 				return childView
@@ -556,7 +556,7 @@ class Container extends View
 	--[[
 		@desc Checks if the mouse has entered or exited one of its children and sends an event if so
 	]]
-	function onUpdateChildMouseEnterExit( Event.allowsNil event, Event.phases.allowsNil phase, Number( event.x ) x, Number( event.y ) y )
+	function onUpdateChildMouseEnterExit( Event.allowsNil event, Event.phases.allowsNil phase, Number x = event.x, Number( event.y ) y )
 		local children = self.children
 		self.cursorLastX = x
 		self.cursorLastY = y

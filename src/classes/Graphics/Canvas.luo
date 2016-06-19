@@ -63,7 +63,7 @@ class Canvas
 	--[[
 		@desc Fills an area in the given mask with the given colour, defaulting to the entire canvas
 	]]
-	function fill( Graphics.colours colour, Mask( self.mask ) mask )
+	function fill( Graphics.colours colour, Mask mask = self.mask )
 		if colour == TRANSPARENT then return end
 		local pixels, width, height = self.pixels, self.width, self.height
 		local maskX, maskY, maskWidth, maskHeight = mask.x, mask.y, mask.width, mask.height
@@ -81,7 +81,7 @@ class Canvas
 	--[[
 		@desc Draws an outline around the given mask, defaulting to the canvas' content mask
 	]]
-	function outline( Graphics.colours colour, Mask( self.contentMask ) mask, Number( 1 ) leftThickness, Number( leftThickness ) topThickness, Number( leftThickness ) rightThickness, Number( topThickness ) bottomThickness )
+	function outline( Graphics.colours colour, Mask mask = self.contentMask, Number( 1 ) leftThickness, Number( leftThickness ) topThickness, Number( leftThickness ) rightThickness, Number( topThickness ) bottomThickness )
 		if colour == TRANSPARENT then return end
 		local width, height, pixels = self.width, self.height, self.pixels
 		local maskX, maskY, maskWidth, maskHeight, maskPixels = mask and mask.x, mask and mask.y, mask and mask.width, mask and mask.height, mask and mask.pixels
@@ -182,7 +182,7 @@ class Canvas
 	--[[
 		@desc Draws an image to the canvas, scaling the image if needed
 	]]
-	function image( Image image, Number x, Number y, Number( image.width ) width, Number( image.height ) height, Image.scaleMethods( Image.scaleMethods.FIT ) method )
+	function image( Image image, Number x, Number y, Number width = image.width, Number( image.height ) height, Image.scaleMethods( Image.scaleMethods.FIT ) method )
 		local pixels, pixelsWidth, pixelsHeight = image:getScaledPixels( width, height, method )
 		if pixelsWidth ~= width then
 			x = x + math.ceil( ( width - pixelsWidth ) / 2 )
@@ -205,7 +205,7 @@ class Canvas
 	--[[
 		@desc Draws a shadow mask to the parent's canvas
 	]]
-	function drawShadow( Graphics.colours( SHADOW_COLOUR ) shadowColour, Number x, Number y, Number shadowSize, Mask( self.contentMask ) shadowMask )
+	function drawShadow( Graphics.colours shadowColour = SHADOW_COLOUR, Number x, Number y, Number shadowSize, Mask( self.contentMask ) shadowMask )
 		if shadowSize == 0 or shadowColour == TRANSPARENT then return end
 		x = math.floor( x + shadowSize * SHADOW_RATIO + 0.5 )
 		y = y + shadowSize

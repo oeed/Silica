@@ -46,7 +46,7 @@ class LayoutContainer extends Container
 		self.needsLayoutUpdate = true
 	end
 
-	function updateLayout( Boolean( false ) dontAnimate )
+	function updateLayout( Boolean dontAnimate = false )
 	end
 
 end

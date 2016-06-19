@@ -481,7 +481,7 @@ class TextBox extends View
 	end
 
 	--										TODO: Number should be TextBox.selectionDirections
-	function wordPosition( Number fromPosition, Number direction, Boolean( true ) allowMiddlePunctuation )
+	function wordPosition( Number fromPosition, Number direction, Boolean allowMiddlePunctuation = true )
 		local text = self.text
 		local left, right
 		local function go( from, to, dir )

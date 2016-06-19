@@ -25,7 +25,7 @@ class SplitContainer extends LayoutContainer
 		end
 	end
 
-	function updateLayout( Boolean( false ) dontAnimate )
+	function updateLayout( Boolean dontAnimate = false )
 		local children = self.children
 		local childrenCount = #children
 		if childrenCount > 0 and childrenCount % 2 == 1 then -- we MUST have an odd number of children, there should be a separator view between each main view

@@ -333,7 +333,7 @@ class View
 		@return Number y -- the x coordinate in the parent's coordinate system
 	]]
 	--									TODO: Any should be Container. If it is it loads another View class, so there are two different ones
-	function getCoordinatesTo( Number x, Number y, Any( self.application.container ) parent )
+	function getCoordinatesTo( Number x, Number y, Any parent = self.application.container )
 		local currentParrent = { parent = self }
 		while currentParrent.parent and currentParrent.parent ~= parent do
 			currentParrent = currentParrent.parent
@@ -350,7 +350,7 @@ class View
 		@return [number] y -- the x coordinate in the parent's coordinate system
 	]]
 	--					TODO: Any should be Container. If it is it loads another View class, so there are two different ones
-	function getPosition( Any( self.application.container ) parent )
+	function getPosition( Any parent = self.application.container )
 		local selfParent = self.parent
 		if not selfParent or parent == selfParent then
 			return self.x, self.y
@@ -366,7 +366,7 @@ class View
 		@return [number] y -- the local x coordinate
 	]]
 	--							TODO: Any should be Container. If it is it loads another View class, so there are two different ones
-	function getCoordinates( Number x, Number y, Any( self.application.container ) parent )
+	function getCoordinates( Number x, Number y, Any parent = self.application.container )
 		local currentParrent = self
 		while currentParrent and currentParrent ~= parent do
 			x = x - currentParrent.x + 1
@@ -398,7 +398,7 @@ class View
 		@return [boolean] isHit -- whether the hit test hit
 	]]
 	--							TODO: Any should be Container. If it is it loads another View class, so there are two different ones
-	function hitTestEvent( Event event, Any( self.parent ) parent )
+	function hitTestEvent( Event event, Any parent = self.parent )
 		if not parent then
 			return false
 		elseif event:typeOf( MouseEvent ) then
@@ -431,7 +431,7 @@ class View
 	--[[
 		@desc Animate a change in a certain property
 	]]
-	function animate( String propertyName, Number value, Number( ANIMATION_DEFAULT_TIME ) time, function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay, Boolean( true ) round )
+	function animate( String propertyName, Number value, Number time = ANIMATION_DEFAULT_TIME, function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay, Boolean( true ) round )
 		-- if the value hasn't changed then just call the callback and return
 		if self[propertyName] == value then
 			if onFinish then
@@ -462,7 +462,7 @@ class View
 	--[[
 		@desc Animate a change in the position
 	]]
-	function animateMove(	Number x, Number y, Number( ANIMATION_DEFAULT_TIME ) time, function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay )
+	function animateMove(	Number x, Number y, Number time = ANIMATION_DEFAULT_TIME, function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay )
 		self:animate( "x", x, time, onFinish, easing, delay )
 		self:animate( "y", y, time, nil, easing, delay )
 	end
@@ -470,7 +470,7 @@ class View
 	--[[
 		@desc Animate a change in the size
 	]]
-	function animateResize( Number width, Number height, Number( ANIMATION_DEFAULT_TIME ) time, function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay )
+	function animateResize( Number width, Number height, Number time = ANIMATION_DEFAULT_TIME, function.allowsNil onFinish, Animation.easings( DEFAULT_EASING ) easing, Number( 0 ) delay )
 		self:animate( "width", width, time, onFinish, easing, delay )
 		self:animate( "height", height, time, nil, easing, delay )
 	end
@@ -530,7 +530,7 @@ class View
 	--[[
 		@desc Starts a drag and drop for the view
 	]]
-	function startDragDrop( MouseEvent event, ClipboardData data, Boolean( true ) hideSource, function.allowsNil completion, Table.allowsNil views )
+	function startDragDrop( MouseEvent event, ClipboardData data, Boolean hideSource = true, function.allowsNil completion, Table.allowsNil views )
 		self.application.dragDropManager:start( views or { self }, data, event.globalX, event.globalY, hideSource, completion )
 	end
 

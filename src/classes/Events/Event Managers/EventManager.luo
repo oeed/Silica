@@ -24,7 +24,7 @@ class EventManager
 		@param [function] func -- the function called when the event occurs
 		@param [class] sender -- the value passed as self. defaults to eventManager.owner
 	]]
-	function connect( Event eventType, function func, Event.phases( Event.phases.BEFORE ) phase, EventManager.allowsNil eventManager, sender )
+	function connect( Event eventType, function func, Event.phases phase = Event.phases.BEFORE, EventManager.allowsNil eventManager, sender )
 		eventManager = eventManager or self -- TODO: allow self in default values
 		self:disconnect( eventType, func, phase, eventManager, sender ) -- ensure duplicates won't be made
 

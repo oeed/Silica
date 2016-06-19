@@ -8,7 +8,7 @@ class TreeContainer extends ListContainer implements IAutomaticLayout
 		self.needsLayoutUpdate = true
 	end
 
-	function updateLayout( Boolean( false ) dontAnimate )
+	function updateLayout( Boolean dontAnimate = false )
 		local children, width = self.children, self.width
 		local theme = self.theme
 		local y = theme:value( "topMargin" ) + 1

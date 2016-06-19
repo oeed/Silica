@@ -38,7 +38,7 @@ local nextID = 1
 		property Table traceback = {}
 
 
-	function initialise( String message, Number( 1 ) level )
+	function initialise( String message, Number level = 1 )
 		self.message = message
 		level = level == 0 and level or level + 1
 		self.level = level

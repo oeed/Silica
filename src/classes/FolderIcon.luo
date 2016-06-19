@@ -13,7 +13,7 @@ class FolderIcon extends Icon
 		super( images )
 	end
 
-	static function fromFolder( Folder folder, Boolean( false ) isOpen )
+	static function fromFolder( Folder folder, Boolean isOpen = false )
 		local files = folder.files
 		local filesCount = #files
 		if filesCount > 0 then

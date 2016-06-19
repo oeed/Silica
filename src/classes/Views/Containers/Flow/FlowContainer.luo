@@ -36,7 +36,7 @@ class FlowContainer extends Container implements IAutomaticLayout implements ILo
 		self.needsLayoutUpdate = true
 	end
 
-	function updateLayout( Boolean( false ) dontAnimate )
+	function updateLayout( Boolean dontAnimate = false )
 		local width, height, theme = self.width, self.height, self.theme
 		local leftMargin, rightMargin, topMargin, bottomMargin = theme:value( "leftMargin" ), theme:value( "rightMargin" ), theme:value( "topMargin" ), theme:value( "bottomMargin" )
 

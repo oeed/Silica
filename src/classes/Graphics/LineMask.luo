@@ -1,7 +1,7 @@
 class LineMask extends Mask 
 
 
-	function initialise( Number x, Number y, Number width, Number height, Boolean( true ) isFromTopLeft )
+	function initialise( Number x, Number y, Number width, Number height, Boolean isFromTopLeft = true )
 		local pixels = {}
 		local xDiff = width - 1
 		local yDiff = ( isFromTopLeft and height - 1 or -height + 1 )

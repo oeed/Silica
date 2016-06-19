@@ -132,7 +132,7 @@ local fs = Quartz and Quartz.fs or fs
 		@desc Creates a folder within this folder
 		@return Folder
 	]]
-	function makeSubfolder( String path, Boolean( false ) overwrite )
+	function makeSubfolder( String path, Boolean overwrite = false )
 		return Folder.static:make( self.path .. tidy( "/" .. path ), overwrite )
 	end
 
@@ -140,7 +140,7 @@ local fs = Quartz and Quartz.fs or fs
 		@desc Creates a file within this folder
 		@return File
 	]]
-	function makeSubfile( String path, Metadata.mimes mime, Boolean( false ) overwrite, String.allowsNil contents )
+	function makeSubfile( String path, Metadata.mimes mime, Boolean overwrite = false, String.allowsNil contents )
 		return File.static:make( self.path .. tidy( "/" .. path ), mime, overwrite, contents )
 	end
 
@@ -233,7 +233,7 @@ local fs = Quartz and Quartz.fs or fs
 	--[[
 		@desc Returns a table of all the FileSystemItems of a certain MIME
 	]]
-	function findAll( String mime, Boolean( false ) noSubfolders )
+	function findAll( String mime, Boolean noSubfolders = false )
 		local found = {}
 		local n = 1
 		for i, fileSystemItem in ipairs( self.items ) do

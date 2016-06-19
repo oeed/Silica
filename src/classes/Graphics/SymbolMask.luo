@@ -1,7 +1,7 @@
 class SymbolMask extends PathMask 
 	
 
-	function initialise( Number x, Number y, Symbol symbol, Number( symbol.width ) width, Number( symbol.height ) height )
+	function initialise( Number x, Number y, Symbol symbol, Number width = symbol.width, Number( symbol.height ) height )
 		super( x, y, symbol.path, width, height )
 	end
 

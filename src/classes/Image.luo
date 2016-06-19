@@ -33,9 +33,7 @@ local mimes = Metadata.mimes
 local ucgValues = {
 	SIGNATURE = 0xFF2137,
 	VERSION = 3
-
-
-end
+}
 
 local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG, mimes.SICON }
 local availableMimes = {}
@@ -1054,7 +1052,7 @@ class Image
 		@return [table] pixels -- the scaled pixels
 	]]
 															-- TODO: should be Image.scaleMethods.FIT
-	function getScaledPixels( Number maximumWidth, Number maximumHeight, Number( 2 ) method )
+	function getScaledPixels( Number maximumWidth, Number maximumHeight, Number method = 2 )
 		maximumWidth = math.floor( maximumWidth + 0.5 )
 		maximumHeight = math.floor( maximumHeight + 0.5 )
 

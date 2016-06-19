@@ -181,7 +181,7 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 	    super:super( height )
 	end
 
-	function updateLayout( Boolean( self.dontAnimateLayoutUpdate ) dontAnimate )
+	function updateLayout( Boolean dontAnimate = self.dontAnimateLayoutUpdate )
 		local width, theme = self.width, self.theme
 		local childrenMarginLeft = theme:value( "childrenMarginLeft" )
 		local childTopMargin, childBottomMargin = theme:value( "childTopMargin" ), theme:value( "childBottomMargin" )
