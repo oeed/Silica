@@ -68,7 +68,7 @@ class TextBox extends View
 		self:event( MouseScrollEvent, self.onMouseScroll )
 		self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
 		self:event( MouseDoubleClickEvent, self.onMouseDoubleClick )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	end
 
 	function onDraw()
@@ -366,7 +366,7 @@ class TextBox extends View
 		if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = false
 			if self.isEnabled and self:hitTestEvent( event ) then
-				return self.event:handleEvent( event )
+				return self.eventManager:handleEvent( event )
 			end
 		end
 	end
@@ -442,7 +442,7 @@ class TextBox extends View
 					self.cursorPosition = cursorPosition - 1
 				end
 			elseif keyCode == keys.enter then
-				self.event:handleEvent( ActionInterfaceEvent( self, event ) )
+				self.eventManager:handleEvent( ActionInterfaceEvent( self, event ) )
 				self:unfocus()
 			elseif keyCode == keys.left then
 				if selectionPosition then

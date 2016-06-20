@@ -32,8 +32,8 @@ class Window extends Container
 		
 		self:event( MouseDownEvent, self.onMouseDownBefore, Event.phases.BEFORE )
 		self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
-		self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 		self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
 	end
 

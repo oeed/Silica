@@ -2,111 +2,114 @@
 
 local sin, cos, floor, min, max, abs, acos, PI, remove, insert = math.sin, math.cos, math.floor, math.min, math.max, math.abs, math.acos, math.pi, table.remove, table.insert
 
-	local function round( num )
-		return floor( num + 0.5 )
-	end
+local function round( num )
+	return floor( num + 0.5 )
+end
 
-	-- the next few functions are just taken from a site for bezier intersection, hence the terribly named variables. don't hate.
-	local function sgn( n )
-		return n < 0 and -1 or 1
-	end
+-- the next few functions are just taken from a site for bezier intersection, hence the terribly named variables. don't hate.
+local function sgn( n )
+	return n < 0 and -1 or 1
+end
 
-	local function sortSpecial( a )
-		local flip;
-		local temp;
-		
-		repeat
-			flip = false
-			for i = 1, #a - 1 do
-				if ( a[i+1] >= 0 and a[i] > a[i+1] ) or ( a[i] < 0 and a[i+1] >= 0 ) then
-					flip = true
-					temp = a[i]
-					a[i] = a[i+1]
-					a[i+1] = temp
-				end
-			end
-		until not flip
-
-		return a
-	end
-
-	local function bezierCoeffs( P0, P1, P2, P3 )
-		local Z = {};
-		Z[1] = -P0 + 3 * P1 + -3 * P2 + P3; 
-		Z[2] = 3 * P0 - 6 * P1 + 3 * P2;
-		Z[3] = -3 * P0 + 3 * P1;
-		Z[4] = P0;
-		return Z;
-	end
-
-	local function cubicRoots( P )
-
-		local a = P[1]
-		local b = P[2]
-		local c = P[3]
-		local d = P[4]
-		
-		local A = b / a
-		local B = c / a
-		local C = d / a
-
-		local Q, R, D, S, T, Im -- ehm?
-
-		local Q = ( 3 * B - A ^ 2 )/9;
-		local R = ( 9 * A * B - 27 * C - 2 * A ^ 3 ) / 54;
-		local D = Q ^ 3 + R ^ 2;	-- polynomial discriminant
-
-		local t = {}
-		
-		if D >= 0 then -- complex or duplicate roots
-			local v1, v2, third = R + D^.5, R - D^.5, 1 / 3
-			local T = sgn( v1 ) * abs( v1 ) ^ third
-			local S = sgn( v2 ) * abs( v2 ) ^ third
-
-			t[1] = A / -3 + ( S + T ) -- real root
-			t[2] = A / -3 - ( S + T ) / 2 -- real part of complex root
-			t[3] = A / -3 - ( S + T ) / 2 -- real part of complex root
-			local Im = abs( 3^.5 * ( S - T ) / 2 ) -- complex part of root pair	  
-			
-			if Im ~= 0 then
-				t[2]=-1
-				t[3]=-1
-			end
-		else -- distinct real roots
-			local th = acos( R / (-( Q^3) )^.5 )
-			
-			t[1] = 2 * ( -Q )^.5 * cos( th / 3 ) - A / 3
-			t[2] = 2 * ( -Q )^.5 * cos( ( th + 2 * PI ) / 3 ) - A / 3
-			t[3] = 2 * ( -Q )^.5 * cos( ( th + 4 * PI ) / 3 ) - A / 3
-			local Im = 0.0
-		end
-		
-		-- discard out of spec roots
-		for i = 1, 3 do
-			if t[i] < 0 or t[i] > 1 then
-				t[i] = -1
+local function sortSpecial( a )
+	local flip;
+	local temp;
+	
+	repeat
+		flip = false
+		for i = 1, #a - 1 do
+			if ( a[i+1] >= 0 and a[i] > a[i+1] ) or ( a[i] < 0 and a[i+1] >= 0 ) then
+				flip = true
+				temp = a[i]
+				a[i] = a[i+1]
+				a[i+1] = temp
 			end
 		end
-					
-		-- sort but place -1 at the end
-		t = sortSpecial( t );
+	until not flip
+
+	return a
+end
+
+local function bezierCoeffs( P0, P1, P2, P3 )
+	local Z = {};
+	Z[1] = -P0 + 3 * P1 + -3 * P2 + P3; 
+	Z[2] = 3 * P0 - 6 * P1 + 3 * P2;
+	Z[3] = -3 * P0 + 3 * P1;
+	Z[4] = P0;
+	return Z;
+end
+
+local function cubicRoots( P )
+
+	local a = P[1]
+	local b = P[2]
+	local c = P[3]
+	local d = P[4]
+	
+	local A = b / a
+	local B = c / a
+	local C = d / a
+
+	local Q, R, D, S, T, Im -- ehm?
+
+	local Q = ( 3 * B - A ^ 2 )/9;
+	local R = ( 9 * A * B - 27 * C - 2 * A ^ 3 ) / 54;
+	local D = Q ^ 3 + R ^ 2;	-- polynomial discriminant
+
+	local t = {}
+	
+	if D >= 0 then -- complex or duplicate roots
+		local v1, v2, third = R + D^.5, R - D^.5, 1 / 3
+		local T = sgn( v1 ) * abs( v1 ) ^ third
+		local S = sgn( v2 ) * abs( v2 ) ^ third
+
+		t[1] = A / -3 + ( S + T ) -- real root
+		t[2] = A / -3 - ( S + T ) / 2 -- real part of complex root
+		t[3] = A / -3 - ( S + T ) / 2 -- real part of complex root
+		local Im = abs( 3^.5 * ( S - T ) / 2 ) -- complex part of root pair	  
 		
-		return t;
+		if Im ~= 0 then
+			t[2]=-1
+			t[3]=-1
+		end
+	else -- distinct real roots
+		local th = acos( R / (-( Q^3) )^.5 )
+		
+		t[1] = 2 * ( -Q )^.5 * cos( th / 3 ) - A / 3
+		t[2] = 2 * ( -Q )^.5 * cos( ( th + 2 * PI ) / 3 ) - A / 3
+		t[3] = 2 * ( -Q )^.5 * cos( ( th + 4 * PI ) / 3 ) - A / 3
+		local Im = 0.0
 	end
+	
+	-- discard out of spec roots
+	for i = 1, 3 do
+		if t[i] < 0 or t[i] > 1 then
+			t[i] = -1
+		end
+	end
+				
+	-- sort but place -1 at the end
+	t = sortSpecial( t );
+	
+	return t;
+end
 
-	class Path
-		
-		property Table lines = {}
-		property Boolean isClosed = false
-		property Number width
-		property Number height
-		property Number currentX
-		property Number currentY
-		property Number segmentStart = 1
-		property Table cache = {} -- { [scaleX .. ":" .. scaleY] = {} } where scale is the scale multiplier (i.e. 1)
-		property Table allowsNil serialisedPath
+local ERROR_MARGIN = 0.001
+local function aproxEqual( n1, n2 )
+	return n2 and ( n1 == n2 or ( n1 + ERROR_MARGIN > n2 and n1 - ERROR_MARGIN < n2 ) )
+end
 
-	}
+class Path
+	
+	property Table lines = {}
+	property Boolean isClosed = false
+	property Number width
+	property Number height
+	property Number currentX
+	property Number currentY
+	property Number segmentStart = 1
+	property Table cache = {} -- { [scaleX .. ":" .. scaleY] = {} } where scale is the scale multiplier (i.e. 1)
+	property Table allowsNil serialisedPath
 
 	--[[
 		@constructor
@@ -291,11 +294,6 @@ local sin, cos, floor, min, max, abs, acos, PI, remove, insert = math.sin, math.
 		end
 		self.isClosed = true
 		return true
-	end
-
-	local ERROR_MARGIN = 0.001
-	local function aproxEqual( n1, n2 )
-		return n2 and ( n1 == n2 or ( n1 + ERROR_MARGIN > n2 and n1 - ERROR_MARGIN < n2 ) )
 	end
 
 	function getFill( Number scaleX = 1, Number scaleY = 1 )

@@ -11,14 +11,12 @@ class DragDropManager
 	property View allowsNil destination
 	property Boolean allowsNil isMove
 	property Table allowsNil sourceViews
-		property function allowsNil completion
+	property Function allowsNil completion
 
-		enum Number dropStyles = {
-			DISAPPEAR = 0;
-			SHRINK = 1;
-			RETURN = 2;
-		}
-
+	enum Number dropStyles = {
+		DISAPPEAR = 0;
+		SHRINK = 1;
+		RETURN = 2;
 	}
 
 	--[[

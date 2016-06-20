@@ -16,8 +16,8 @@ class SplitHandleView extends View
 
 		self:event( MouseDownEvent, self.onMouseDown, Event.phases.AFTER )
 		self:event( ParentChangedInterfaceEvent, self.onParentChanged )
-		self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	end
 
 	function onDraw()

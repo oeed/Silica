@@ -19,7 +19,7 @@ class MenuItem extends View
 
 		self:event( MouseDownEvent, self.onMouseDown )
 		self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 		self:event( ThemeChangedInterfaceEvent, self.updateHeight )
 		self:updateHeight()
 	end
@@ -94,9 +94,9 @@ class MenuItem extends View
 		if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = false
 			if self.isEnabled and self:hitTestEvent( event ) then
-				if self.event:handleEvent( ActionInterfaceEvent( self ) ) then return true end
+				if self.eventManager:handleEvent( ActionInterfaceEvent( self ) ) then return true end
 				self.parent:close()
-				local result = self.event:handleEvent( event )
+				local result = self.eventManager:handleEvent( event )
 				return ( result ~= nil and result or true )
 			end
 			return true
@@ -127,7 +127,7 @@ class MenuItem extends View
 				local parent = self.parent
 				local owner = parent.owner
 				if owner:typeOf( MenuBarItem ) then owner:flash() end
-				if self.event:handleEvent( ActionInterfaceEvent( self ) ) then return true end
+				if self.eventManager:handleEvent( ActionInterfaceEvent( self ) ) then return true end
 				parent:close()
 				return true
 			end

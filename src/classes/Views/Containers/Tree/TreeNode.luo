@@ -9,14 +9,14 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 	property Boolean canRearrange = true
 	property Number allowsNil removingIndex
 	property Boolean canRemove = true
-	property DragDropManager dropStyles RETURN dropStyle
+	property DragDropManager.dropStyles dropStyle = DragDropManager.dropStyles.RETURN
 
 
 	function initialise( ... )
 		super( ... )
 
 		self:event( MouseDownEvent, self.onMouseDown )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 		-- self:event( MouseHeldEvent, self.onMouseHeld )
 	    self:event( MouseEnteredInterfaceEvent, self.onMouseEnteredOrMoved )
 	    self:event( MouseMoveEvent, self.onMouseEnteredOrMoved )
@@ -80,8 +80,8 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 			self.isPressed = false
 			if self.isEnabled and self:hitTestEvent( event ) then
 				self.isFolded = not self.isFolded
-				self.event:handleEvent( ActionInterfaceEvent( self ) )
-				local result = self.event:handleEvent( event )
+				self.eventManager:handleEvent( ActionInterfaceEvent( self ) )
+				local result = self.eventManager:handleEvent( event )
 				return result == nil and true or result
 			end
 			return true

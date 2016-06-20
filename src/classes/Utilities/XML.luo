@@ -9,6 +9,7 @@ local function fromXMLString( value )
 		function( h )
 			return string.char( tonumber(h,10) )
 		end);
+	value = string.gsub (value, "&quot;", "\\");
 	value = string.gsub (value, "&quot;", "\"");
 	value = string.gsub (value, "&apos;", "'");
 	value = string.gsub (value, "&gt;", ">");

@@ -1,16 +1,15 @@
+local cursorStatic = Cursor.static
 local bridgeKeys = {
 	HOT_SPOT_X = 1;
 	HOT_SPOT_Y = 2;
 	WIDTH = 3;
 	HEIGHT = 4;
 	PIXELS = 5;
-
-
-end
+}
 
 class BridgedCursor extends Cursor 
 	
-	enum Number bridgeKeys = bridgeKeys
+	enum Number bridgeKeys = {bridgeKeys}
 
 
 	static function updateAppearance()
@@ -31,7 +30,6 @@ class BridgedCursor extends Cursor
 		end
 	end
 
-	local cursorStatic = Cursor.static
 	static function drawTo( Canvas canvas, Number x, Number y )
 		local image = self.image
 		if image then

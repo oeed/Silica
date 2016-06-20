@@ -15,7 +15,7 @@ class WindowButton extends View
 		super( ... )
 		
 		self:event( MouseDownEvent, self.onMouseDown )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 		if self.onMouseUp then self:event( MouseUpEvent, self.onMouseUp ) end
 	end
 
@@ -51,7 +51,7 @@ class WindowButton extends View
 		if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = false
 			if self.isEnabled and self:hitTestEvent( event ) then
-				return self.event:handleEvent( event )
+				return self.eventManager:handleEvent( event )
 			end
 		end
 	end

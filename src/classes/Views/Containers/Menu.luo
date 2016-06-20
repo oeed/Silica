@@ -35,7 +35,7 @@ class Menu extends Container
 	function initialise( ... )
 		super( ... )
 
-		self.event:connectGlobal( MouseDownEvent, self.onGlobalMouseDown, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseDownEvent, self.onGlobalMouseDown, Event.phases.BEFORE )
 	end
 
 	function onDraw()
@@ -121,7 +121,7 @@ class Menu extends Container
 				owner.event:handleEvent( event )
 				return true
 			elseif self:hitTestEvent( event ) then
-				self.event:handleEvent( event )
+				self.eventManager:handleEvent( event )
 				return true
 			else
 				self:close()

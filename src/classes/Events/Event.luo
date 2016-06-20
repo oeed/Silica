@@ -3,10 +3,8 @@ local eventClasses = {}
 class Event
 	
 	property eventType
-
 	
 	static property eventType
-	
 
 	property relativeView -- the view that the event is relative of
 	property sender
@@ -15,11 +13,10 @@ class Event
 	property Boolean isSentToSender = true -- whether the event will be handled by the sender
 	property Boolean isSentToParents = false -- whether the event will be passed to the parent
 
-		-- functions can be called either before or after tickle down
-		enum Number phases = {
-			BEFORE = 1;
-			AFTER = 2;
-		}
+	-- functions can be called either before or after tickle down
+	enum Number phases = {
+		BEFORE = 1;
+		AFTER = 2;
 	}
 
 	--[[
@@ -34,9 +31,9 @@ class Event
 		@desc Registers an Event subclass after it has just been constructed
 	]]
 	static function initialise()
-		local eventType = self.eventType
+		local eventType = self.eventManagerType
 		if eventType then
-			Event.static:register( self.eventType, self.class )
+			Event.static:register( self.eventManagerType, self.class )
 		end
 	end
 

@@ -31,17 +31,18 @@ local fs = Quartz and Quartz.fs or fs
 		property Any allowsNil openIcon
 
 
-	function Folder.metatable:__call( path, ... )
-		path = resolve( path )
-		local cached = fileCache[path]
-		if cached then cached[2] = osClock() return cached[1] end
-		if fs.exists( path ) and fs.isDir( path ) and not fs.isReadOnly( path ) then
-			local name = fs.getName( path )
-			if name ~= ".DS_Store" and name ~= ".metadata" and name ~= ".git" then
-				return self.spawn( false, path, ... )
-			end
-		end
-	end
+	-- TODO: replace this with a static function
+	-- function Folder.metatable:__call( path, ... )
+	-- 	path = resolve( path )
+	-- 	local cached = fileCache[path]
+	-- 	if cached then cached[2] = osClock() return cached[1] end
+	-- 	if fs.exists( path ) and fs.isDir( path ) and not fs.isReadOnly( path ) then
+	-- 		local name = fs.getName( path )
+	-- 		if name ~= ".DS_Store" and name ~= ".metadata" and name ~= ".git" then
+	-- 			return self.spawn( false, path, ... )
+	-- 		end
+	-- 	end
+	-- end
 
 	static function make( path, overwrite )
 		path = resolve( path )

@@ -159,7 +159,8 @@ class Document
 	function serialiseHandle( handle )
 	end
 
-	Document:alias( Document.serialiseHandle, "serializeHandle" )
+	-- TODO: luo aliasing
+	-- Document:alias( Document.serialiseHandle, "serializeHandle" )
 
 	--[[
 		@desc Serialises the document's contents to it's raw form for saving. When subclassing you MUST override this! (what's the point of subclassing otherwise?)
@@ -171,7 +172,7 @@ class Document
 		return contents
 	end
 
-	Document:alias( Document.serialise, "serialize" )
+	-- Document:alias( Document.serialise, "serialize" )
 
 	--[[
 		@desc Called when the path being written to already exists (but not when it's the document's own path). By default makes the application show an alert box. Override this if you want to change that.

@@ -6,14 +6,10 @@ if Quartz then
 
 	local unknownFileAssociation
 
-	class FileAssociationManager
-		
-		static = {
-
-			property Table associations = {}
-			property Table extensionMimes = {}
-
-		}
+class FileAssociationManager
+	
+	static property Table associations = {}
+	static property Table extensionMimes = {}
 
 
 	static function registerAssociation( FileAssociation association, Number.allowsNil index )

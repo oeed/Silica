@@ -48,9 +48,9 @@ class Validator
 		@param [string] typeName -- the type to validate against
 		@return [boolean] isValid -- whether the value is valid
 	]]
-	static function isValid( value, typeName )
-		local parsed, allowsNil = self:parse( value, typeName )
-		return allowsNil or parsed ~= nil, parsed, allowsNil
-	end
+	-- static function isValid( value, typeName )
+	-- 	local parsed, allowsNil = self:parse( value, typeName )
+	-- 	return allowsNil or parsed ~= nil, parsed, allowsNil
+	-- end
 
 end

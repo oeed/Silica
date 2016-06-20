@@ -11,7 +11,7 @@ class ListItem extends View implements IDraggableView
 		super( ... )
 
 		self:event( MouseDownEvent, self.onMouseDown )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 		self:event( MouseHeldEvent, self.onMouseHeld )
 	end
 
@@ -57,8 +57,8 @@ class ListItem extends View implements IDraggableView
 		if self.isSelected and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isSelected = false
 			if self.isEnabled and self:hitTestEvent( event ) then
-				self.event:handleEvent( ActionInterfaceEvent( self ) )
-				local result = self.event:handleEvent( event )
+				self.eventManager:handleEvent( ActionInterfaceEvent( self ) )
+				local result = self.eventManager:handleEvent( event )
 				return result == nil and true or result
 			end
 			return true

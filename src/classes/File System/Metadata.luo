@@ -13,101 +13,100 @@ local g_tLuaKeywords = {
 	[ "end" ] = true,
 	[ "false" ] = true,
 	[ "for" ] = true,
-		[ "function" ] = true,
-		[ "if" ] = true,
-		[ "in" ] = true,
-		[ "local" ] = true,
-		[ "nil" ] = true,
-		[ "not" ] = true,
-		[ "or" ] = true,
-		[ "repeat" ] = true,
-		[ "return" ] = true,
-		[ "then" ] = true,
-		[ "true" ] = true,
-		[ "until" ] = true,
-		[ "while" ] = true,
-	}
+	[ "function" ] = true,
+	[ "if" ] = true,
+	[ "in" ] = true,
+	[ "local" ] = true,
+	[ "nil" ] = true,
+	[ "not" ] = true,
+	[ "or" ] = true,
+	[ "repeat" ] = true,
+	[ "return" ] = true,
+	[ "then" ] = true,
+	[ "true" ] = true,
+	[ "until" ] = true,
+	[ "while" ] = true,
+}
 
-	local function serialise( t, tTracking )
-		local sType = type(t)
-		if sType == "table" then
-			if tTracking[t] ~= nil then
-				error( "Cannot serialize table with recursive entries", 0 )
-			end
-			tTracking[t] = true
-
-			if next(t) == nil then
-				return "{}"
-			else
-				local sResult = "{"
-				local tSeen = {}
-				for k,v in ipairs(t) do
-					tSeen[k] = true
-					sResult = sResult .. serialise( v, tTracking ) .. ";"
-				end
-				for k,v in pairs(t) do
-					if not tSeen[k] then
-						local sEntry
-						if type(k) == "string" and not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
-							sEntry = k .. "=" .. serialise( v, tTracking ) .. ";"
-						else
-							sEntry = "[" .. serialise( k, tTracking ) .. "]=" .. serialise( v, tTracking ) .. ";"
-						end
-						sResult = sResult .. sEntry
-					end
-				end
-				sResult = sResult:sub( 1, #sResult - 1 ) .. "}"
-				return sResult
-			end
-		elseif sType == "string" then
-			return string.format( "%q", t )
-		elseif sType == "number" or sType == "boolean" or sType == "nil" then
-			return tostring(t)
-		else
-			error( "Cannot serialize type "..sType, 0 )
+local function serialise( t, tTracking )
+	local sType = type(t)
+	if sType == "table" then
+		if tTracking[t] ~= nil then
+			error( "Cannot serialize table with recursive entries", 0 )
 		end
+		tTracking[t] = true
+
+		if next(t) == nil then
+			return "{}"
+		else
+			local sResult = "{"
+			local tSeen = {}
+			for k,v in ipairs(t) do
+				tSeen[k] = true
+				sResult = sResult .. serialise( v, tTracking ) .. ";"
+			end
+			for k,v in pairs(t) do
+				if not tSeen[k] then
+					local sEntry
+					if type(k) == "string" and not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
+						sEntry = k .. "=" .. serialise( v, tTracking ) .. ";"
+					else
+						sEntry = "[" .. serialise( k, tTracking ) .. "]=" .. serialise( v, tTracking ) .. ";"
+					end
+					sResult = sResult .. sEntry
+				end
+			end
+			sResult = sResult:sub( 1, #sResult - 1 ) .. "}"
+			return sResult
+		end
+	elseif sType == "string" then
+		return string.format( "%q", t )
+	elseif sType == "number" or sType == "boolean" or sType == "nil" then
+		return tostring(t)
+	else
+		error( "Cannot serialize type "..sType, 0 )
 	end
+end
 
-	local EXTENSION_MIMES = {
-		LUA = "text/lua";
-		TXT = "text/plain";
-		TEXT = "text/plain";
-		IMAGE = "image/paint";
-		NFP = "image/paint";
-		NFT = "image/nft";
-		SKCH = "image/sketch";
-		UCG = "image/ucg";
-		SLUA = "silica/lua";
-		SINTERFACE = "silica/interface";
-		STHEME = "silica/theme";
-		SCONFIG = "silica/config";
-		SUSERDATA = "silica/suserdata";
-		SBUNDLE = "silica/sbundle";
-		SFONT = "silica/font";
-		SICON = "silica/icon";
-		RESOURCEPKG = "package/resource";
-		PACKAGE = "package/plain";
-		APPLICATION = "silica/application";
-	}
+local EXTENSION_MIMES = {
+	LUA = "text/lua";
+	TXT = "text/plain";
+	TEXT = "text/plain";
+	IMAGE = "image/paint";
+	NFP = "image/paint";
+	NFT = "image/nft";
+	SKCH = "image/sketch";
+	UCG = "image/ucg";
+	SLUA = "silica/lua";
+	SINTERFACE = "silica/interface";
+	STHEME = "silica/theme";
+	SCONFIG = "silica/config";
+	SUSERDATA = "silica/suserdata";
+	SBUNDLE = "silica/sbundle";
+	SFONT = "silica/font";
+	SICON = "silica/icon";
+	RESOURCEPKG = "package/resource";
+	PACKAGE = "package/plain";
+	APPLICATION = "silica/application";
+}
 
-	local SPECIAL_MIMES = {
-		FOLDER = "application/directory";
-		property nil UNKNOWN
-	}
+local SPECIAL_MIMES = {
+	FOLDER = "application/directory";
+	-- property nil UNKNOWN
+}
 
-	class Metadata
-		
-		property FileSystemItem file
-		property String metadataPath
+class Metadata
+	
+	property FileSystemItem file
+	property String metadataPath
 
-		property String allowsNil mime -- MIME mime of the file (e.g. image/nft)
-		property Number createdTimestamp = DEFAULT_TIMESTAMP
-		property Number openedTimestamp = DEFAULT_TIMESTAMP
-		property Number modifiedTimestamp = DEFAULT_TIMESTAMP
+	property String allowsNil mime -- MIME mime of the file (e.g. image/nft)
+	property Number createdTimestamp = DEFAULT_TIMESTAMP
+	property Number openedTimestamp = DEFAULT_TIMESTAMP
+	property Number modifiedTimestamp = DEFAULT_TIMESTAMP
 
-		property Enum mimes = String, EXTENSION_MIMES
-		property Enum specialMimes = String, SPECIAL_MIMES
-
+	property Enum mimes = String, EXTENSION_MIMES
+	property Enum specialMimes = String, SPECIAL_MIMES
 
 	function initialise( FileSystemItem file )
 		self.file = file
@@ -173,8 +172,8 @@ local g_tLuaKeywords = {
 		return properties
 	end
 
-	-- TODO: do function aliases work?
-	Metadata:alias( Metadata.serialise, "serialize" )
+	-- TODO: do add aliasing to luo
+	-- Metadata:alias( Metadata.serialise, "serialize" )
 
 	-- create metadata for the file based on it's content
 	function create()

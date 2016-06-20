@@ -74,7 +74,7 @@ class Container extends View
 		@desc Initialises the custom container event manger
 	]]
 	function initialiseEventManager()
-		self.event = ContainerEventManager( self )
+		self.eventManager = ContainerEventManager( self )
 	end
 
 	--[[
@@ -272,7 +272,7 @@ class Container extends View
 		if width ~= self.width then
 			self.needsHorizontalPinUpdate = true
 			super( width )
-			local event = self.event
+			local event = self.eventManager
 			if event then
 				event:handleEvent( ParentResizedInterfaceEvent( true, false, self ) )
 			end
@@ -283,7 +283,7 @@ class Container extends View
 		if height ~= self.height then
 			self.needsVerticalPinUpdate = true
 			super( height )
-			local event = self.event
+			local event = self.eventManager
 			if event then
 				event:handleEvent( ParentResizedInterfaceEvent( false, true, self ) )
 			end
@@ -403,7 +403,7 @@ class Container extends View
 			end
 		end
 
-		self.event:handleEvent( ChildAddedInterfaceEvent( childView, self ) )
+		self.eventManager:handleEvent( ChildAddedInterfaceEvent( childView, self ) )
 
 		self.needsDraw = true
 
@@ -492,7 +492,7 @@ class Container extends View
 				end
 			end
 		
-			self.event:handleEvent( ChildRemovedInterfaceEvent( removingView, self ) )
+			self.eventManager:handleEvent( ChildRemovedInterfaceEvent( removingView, self ) )
 		end
 
 

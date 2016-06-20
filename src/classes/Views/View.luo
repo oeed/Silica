@@ -26,7 +26,7 @@ class View
 
 	property Table animations = { names = {} }
 
-	property EventManager event
+	property EventManager eventManager
 
 	property Canvas canvas
 	property Mask allowsNil shadowMask -- TODO: .isReadOnly
@@ -80,14 +80,14 @@ class View
 		end
 
 		self:event( MouseDownEvent, self.onMouseDownSpecialEvents )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUpSpecialEvents )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUpSpecialEvents )
 	end
 
 	--[[
 		@desc Initialises the view's event manager (used for overriding)
 	]]
 	function initialiseEventManager()
-		self.event = EventManager( self )
+		self.eventManager = EventManager( self )
 	end
 
 	--[[
@@ -479,7 +479,7 @@ class View
 		@desc Detects when the mouse is pressed. Used to fire mouse held and double click
 	]]
 	function onMouseDownSpecialEvents( MouseDownEvent event, Event.phases phase )
-		local eventManager = self.event
+		local eventManager = self.eventManager
 		local hasHeld, hasDouble = eventManager:hasConnections( MouseHeldEvent ), eventManager:hasConnections( MouseDoubleClickEvent )
 		if hasHeld or hasDouble then
 			local mouseButton, time = event.mouseButton, os.clock()
@@ -626,7 +626,7 @@ class View
 
 	-- IMPORTANT: You MUST ALWAYS call super when overriding this function
 	function dispose()
-		self.event:dispose()
+		self.eventManager:dispose()
 
 		local parent = self.parent
 		if parent then

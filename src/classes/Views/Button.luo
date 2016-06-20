@@ -24,7 +24,7 @@ class Button extends View
 		self:event( MouseDownEvent, self.onMouseDown )
 		self:event( KeyDownEvent, self.onKeyDown )
 		self:event( KeyUpEvent, self.onKeyUp )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	end
 
 	function onDraw()
@@ -109,8 +109,8 @@ class Button extends View
 		if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = false
 			if self.isEnabled and self:hitTestEvent( event ) then
-				self.event:handleEvent( ActionInterfaceEvent( self ) )
-				local result = self.event:handleEvent( event )
+				self.eventManager:handleEvent( ActionInterfaceEvent( self ) )
+				local result = self.eventManager:handleEvent( event )
 				return result == nil and true or result
 			end
 		end
@@ -148,7 +148,7 @@ class Button extends View
 	function onKeyUp( KeyUpEvent event, Event.phases phase )
 		if self.isEnabled and self.isPressed and self.isFocused and event.keyCode == keys.enter then
 			self.isPressed = false
-			self.event:handleEvent( ActionInterfaceEvent( self ) )
+			self.eventManager:handleEvent( ActionInterfaceEvent( self ) )
 			return true
 		end
 	end

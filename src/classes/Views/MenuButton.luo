@@ -113,7 +113,7 @@ class MenuButton extends Button
 			self.isPressed = false
 			if self:hitTestEvent( event ) then
 				self.menu:toggle()
-				return self.event:handleEvent( event )
+				return self.eventManager:handleEvent( event )
 			end
 		end
 	end

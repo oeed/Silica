@@ -35,13 +35,13 @@ class KeyboardShortcutManager
 	default keysDown = {}
 	default keysUpdates = {}
 	property owner
-	property event
+	property EventManager eventManager
 
 	function initialise( owner )
 		self.owner = owner
-		self.event = EventManager( self )
-		self.event:connectGlobal( KeyDownEvent, self.onGlobalKeyDown )
-		self.event:connectGlobal( KeyUpEvent, self.onGlobalKeyUp )
+		self.eventManager = EventManager( self )
+		self.eventManager:connectGlobal( KeyDownEvent, self.onGlobalKeyDown )
+		self.eventManager:connectGlobal( KeyUpEvent, self.onGlobalKeyUp )
 	end
 
 	function onGlobalKeyDown( KeyDownEvent event, Event.phases phase )

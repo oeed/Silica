@@ -2,7 +2,7 @@ class ListContainer extends ScrollContainer implements IDragDropDestination
 	
 	property Boolean needsLayoutUpdate = false
 	property Boolean canRearrange = true
-	property DragDropManager dropStyles RETURN dropStyle
+	property DragDropManager.dropStyles dropStyle = DragDropManager.dropStyles.RETURN
 	property Boolean canTransferItems = false
 
 

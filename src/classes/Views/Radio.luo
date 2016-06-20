@@ -13,7 +13,7 @@ class Radio extends View
 
 		self:event( ParentChangedInterfaceEvent, self.onParentChanged )
 		self:event( MouseDownEvent, self.onMouseDown )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	end
 
 	function onDraw()
@@ -35,7 +35,7 @@ class Radio extends View
 				sibling.isChecked = false
 			end
 		end
-		self.event:handleEvent( ActionInterfaceEvent( self ) )
+		self.eventManager:handleEvent( ActionInterfaceEvent( self ) )
 		self:updateThemeStyle()
 	end
 
@@ -71,7 +71,7 @@ class Radio extends View
 			self.isPressed = false
 			if self:hitTestEvent( event ) then
 				self.isChecked = true
-				return self.event:handleEvent( event )
+				return self.eventManager:handleEvent( event )
 			end
 		end
 	end

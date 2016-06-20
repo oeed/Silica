@@ -4,7 +4,7 @@ class Resource
 	property File allowsNil file
 	property String allowsNil contents
 	property Table allowsNil binaryContents
-	property Metadata mimes mime
+	property Metadata.mimes mime
 
 	--[[
 		@constructor

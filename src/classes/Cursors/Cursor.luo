@@ -1,16 +1,11 @@
 class Cursor
 	
-	static = {
-
-		property ThemeOutlet theme
-		property EventManager event
-		property Image allowsNil image
-		property Number hotSpotX
-		property Number hotSpotY
-		property Boolean hasUpdatedApperance = false
-
-	}
-	
+	static property ThemeOutlet theme
+	static property EventManager eventManager
+	static property Image allowsNil image
+	static property Number hotSpotX
+	static property Number hotSpotY
+	static property Boolean hasUpdatedApperance = false
 
 	static function setupAll()
 		self:setup()

@@ -31,7 +31,7 @@ class MenuBarItem extends View
 		-- self.menu = menu
 		self:event( MenuChangedInterfaceEvent, self.onMenuChanged )
 		self:event( MouseDownEvent, self.onMouseDown )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 		self:event( ReadyInterfaceEvent, self.onReady )
 		self:updateHeight()
 	end
@@ -152,7 +152,7 @@ class MenuBarItem extends View
 			self.isPressed = false
 			if self:hitTestEvent( event ) then
 				self.menu:toggle()
-				return self.event:handleEvent( event )
+				return self.eventManager:handleEvent( event )
 			end
 		end
 	end

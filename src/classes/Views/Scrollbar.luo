@@ -13,8 +13,8 @@ class Scrollbar extends View
 		super( ... )
 		-- self:event( MouseScrollEvent, self.onMouseScroll )
 		self:event( MouseDownEvent, self.onMouseDown )
-		self.event:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	end
 
 	--[[

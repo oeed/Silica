@@ -11,7 +11,7 @@ class Checkbox extends View
 	function initialise( ... )
 		super( ... )
 		self:event( MouseDownEvent, self.onMouseDown )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	end
 
 	function onDraw()
@@ -47,7 +47,7 @@ class Checkbox extends View
 		if isChecked ~= wasChecked then
 			self.isChecked = isChecked
 			self:updateThemeStyle()
-			self.event:handleEvent( ActionInterfaceEvent( self ) )
+			self.eventManager:handleEvent( ActionInterfaceEvent( self ) )
 		end
 	end
 
@@ -62,7 +62,7 @@ class Checkbox extends View
 			if self.isEnabled then
 				if self:hitTestEvent( event ) then
 					self.isChecked = not self.isChecked
-					return self.event:handleEvent( event )
+					return self.eventManager:handleEvent( event )
 				end
 			end
 		end
