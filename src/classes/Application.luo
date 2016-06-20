@@ -13,7 +13,7 @@ class Application
 	property Boolean isRunning = false
 	property Container container
 	property Document allowsNil document
-	property ApplicationEventManager event
+	property ApplicationEventManager eventManager
 	property Table schedules = {}
 	property KeyboardShortcutManager keyboardShortcutManager
 	property DragDropManager dragDropManager
@@ -80,7 +80,7 @@ class Application
 		self.userDataFolder = Folder( userDataPath ) or Folder.static:make( userDataPath )
 		self:initialiseSettings()
 		self:initialiseFileAssociations()
-		self.event = ApplicationEventManager( self )
+		self.eventManager = ApplicationEventManager( self )
 		self.keyboardShortcutManager = KeyboardShortcutManager( self )
 		self.dragDropManager = DragDropManager( self )
 
@@ -96,7 +96,7 @@ class Application
 		end
 		self:schedule( purge, 30 )
 
-		self.event:connect( TimerEvent, self.onTimer )
+		self.eventManager:connect( TimerEvent, self.onTimer )
 	end
 
 	function initialiseSettings()
@@ -125,7 +125,7 @@ class Application
 			while self.isRunning do
 				local event = Event.static:create( coroutine.yield() )
 				event.relativeView = self.container
-				self.event:handleEvent( event )
+				self.eventManager:handleEvent( event )
 			end
 		end ) {
 
@@ -234,7 +234,7 @@ class Application
 				focuses[newFocus] = true
 				newFocus.isFocused = true
 			end
-			self.event:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
+			self.eventManager:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
 		end
 	end
 
@@ -254,7 +254,7 @@ class Application
 			end
 			focuses[newFocus] = true
 			newFocus.isFocused = true
-			self.event:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
+			self.eventManager:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
 		end
 	end
 
@@ -271,7 +271,7 @@ class Application
 			end
 			focuses[oldFocus] = nil
 			oldFocus.isFocused = false
-			self.event:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
+			self.eventManager:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
 		end
 	end
 
@@ -289,7 +289,7 @@ class Application
 				oldFocus.isFocused = false
 			end
 		end
-		self.event:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
+		self.eventManager:handleEvent( FocusesChangedInterfaceEvent( focuses, oldFocuses ) )
 	end
 
 	--[[
@@ -343,7 +343,7 @@ class Application
 		@param [TimerEvent] event -- the timer event
 		@return [boolean] stopPropagation -- whether following handlers should not recieve this event
 	]]
-	function onTimer( Event event, Event.phases phase )
+	event updateTimer( TimerEvent event )
 		if event.timer and event.timer == self.updateTimer then
 			self:update()
 			return true

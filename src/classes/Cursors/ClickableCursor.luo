@@ -3,8 +3,8 @@ class ClickableCursor extends Cursor
 
 	static function setup( ... )
 		super( ... )
-		self.event:connectGlobal( MouseDownEvent, self.onGlobalMouseDown, Event.phases.BEFORE )
-		self.event:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseDownEvent, self.onGlobalMouseDown, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	end
 
 	static function onGlobalMouseDown( MouseDownEvent event, Event.phases phase )

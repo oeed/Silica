@@ -23,7 +23,7 @@ class Cursor
 	static function setup()
 		self.theme = ThemeOutlet( self )
 		local event = EventManager( self )
-		self.event = event
+		self.eventManager = event
 		event:connectGlobal( ThemeChangedInterfaceEvent, self.onThemeChanged )
 	end
 
