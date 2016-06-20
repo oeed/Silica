@@ -1,13 +1,13 @@
-	local function split(a,e)
-		local t,e=e or":",{}
-		local t=string.format("([^%s]+)",t)
-		a:gsub(t,function(t)e[#e+1]=t end)
-		return e
-	end
+local function split(a,e)
+	local t,e=e or":",{}
+	local t=string.format("([^%s]+)",t)
+	a:gsub(t,function(t)e[#e+1]=t end)
+	return e
+end
 
-	class KeyboardShortcut
-		keys = {};
-	}
+class KeyboardShortcut
+
+	property Table keys = {}
 
 	--[[
 		@constructor

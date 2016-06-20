@@ -100,7 +100,7 @@ class View
 	--[[
 		@desc The Mask to use for the View's shadow
 	]]
-	function View.shadowMask:get()
+	get shadowMask()
 		return self.canvas.contentMask -- self.canvas.mask is the mask of the currently drawn pixels to the canvas, i.e. everything will cast a shadow
 	end
 
@@ -140,7 +140,7 @@ class View
 		@desc Returns the view's siblings in it's container
 		@return [table] siblings -- an array of the siblings
 	]]
-	function View.siblings:get()
+	get siblings()
 		local siblings = {}
 
 		if self.parent then
@@ -158,7 +158,7 @@ class View
 		@desc Returns true if the view is the first child of it's parent
 		@return [boolean] isFirst -- whether  the view is the first child of it's parent
 	]]
-	function View.isFirst:get()
+	get isFirst()
 		return self.index == 1
 	end
 
@@ -166,7 +166,7 @@ class View
 		@desc Returns true if the view is the last child of it's parent
 		@return [boolean] isLast -- whether	 the view is the last child of it's parent
 	]]
-	function View.isLast:get()
+	get isLast()
 		local parent = self.parent
 		return parent and (self.index == #parent.children) or false
 	end
@@ -175,7 +175,7 @@ class View
 		@desc Returns whether the control is enabled, rising up to the parent containers as well
 		@return [boolean] isEnabled -- whether the view is enabled
 	]]
-	function View.isEnabled:get()
+	get isEnabled()
 		if not self.isEnabled then
 			return false
 		else
@@ -192,7 +192,7 @@ class View
 		@desc Returns the index of the view in it's parent. 1 is the bottom most view
 		@return [number] index -- an array of the siblings
 	]]
-	function View.index:get()
+	get index()
 		local parent = self.parent
 		if parent then
 			for i, child in ipairs( parent.children ) do
@@ -315,7 +315,7 @@ class View
 		end
 	end
 
-	function View.isVisible:get()
+	get isVisible()
 		return self.parent and self.isVisible -- if we don't have a parent we're effectively not visible
 	end
 

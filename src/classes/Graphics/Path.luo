@@ -144,7 +144,7 @@ local sin, cos, floor, min, max, abs, acos, PI, remove, insert = math.sin, math.
 		@desc Returns a serialised copy of the path which can be used to load from later
 		@return [table] path -- the copied path table
 	]]
-	function Path.serialisedPath:get()
+	get serialisedPath()
 		local lines, pathCopy = self.lines, { x = self.x, y = self.y, width = self.width, height = self.height, lines = {} }
 		local linesCopy = pathCopy.lines
 

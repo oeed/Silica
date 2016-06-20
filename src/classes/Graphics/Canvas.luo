@@ -27,14 +27,14 @@ class Canvas
 	--[[
 		@desc Creates a mask which covers the entire canvas
 	]]
-	function Canvas.mask:get()
+	get mask()
 		return RectangleMask( 1, 1, self.width, self.height )
 	end
 
 	--[[
 		@desc Creates a mask which covers the filled pixels of the canvas
 	]]
-	function Canvas.contentMask:get()
+	get contentMask()
 		local pixels = {}
 		for k, v in pairs( self.pixels ) do
 			if v ~= TRANSPARENT then

@@ -144,7 +144,7 @@ class Menu extends Container
 	--[[
 		@desc The open state of the menu
 	]]
-	function Menu.isOpen:get()
+	get isOpen()
 		return self.isVisible
 	end
 

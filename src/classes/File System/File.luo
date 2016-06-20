@@ -89,7 +89,7 @@ local fs = Quartz and Quartz.fs or fs
 		end
 	end
 
-	function File.contents:get()
+	get contents()
 		local handle = fs.open( self.path, "r" )
 		if handle then
 			local contents = handle.readAll( contents )
@@ -100,12 +100,12 @@ local fs = Quartz and Quartz.fs or fs
 		end
 	end
 
-	function File.serialisedContents:get()
+	get serialisedContents()
 		return textutils.unserialize( self.contents )
 	end
 
 	-- TODO: this is slow af
-	function File.binaryContents:get()
+	get binaryContents()
 		local handle = fs.open( self.path, "rb" )
 		if handle then
 			local contents = {}

@@ -11,7 +11,7 @@ class TextFormatter
 	-- but up to you, i'm not really sure how it works
 
 	-- these are defaults, since they can change
-	property Graphics colours GREY colour
+	property Graphics.colours colour = Graphics.colours.GREY
 	property underline
 	property strikethrough
 

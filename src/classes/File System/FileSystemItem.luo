@@ -125,7 +125,7 @@ local fs = Quartz and Quartz.fs or fs
 		self.extension = extension
 	end
 
-	function FileSystemItem.association:get()
+	get association()
 		local association = self.association
 		if association then return association end
 
@@ -142,7 +142,7 @@ local fs = Quartz and Quartz.fs or fs
 		FileAssociationManager.static:open( self, association )
 	end
 
-	function FileSystemItem.size:get()
+	get size()
 		return fs.getSize( self.path )
 	end
 
@@ -150,7 +150,7 @@ local fs = Quartz and Quartz.fs or fs
 		error( "FileSystemItem.size is a read-only property.", 2 )
 	end
 
-	function FileSystemItem.sizeString:get()
+	get sizeString()
 		local size = self.size
 		if size == 0 then return "0B" end
 		local prefixes = { [0] = ""; "k"; "M"; "G"; "T"; "P"; }
@@ -163,7 +163,7 @@ local fs = Quartz and Quartz.fs or fs
 		error( "FileSystemItem.sizeString is a read-only property.", 2 )
 	end
 
-	function FileSystemItem.icon:get()
+	get icon()
 		local cache = self.icon
 		if cache then return cache end
 
@@ -197,7 +197,7 @@ local fs = Quartz and Quartz.fs or fs
 		return unknownIcon
 	end
 
-	function FileSystemItem.parent:get()
+	get parent()
 		local parent = self.parent
 		if parent then return parent end
 		if self.path == "/" then return nil end
@@ -247,11 +247,11 @@ local fs = Quartz and Quartz.fs or fs
 		self.metadata:rename( fullName )
 	end
 
-	function FileSystemItem.metadataPath:get()
+	get metadataPath()
 		return self.parentPath .. "/.metadata/" ..self.fullName
 	end
 
-	function FileSystemItem.metadata:get()
+	get metadata()
 		local metadata = self.metadata
 		if metadata then return metadata end
 

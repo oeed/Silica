@@ -120,7 +120,7 @@ class MenuBarItem extends View
 		@desc Whether the button is pressed or open
 		@return [boolean] isActive -- whether the button is active
 	]]
-	function MenuBarItem.isActive:get()
+	get isActive()
 		if self.isPressed then
 			return true
 		end

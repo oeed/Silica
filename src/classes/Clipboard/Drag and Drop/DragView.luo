@@ -12,7 +12,7 @@ class DragView extends View
 		self.needsDraw = true
 	end
 
-	function DragView.shadowMask:get()
+	get shadowMask()
 		return self.shadowMask
 	end
 

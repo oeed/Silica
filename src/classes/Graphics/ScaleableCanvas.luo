@@ -15,7 +15,7 @@ class ScaleableCanvas extends Canvas
 	--[[
 		@desc Creates a mask which covers the filled pixels of the canvas
 	]]
-	function ScaleableCanvas.contentMask:get()
+	get contentMask()
 		local scaleX, scaleY = self.scaleX, self.scaleY
 		local width, height = self.width, self.height
 		local scaledWidth, scaledHeight = floor( width * scaleX + 0.5 ), floor( height * scaleY + 0.5 )

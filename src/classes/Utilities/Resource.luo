@@ -64,14 +64,14 @@ class Resource
 		self.mime = file.metadata.mime
 	end
 
-	function Resource.contents:get()
+	get contents()
 		local contents = self.contents
 		if contents then return contents end
 		contents = self.file.contents
 		return contents
 	end
 
-	function Resource.binaryContents:get()
+	get binaryContents()
 		local binaryContents = self.binaryContents
 		if binaryContents then return binaryContents end
 		binaryContents = self.file.binaryContents

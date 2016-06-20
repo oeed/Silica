@@ -193,7 +193,7 @@ class ApplicationContainer extends Container
 		self.application:clearFocus()
 	end
 
-	function ApplicationContainer.isVisible:get()
+	get isVisible()
 		return self.isVisible -- View requires having a parent to be visible, but we never have a parent
 	end
 

@@ -92,7 +92,7 @@ class MenuButton extends Button
 		@desc Whether the button is pressed or open
 		@return [boolean] isActive -- whether the button is active
 	]]
-	function MenuButton.isActive:get()
+	get isActive()
 		if self.isPressed then
 			return true
 		end

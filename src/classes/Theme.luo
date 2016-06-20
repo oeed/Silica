@@ -8,16 +8,12 @@ class Theme
 	static property Theme active -- @static	the current theme
 	static property Table themes = {} -- @static  a cache of already created themes
 
-
-
-end
-
---[[
-	@constructor
-	@desc Loads a theme from name
-	@param [string] themeName -- the name of the theme
-	@table [table] cantExtend -- a table of the theme names that the theme can't extend (as they are currently extending, which would cause recussursion)
-]]
+	--[[
+		@constructor
+		@desc Loads a theme from name
+		@param [string] themeName -- the name of the theme
+		@table [table] cantExtend -- a table of the theme names that the theme can't extend (as they are currently extending, which would cause recussursion)
+	]]
 	function initialise( themeName, cantExtend )
 		cantExtend = cantExtend or {}
 		if cantExtend[themeName] then
