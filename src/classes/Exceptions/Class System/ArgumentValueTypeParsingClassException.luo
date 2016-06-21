@@ -1,7 +1,7 @@
 class ArgumentValueTypeParsingClassException extends ClassException 
 
 
-	function initialise( String message, Number.allowsNil level )
+	function initialise( String message, Number allowsNil level )
 		message = "Incorrect declaration of function or argument: " .. message
 		super( message, level )
 	end

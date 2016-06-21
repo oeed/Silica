@@ -15,7 +15,7 @@ class BridgedCursor extends Cursor
 	static function updateAppearance()
 	end
 
-	static function updateBridge( Table.allowsNil bridge )
+	static function updateBridge( Table allowsNil bridge )
 		if not bridge then
 			self.image = nil
 		else

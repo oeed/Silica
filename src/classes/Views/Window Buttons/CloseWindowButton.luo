@@ -1,4 +1,4 @@
-class CloseWindowButton extends WindowButton }
+class CloseWindowButton extends WindowButton
 
 	function onMouseUp( Event event, Event.phases phase )	   
 		if self.window then

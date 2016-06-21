@@ -141,7 +141,7 @@ local fs = Quartz and Quartz.fs or fs
 		@desc Creates a file within this folder
 		@return File
 	]]
-	function makeSubfile( String path, Metadata.mimes mime, Boolean overwrite = false, String.allowsNil contents )
+	function makeSubfile( String path, Metadata.mimes mime, Boolean overwrite = false, String allowsNil contents )
 		return File.static:make( self.path .. tidy( "/" .. path ), mime, overwrite, contents )
 	end
 

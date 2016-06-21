@@ -121,7 +121,7 @@ class Path
 		@param [number] currentX -- the starting x coordinate
 		@param [number] currentY -- the starting y coordinate
 	]]
-	function initialise( Number width, Number height, Number currentX = 1, Number currentY = 1, Table.allowsNil lines )
+	function initialise( Number width, Number height, Number currentX = 1, Number currentY = 1, Table allowsNil lines )
 		self.width = width
 		self.height = height
 		self.currentX = currentX

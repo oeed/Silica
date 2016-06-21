@@ -10,7 +10,7 @@ class FileAssociation implements ISerialiseable
 	property Bundle allowsNil programBundle
 	property Table argumentFormat = { true }
 
-	function initialise( String name, String mime, Icon.allowsNil icon, Table extensions, Table.allowsNil argumentFormat, Bundle programBundle )
+	function initialise( String name, String mime, Icon allowsNil icon, Table extensions, Table allowsNil argumentFormat, Bundle programBundle )
 		self.id = n
 		n = n + 1
 		self.name = name

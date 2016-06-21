@@ -3,7 +3,7 @@ class ValidationException extends Exception
 	
 
 
-	function initialise( String message, Number.allowsNil level )
+	function initialise( String message, Number allowsNil level )
 		message = "Value validation exception: " .. message
 		super( message, level )
 	end

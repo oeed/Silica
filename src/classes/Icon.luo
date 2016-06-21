@@ -17,7 +17,7 @@ class Icon extends Image
 	property Enum iconValues = Number, iconValues
 
 
-	function initialise( Table images, Any.allowsNil contents )
+	function initialise( Table images, Any allowsNil contents )
 		local maxSize = 0
 		local maxWidth, maxWidth
 		local pixels
@@ -140,7 +140,7 @@ class Icon extends Image
 	--[[
 		@desc Returns true if the given mime is a supported image
 	]]
-	static function isMIME( String.allowsNil mime )
+	static function isMIME( String allowsNil mime )
 		return mime and availableMimes[mime] or false
 	end
 

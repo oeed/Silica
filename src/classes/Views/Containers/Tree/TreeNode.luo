@@ -1,3 +1,5 @@
+local clickableCursor, cursor = ClickableCursor.static, Cursor.static
+
 class TreeNode extends LayoutContainer implements ITreeChild implements IDragDropDestination 
 	
 	property String text
@@ -55,7 +57,6 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 		self:updateThemeStyle()
 	end
 
-	local clickableCursor, cursor = ClickableCursor.static, Cursor.static
 	function onMouseEnteredOrMoved( Event event, Event.phases phase )
 		local currentCursor = self.cursor
 		local newCursor = cursor

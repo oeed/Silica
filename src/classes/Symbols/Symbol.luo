@@ -7,7 +7,7 @@ class Symbol
 	static property Number height = 7
 	static property Path allowsNil path
 
-	static function initialise( Path.allowsNil path )
+	static function initialise( Path allowsNil path )
 		if path then
 			local symbolName = self.symbolName
 			if not symbolName then

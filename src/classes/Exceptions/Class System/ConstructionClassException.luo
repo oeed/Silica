@@ -1,7 +1,7 @@
 class ConstructionClassException extends ClassException 
 
 
-	function initialise( String message, Number.allowsNil level )
+	function initialise( String message, Number allowsNil level )
 		message = "Error occured during class construction: " .. message
 		super( message, level )
 	end

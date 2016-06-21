@@ -363,7 +363,7 @@ class Container extends View
 		@param [number] position -- the z-position of the child (top by default). higher number means further back
 		@return [View] childView -- the sent child view
 	]]
-	function insert( View childView, Number.allowsNil position )
+	function insert( View childView, Number allowsNil position )
 		local children = self.children
 		if position then
 			table.insert( children, position, childView )
@@ -556,7 +556,7 @@ class Container extends View
 	--[[
 		@desc Checks if the mouse has entered or exited one of its children and sends an event if so
 	]]
-	function onUpdateChildMouseEnterExit( Event.allowsNil event, Event.phases.allowsNil phase, Number x = event.x, Number y = event.y )
+	function onUpdateChildMouseEnterExit( Event allowsNil event, Event.phases allowsNil phase, Number x = event.x, Number y = event.y )
 		local children = self.children
 		self.cursorLastX = x
 		self.cursorLastY = y

@@ -70,7 +70,7 @@ class Font
 		self.scale = ( desiredHeight or height ) / height
 	end
 
-	static function fromName( String name, String.allowsNil alias )
+	static function fromName( String name, String allowsNil alias )
 		local cache = self.cache
 		local cacheValue = cache[name]
 		if cacheValue then return cacheValue end

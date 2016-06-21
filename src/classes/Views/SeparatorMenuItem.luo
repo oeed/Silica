@@ -20,7 +20,7 @@ class SeparatorMenuItem extends MenuItem
 		canvas:fill( theme:value( "separatorColour" ), theme:value( "separatorIsDashed" ) and SeparatorMask( separatorX, separatorY, separatorWidth, 1 ) or RectangleMask( separatorX, separatorY, separatorWidth, 1 ) )
 	end
 
-	function updateSize( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
+	function updateSize( ThemeChangedInterfaceEvent allowsNil event, Event.phases allowsNil phase )
 		local theme = self.theme
 		self.height = 1 + theme:value( "topMargin") + theme:value( "bottomMargin")
 	end

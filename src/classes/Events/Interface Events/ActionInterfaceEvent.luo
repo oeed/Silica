@@ -11,7 +11,7 @@ class ActionInterfaceEvent extends InterfaceEvent
 		@desc Creates a focus event from the arguments
 		@param [View] view -- the View whose action it is
 	]]
-	function initialise( View view, Event.allowsNil originalEvent )
+	function initialise( View view, Event allowsNil originalEvent )
 		self.view = view
 		self.originalEvent = originalEvent
 	end

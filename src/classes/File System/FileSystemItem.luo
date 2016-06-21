@@ -89,7 +89,7 @@ class FileSystemItem
 	--[[
 		@desc Resolves a path (makes absolute)
 	]]
-	static function resolve( String path, String.allowsNil root )
+	static function resolve( String path, String allowsNil root )
 		return resolve( path, root )
 	end
 
@@ -139,7 +139,7 @@ class FileSystemItem
 		@desc Opens the file with the appropriate program (or the given association)
 	]]
 							-- TODO: Any should be FileAssociation
-	function open( Any.allowsNil association )
+	function open( Any allowsNil association )
 		FileAssociationManager.static:open( self, association )
 	end
 

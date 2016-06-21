@@ -483,7 +483,7 @@ end
 
 	-- solve percentages
 	-- plug in relative indexes
-	static function resolve( Table tokens, Number.allowsNil percentageValue, String.allowsNil referencePropertyName, Table.allowsNil references )
+	static function resolve( Table tokens, Number allowsNil percentageValue, String allowsNil referencePropertyName, Table allowsNil references )
 		local knownList = {}
 		for i = 1, #tokens do
 			local token = tokens[i]
@@ -536,7 +536,7 @@ end
 	--[[
 		@desc Returns the evaluated value with the references inputs
 	]]
-	function value( Number.allowsNil percentageValue, String.allowsNil referencePropertyName, Table.allowsNil references )
+	function value( Number allowsNil percentageValue, String allowsNil referencePropertyName, Table allowsNil references )
 		local knownList = MathParser.static:resolve( self.tokens, percentageValue, referencePropertyName, references )
 		return eval.knownList( knownList )
 	end

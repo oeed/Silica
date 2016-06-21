@@ -458,7 +458,7 @@ class Image
 	property Enum scaleMethods = Number, scaleMethods
 
 
-	function initialise( Table pixels, Number width, Number height, Any.allowsNil contents )
+	function initialise( Table pixels, Number width, Number height, Any allowsNil contents )
 		local newPixels = {}
 		local maxLength = width * height
 		for i, pixel in pairs( pixels ) do
@@ -476,7 +476,7 @@ class Image
 	--[[
 		@desc Returns true if the given mime is a supported image
 	]]
-	static function isMIME( String.allowsNil mime )
+	static function isMIME( String allowsNil mime )
 		return mime and availableMimes[mime] or false
 	end
 

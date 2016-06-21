@@ -44,7 +44,7 @@ class Mask
 		@desc Subtract (remove 'true' pixels) the given Mask from self (doesn't change self, returns a new mask)
 		@return Mask subtractedMask
 	]]
-	function subtract( Mask mask, Number.allowsNil x, Number.allowsNil y )
+	function subtract( Mask mask, Number allowsNil x, Number allowsNil y )
 		return shapeMode( self, mask, x, y, function( selfPixel, maskPixel ) return selfPixel and not maskPixel end )
 	end
 
@@ -52,7 +52,7 @@ class Mask
 		@desc Intersect (remove 'true' pixels) the given Mask with self (doesn't change self, returns a new mask)
 		@return Mask intersectedMask
 	]]
-	function intersect( Mask mask, Number.allowsNil x, Number.allowsNil y )
+	function intersect( Mask mask, Number allowsNil x, Number allowsNil y )
 		return shapeMode( self, mask, x, y, function( selfPixel, maskPixel ) return selfPixel and maskPixel end )
 	end
 
@@ -60,7 +60,7 @@ class Mask
 		@desc Exclude (remove 'true' pixels) the given Mask from self (doesn't change self, returns a new mask)
 		@return Mask excludedMask
 	]]
-	function exclude( Mask mask, Number.allowsNil x, Number.allowsNil y )
+	function exclude( Mask mask, Number allowsNil x, Number allowsNil y )
 		return shapeMode( self, mask, x, y, function( selfPixel, maskPixel ) return ( not selfPixel and maskPixel ) or ( selfPixel and not maskPixel ) end ) -- can't use ~= as it might be nil
 	end
 
@@ -68,7 +68,7 @@ class Mask
 		@desc Merge (remove 'true' pixels) the given Mask with self (doesn't change self, returns a new mask)
 		@return Mask mergedMask
 	]]
-	function add( Mask mask, Number.allowsNil x, Number.allowsNil y )
+	function add( Mask mask, Number allowsNil x, Number allowsNil y )
 		return shapeMode( self, mask, x, y, function( selfPixel, maskPixel ) return selfPixel or maskPixel end )
 	end
 

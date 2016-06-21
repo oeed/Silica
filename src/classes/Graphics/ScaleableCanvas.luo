@@ -6,7 +6,7 @@ class ScaleableCanvas extends Canvas
 	property Number scaleY = 1
 
 
-	function initialise( Number width, Number height, View.allowsNil owner )
+	function initialise( Number width, Number height, View allowsNil owner )
 		self.width = width
 		self.height = height
 		self.owner = owner
@@ -66,7 +66,7 @@ class ScaleableCanvas extends Canvas
 	--[[
 		@desc Draws the canvas to another canvas. If mask is provided the canvas content will be masked (mask pixels will be drawn, pixels not in the mask won't). Mask cordinates are relative to self, not the destination
 	]]
-	function drawTo( Canvas destinationCanvas, Number x, Number y, Mask.allowsNil mask )
+	function drawTo( Canvas destinationCanvas, Number x, Number y, Mask allowsNil mask )
 		local scaleX, scaleY = self.scaleX, self.scaleY
 		if scaleX == 1 and scaleY == 1 then
 			return super( destinationCanvas, x, y, mask )

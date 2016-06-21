@@ -109,7 +109,8 @@ class Window extends Container
 		end
 	end
 
-	Window:alias( Window.centre, "center" )
+	-- TODO: alias
+	-- Window:alias( Window.centre, "center" )
 
 	--[[
 		@desc Focus on the window, bringing it to the front and enabling controls whilst unfocusing other windows

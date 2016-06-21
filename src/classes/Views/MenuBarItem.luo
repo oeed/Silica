@@ -62,12 +62,12 @@ class MenuBarItem extends View
 		canvas:fill( theme:value( "textColour" ),  TextMask( leftMargin + 1, topMargin + 1, width - leftMargin - rightMargin, height - topMargin - bottomMargin, self.text, theme:value( "font" ) ) )
 	end
 
-	function updateHeight( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
+	function updateHeight( ThemeChangedInterfaceEvent allowsNil event, Event.phases allowsNil phase )
 		local theme = self.theme
 		self.height = theme:value( "font").height + theme:value( "topMargin") + theme:value( "bottomMargin")
 	end
 
-	function updateWidth( ThemeChangedInterfaceEvent.allowsNil event, Event.phases.allowsNil phase )
+	function updateWidth( ThemeChangedInterfaceEvent allowsNil event, Event.phases allowsNil phase )
 		local theme = self.theme
 		local textWidth = theme:value( "font" ):getWidth( self.text )
 		local width = textWidth + theme:value( "leftMargin" ) + theme:value( "rightMargin" )

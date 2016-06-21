@@ -12,7 +12,7 @@ class FileAssociationManager
 	static property Table extensionMimes = {}
 
 
-	static function registerAssociation( FileAssociation association, Number.allowsNil index )
+	static function registerAssociation( FileAssociation association, Number allowsNil index )
 		local associations = self.associations
 		local mime = association.mime
 		local mimeAssociations = associations[mime]
@@ -43,7 +43,7 @@ class FileAssociationManager
 		end
 	end
 
-	static function open( FileSystemItem fileSystemItem, FileAssociation.allowsNil association, Number.allowsNil id )
+	static function open( FileSystemItem fileSystemItem, FileAssociation allowsNil association, Number allowsNil id )
 		local path, mime = fileSystemItem.path, fileSystemItem.metadata.mime
 		association = association or self:getAssociation( mime, id )
 		if association then
@@ -72,7 +72,7 @@ class FileAssociationManager
 	--[[
 		@desc Returns the main association for the given MIME
 	]]
-	static function getAssociation( String.allowsNil mime, Number.allowsNil id )
+	static function getAssociation( String allowsNil mime, Number allowsNil id )
 		if mime then
 			local associations = self.associations
 			local mimeAssociations = associations[mime]

@@ -13,8 +13,8 @@ local pins = {
 
 class View
 
-	x = Number( 1 );
-	y = Number( 1 );
+	property Number x = 1
+	property Number y = 1
 	property Number width = 1
 	property Number height = 1
 	property Number allowsNil index -- the z index in its parent
@@ -57,7 +57,7 @@ class View
 		@constructor
 		@desc Initialise a view instance
 	]]
-	function initialise( Table.allowsNil properties )
+	function initialise( Table allowsNil properties )
 		self:initialiseEventManager()
 		self.theme = ThemeOutlet( self )
 		self:initialiseCanvas()
@@ -530,7 +530,7 @@ class View
 	--[[
 		@desc Starts a drag and drop for the view
 	]]
-	function startDragDrop( MouseEvent event, ClipboardData data, Boolean hideSource = true, function.allowsNil completion, Table.allowsNil views )
+	function startDragDrop( MouseEvent event, ClipboardData data, Boolean hideSource = true, function.allowsNil completion, Table allowsNil views )
 		self.application.dragDropManager:start( views or { self }, data, event.globalX, event.globalY, hideSource, completion )
 	end
 
