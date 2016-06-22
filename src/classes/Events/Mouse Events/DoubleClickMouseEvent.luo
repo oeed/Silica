@@ -1,12 +1,9 @@
-class MouseDoubleClickEvent extends MouseEvent 
+class DoubleClickMouseEvent extends MouseEvent 
 
 	default eventType = "mouse_double_click"
-	property mouseButton
+	property MouseEvent.mouseButtons mouseButton
 	property Boolean isSentToChildren = false
 
-
-
-end
 
 --[[
 	@desc Creates a mouse held event from the arguments
@@ -16,7 +13,7 @@ end
 	@param [number] globalX -- the global x screen coordinate
 	@param [number] globalY -- the global y screen coordinate
 ]]
-	function initialise( mouseButton, x, y, globalX, globalY )
+	function initialise( MouseEvent.mouseButtons mouseButton, Number x, Number y, Number globalX, Number globalY )
 		self.mouseButton = mouseButton
 		self.x = x
 		self.y = y

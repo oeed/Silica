@@ -17,9 +17,9 @@ class MenuItem extends View
 	function initialise( ... )
 		super( ... )
 
-		self:event( MouseDownEvent, self.onMouseDown )
+		self:event( DownMouseEvent, self.onMouseDown )
 		self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
-		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( UpMouseEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 		self:event( ThemeChangedInterfaceEvent, self.updateHeight )
 		self:updateHeight()
 	end
@@ -90,7 +90,7 @@ class MenuItem extends View
 		@param [Event] event -- the mouse up event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+	function onGlobalMouseUp( UpMouseEvent event, Event.phases phase )
 		if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = false
 			if self.isEnabled and self:hitTestEvent( event ) then
@@ -108,7 +108,7 @@ class MenuItem extends View
 		@param [Event] event -- the mouse up event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onMouseDown( MouseDownEvent event, Event.phases phase )
+	function onMouseDown( DownMouseEvent event, Event.phases phase )
 		if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = true
 		end

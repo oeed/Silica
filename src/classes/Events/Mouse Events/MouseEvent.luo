@@ -1,5 +1,5 @@
-class MouseEvent extends Event 
-
+class MouseEvent extends Event
+	
 	property Number x = 0;
 	property Number y = 0;
 	property Number globalX = 0

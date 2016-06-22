@@ -1,13 +1,8 @@
-class MouseDragEvent extends MouseEvent 
-
+class DownMouseEvent extends MouseEvent 
 	
-	static default eventType = "mouse_drag";
+	default eventType = "mouse_click";
 	
-	property mouseButton
-
-
-
-end
+	property MouseEvent.mouseButtons mouseButton
 
 --[[
 	@constructor
@@ -16,13 +11,12 @@ end
 	@param [number] x -- the x screen coordinate
 	@param [number] y -- the y screen coordinate
 ]]
-	function initialise( mouseButton, x, y )
+	function initialise( MouseEvent.mouseButtons mouseButton, Number x, Number y )
 		self.mouseButton = mouseButton
 		self.x = x
 		self.y = y
 		self.globalX = x
 		self.globalY = y
 	end
-
 
 end

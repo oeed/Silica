@@ -1,6 +1,6 @@
 class CharacterEvent extends Event 
 	
-	static default eventType = "char";
+	static default eventType = "char"
 	
 	property String character
 

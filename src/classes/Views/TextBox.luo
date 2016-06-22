@@ -59,16 +59,16 @@ class TextBox extends View
 	]]
 	function initialise( ... )
 		super( ... )
-		self:event( KeyUpEvent, self.onKeyUp )
-		self:event( KeyDownEvent, self.onKeyDown )
+		self:event( UpKeyEvent, self.onKeyUp )
+		self:event( DownKeyEvent, self.onKeyDown )
 		self:event( CharacterEvent, self.onCharacter )
-		self:event( MouseDownEvent, self.onMouseDown )
-		self:event( MouseUpEvent, self.onMouseUp )
-		self:event( MouseDragEvent, self.onMouseDrag )
-		self:event( MouseScrollEvent, self.onMouseScroll )
+		self:event( DownMouseEvent, self.onMouseDown )
+		self:event( UpMouseEvent, self.onMouseUp )
+		self:event( DragMouseEvent, self.onMouseDrag )
+		self:event( ScrollMouseEvent, self.onMouseScroll )
 		self:event( KeyboardShortcutEvent, self.onKeyboardShortcut )
-		self:event( MouseDoubleClickEvent, self.onMouseDoubleClick )
-		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self:event( DoubleClickMouseEvent, self.onMouseDoubleClick )
+		self.eventManager:connectGlobal( UpMouseEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	end
 
 	function onDraw()
@@ -362,7 +362,7 @@ class TextBox extends View
 		@param [Event] event -- the mouse up event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+	function onGlobalMouseUp( UpMouseEvent event, Event.phases phase )
 		if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = false
 			if self.isEnabled and self:hitTestEvent( event ) then
@@ -373,10 +373,10 @@ class TextBox extends View
 
 	--[[
 		@desc Fired when the mouse is released. Focuses on the text box
-		@param [MouseDownEvent] event -- the mouse down event
+		@param [DownMouseEvent] event -- the mouse down event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onMouseUp( MouseUpEvent event, Event.phases phase )
+	function onMouseUp( UpMouseEvent event, Event.phases phase )
 		if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self:focus( TextBox )
 		end
@@ -396,10 +396,10 @@ class TextBox extends View
 
 	--[[
 		@desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
-		@param [MouseDownEvent] event -- the mouse down event
+		@param [DownMouseEvent] event -- the mouse down event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onMouseDown( MouseDownEvent event, Event.phases phase )
+	function onMouseDown( DownMouseEvent event, Event.phases phase )
 		if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = true
 			if self.application.keyboardShortcutManager:isOnlyKeyDown( "shift" ) then
@@ -420,14 +420,14 @@ class TextBox extends View
 		return true
 	end
 
-	function onMouseScroll( MouseScrollEvent event, Event.phases phase )
+	function onMouseScroll( ScrollMouseEvent event, Event.phases phase )
 		if self.isEnabled then
 			self.scroll = self.scroll + event.direction * SCROLL_SPEED
 		end
 		return true
 	end
 
-	function onKeyDown( KeyDownEvent event, Event.phases phase )
+	function onKeyDown( DownKeyEvent event, Event.phases phase )
 		if self.isFocused then
 			local keyCode = event.keyCode
 			local text = self.text
@@ -468,7 +468,7 @@ class TextBox extends View
 		end
 	end
 
-	function onKeyUp( KeyUpEvent event, Event.phases phase )
+	function onKeyUp( UpKeyEvent event, Event.phases phase )
 		if self.isFocused then
 			
 		end

@@ -1,0 +1,5 @@
+class UpKeyEvent extends KeyEvent 
+
+	default eventType = "key_up"
+
+end

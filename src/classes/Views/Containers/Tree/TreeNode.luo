@@ -17,11 +17,11 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 	function initialise( ... )
 		super( ... )
 
-		self:event( MouseDownEvent, self.onMouseDown )
-		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
-		-- self:event( MouseHeldEvent, self.onMouseHeld )
-	    self:event( MouseEnteredInterfaceEvent, self.onMouseEnteredOrMoved )
-	    self:event( MouseMoveEvent, self.onMouseEnteredOrMoved )
+		self:event( DownMouseEvent, self.onMouseDown )
+		self.eventManager:connectGlobal( UpMouseEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		-- self:event( HeldMouseEvent, self.onMouseHeld )
+	    self:event( EnteredInterfaceMouseEvent, self.onMouseEnteredOrMoved )
+	    self:event( MoveMouseEvent, self.onMouseEnteredOrMoved )
 	end
 
 	function onDraw()
@@ -68,7 +68,7 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 		end
 	end
 
-	-- function onMouseHeld( MouseHeldEvent event, Event.phases phase )
+	-- function onMouseHeld( HeldMouseEvent event, Event.phases phase )
 	-- 	if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then
 	-- 		self.isPressed = true
 	-- 		self:startDragDrop( event, ListClipboardData( self ), true, function()self.isPressed = false end )
@@ -76,7 +76,7 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 	-- 	return true
 	-- end
 
-	function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+	function onGlobalMouseUp( UpMouseEvent event, Event.phases phase )
 		if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = false
 			if self.isEnabled and self:hitTestEvent( event ) then
@@ -111,7 +111,7 @@ class TreeNode extends LayoutContainer implements ITreeChild implements IDragDro
 		end
 	end
 
-	function onMouseDown( MouseDownEvent event, Event.phases phase )
+	function onMouseDown( DownMouseEvent event, Event.phases phase )
 		if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			local theme = self.theme
 			if event.y <= self.minHeight then

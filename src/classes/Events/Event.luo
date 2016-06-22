@@ -1,13 +1,10 @@
 local eventClasses = {}
 
 class Event
-	
-	property eventType
-	
-	static property eventType
-
-	property relativeView -- the view that the event is relative of
-	property sender
+		
+	static property String eventType
+	property View relativeView -- the view that the event is relative of
+	property Instance sender
 
 	property Boolean isSentToChildren = true -- whether the event will be passed to children
 	property Boolean isSentToSender = true -- whether the event will be handled by the sender
@@ -20,7 +17,7 @@ class Event
 	}
 
 	--[[
-		@desc Registers an Event subclass to a event type name (e.g. MouseDownEvent links with "mouse_down")
+		@desc Registers an Event subclass to a event type name (e.g. DownMouseEvent links with "mouse_down")
 		@param [class] _class -- the class that was constructed
 	]]
 	static function register( eventType, subclass )

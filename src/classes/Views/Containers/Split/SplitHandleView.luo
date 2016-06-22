@@ -14,10 +14,10 @@ class SplitHandleView extends View
 	function initialise( ... )
 		super( ... )
 
-		self:event( MouseDownEvent, self.onMouseDown, Event.phases.AFTER )
+		self:event( DownMouseEvent, self.onMouseDown, Event.phases.AFTER )
 		self:event( ParentChangedInterfaceEvent, self.onParentChanged )
-		self.eventManager:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
-		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self.eventManager:connectGlobal( DragMouseEvent, self.onGlobalMouseDrag )
+		self.eventManager:connectGlobal( UpMouseEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	end
 
 	function onDraw()
@@ -31,7 +31,7 @@ class SplitHandleView extends View
 		end
 	end
 
-	function onMouseDown( MouseDownEvent event, Event.phases phase )
+	function onMouseDown( DownMouseEvent event, Event.phases phase )
 		if event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.dragX = event.x
 			self.dragY = event.y
@@ -58,7 +58,7 @@ class SplitHandleView extends View
 		end
 	end
 
-	function onGlobalMouseDrag( MouseDragEvent event, Event.phases phase )
+	function onGlobalMouseDrag( DragMouseEvent event, Event.phases phase )
 		if self.isDragging and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			local segmentSize, contentPosition = self.parent.segmentSize, self.contentPosition
 			local width = event.x - self.dragX + 1 - contentPosition + self.theme:value( "leftMargin" )
@@ -67,7 +67,7 @@ class SplitHandleView extends View
 		end
 	end
 
-	function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+	function onGlobalMouseUp( UpMouseEvent event, Event.phases phase )
 		if self.isDragging and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.dragX = nil
 			self.dragY = nil

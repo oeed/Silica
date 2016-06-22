@@ -21,10 +21,10 @@ class Button extends View
 	function initialise( ... )
 		super( ... )
 
-		self:event( MouseDownEvent, self.onMouseDown )
-		self:event( KeyDownEvent, self.onKeyDown )
-		self:event( KeyUpEvent, self.onKeyUp )
-		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self:event( DownMouseEvent, self.onMouseDown )
+		self:event( DownKeyEvent, self.onKeyDown )
+		self:event( UpKeyEvent, self.onKeyUp )
+		self.eventManager:connectGlobal( UpMouseEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	end
 
 	function onDraw()
@@ -105,7 +105,7 @@ class Button extends View
 		@param [Event] event -- the mouse up event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+	function onGlobalMouseUp( UpMouseEvent event, Event.phases phase )
 		if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = false
 			if self.isEnabled and self:hitTestEvent( event ) then
@@ -118,10 +118,10 @@ class Button extends View
 
 	--[[
 		@desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
-		@param [MouseDownEvent] event -- the mouse down event
+		@param [DownMouseEvent] event -- the mouse down event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onMouseDown( MouseDownEvent event, Event.phases phase )
+	function onMouseDown( DownMouseEvent event, Event.phases phase )
 		if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = true
 		end
@@ -130,10 +130,10 @@ class Button extends View
 
 	--[[
 		@desc Fired when a key is pressed down. Presses the button down if it isin focus and it was the enter key.
-		@param [KeyDownEvent] event -- the key down event
+		@param [DownKeyEvent] event -- the key down event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onKeyDown( KeyDownEvent event, Event.phases phase )
+	function onKeyDown( DownKeyEvent event, Event.phases phase )
 		if self.isEnabled and self.isFocused and event.keyCode == keys.enter then
 			self.isPressed = true
 			return true
@@ -142,10 +142,10 @@ class Button extends View
 
 	--[[
 		@desc Fired when a key is pressed released. Fires the button action if the button is pressed, in focus and it was the enter key.
-		@param [KeyUpEvent] event -- the key down event
+		@param [UpKeyEvent] event -- the key down event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onKeyUp( KeyUpEvent event, Event.phases phase )
+	function onKeyUp( UpKeyEvent event, Event.phases phase )
 		if self.isEnabled and self.isPressed and self.isFocused and event.keyCode == keys.enter then
 			self.isPressed = false
 			self.eventManager:handleEvent( ActionInterfaceEvent( self ) )

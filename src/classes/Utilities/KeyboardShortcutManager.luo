@@ -40,11 +40,11 @@ class KeyboardShortcutManager
 	function initialise( owner )
 		self.owner = owner
 		self.eventManager = EventManager( self )
-		self.eventManager:connectGlobal( KeyDownEvent, self.onGlobalKeyDown )
-		self.eventManager:connectGlobal( KeyUpEvent, self.onGlobalKeyUp )
+		self.eventManager:connectGlobal( DownKeyEvent, self.onGlobalKeyDown )
+		self.eventManager:connectGlobal( UpKeyEvent, self.onGlobalKeyUp )
 	end
 
-	function onGlobalKeyDown( KeyDownEvent event, Event.phases phase )
+	function onGlobalKeyDown( DownKeyEvent event, Event.phases phase )
 		local keyString = event.keyString
 		if keyString then
 			self.keysDown[keyString] = true
@@ -54,7 +54,7 @@ class KeyboardShortcutManager
 		end
 	end
 
-	function onGlobalKeyUp( KeyUpEvent event, Event.phases phase )
+	function onGlobalKeyUp( UpKeyEvent event, Event.phases phase )
 		local keyString = event.keyString
 		self.keysDown[keyString] = nil
 		self.keysUpdates[keyString] = os.clock()

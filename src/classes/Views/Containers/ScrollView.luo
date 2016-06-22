@@ -33,7 +33,7 @@ class ScrollView extends Container
 		self:sendToFront( self.verticalScrollbar )
 
 		self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
-		self:event( MouseScrollEvent, self.onMouseScroll )
+		self:event( ScrollMouseEvent, self.onMouseScroll )
 	end
 
 	function initialiseCanvas()
@@ -151,7 +151,7 @@ class ScrollView extends Container
 		@param [Event] event -- the mouse scroll event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onMouseScroll( MouseScrollEvent event, Event.phases phase )
+	function onMouseScroll( ScrollMouseEvent event, Event.phases phase )
 		if self.isEnabled then
 			local direction = event.direction
 			local verticalVelocity = self.verticalVelocity

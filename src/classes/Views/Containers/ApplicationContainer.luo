@@ -20,8 +20,8 @@ class ApplicationContainer extends Container
 	]]
 	function initialise( ... )
 		super( ... )
-		self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
-		self:event( MouseMoveEvent, self.onMouseMoveCursorBefore )
+		self:event( DownMouseEvent, self.onMouseDownAfter, Event.phases.AFTER )
+		self:event( MoveMouseEvent, self.onMouseMoveCursorBefore )
 	end
 
 	function initialiseCanvas()
@@ -102,10 +102,10 @@ class ApplicationContainer extends Container
 
 	--[[
 		@desc Fired when the mouse is released and doesn't hit anything else. Unfocuses the focused view, if any.
-		@param [MouseDownEvent] event -- the mouse up event
+		@param [DownMouseEvent] event -- the mouse up event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onMouseDownAfter( MouseDownEvent event, Event.phases phase )
+	function onMouseDownAfter( DownMouseEvent event, Event.phases phase )
 		local application = self.application
 		
 		if application:hasFocus() then
@@ -117,8 +117,8 @@ class ApplicationContainer extends Container
 		end
 	end
 
-	--	   self:event( MouseMoveEvent, self.onMouseMoveCursor, Event.phases.AFTER )
-	-- function onMouseMoveCursor( MouseMoveEvent event, Event.phases phase )
+	--	   self:event( MoveMouseEvent, self.onMouseMoveCursor, Event.phases.AFTER )
+	-- function onMouseMoveCursor( MoveMouseEvent event, Event.phases phase )
 	--	if self.isEnabled then
 	--		local cursorStatic = Cursor.static
 	--		if self.cursor ~= cursorStatic then
@@ -179,7 +179,7 @@ class ApplicationContainer extends Container
 		return didChange
 	end
 
-	function onMouseMoveCursorBefore( MouseMoveEvent event, Event.phases phase )
+	function onMouseMoveCursorBefore( MoveMouseEvent event, Event.phases phase )
 		self.cursorX = event.x
 		self.cursorY = event.y
 		self.needsCursorUpdate = true

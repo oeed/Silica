@@ -14,9 +14,9 @@ class WindowButton extends View
 	function initialise( ... )
 		super( ... )
 		
-		self:event( MouseDownEvent, self.onMouseDown )
-		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
-		if self.onMouseUp then self:event( MouseUpEvent, self.onMouseUp ) end
+		self:event( DownMouseEvent, self.onMouseDown )
+		self.eventManager:connectGlobal( UpMouseEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		if self.onMouseUp then self:event( UpMouseEvent, self.onMouseUp ) end
 	end
 
 	function onDraw()
@@ -47,7 +47,7 @@ class WindowButton extends View
 		@param [Event] event -- the mouse up event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+	function onGlobalMouseUp( UpMouseEvent event, Event.phases phase )
 		if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = false
 			if self.isEnabled and self:hitTestEvent( event ) then
@@ -58,10 +58,10 @@ class WindowButton extends View
 
 	--[[
 		@desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
-		@param [MouseDownEvent] event -- the mouse down event
+		@param [DownMouseEvent] event -- the mouse down event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onMouseDown( MouseDownEvent event, Event.phases phase )
+	function onMouseDown( DownMouseEvent event, Event.phases phase )
 		if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = true
 		end

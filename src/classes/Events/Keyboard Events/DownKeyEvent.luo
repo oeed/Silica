@@ -1,4 +1,4 @@
-class KeyDownEvent extends KeyEvent 
+class DownKeyEvent extends KeyEvent 
 	
 	static default eventType = "key"
 

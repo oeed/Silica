@@ -1,7 +1,7 @@
-class MouseHeldEvent extends MouseEvent 
+class HeldMouseEvent extends MouseEvent 
 
 	default eventType = "mouse_held"
-	property mouseButton
+	property MouseEvent.mouseButtons mouseButton
 	property Boolean isSentToChildren = false
 
 	--[[
@@ -12,7 +12,7 @@ class MouseHeldEvent extends MouseEvent
 		@param [number] globalX -- the global x screen coordinate
 		@param [number] globalY -- the global y screen coordinate
 	]]
-	function initialise( mouseButton, x, y, globalX, globalY )
+	function initialise( MouseEvent.mouseButtons mouseButton, Number x, Number y, Number globalX, Number globalY )
 		self.mouseButton = mouseButton
 		self.x = x
 		self.y = y

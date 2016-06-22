@@ -10,9 +10,9 @@ class ListItem extends View implements IDraggableView
 	function initialise( ... )
 		super( ... )
 
-		self:event( MouseDownEvent, self.onMouseDown )
-		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
-		self:event( MouseHeldEvent, self.onMouseHeld )
+		self:event( DownMouseEvent, self.onMouseDown )
+		self.eventManager:connectGlobal( UpMouseEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self:event( HeldMouseEvent, self.onMouseHeld )
 	end
 
 	function onDraw()
@@ -45,7 +45,7 @@ class ListItem extends View implements IDraggableView
 		self:updateThemeStyle()
 	end
 
-	function onMouseHeld( MouseHeldEvent event, Event.phases phase )
+	function onMouseHeld( HeldMouseEvent event, Event.phases phase )
 		if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT and self.parent.canRearrange then
 			self.isSelected = true
 			self:startDragDrop( event, ListClipboardData( self ), true, function()self.isSelected = false end )
@@ -53,7 +53,7 @@ class ListItem extends View implements IDraggableView
 		return true
 	end
 
-	function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+	function onGlobalMouseUp( UpMouseEvent event, Event.phases phase )
 		if self.isSelected and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isSelected = false
 			if self.isEnabled and self:hitTestEvent( event ) then
@@ -65,7 +65,7 @@ class ListItem extends View implements IDraggableView
 		end
 	end
 
-	function onMouseDown( MouseDownEvent event, Event.phases phase )
+	function onMouseDown( DownMouseEvent event, Event.phases phase )
 		if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isSelected = not self.isSelected
 		end

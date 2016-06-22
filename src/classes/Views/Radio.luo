@@ -12,8 +12,8 @@ class Radio extends View
 		super( ... )
 
 		self:event( ParentChangedInterfaceEvent, self.onParentChanged )
-		self:event( MouseDownEvent, self.onMouseDown )
-		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self:event( DownMouseEvent, self.onMouseDown )
+		self.eventManager:connectGlobal( UpMouseEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	end
 
 	function onDraw()
@@ -66,7 +66,7 @@ class Radio extends View
 		@param [Event] event -- the mouse up event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+	function onGlobalMouseUp( UpMouseEvent event, Event.phases phase )
 		if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = false
 			if self:hitTestEvent( event ) then
@@ -81,7 +81,7 @@ class Radio extends View
 		@param [Event] event -- the mouse up event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onMouseDown( MouseDownEvent event, Event.phases phase )
+	function onMouseDown( DownMouseEvent event, Event.phases phase )
 		if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = true
 		end

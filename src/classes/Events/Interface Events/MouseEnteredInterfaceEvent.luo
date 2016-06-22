@@ -1,4 +1,4 @@
-class MouseEnteredInterfaceEvent extends Event 
+class EnteredInterfaceMouseEvent extends Event 
 	
 	static default eventType = "interface_mouse_entered";
 

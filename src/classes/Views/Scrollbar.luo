@@ -11,10 +11,10 @@ class Scrollbar extends View
 
 	function initialise( ... )
 		super( ... )
-		-- self:event( MouseScrollEvent, self.onMouseScroll )
-		self:event( MouseDownEvent, self.onMouseDown )
-		self.eventManager:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
-		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		-- self:event( ScrollMouseEvent, self.onMouseScroll )
+		self:event( DownMouseEvent, self.onMouseDown )
+		self.eventManager:connectGlobal( DragMouseEvent, self.onGlobalMouseDrag )
+		self.eventManager:connectGlobal( UpMouseEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 	end
 
 	--[[
@@ -99,7 +99,7 @@ class Scrollbar extends View
 		@param [Event] event -- the mouse up event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+	function onGlobalMouseUp( UpMouseEvent event, Event.phases phase )
 		if self.isPressed and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = false
 		end
@@ -107,10 +107,10 @@ class Scrollbar extends View
 
 	--[[
 		@desc Fired when the mouse is pushed anywhere on screen. Adds the pressed appearance.
-		@param [MouseDownEvent] event -- the mouse down event
+		@param [DownMouseEvent] event -- the mouse down event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onMouseDown( MouseDownEvent event, Event.phases phase )
+	function onMouseDown( DownMouseEvent event, Event.phases phase )
 		if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.isPressed = true
 			local position, size = self:getScroller( true )
@@ -124,7 +124,7 @@ class Scrollbar extends View
 		@param [Event] event -- the mouse drag event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onGlobalMouseDrag( MouseDragEvent event, Event.phases phase )
+	function onGlobalMouseDrag( DragMouseEvent event, Event.phases phase )
 		if self.isPressed and self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			local oldRelative = event.relativeView
 			event:makeRelative( self )

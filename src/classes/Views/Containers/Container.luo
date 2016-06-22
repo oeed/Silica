@@ -30,9 +30,9 @@ class Container extends View
 		self:event( ChildRepositionedInterfaceEvent, self.onChildRepositionedMouseEnterExit )
 		self:event( ReadyInterfaceEvent, self.onReadyLoadInterface )
 		self:event( LoadedInterfaceEvent, self.onLoadedInterfacePinUpdate )
-		self:event( MouseMoveEvent, self.onUpdateChildMouseEnterExit )
-		self:event( MouseExitedInterfaceEvent, self.onUpdateChildMouseEnterExit )
-		self:event( MouseEnteredInterfaceEvent, self.onUpdateChildMouseEnterExit )
+		self:event( MoveMouseEvent, self.onUpdateChildMouseEnterExit )
+		self:event( ExitedInterfaceMouseEvent, self.onUpdateChildMouseEnterExit )
+		self:event( EnteredInterfaceMouseEvent, self.onUpdateChildMouseEnterExit )
 	end
 
 	--[[
@@ -567,14 +567,14 @@ class Container extends View
 				if not isMouseInView then
 					-- mouse entered
 					local _x, _y = x - childView.x + 1, y - childView.y + 1
-					childView.event:handleEvent( MouseEnteredInterfaceEvent( _x, _y ) )
+					childView.event:handleEvent( EnteredInterfaceMouseEvent( _x, _y ) )
 					childView.isMouseInView = true
 				end
 			else
 				if isMouseInView then
 					-- mouse exited
 					local _x, _y = x - childView.x + 1, y - childView.y + 1
-					childView.event:handleEvent( MouseExitedInterfaceEvent( _x, _y ) )
+					childView.event:handleEvent( ExitedInterfaceMouseEvent( _x, _y ) )
 					childView.isMouseInView = false
 				end
 			end

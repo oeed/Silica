@@ -4,15 +4,11 @@ class KeyEvent extends Event
 	property String allowsNil keyString
 	property Boolean isCharacter
 
-
-
-end
-
---[[
-	@constructor
-	@desc Creates a key event from the arguments
-	@param [number] keyCode -- the key's numerical key code
-]]
+	--[[
+		@constructor
+		@desc Creates a key event from the arguments
+		@param [number] keyCode -- the key's numerical key code
+	]]
 	function initialise( Number keyCode )
 		self.keyCode = keyCode
 		self.keyString = KeyboardShortcutManager.static:convert( keyCode )

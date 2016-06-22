@@ -79,8 +79,8 @@ class View
 			parsedPins[k] = MathParser( v )
 		end
 
-		self:event( MouseDownEvent, self.onMouseDownSpecialEvents )
-		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUpSpecialEvents )
+		self:event( DownMouseEvent, self.onDownSpecialMouseEvents )
+		self.eventManager:connectGlobal( UpMouseEvent, self.onGlobalUpSpecialMouseEvents )
 	end
 
 	--[[
@@ -478,9 +478,9 @@ class View
 	--[[
 		@desc Detects when the mouse is pressed. Used to fire mouse held and double click
 	]]
-	function onMouseDownSpecialEvents( MouseDownEvent event, Event.phases phase )
+	function onDownSpecialMouseEvents( DownMouseEvent event, Event.phases phase )
 		local eventManager = self.eventManager
-		local hasHeld, hasDouble = eventManager:hasConnections( MouseHeldEvent ), eventManager:hasConnections( MouseDoubleClickEvent )
+		local hasHeld, hasDouble = eventManager:hasConnections( HeldMouseEvent ), eventManager:hasConnections( DoubleClickMouseEvent )
 		if hasHeld or hasDouble then
 			local mouseButton, time = event.mouseButton, os.clock()
 			local specialMouseTimes = self.specialMouseTimes
@@ -491,7 +491,7 @@ class View
 			if hasDouble then
 				if lastMouseDown and time - lastMouseDown < MAX_DOUBLE_CLICK_TIME then
 					-- double click
-					if eventManager:handleEvent( MouseDoubleClickEvent( mouseButton, event.x, event.y, event.globalX, event.globalY ) ) then
+					if eventManager:handleEvent( DoubleClickMouseEvent( mouseButton, event.x, event.y, event.globalX, event.globalY ) ) then
 						return true
 					end
 				end
@@ -510,7 +510,7 @@ class View
 					timers[mouseButton] = nil
 					local lastMouseUp = specialMouseTimes.up[mouseButton]
 					if not lastMouseUp or lastMouseUp < time then
-						if eventManager:handleEvent( MouseHeldEvent( mouseButton, x, y, globalX, globalY ) ) then
+						if eventManager:handleEvent( HeldMouseEvent( mouseButton, x, y, globalX, globalY ) ) then
 							return true
 						end
 					end
@@ -523,7 +523,7 @@ class View
 	--[[
 		@desc Detects when the mouse is released. Used to fire mouse held and double click
 	]]
-	function onGlobalMouseUpSpecialEvents( MouseUpEvent event, Event.phases phase )
+	function onGlobalUpSpecialMouseEvents( UpMouseEvent event, Event.phases phase )
 		self.specialMouseTimes.up[event.mouseButton] = os.clock()
 	end
 

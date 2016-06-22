@@ -30,10 +30,10 @@ class Window extends Container
 
 		self:loadInterface()
 		
-		self:event( MouseDownEvent, self.onMouseDownBefore, Event.phases.BEFORE )
-		self:event( MouseDownEvent, self.onMouseDownAfter, Event.phases.AFTER )
-		self.eventManager:connectGlobal( MouseDragEvent, self.onGlobalMouseDrag )
-		self.eventManager:connectGlobal( MouseUpEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
+		self:event( DownMouseEvent, self.onMouseDownBefore, Event.phases.BEFORE )
+		self:event( DownMouseEvent, self.onMouseDownAfter, Event.phases.AFTER )
+		self.eventManager:connectGlobal( DragMouseEvent, self.onGlobalMouseDrag )
+		self.eventManager:connectGlobal( UpMouseEvent, self.onGlobalMouseUp, Event.phases.BEFORE )
 		self:event( LoadedInterfaceEvent, self.onInterfaceLoaded )
 	end
 
@@ -135,19 +135,19 @@ class Window extends Container
 
 	--[[
 		@desc Fired when the mouse is pushed on the window bar before children have recieved the event. Makes the window front most and active
-		@param [MouseDownEvent] event -- the mouse down event
+		@param [DownMouseEvent] event -- the mouse down event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onMouseDownBefore( MouseDownEvent event, Event.phases phase )
+	function onMouseDownBefore( DownMouseEvent event, Event.phases phase )
 		self:focus()
 	end
 
 	--[[
 		@desc Fired when the mouse is pushed on the window bar after children have recieved the event. Starts dragging.
-		@param [MouseDownEvent] event -- the mouse down event
+		@param [DownMouseEvent] event -- the mouse down event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onMouseDownAfter( MouseDownEvent event, Event.phases phase )
+	function onMouseDownAfter( DownMouseEvent event, Event.phases phase )
 		if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			x = event.x
 			y = event.y
@@ -170,7 +170,7 @@ class Window extends Container
 		@param [Event] event -- the mouse drag event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onGlobalMouseDrag( MouseDragEvent event, Event.phases phase )
+	function onGlobalMouseDrag( DragMouseEvent event, Event.phases phase )
 		if self.isEnabled and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			local preventPropagation = false
 			if self.isDragging then
@@ -196,7 +196,7 @@ class Window extends Container
 		@param [Event] event -- the mouse up event
 		@return [boolean] preventPropagation -- prevent anyone else using the event
 	]]
-	function onGlobalMouseUp( MouseUpEvent event, Event.phases phase )
+	function onGlobalMouseUp( UpMouseEvent event, Event.phases phase )
 		if (self.isDragging or self.isResizingX or self.isResizingY ) and event.mouseButton == MouseEvent.mouseButtons.LEFT then
 			self.dragX = false
 			self.dragY = false

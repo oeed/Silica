@@ -25,8 +25,8 @@ class DragDropManager
 	]]
 	function initialise( owner )
 		self.owner = owner
-		owner:event( MouseDragEvent, self.onMouseDrag, nil, nil, self )
-		owner:event( MouseUpEvent, self.onMouseUp, nil, nil, self )
+		owner:event( DragMouseEvent, self.onMouseDrag, nil, nil, self )
+		owner:event( UpMouseEvent, self.onMouseUp, nil, nil, self )
 	end
 
 	--[[
@@ -135,7 +135,7 @@ class DragDropManager
 
 	--[[
 		@desc Fired when the mouse is dragged in the application
-		@param [MouseDragEvent] event -- the mouse dragged event
+		@param [DragMouseEvent] event -- the mouse dragged event
 		@return [boolean] shouldCancel -- whether other events handlers should not recieve this event
 	]]
 	function onMouseDrag( Event event, Event.phases phase )
@@ -150,7 +150,7 @@ class DragDropManager
 
 	--[[
 		@desc Fired when the mouse is released in the application
-		@param [MouseUpEvent] event -- the mouse up event
+		@param [UpMouseEvent] event -- the mouse up event
 		@return [boolean] shouldCancel -- whether other events handlers should not recieve this event
 	]]
 	function onMouseUp( Event event, Event.phases phase )
