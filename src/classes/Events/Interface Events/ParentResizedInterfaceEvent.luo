@@ -4,17 +4,10 @@ class ParentResizedInterfaceEvent extends InterfaceEvent
 	
 	property Boolean isHorizontal = false
 	property Boolean isVertical = false
-	property Boolean isSentToSender = false
-	property Boolean isSentToChildren = true
+	default isSentToSender = false
+	default isSentToChildren = true
 
-	--[[
-		@constructor
-		@desc Creates a parent resized event from the arguments
-		@param [boolean] isHorizontal -- whether the change effected the width
-		@param [boolean] isVertical -- whether the change effected the height
-		@param [Container] sender -- the parent that resized
-	]]
-		function initialise( isHorizontal, isVertical, sender )
+	function initialise( Boolean isHorizontal, Boolean isVertical, Container sender )
 		self.isHorizontal = isHorizontal
 		self.isVertical = isVertical
 		self.sender = sender

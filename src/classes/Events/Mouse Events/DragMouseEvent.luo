@@ -1,6 +1,6 @@
 class DragMouseEvent extends MouseEvent 
 
-	default eventType = "mouse_drag";
+	static default eventType = "mouse_drag";
 	
 	property MouseEvent.mouseButtons mouseButton
 

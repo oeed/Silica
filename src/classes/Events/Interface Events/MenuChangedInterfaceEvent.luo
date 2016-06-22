@@ -2,6 +2,6 @@ class MenuChangedInterfaceEvent extends InterfaceEvent
 
 	static default eventType = "interface_menu_changed";
 	
-	property Boolean isSentToChildren = false
+	default isSentToChildren = false
 
 end

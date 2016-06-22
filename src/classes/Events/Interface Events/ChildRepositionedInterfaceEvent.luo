@@ -3,9 +3,9 @@ class ChildRepositionedInterfaceEvent extends InterfaceEvent
 	static default eventType = "interface_child_repositioned";
 	
 	property View childView
-	property Boolean isSentToSender = true
-	property Boolean isSentToChildren = false
-	property Boolean isSentToParents = false
+	default isSentToSender = true
+	default isSentToChildren = false
+	default isSentToParents = false
 
 	function initialise( View childView )
 		self.childView = childView

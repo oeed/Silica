@@ -4,7 +4,7 @@ class ActionInterfaceEvent extends InterfaceEvent
 	
 	property View view -- the View whose action it is
 	property Event allowsNil originalEvent -- the event the invoked this event (such as a mouse up, key click, etc.)
-	property Boolean isSentToChildren = false
+	default isSentToChildren = false
 
 	--[[
 		@constructor

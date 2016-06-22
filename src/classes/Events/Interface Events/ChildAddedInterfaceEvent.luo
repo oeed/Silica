@@ -4,8 +4,8 @@ class ChildAddedInterfaceEvent extends InterfaceEvent
 
 	property Container container
 	property View childView -- the added child
-	property Boolean isSentToChildren = false
-	property Boolean isSentToParents = true
+	default isSentToChildren = false
+	default isSentToParents = true
 
 	--[[
 		@constructor

@@ -2,6 +2,6 @@ class ContainerReadyInterfaceEvent extends InterfaceEvent
 
 	static default eventType = "interface_ready_container";
 
-	property Boolean isSentToSender = false
+	default isSentToSender = false
 
 end

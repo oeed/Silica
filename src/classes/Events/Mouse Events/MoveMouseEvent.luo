@@ -1,6 +1,6 @@
 class MoveMouseEvent extends MouseEvent 
 	
-	default eventType = "mouse_move";
+	static default eventType = "mouse_move";
 
 	function initialise( Number x, Number y )
 		self.x = x

@@ -1,8 +1,8 @@
 class DoubleClickMouseEvent extends MouseEvent 
 
-	default eventType = "mouse_double_click"
+	static default eventType = "mouse_double_click"
 	property MouseEvent.mouseButtons mouseButton
-	property Boolean isSentToChildren = false
+	default isSentToChildren = false
 
 
 --[[

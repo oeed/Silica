@@ -1,8 +1,8 @@
 class HeldMouseEvent extends MouseEvent 
 
-	default eventType = "mouse_held"
+	static default eventType = "mouse_held"
 	property MouseEvent.mouseButtons mouseButton
-	property Boolean isSentToChildren = false
+	default isSentToChildren = false
 
 	--[[
 		@desc Creates a mouse held event from the arguments

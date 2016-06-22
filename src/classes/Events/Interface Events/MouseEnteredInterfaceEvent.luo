@@ -4,7 +4,7 @@ class EnteredInterfaceMouseEvent extends Event
 
 	property Number x;
 	property Number y;
-	property Boolean isSentToChildren = false
+	default isSentToChildren = false
 
 
 	function initialise( x, y )

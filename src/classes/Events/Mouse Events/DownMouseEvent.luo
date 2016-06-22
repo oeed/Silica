@@ -1,6 +1,6 @@
 class DownMouseEvent extends MouseEvent 
 	
-	default eventType = "mouse_click";
+	static default eventType = "mouse_click";
 	
 	property MouseEvent.mouseButtons mouseButton
 
