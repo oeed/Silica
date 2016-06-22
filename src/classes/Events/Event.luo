@@ -1,8 +1,8 @@
-local eventClasses = {}
-
 class Event
 		
-	static property String eventType
+	static property String eventType = ""
+	static local eventClasses = {}
+
 	property View relativeView -- the view that the event is relative of
 	property Instance sender
 

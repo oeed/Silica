@@ -5,7 +5,7 @@ class ContainerEventManager extends EventManager
 		@param [Event] event -- the event to handle
 		@return [boolean] stopPropagation -- whether no further handles should recieve this event
 	]]
-	function handleEvent( event )
+	function handleEvent( Envet event )
 		local sender = event.sender
 		local isSentToSender = not sender or ( self == sender and event.isSentToSender )
 		if isSentToSender and self:handleEventPhase( event, Event.phases.BEFORE ) then

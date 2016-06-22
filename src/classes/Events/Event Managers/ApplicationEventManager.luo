@@ -1,13 +1,11 @@
 class ApplicationEventManager extends EventManager 
 
-	property handlesGlobal
-
 	--[[
 		@desc Perfoms the appropriate handles for the given event and then trickles them down through the owner's children
 		@param [Event] event -- the event to handle
 		@return [boolean] stopPropagation -- whether no further handles should recieve this event
 	]]
-	function handleEvent( event )
+	function handleEvent( Event event )
 		-- run the before phase handles first
 		if self:handleEventPhase( event, Event.phases.BEFORE ) then
 			return true
@@ -23,11 +21,11 @@ class ApplicationEventManager extends EventManager
 		return self:handleEventPhase( event, Event.phases.AFTER )
 	end
 
-	function connectGlobal()
+	function connectGlobal( ... )
 		error( "Cannot connect global handle on ApplicationEventManager as it is the global handler. Use the class' own manager.", 0 )
 	end
 
-	function disconnectGlobal()
+	function disconnectGlobal( ... )
 		error( "Cannot disconnect global handle on ApplicationEventManager as it is the global handler. Use the handler's own manager.", 0 )
 	end
 
