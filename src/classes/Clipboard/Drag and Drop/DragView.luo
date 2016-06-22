@@ -2,7 +2,6 @@ class DragView extends View
 
 	property Image image
 
-
 	function onDraw()
 		self.canvas:image( self.image, 1, 1, self.width, self.height )
 	end

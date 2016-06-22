@@ -18,7 +18,7 @@ class View
 	property Number width = 1
 	property Number height = 1
 	property Number allowsNil index -- the z index in its parent
-	property Any allowsNil parent -- TODO: if this is Container it loads the Container class before View is loaded so it creates another View class table
+	property Container allowsNil parent
 	property Table allowsNil siblings
 	property String allowsNil identifier
 	property Boolean allowsNil isFirst
@@ -51,7 +51,7 @@ class View
 	property String allowsNil topPin
 	property String allowsNil bottomPin
 	property Table parsedPins = {}
-	property Enum pins = String, pins
+	enum String pins = pins
 
 	--[[
 		@constructor
