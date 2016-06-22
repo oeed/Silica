@@ -1,6 +1,6 @@
 class AlertWindow extends Window 
 
-	property String allowsNil interfaceName = "alert-window"
+	default interfaceName = "alert-window"
 	property Button link okayButton
 
 

@@ -2,7 +2,7 @@ local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class MenuButton extends Button 
 
-	property Number width = 45
+	default width = 45
 
 	property Menu menu
 	property String menuName

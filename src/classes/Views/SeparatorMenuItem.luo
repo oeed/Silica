@@ -1,9 +1,8 @@
 class SeparatorMenuItem extends MenuItem 
 
-	property Number height = 3
-	property Number width = 51
-
-	property String text = "" -- we give it a default value because we can't set it to .allowsNil
+	default height = 3
+	default width = 51
+	default text = "" -- we give it a default value because we can't set it to nil
 
 
 	function initialise( ... )

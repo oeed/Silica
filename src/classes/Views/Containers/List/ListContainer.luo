@@ -5,7 +5,6 @@ class ListContainer extends ScrollContainer implements IDragDropDestination
 	property DragDropManager.dropStyles dropStyle = DragDropManager.dropStyles.RETURN
 	property Boolean canTransferItems = false
 
-
 	function initialise( ... )
 		super( ... )
 		self:event( ChildAddedInterfaceEvent, self.onChildAdded )
