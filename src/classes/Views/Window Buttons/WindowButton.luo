@@ -2,8 +2,8 @@ local BUTTON_DIAMETER = 5
 
 class WindowButton extends View 
 
-	property Number width = 9
-	property Number height = 9
+	default width = 9
+	default height = 9
 	property Boolean isPressed = false
 
 	property Window window

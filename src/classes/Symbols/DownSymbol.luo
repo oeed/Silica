@@ -1,7 +1,7 @@
 class DownSymbol extends Symbol 
 
 	
-	static property String symbolName = "down"
+	static default symbolName = "down"
 	
 
 

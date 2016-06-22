@@ -1,6 +1,6 @@
 class SplitContainer extends LayoutContainer 
 	
-	property Boolean needsLayoutUpdate = false
+	default needsLayoutUpdate = false
 	property Number allowsNil segmentSize
 	property Boolean isVertical = false
 

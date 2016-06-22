@@ -5,7 +5,7 @@ class Window extends Container
 	property container
 	property closeButton
 	property maximiseButton
-	property Boolean isEnabled = false
+	default isEnabled = false
 
 	property dragX
 	property dragY

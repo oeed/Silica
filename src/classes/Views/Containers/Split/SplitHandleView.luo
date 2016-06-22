@@ -8,7 +8,7 @@ class SplitHandleView extends View
 	property Number allowsNil dragX
 	property Number allowsNil dragY
 
-	property Cursor allowsNil cursor = ResizeHorizontalCursor.static
+	default cursor = ResizeHorizontalCursor.static
 
 
 	function initialise( ... )

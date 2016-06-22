@@ -1,8 +1,8 @@
 class ForwardSymbol extends Symbol 
 
 	
-	static property String symbolName = "forward"
-	static property Number width = 4
+	static default symbolName = "forward"
+	static default width = 4
 	
 
 

@@ -1,9 +1,9 @@
 class ProgressBar extends View 
 	
-	property Number height = 7
-	property Number width = 100
+	default height = 7
+	default width = 100
 
-	property Boolean isEnabled = true
+	default isEnabled = true
 	property Boolean isIndeterminate = true
 
 	property Number animationStep = 0

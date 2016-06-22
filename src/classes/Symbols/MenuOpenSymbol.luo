@@ -1,8 +1,8 @@
 class MenuOpenSymbol extends Symbol 
 
 	
-	static property String symbolName = "menuOpen"
-	static property Number height = 4
+	static default symbolName = "menuOpen"
+	static default height = 4
 	
 
 

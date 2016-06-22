@@ -26,8 +26,8 @@ local SELECTION_DIRECTIONS = {
 
 class TextBox extends View 
 
-	property Number height = 15
-	property Number width = 120
+	default height = 15
+	default width = 120
 	property String text = ""
 	property String allowsNil placeholder
 
@@ -39,7 +39,7 @@ class TextBox extends View
 	property Number selectionWidth = 0
 	property Boolean selectionVisible = false
 
-	property Boolean isFocused = false
+	default isFocused = false
 	property Boolean isPressed = false
 	property Boolean isMasked = false -- whether bullets are shown instead of characters (for passwords)
 
@@ -49,7 +49,7 @@ class TextBox extends View
 	property maximumLength
 	property Number allowsNil selectionPosition
 
-	property Cursor allowsNil cursor = TextCursor.static
+	default cursor = TextCursor.static
 
 	property Enum selectionDirections = Number, SELECTION_DIRECTIONS
 

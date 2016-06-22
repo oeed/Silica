@@ -9,7 +9,7 @@ class Menu extends Container
 	default targetY = 1
 
 	property Boolean isPressed = false
-	property Boolean isEnabled = true
+	default isEnabled = true
 	-- isVisible acts as the boolans of whether the menu is open or closed.
 
 	property Boolean isSingleShot = false -- true if the menu should be removed and unlinked when closed (as opposed to simply hiding for reuse only)
@@ -21,8 +21,8 @@ class Menu extends Container
 	property shadowObject
 	property backgroundObject
 
-	property Number width = 40
-	property Number height = 40
+	default width = 40
+	default height = 40
 
 	property needsLayoutUpdate	
 

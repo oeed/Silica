@@ -1,6 +1,6 @@
 class ThumbnailSymbol extends Symbol 
 
-	static property String symbolName = "thumbnail"
+	static default symbolName = "thumbnail"
 
 	static function initialise()
 		local path = Path( self.width, self.height, 1, 1 )

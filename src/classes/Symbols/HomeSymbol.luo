@@ -1,9 +1,9 @@
 class HomeSymbol extends Symbol 
 
 	
-	static property String symbolName = "home"
-	static property Number width = 9
-	static property Number height = 9
+	static default symbolName = "home"
+	static default width = 9
+	static default height = 9
 	
 
 

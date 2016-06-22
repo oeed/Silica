@@ -1,10 +1,10 @@
 class Checkbox extends View 
 
-	property Number width = 8
-	property Number height = 8
+	default width = 8
+	default height = 8
 
 	property Boolean isPressed = false
-	property Boolean isEnabled = true
+	default isEnabled = true
 	property Boolean isChecked = false
 
 

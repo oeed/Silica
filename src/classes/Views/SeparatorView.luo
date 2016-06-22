@@ -1,7 +1,7 @@
 class SeparatorView extends View 
 
-	property Number width = 1
-	property Number height = 1
+	default width = 1
+	default height = 1
 
 
 	function onDraw()

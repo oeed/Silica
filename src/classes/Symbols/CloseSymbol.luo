@@ -1,9 +1,9 @@
 class CloseSymbol extends Symbol 
 
 	
-	static property String symbolName = "close"
-	static property Number height = 5
-	static property Number width = 5
+	static default symbolName = "close"
+	static default height = 5
+	static default width = 5
 	
 
 

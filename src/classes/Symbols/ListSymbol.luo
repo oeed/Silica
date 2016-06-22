@@ -1,7 +1,7 @@
 class ListSymbol extends Symbol 
 
 	
-	static property String symbolName = "list"
+	static default symbolName = "list"
 	
 
 

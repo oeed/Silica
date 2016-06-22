@@ -1,7 +1,7 @@
 class SettingsSymbol extends Symbol 
 	
-	static property String symbolName = "settings"
-	static property Number width = 6
+	static default symbolName = "settings"
+	static default width = 6
 
 	static function initialise()
 		local path = Path( self.width, self.height, 2, 1 )

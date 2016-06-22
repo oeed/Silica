@@ -1,8 +1,8 @@
 class BackSymbol extends Symbol 
 
 	
-	static property String symbolName = "back"
-	static property Number width = 4
+	static default symbolName = "back"
+	static default width = 4
 	
 
 

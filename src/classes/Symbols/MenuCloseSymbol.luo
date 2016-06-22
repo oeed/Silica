@@ -1,8 +1,8 @@
 class MenuCloseSymbol extends Symbol 
 
 	
-	static property String symbolName = "menuClose"
-	static property Number height = 4
+	static default symbolName = "menuClose"
+	static default height = 4
 	
 
 

@@ -1,8 +1,8 @@
 class ToolbarContainer extends Container 
 
 	property Boolean needsLayoutUpdate = false
-	property String allowsNil leftPin = "1"
-	property String allowsNil rightPin = "100%"
+	default leftPin = "1"
+	default rightPin = "100%"
 
 
 	function initialise( ... )

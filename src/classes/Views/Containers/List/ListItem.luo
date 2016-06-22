@@ -1,10 +1,10 @@
 class ListItem extends View implements IDraggableView 
 	
-	property Number height = 12
+	default height = 12
 	property Boolean isSelected = false
 
 	property String text
-	property Cursor allowsNil cursor = ClickableCursor.static
+	default cursor = ClickableCursor.static
 
 
 	function initialise( ... )

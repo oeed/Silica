@@ -2,18 +2,18 @@ local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class Button extends View 
 
-	property Number height = 16
-	property Number width = 36
+	default height = 16
+	default width = 36
 	property String text = ""
 
 	property Boolean isPressed = false
-	property Boolean isFocused = false
+	default isFocused = false
 	property Boolean isAutosized = true
-	property Boolean isFocusDismissable = true
+	default isFocusDismissable = true
 	property Boolean needsAutosize = true
-	property Boolean isCanvasHitTested = true
+	default isCanvasHitTested = true
 
-	property Cursor allowsNil cursor = ClickableCursor.static
+	default cursor = ClickableCursor.static
 
 	--[[
 		@desc Creates a button object and connects the event handlers

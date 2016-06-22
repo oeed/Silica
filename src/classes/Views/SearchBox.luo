@@ -1,6 +1,6 @@
 class SearchBox extends TextBox 
 	
-	property String allowsNil placeholder = "Search..."
+	default placeholder = "Search..."
 
 
 	function onDraw()

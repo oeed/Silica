@@ -1,5 +1,5 @@
 class MaskedTextBox extends TextBox 
 	
-	property Boolean isMasked = true
+	default isMasked = true
 
 end

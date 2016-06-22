@@ -1,10 +1,10 @@
 class MenuItem extends View 
 
-	property Number height = 12
-	property Number width = 40
+	default height = 12
+	default width = 40
 
 	property Boolean isPressed = false
-	property Boolean isEnabled = true
+	default isEnabled = true
 
 	property Any allowsNil shortcut
 	property String text

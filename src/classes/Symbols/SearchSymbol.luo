@@ -1,8 +1,8 @@
 class SearchSymbol extends Symbol 
 	
-	static property String symbolName = "search"
-	static property Number width = 9
-	static property Number height = 9
+	static default symbolName = "search"
+	static default width = 9
+	static default height = 9
 
 	static function initialise()
 		local path = Path( self.width, self.height, 9, 9 )

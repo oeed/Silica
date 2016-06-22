@@ -3,8 +3,8 @@ local w, h = term.getSize()
 class ApplicationContainer extends Container 
 
 	-- TODO: make this use a Constraint
-	property Number width = w
-	property Number height = h
+	default width = w
+	default height = h
 	property String themeName = "default"
 
 	property Number cursorX = 6

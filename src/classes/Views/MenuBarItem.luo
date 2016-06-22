@@ -3,7 +3,7 @@ local TEXT_MARGIN = 12
 class MenuBarItem extends View 
 
 	property Boolean isPressed = false
-	property Boolean isEnabled = true
+	default isEnabled = true
 	property Boolean isFlashing = false
 	property Boolean isActive -- TODO: readonly
 

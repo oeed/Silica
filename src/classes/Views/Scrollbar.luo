@@ -1,6 +1,6 @@
 class Scrollbar extends View 
 
-	property Number width = 7
+	default width = 7
 	property Boolean isHorizontal = false
 	property scrollerObject
 	property grabberObject
