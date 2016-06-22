@@ -31,7 +31,7 @@ class TextBox extends View
 	property String text = ""
 	property String allowsNil placeholder
 
-	default cursorFlashCounter = 0
+	property Number cursorFlashCounter = 0
 	property Graphics.colours cursorColour = Graphics.colours.BLACK;
 
 	property Number cursorX = 0
@@ -45,13 +45,13 @@ class TextBox extends View
 
 	property Number scroll = 0
 	property Number maxScroll = 0
-	default cursorPosition = 1
+	property Number cursorPosition = 1
 	property maximumLength
 	property Number allowsNil selectionPosition
 
 	default cursor = TextCursor.static
 
-	property Enum selectionDirections = Number, SELECTION_DIRECTIONS
+	enum Number selectionDirections = SELECTION_DIRECTIONS
 
 	--[[
 		@constructor

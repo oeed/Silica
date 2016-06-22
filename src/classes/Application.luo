@@ -28,8 +28,8 @@ class Application
 	-- ERROR = 2;
 	--	-- etc
 	-- };
-	static default resourceFolders = {} -- the folders in which the applications resources are
-	static property resourceTables -- the tables of files where resources are
+	static property Table resourceFolders = {} -- the folders in which the applications resources are
+	static property Table resourceTables -- the tables of files where resources are
 
 	static function initialise( ... )
 		self.resourceTables = __resourceTables or {}

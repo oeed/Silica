@@ -105,8 +105,8 @@ class Metadata
 	property Number openedTimestamp = DEFAULT_TIMESTAMP
 	property Number modifiedTimestamp = DEFAULT_TIMESTAMP
 
-	property Enum mimes = String, EXTENSION_MIMES
-	property Enum specialMimes = String, SPECIAL_MIMES
+	enum String mimes = EXTENSION_MIMES
+	enum String specialMimes = SPECIAL_MIMES
 
 	function initialise( FileSystemItem file )
 		self.file = file

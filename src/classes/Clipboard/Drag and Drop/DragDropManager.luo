@@ -38,7 +38,7 @@ class DragDropManager
 		@param [boolean] isMove -- whether the source view should be hidden during dragging
 		@param [function] completion -- called when the drag and drop is cancelled or successful (destination view passed if dropped, nil if cancelled)
 	]]
-	function start( Table views, ClipboardData data, Number relativeX, Number relativeY, Boolean isMove = true, function.allowsNil completion )
+	function start( Table views, ClipboardData data, Number relativeX, Number relativeY, Boolean isMove = true, Function allowsNil completion )
 		local x, y, x2, y2 = self.owner.container.width, self.owner.container.height, 1, 1
 		local images = {}
 		for i, view in ipairs( views ) do

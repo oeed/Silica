@@ -32,12 +32,12 @@ local keySymbols = {
 
 class KeyboardShortcutManager
 
-	default keysDown = {}
-	default keysUpdates = {}
-	property owner
+	property Table keysDown = {}
+	property Table keysUpdates = {}
+	property InstanceOrStatic owner
 	property EventManager eventManager
 
-	function initialise( owner )
+	function initialise( InstanceOrStatic owner )
 		self.owner = owner
 		self.eventManager = EventManager( self )
 		self.eventManager:connectGlobal( DownKeyEvent, self.onGlobalKeyDown )

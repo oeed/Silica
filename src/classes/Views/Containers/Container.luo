@@ -3,12 +3,12 @@ local pinProperties = {}
 
 class Container extends View 
 
-	default children = {}
+	property Table children = {}
 	property Table interfaceLinks -- TODO: .isReadOnly
 	property Table interfaceLinkActions -- TODO: .isReadOnly
 	property String allowsNil interfaceName
-	default offsetX = 0
-	default offsetY = 0
+	property Number offsetX = 0
+	property Number offsetY = 0
 	property Number allowsNil cursorLastX
 	property Number allowsNil cursorLastY
 

@@ -10,7 +10,6 @@ class ThumbnailIcon extends Icon
 	property Image image
 	property Icon alternateIcon
 
-
 	function initialise( File file, Image image )
 		self.file = file
 		self.image = image

@@ -453,9 +453,9 @@ class Image
 	-- resource = false;
 	-- file = false;
 	property Any allowsNil contents
-	default scaledCache = {}
-	property Enum ucgValues = Number, ucgValues
-	property Enum scaleMethods = Number, scaleMethods
+	property Table scaledCache = {}
+	enum Number ucgValues = ucgValues
+	enum Number scaleMethods = scaleMethods
 
 
 	function initialise( Table pixels, Number width, Number height, Any allowsNil contents )

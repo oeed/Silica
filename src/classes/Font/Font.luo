@@ -27,11 +27,12 @@ local NO_CHAR_MAP = {
 }
 
 class Font
-	default height = 0
-	default desiredHeight = 0
-	default spacing = 1
-	property characters
-	property scale
+
+	property Number height = 0
+	property Number desiredHeight = 0
+	property Number spacing = 1
+	property Table characters
+	property Number scale
 
 	enum Number alignments = {
 		LEFT = 0;

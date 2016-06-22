@@ -10,13 +10,13 @@ local SPEED_CUTOFF = 0.2
 
 class ScrollView extends Container 
 
-	property contents
-	property horizontalScrollbar
-	property verticalScrollbar
-	property container
-	default verticalVelocityTime = 0
-	default verticalVelocity = 0
-	default horizontalVelocity = 0
+	-- property contents
+	property Scrollbar horizontalScrollbar
+	property Scrollbar verticalScrollbar
+	property ScrollContainer container
+	property Number verticalVelocityTime = 0
+	property Number verticalVelocity = 0
+	property Number horizontalVelocity = 0
 
 --[[
 	@constructor

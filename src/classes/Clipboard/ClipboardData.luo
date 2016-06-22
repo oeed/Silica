@@ -1,7 +1,5 @@
 class ClipboardData
 
-	-- TODO: why is this here?
-	function initialise()
-	end
+	property String type
 
 end

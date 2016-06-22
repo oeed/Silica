@@ -14,7 +14,7 @@ end
 class Icon extends Image 
 
 	property Table images
-	property Enum iconValues = Number, iconValues
+	enum Number iconValues = iconValues
 
 
 	function initialise( Table images, Any allowsNil contents )

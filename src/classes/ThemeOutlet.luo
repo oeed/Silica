@@ -1,8 +1,9 @@
 class ThemeOutlet
-	default style = "default"
+
+	property String style = "default"
 	property owner
 	property ownerClass
-	default connections = {}
+	property Table connections = {}
 
 --[[
 	@constructor
