@@ -23,10 +23,10 @@ local function lex( text )
 	local pos, line, char = 1, 1, 1
 	local function push( type, value )
 		tokens[#tokens + 1] = {
-			property type type
-			property value value
-			property char char
-			property line line
+			type = type;
+			value = value;
+			char = char;
+			line = line;
 		}
 	end
 	while pos <= #text do
@@ -234,9 +234,9 @@ function parseXMLBody()
 		end
 
 		blocks[#blocks + 1] = {
-			property type type
-			property attributes attributes
-			property body body
+			type = type;
+			attributes = attributes;
+			body = body;
 		}
 	end
 

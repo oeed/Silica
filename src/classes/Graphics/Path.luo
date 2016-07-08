@@ -174,8 +174,8 @@ class Path
 		local lines = self.lines
 		lines[#lines + 1] = {
 			mode = "linear";
-			property self currentX x1
-			property self currentY y1
+			x1 = self.currentX;
+			y1 = self.currentY;
 			x2 = x;
 			y2 = y;
 		}
@@ -206,14 +206,14 @@ class Path
 		
 		self.lines[#self.lines + 1] = {
 			mode = "curve";
-			property self currentX x1
-			property self currentY y1
-			property endX x2
-			property endY y2
-			property controlPoint1X controlPoint1X
-			property controlPoint1Y controlPoint1Y
-			property controlPoint2X controlPoint2X
-			property controlPoint2Y controlPoint2Y
+			x1 = self.currentX;
+			y1 = self.currentY;
+			x2 = endX;
+			y2 = endY;
+			controlPoint1X = controlPoint1X;
+			controlPoint1Y = controlPoint1Y;
+			controlPoint2X = controlPoint2X;
+			controlPoint2Y = controlPoint2Y;
 		}
 
 		self.currentX = endX
@@ -261,8 +261,8 @@ class Path
 
 			lines[#lines + 1] = {
 				mode = "linear";
-				property currentX x1
-				property currentY y1
+				x1 = currentX;
+				y1 = currentY;
 				x2 = x;
 				y2 = y;
 			}

@@ -70,12 +70,12 @@ class DragDropManager
 
 		self:cancel()
 		local dragView = DragView( {
-			property width width
-			property height height
+			width = width;
+			height = height;
 			x = x;
 			y = y;
-			property image image
-			property shadowMask shadowMask
+			image = image;
+			shadowMask = shadowMask;
 		} )
 		self.owner.container:insert( dragView )
 		self.dragView = dragView

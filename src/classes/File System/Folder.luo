@@ -1,34 +1,34 @@
 local fs = Quartz and Quartz.fs or fs
 
-	local function tidy( path )
-		if path == "/" then return path end
-		path = path:gsub( "/.-/%.%./", "/" )
-				   :gsub( "^.-/%.%./", "" )
-				   :gsub( "/%./", "/" )
-				   :gsub( "^%.%./", "" )
-				   :gsub( "^%.%.$", "" )
-				   :gsub( "//+", "/" )
-				   :gsub( "/$", "" )
-		return path
-	end
+local function tidy( path )
+	if path == "/" then return path end
+	path = path:gsub( "/.-/%.%./", "/" )
+			   :gsub( "^.-/%.%./", "" )
+			   :gsub( "/%./", "/" )
+			   :gsub( "^%.%./", "" )
+			   :gsub( "^%.%.$", "" )
+			   :gsub( "//+", "/" )
+			   :gsub( "/$", "" )
+	return path
+end
 
-	local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) ):gsub( "[^/]$", "%1/" ):gsub( "^[^/]", "/%1" )
-	local function resolve( path )
-		if not path or #path == 0 then return "/" .. relativePath else local _ = tidy( path ):gsub( "^[^/]", relativePath .. "%1" ) return _ end
-	end
+local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) ):gsub( "[^/]$", "%1/" ):gsub( "^[^/]", "/%1" )
+local function resolve( path )
+	if not path or #path == 0 then return "/" .. relativePath else local _ = tidy( path ):gsub( "^[^/]", relativePath .. "%1" ) return _ end
+end
 
-	local fileCache = FileSystemItem.static.fileCache
-	local osClock = os.clock
+local fileCache = FileSystemItem.static.fileCache
+local osClock = os.clock
 
-	class Folder extends FileSystemItem 
-		
-		property Table allowsNil allItems
-		property Table allowsNil items
-		property Table allowsNil files
-		property Table allowsNil folders
-		property Table allowsNil fs -- an fs API sandbox 
-		property Table allowsNil io -- an io API sandbox 
-		property Any allowsNil openIcon
+class Folder extends FileSystemItem 
+	
+	property Table allowsNil readOnly allItems
+	property Table allowsNil readOnly items
+	property Table allowsNil readOnly files
+	property Table allowsNil readOnly folders
+	property Table allowsNil readOnly fs -- an fs API sandbox 
+	property Table allowsNil readOnly io -- an io API sandbox 
+	property Any allowsNil readOnly openIcon
 
 
 	-- TODO: replace this with a static function
@@ -171,18 +171,6 @@ local fs = Quartz and Quartz.fs or fs
 		return self:getItems( true, false )
 	end
 
-	set items( items )
-		error( "Folder.items is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
-	end
-
-	set files( files )
-		error( "Folder.files is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
-	end
-
-	set folders( folders )
-		error( "Folder.folders is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
-	end
-
 	function itemFromPath( path )
 		return FileSystemItem( self.path .. tidy( "/" .. path ) )
 	end
@@ -256,10 +244,10 @@ local fs = Quartz and Quartz.fs or fs
 		local _fs = self.fs
 		if _fs then return _fs end
 		_fs = {
-			property fs combine combine
-			property fs getDir getDir
-			property fs getName getName
-			property fs getDrive getDrive
+			combine = fs.combine;
+			getDir = fs.getDir;
+			getName = fs.getName;
+			getDrive = fs.getDrive;
 		}
 
 		local relativePath = self.path
@@ -292,22 +280,18 @@ local fs = Quartz and Quartz.fs or fs
 		return _fs
 	end
 
-	set fs( fs )
-		error( "Folder.fs is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
-	end
-
 	get io()
 		local _io = self.io
 		if _io then return _io end
 		_io = {
-			property io input input
-			property io output output
-			property io type type
-			property io close close
-			property io write write
-			property io flush flush
-			property io lines lines
-			property io read read
+			input = io.input;
+			output = io.output;
+			type = io.type;
+			close = io.close;
+			write = io.write;
+			flush = io.flush;
+			lines = io.lines;
+			read = io.read;
 		}
 
 		function _io.open( path, ... )
@@ -316,10 +300,6 @@ local fs = Quartz and Quartz.fs or fs
 
 		self.raw.io = _io
 		return _io
-	end
-
-	set io( io )
-		error( "Folder.io is a read-only property.", 2 ) -- TODO: check if 2 is correct error level
 	end
 
 	function package( path, overwrite, isResourcePackage )

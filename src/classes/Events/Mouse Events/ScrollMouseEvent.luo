@@ -2,16 +2,16 @@ class ScrollMouseEvent extends MouseEvent
 	
 	static default eventType = "mouse_scroll";
 	
-	property MouseEvent.direction direction
+	property MouseEvent.directions direction
 
 	--[[
 		@constructor
 		@desc Creates a click mouse event from the arguments
-		@param [MouseEvent.direction] direction -- the direction of the scroll
+		@param [MouseEvent.directions] direction -- the direction of the scroll
 		@param [number] x -- the x screen coordinate
 		@param [number] y -- the y screen coordinate
 	]]
-	function initialise( MouseEvent.direction direction, Number x, Number y )
+	function initialise( MouseEvent.directions direction, Number x, Number y )
 		self.direction = direction
 		self.x = x
 		self.y = y

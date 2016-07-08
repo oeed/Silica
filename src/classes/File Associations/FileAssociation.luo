@@ -25,11 +25,11 @@ class FileAssociation implements ISerialiseable
 		local icon = self.icon
 		local programBundle = self.programBundle
 		return textutils.serialise( {
-			property self id id
-			property self name name
-			property self mime mime
+			id = self.id;
+			name = self.name;
+			mime = self.mime;
 			icon = icon and icon.contents;
-			property self extensions extensions
+			extensions = self.extensions;
 		} )
 	end
 
