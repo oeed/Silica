@@ -1,4 +1,4 @@
-local clickableCursor, cursor = ClickableCursor.static, Cursor.static
+clickableCursor, cursor = ClickableCursor.static, Cursor.static
 
 class TreeNode extends LayoutContainer implements ITreeChild implements IDragDropDestination 
 	

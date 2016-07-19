@@ -1,5 +1,5 @@
-local RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedfunction = true }
-local TYPETABLE_ALLOWS_NIL = 4
+RESERVED_NAMES = { super = true, static = true, metatable = true, class = true, raw = true, application = true, className = true, typeOf = true, isDefined = true, isDefinedProperty = true, isDefinedfunction = true }
+TYPETABLE_ALLOWS_NIL = 4
 
 class Interface
 

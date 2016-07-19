@@ -1,4 +1,4 @@
-local ceil, floor = math.ceil, math.floor
+ceil, floor = math.ceil, math.floor
 
 class ScaleableCanvas extends Canvas 
 	

@@ -1,10 +1,10 @@
-local MAX_DOUBLE_CLICK_TIME = 0.8
-local MIN_MOUSE_HOLD_TIME = 0.3
+MAX_DOUBLE_CLICK_TIME = 0.8
+MIN_MOUSE_HOLD_TIME = 0.3
 
-local ANIMATION_DEFAULT_TIME = 0.3
-local DEFAULT_EASING = Animation.easings.IN_OUT_SINE
+ANIMATION_DEFAULT_TIME = 0.3
+DEFAULT_EASING = Animation.easings.IN_OUT_SINE
 
-local pins = {
+pins = {
 	LEFT = "left",
 	RIGHT = "right",
 	TOP = "top",

@@ -1,15 +1,14 @@
-local folderFrontIcon, folderFrontOpenIcon, folderBackIcon, folderIcon, folderIconIcon
-local folderFrontOpenIconImages, folderFrontIconImages
-local VISIBLE_THUMBNAIL_COUNT, MINIMUM_SIZE = 3, 15
-local THUMBNAIL_POSITION_X = 0.6
-local THUMBNAIL_SCALE = 0.625
+folderFrontIcon, folderFrontOpenIcon, folderBackIcon, folderIcon, folderIconIcon, folderFrontOpenIconImages, folderFrontIconImages = nil
+VISIBLE_THUMBNAIL_COUNT, MINIMUM_SIZE = 3, 15
+THUMBNAIL_POSITION_X = 0.6
+THUMBNAIL_SCALE = 0.625
 
 class FolderIcon extends Icon 
 	
 	property Folder folder
 
 	function initialise( Table images, Folder folder )
-		self.folder = folder
+		self.folder = folde
 		super( images )
 	end
 

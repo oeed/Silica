@@ -1,12 +1,12 @@
 -- TODO: scrolling quickly then the opposite way reverses speed (not stops it)
 
 
-local exp = math.exp
+exp = math.exp
 
-local SCROLL_DECAY = -8
-local SCROLL_SPEED = 180
-local SCROLL_ACCELERATION = 1.2--0.97
-local SPEED_CUTOFF = 0.2
+SCROLL_DECAY = -8
+SCROLL_SPEED = 180
+SCROLL_ACCELERATION = 1.2--0.97
+SPEED_CUTOFF = 0.2
 
 class ScrollView extends Container 
 

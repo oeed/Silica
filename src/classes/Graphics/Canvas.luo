@@ -1,6 +1,6 @@
-local SHADOW_RATIO = 2 / 3
-local SHADOW_COLOUR = Graphics.colours.GREY
-local TRANSPARENT = Graphics.colours.TRANSPARENT
+SHADOW_RATIO = 2 / 3
+SHADOW_COLOUR = Graphics.colours.GREY
+TRANSPARENT = Graphics.colours.TRANSPARENT
 
 class Canvas
 	

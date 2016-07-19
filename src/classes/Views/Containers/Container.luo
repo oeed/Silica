@@ -1,5 +1,5 @@
-local pins = View.pins
-local pinProperties = {}
+pins = View.pins
+pinProperties = {}
 
 class Container extends View 
 

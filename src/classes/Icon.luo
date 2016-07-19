@@ -1,13 +1,13 @@
-local ucgValues = Image.ucgValues
-local iconValues = {
+ucgValues = Image.ucgValues
+iconValues = {
 	SIGNATURE = 0xFF2138;
 	DEFAULT_WIDTH = 32;
 	DEFAULT_HEIGHT = 32;
 }
 
-local mimes = Metadata.mimes
-local ICON_MIMES = { mimes.SICON }
-local availableMimes = {}
+mimes = Metadata.mimes
+ICON_MIMES = { mimes.SICON }
+availableMimes = {}
 for i, v in ipairs( ICON_MIMES ) do
 	availableMimes[v] = true
 end

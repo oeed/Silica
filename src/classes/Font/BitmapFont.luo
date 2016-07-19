@@ -1,4 +1,4 @@
-local floor, ceil = math.floor, math.ceil
+floor, ceil = math.floor, math.ceil
 
 	local function readstring( handle )
 		local v = handle.read()

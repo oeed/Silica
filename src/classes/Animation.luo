@@ -1,7 +1,4 @@
-local math, assert, tostring, type = math, assert, tostring, type
-local pow, sin, cos, pi, sqrt, abs, asin = math.pow, math.sin, math.cos, math.pi, math.sqrt, math.abs, math.asin
-
-local function copyTables(destination, keysTable, valuesTable)
+function copyTables(destination, keysTable, valuesTable)
 	valuesTable = valuesTable or keysTable
 	local mt = getmetatable( keysTable )
 	if mt and getmetatable( destination ) == nil then
@@ -18,7 +15,7 @@ local function copyTables(destination, keysTable, valuesTable)
 	return destination
 end
 
-local function performEasingOnSubject(subject, targetValues, initialValues, time, duration, easingFunc, round)
+function performEasingOnSubject(subject, targetValues, initialValues, time, duration, easingFunc, round)
 	local t,b,c,d
 	local progressPercentage, ceil, floor = false, math.ceil, math.floor
 	for k,v in pairs( targetValues ) do

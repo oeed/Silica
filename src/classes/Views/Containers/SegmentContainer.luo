@@ -1,4 +1,4 @@
-local SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
+SHADOW_RATIO = Canvas.shadows.SHADOW_RATIO
 
 class SegmentContainer extends Container 
 

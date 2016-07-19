@@ -1,6 +1,6 @@
-local fs = Quartz and Quartz.fs or fs
+fs = Quartz and Quartz.fs or fs
 
-local function tidy( path )
+function tidy( path )
 	if path == "/" then return path end
 	path = path:gsub( "/.-/%.%./", "/" )
 			   :gsub( "^.-/%.%./", "" )
@@ -12,13 +12,13 @@ local function tidy( path )
 	return path
 end
 
-local relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) ):gsub( "[^/]$", "%1/" ):gsub( "^[^/]", "/%1" )
-local function resolve( path )
+relativePath = tidy( shell.getRunningProgram():match( "(.*)/.+" ) ):gsub( "[^/]$", "%1/" ):gsub( "^[^/]", "/%1" )
+function resolve( path )
 	if not path or #path == 0 then return "/" .. relativePath else local _ = tidy( path ):gsub( "^[^/]", relativePath .. "%1" ) return _ end
 end
 
-local fileCache = FileSystemItem.static.fileCache
-local osClock = os.clock
+fileCache = FileSystemItem.static.fileCache
+osClock = os.clock
 
 class File extends FileSystemItem implements IEditableFileSystemItem 
 

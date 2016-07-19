@@ -1,10 +1,10 @@
-local fs = Quartz and Quartz.fs or fs
+fs = Quartz and Quartz.fs or fs
 
-local DEFAULT_TIMESTAMP = 1451606400; -- default date 00:00 1/1/2016
+DEFAULT_TIMESTAMP = 1451606400; -- default date 00:00 1/1/2016
 
-local SAVED_PROPERTIES = { t = "mime"; c = "createdTimestamp"; o = "openedTimestamp"; m = "modifiedTimestamp"; }
+SAVED_PROPERTIES = { t = "mime"; c = "createdTimestamp"; o = "openedTimestamp"; m = "modifiedTimestamp"; }
 
-local g_tLuaKeywords = {
+g_tLuaKeywords = {
 	[ "and" ] = true,
 	[ "break" ] = true,
 	[ "do" ] = true,
@@ -28,7 +28,7 @@ local g_tLuaKeywords = {
 	[ "while" ] = true,
 }
 
-local function serialise( t, tTracking )
+function serialise( t, tTracking )
 	local sType = type(t)
 	if sType == "table" then
 		if tTracking[t] ~= nil then
@@ -68,7 +68,7 @@ local function serialise( t, tTracking )
 	end
 end
 
-local EXTENSION_MIMES = {
+EXTENSION_MIMES = {
 	LUA = "text/lua";
 	TXT = "text/plain";
 	TEXT = "text/plain";
@@ -90,7 +90,7 @@ local EXTENSION_MIMES = {
 	APPLICATION = "silica/application";
 }
 
-local SPECIAL_MIMES = {
+SPECIAL_MIMES = {
 	FOLDER = "application/directory";
 	-- property nil UNKNOWN
 }

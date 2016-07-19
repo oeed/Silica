@@ -1,7 +1,7 @@
-local TRANSPARENT = Graphics.colours.TRANSPARENT
+TRANSPARENT = Graphics.colours.TRANSPARENT
 
-local hexnums = { [10] = "a", [11] = "b", [12] = "c", [13] = "d", [14] = "e" , [15] = "f" }
-local function getHexOf(colour)
+hexnums = { [10] = "a", [11] = "b", [12] = "c", [13] = "d", [14] = "e" , [15] = "f" }
+function getHexOf(colour)
 	if colour == TRANSPARENT or not colour or not tonumber(colour) then
 		return " "
 	end
@@ -12,7 +12,7 @@ local function getHexOf(colour)
 	return value
 end
 
-local function getColourOf(hex)
+function getColourOf(hex)
 	if hex == ' ' then
 		return TRANSPARENT
 	end
@@ -22,32 +22,32 @@ local function getColourOf(hex)
 	return value
 end
 
-local function split(a,e)
+function split(a,e)
 	local t,e=e or":",{}
 	local t=string.format("([^%s]+)",t)
 	a:gsub(t,function(t)e[#e+1]=t end)
 	return e
 end
 
-local mimes = Metadata.mimes
-local ucgValues = {
+mimes = Metadata.mimes
+ucgValues = {
 	SIGNATURE = 0xFF2137,
 	VERSION = 3
 }
 
-local IMAGE_MIMES = { mimes.IMAGE, mimes.UCG, mimes.SICON }
-local availableMimes = {}
+IMAGE_MIMES = { mimes.IMAGE, mimes.UCG, mimes.SICON }
+availableMimes = {}
 for i, v in ipairs( IMAGE_MIMES ) do
 	availableMimes[v] = true
 end
 
-local scaleMethods = {
+scaleMethods = {
 	STRETCH = 1;
 	FIT = 2;
 	COVER = 3;
 }
 
-local function newBuffer(mode, source)
+function newBuffer(mode, source)
 	local bytes = {}
 	local bits = {}
 	

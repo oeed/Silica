@@ -1,5 +1,5 @@
-local SHADOW_RATIO = 2/3
-local MAX_SHADOW_SIZE = 3
+SHADOW_RATIO = 2/3
+MAX_SHADOW_SIZE = 3
 
 class DragDropManager
 	

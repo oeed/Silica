@@ -1,6 +1,6 @@
 -- TODO: XML bug. backslashes in attributes don't work. A single "\" results in: expected '"' to close string. While "\\"" results in two backslashes being the parsed text
 
-local function fromXMLString( value )
+function fromXMLString( value )
 	value = string.gsub(value, "&#x( [%x]+ )%;",
 		function( h ) 
 			return string.char( tonumber(h,16) )
@@ -18,7 +18,7 @@ local function fromXMLString( value )
 	return value;
 end
 
-local function lex( text )
+function lex( text )
 	local tokens = {}
 	local pos, line, char = 1, 1, 1
 	local function push( type, value )
@@ -87,7 +87,7 @@ local function lex( text )
 	return tokens
 end
 
-local parser = {}
+parser = {}
 function new( tokens )
 	local t = setmetatable( {}, { __index = self } )
 	t.tokens = tokens

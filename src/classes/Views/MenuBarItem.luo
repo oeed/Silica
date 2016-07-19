@@ -1,4 +1,4 @@
-local TEXT_MARGIN = 12
+TEXT_MARGIN = 12
 
 class MenuBarItem extends View 
 

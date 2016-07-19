@@ -1,4 +1,4 @@
-local function shapeMode( self, mask, maskX, maskY, func )
+function shapeMode( self, mask, maskX, maskY, func )
 	local selfX, selfY, selfWidth, selfHeight, selfPixels = self.x, self.y, self.width, self.height, self.pixels
 	local maskX, maskY, maskWidth, maskHeight, maskPixels = maskX or mask.x, maskY or mask.y, mask.width, mask.height, mask.pixels
 	local x, y = math.min( selfX, maskX ), math.min( selfY, maskY )

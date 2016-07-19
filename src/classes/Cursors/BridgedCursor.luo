@@ -1,5 +1,5 @@
-local cursorStatic = Cursor.static
-local bridgeKeys = {
+cursorStatic = Cursor.static
+bridgeKeys = {
 	HOT_SPOT_X = 1;
 	HOT_SPOT_Y = 2;
 	WIDTH = 3;

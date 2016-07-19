@@ -1,4 +1,4 @@
-local function split(a,e)
+function split(a,e)
 	local t,e=e or":",{}
 	local t=string.format("([^%s]+)",t)
 	a:gsub(t,function(t)e[#e+1]=t end)

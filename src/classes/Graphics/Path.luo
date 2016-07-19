@@ -1,17 +1,17 @@
 -- TODO: ensure that the path is valid when it's closed
 
-local sin, cos, floor, min, max, abs, acos, PI, remove, insert = math.sin, math.cos, math.floor, math.min, math.max, math.abs, math.acos, math.pi, table.remove, table.insert
+sin, cos, floor, min, max, abs, acos, PI, remove, insert = math.sin, math.cos, math.floor, math.min, math.max, math.abs, math.acos, math.pi, table.remove, table.insert
 
-local function round( num )
+function round( num )
 	return floor( num + 0.5 )
 end
 
 -- the next few functions are just taken from a site for bezier intersection, hence the terribly named variables. don't hate.
-local function sgn( n )
+function sgn( n )
 	return n < 0 and -1 or 1
 end
 
-local function sortSpecial( a )
+function sortSpecial( a )
 	local flip;
 	local temp;
 	
@@ -30,7 +30,7 @@ local function sortSpecial( a )
 	return a
 end
 
-local function bezierCoeffs( P0, P1, P2, P3 )
+function bezierCoeffs( P0, P1, P2, P3 )
 	local Z = {};
 	Z[1] = -P0 + 3 * P1 + -3 * P2 + P3; 
 	Z[2] = 3 * P0 - 6 * P1 + 3 * P2;
@@ -39,7 +39,7 @@ local function bezierCoeffs( P0, P1, P2, P3 )
 	return Z;
 end
 
-local function cubicRoots( P )
+function cubicRoots( P )
 
 	local a = P[1]
 	local b = P[2]
@@ -94,8 +94,8 @@ local function cubicRoots( P )
 	return t;
 end
 
-local ERROR_MARGIN = 0.001
-local function aproxEqual( n1, n2 )
+ERROR_MARGIN = 0.001
+function aproxEqual( n1, n2 )
 	return n2 and ( n1 == n2 or ( n1 + ERROR_MARGIN > n2 and n1 - ERROR_MARGIN < n2 ) )
 end
 

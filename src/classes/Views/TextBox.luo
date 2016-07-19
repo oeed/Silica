@@ -10,15 +10,15 @@
 		Ctrl-a
 ]]
 
-local CURSOR_ANIMATION_SPEED = 0.4
-local CURSOR_ANIMATION_EASING = Animation.easings.OUT_QUART
-local SCROLL_SPEED = 4
+CURSOR_ANIMATION_SPEED = 0.4
+CURSOR_ANIMATION_EASING = Animation.easings.OUT_QUART
+SCROLL_SPEED = 4
 
-local sub = string.sub -- move to top
-local concat = table.concat
-local floor = math.floor
+sub = string.sub -- move to top
+concat = table.concat
+floor = math.floor
 
-local SELECTION_DIRECTIONS = {
+SELECTION_DIRECTIONS = {
 	BOTH = 0;
 	LEFT = -1;
 	RIGHT = 0;

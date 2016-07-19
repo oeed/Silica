@@ -63,7 +63,7 @@ local functions = {
 
 local allowedIndices = { left = true, right = true, top = true, bottom = true, width = true, height = true }
 
-local parse, eval = nil, {}
+parse, eval = nil, {}
 
 local function getpos( token )
 	return token and "[" .. token.pos .. "]: "
@@ -97,7 +97,7 @@ local function getBracketContents( tokens, start )
 	end
 end
 
-local function lex( str )
+function lex( str )
 	local tokens = {}
 	local pos = 1
 	local lpos = 1
@@ -151,7 +151,7 @@ local function lex( str )
 	return tokens
 end
 
-local function parseRelativeIndexes( tokens )
+function parseRelativeIndexes( tokens )
 	local i = 1
 	while i <= #tokens do
 		if tokens[i].type == "dot" then
@@ -258,7 +258,7 @@ local function parseUnaryMinuses( tokens )
 	end
 end
 
-local function parseMathConstants( tokens )
+function parseMathConstants( tokens )
 	for i = 1, #tokens do
 		if tokens[i].type == "word" and tokens[i].value:lower() == "pi" then
 			tokens[i].type = "constant"
@@ -293,7 +293,7 @@ function parse( tokens )
 	return tokens
 end
 
-local function checkfunctionCalls( tokens )
+function checkfunctionCalls( tokens )
 	for i = 1, #tokens do
 		if tokens[i].type == "call" then
 			local f = tokens[i].value.func
@@ -316,7 +316,7 @@ local function checkfunctionCalls( tokens )
 	return tokens
 end
 
-local function isKnownValue( t )
+function isKnownValue( t )
 	if type( t ) == "number" then return true end
 	if t.type == "bracket" then
 		for i = 1, #t.value do
@@ -359,7 +359,7 @@ local function groupByLevel( terms, operators, level )
 	end
 end
 
-local function group( tokens )
+function group( tokens )
 	local levels = {}
 	for i = 1, #tokens do
 		tokens[i].pos = nil

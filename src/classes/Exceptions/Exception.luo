@@ -1,5 +1,5 @@
-local thrownExceptions = {}
-local nextID = 1
+thrownExceptions = {}
+nextID = 1
 
 	function _G.try( func )
 		local ok, err = pcall( func )

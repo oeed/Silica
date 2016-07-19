@@ -1,4 +1,4 @@
-local BUTTON_DIAMETER = 5
+BUTTON_DIAMETER = 5
 
 class WindowButton extends View 
 

@@ -1,4 +1,4 @@
-local keyStrings = {
+keyStrings = {
 	nil,	"1",	"2",	"3",	"4",
 	"5",	"6",	"7",	"8",	"9",
 	"0",	"-",	"=",	"backspace","tab",
@@ -21,7 +21,7 @@ local keyStrings = {
 	[219] = "ctrl",	[220] = "ctrl",				
 }
 
-local keySymbols = {
+keySymbols = {
 	-- TODO: tab, left, right, up down, delete
 	backspace = string.char( 144 );
 	enter = string.char( 157 );

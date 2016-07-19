@@ -1,8 +1,8 @@
-local iconValues = Icon.iconValues
-local scaleMethods = Image.scaleMethods
-local DEFAULT_WIDTH, DEFAULT_HEIGHT = iconValues.DEFAULT_WIDTH, iconValues.DEFAULT_HEIGHT
-local FLAP_SIZE, OUTLINE_SIZE, MINIMUM_SIZE = 7, 3, 12
-local GREY, WHITE, LIGHT_GREY, TRANSPARENT = Graphics.colours.GREY, Graphics.colours.WHITE, Graphics.colours.LIGHT_GREY, Graphics.colours.TRANSPARENT
+iconValues = Icon.iconValues
+scaleMethods = Image.scaleMethods
+DEFAULT_WIDTH, DEFAULT_HEIGHT = iconValues.DEFAULT_WIDTH, iconValues.DEFAULT_HEIGHT
+FLAP_SIZE, OUTLINE_SIZE, MINIMUM_SIZE = 7, 3, 12
+GREY, WHITE, LIGHT_GREY, TRANSPARENT = Graphics.colours.GREY, Graphics.colours.WHITE, Graphics.colours.LIGHT_GREY, Graphics.colours.TRANSPARENT
 
 class ThumbnailIcon extends Icon 
 	
