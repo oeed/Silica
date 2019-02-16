@@ -1,6 +1,8 @@
 # Silica
 The next generation ComputerCraft GUI Framework by oeed
 
+**No longer being developmenent or actively maintained.** Please don't make issues about trying to get it working.
+
 Availability
 =============
 
